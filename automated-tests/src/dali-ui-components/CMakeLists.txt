@@ -7,6 +7,7 @@ SET(CAPI_LIB "dali-ui-components")
 
 SET(TC_SOURCES
     utc-Dali-DummyComponent.cpp
+    utc-Dali-Navigator.cpp
 )
 
 LIST(APPEND TC_SOURCES

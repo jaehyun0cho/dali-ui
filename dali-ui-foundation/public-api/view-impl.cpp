@@ -886,7 +886,8 @@ MeasuredSize ViewImpl::Measure(float visualW, float visualH)
   // constraints (corner radius, borderline width) can read it as a scale input.
   // Read back the current actor property value to skip redundant scene-graph writes.
   // This also naturally corrects any value set externally on EFFECTIVE_SCALE.
-  if(!Dali::Equals(s, Self().GetProperty<float>(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX)))
+  if(Self().GetPropertyIndex("viewEffectiveScale") == Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX &&
+     !Dali::Equals(s, Self().GetProperty<float>(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX)))
   {
     // SetProperty triggers ViewDataImpl::SetProperty(VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX), which:
     //   - updates the actor animatable so decoration constraints re-evaluate, and

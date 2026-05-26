@@ -18,3 +18,4 @@
 
 // EXTERNAL INCLUDES
 // INTERNAL INCLUDES
+#include <dali-ui-components/public-api/navigator.h>
