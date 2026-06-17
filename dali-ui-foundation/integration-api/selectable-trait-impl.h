@@ -118,6 +118,39 @@ protected:
    */
   virtual bool OnSelectionChanging(View view, bool newSelected);
 
+  /**
+   * @brief Called after a selection state change has been committed.
+   *
+   * Invoked by CommitSelectedState after the owner view state has been updated
+   * and the per-item SelectionChangedSignal has been emitted. Subclasses (e.g.
+   * GroupSelectableTraitImpl) can override this to respond to a completed change,
+   * for example to synchronise accessibility state or notify a group controller.
+   * The base implementation is a no-op.
+   *
+   * @param[in] view The owner view
+   * @param[in] selected The committed selection state
+   * @param[in] event The input event that caused the change, or InputEvent::None()
+   */
+  virtual void OnSelectionChanged(View view, bool selected, InputEvent event);
+
+  /**
+   * @brief Commits a selection state change without consulting the OnSelectionChanging veto.
+   *
+   * Applies the new selection state to the owner view, emits SelectionChangedSignal,
+   * then invokes OnSelectionChanged. This is the single internal commit point: it is
+   * used by SetSelectedInternal once a change has passed the veto, and directly by
+   * group controllers that have already arbitrated the change and must not be vetoed.
+   *
+   * Does nothing if the state is unchanged (avoids phantom signals on duplicate
+   * commits) or if the trait is not attached to a view. Unlike SetSelectedInternal,
+   * the unattached case is a pure early-return: it does not store the state, because
+   * group controllers only commit on attached members.
+   *
+   * @param[in] selected The selection state to commit
+   * @param[in] event The input event that caused the change, or InputEvent::None()
+   */
+  void CommitSelectedState(bool selected, InputEvent event);
+
 private:
   void EnsureClickableAndConnect();
   void DisconnectClickable();

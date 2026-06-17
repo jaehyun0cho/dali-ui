@@ -31,6 +31,8 @@ SET(TC_SOURCES
         utc-Dali-InteractiveTrait.cpp
         utc-Dali-InteractiveView.cpp
         utc-Dali-SelectableTrait.cpp
+        utc-Dali-SelectableGroup.cpp
+        utc-Dali-GroupSelectableTrait.cpp
         utc-Dali-ViewState.cpp
         utc-Dali-ViewStateHandler.cpp
         utc-Dali-ViewState.cpp

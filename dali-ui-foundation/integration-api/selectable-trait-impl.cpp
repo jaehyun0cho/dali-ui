@@ -87,9 +87,28 @@ void SelectableTraitImpl::SetSelectedInternal(bool selected, InputEvent event)
     return;
   }
 
+  CommitSelectedState(selected, event);
+}
+
+void SelectableTraitImpl::CommitSelectedState(bool selected, InputEvent event)
+{
+  if(mSelected == selected)
+  {
+    return;
+  }
+
+  View owner = mOwner.GetHandle();
+  if(!owner)
+  {
+    // Pure early-return: group controllers only commit on attached members, so
+    // there is nothing to store and no signal to emit when there is no owner.
+    return;
+  }
+
   mSelected = selected;
-  IntegrationView::SetState(GetImpl(owner), ViewState::SELECTED, selected);
+  IntegrationView::SetState(GetImpl(owner), ViewState::SELECTED, selected, event);
   mSelectionChangedSignal.Emit(owner, mSelected, event);
+  OnSelectionChanged(owner, selected, event);
 }
 
 bool SelectableTraitImpl::IsToggleByClickEnabled() const
@@ -151,6 +170,10 @@ void SelectableTraitImpl::OnViewDestroying(ViewImpl* viewImpl)
 bool SelectableTraitImpl::OnSelectionChanging(View view, bool newSelected)
 {
   return true;
+}
+
+void SelectableTraitImpl::OnSelectionChanged(View view, bool selected, InputEvent event)
+{
 }
 
 void SelectableTraitImpl::EnsureClickableAndConnect()
