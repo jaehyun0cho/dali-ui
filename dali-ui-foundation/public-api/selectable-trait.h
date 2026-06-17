@@ -106,7 +106,7 @@ public: // Signals
    * This signal is emitted when the View's selected state changes, either
    * programmatically via SetSelected() or through toggle-by-click interaction.
    *
-   * The callback signature is: void YourCallbackName(View view, bool selected)
+   * The callback signature is: void YourCallbackName(View view, bool selected, InputEvent event)
    *
    * @return The selection changed signal
    */
