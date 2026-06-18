@@ -57,6 +57,15 @@ MeasuredSize ScrollViewLayoutManager::Measure(ViewImpl* view, float widthConstra
 
   const uint32_t count = GetChildCount(view);
 
+  // Only the scrollable axes may measure children with an unbounded constraint.
+  // A non-scrollable axis must use the parent constraint so that content which
+  // would overflow that axis is measured against the real bound instead of
+  // being silently clipped.
+  Integration::ScrollViewImpl* scrollImpl    = dynamic_cast<Integration::ScrollViewImpl*>(view);
+  const ScrollDirection        scrollDir     = scrollImpl ? scrollImpl->GetScrollDirection() : ScrollDirection::Both;
+  const bool                   canScrollHorz = (scrollDir == ScrollDirection::Horizontal) || (scrollDir == ScrollDirection::Both);
+  const bool                   canScrollVert = (scrollDir == ScrollDirection::Vertical) || (scrollDir == ScrollDirection::Both);
+
   float maxWidth  = 0.0f;
   float maxHeight = 0.0f;
 
@@ -78,8 +87,10 @@ MeasuredSize ScrollViewLayoutManager::Measure(ViewImpl* view, float widthConstra
     bool widthIsMatchParent  = (childImpl.GetRequestedWidth() == MATCH_PARENT);
     bool heightIsMatchParent = (childImpl.GetRequestedHeight() == MATCH_PARENT);
 
-    float childWidthConstraint  = widthIsMatchParent ? widthConstraint : std::numeric_limits<float>::max();
-    float childHeightConstraint = heightIsMatchParent ? heightConstraint : std::numeric_limits<float>::max();
+    float childWidthConstraint  = widthIsMatchParent ? widthConstraint
+                                                     : (canScrollHorz ? std::numeric_limits<float>::max() : widthConstraint);
+    float childHeightConstraint = heightIsMatchParent ? heightConstraint
+                                                      : (canScrollVert ? std::numeric_limits<float>::max() : heightConstraint);
 
     MeasuredSize childSize = childImpl.Measure(childWidthConstraint, childHeightConstraint);
 

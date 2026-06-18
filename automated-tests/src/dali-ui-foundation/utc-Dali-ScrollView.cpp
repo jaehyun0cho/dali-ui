@@ -1339,3 +1339,68 @@ int UtcDaliScrollViewIsViewP(void)
 
   END_TEST;
 }
+
+// Cross-axis measurement: on a single-direction scroll view the non-scrollable
+// (cross) axis must be measured against the parent constraint, not unbounded,
+// so content that would overflow the cross axis is clamped rather than silently
+// allowed to extend past the viewport.
+int UtcDaliScrollViewCrossAxisMeasureClampedP(void)
+{
+  UiTestApplication application;
+
+  ScrollView scrollView = ScrollView::New();
+  scrollView.SetScrollDirection(ScrollDirection::Vertical);
+
+  // WRAP_CONTENT content whose only child is wider than the viewport.
+  View content = View::New();
+  content.SetRequestedWidth(WRAP_CONTENT);
+  content.SetRequestedHeight(WRAP_CONTENT);
+
+  View wideChild = View::New();
+  wideChild.SetRequestedWidth(500.0f);
+  wideChild.SetRequestedHeight(100.0f);
+  content.Add(wideChild);
+
+  scrollView.SetContent(content);
+
+  // Cross axis (width) must be clamped to the 300 constraint; main axis
+  // (height) is free to grow. Measure/Arrange are paired so the view is left
+  // in a clean (non-dirty) layout state.
+  scrollView.Measure(300.0f, 300.0f);
+  MeasuredSize measured = scrollView.GetMeasuredSize();
+  scrollView.Arrange(LayoutRect(0.0f, 0.0f, 300.0f, 300.0f));
+
+  DALI_TEST_EQUALS(measured.width, 300.0f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// Scrollable axis measurement: on the scroll direction the content must remain
+// free to exceed the viewport so it can actually be scrolled.
+int UtcDaliScrollViewScrollAxisMeasureUnboundedP(void)
+{
+  UiTestApplication application;
+
+  ScrollView scrollView = ScrollView::New();
+  scrollView.SetScrollDirection(ScrollDirection::Horizontal);
+
+  View content = View::New();
+  content.SetRequestedWidth(WRAP_CONTENT);
+  content.SetRequestedHeight(WRAP_CONTENT);
+
+  View wideChild = View::New();
+  wideChild.SetRequestedWidth(500.0f);
+  wideChild.SetRequestedHeight(100.0f);
+  content.Add(wideChild);
+
+  scrollView.SetContent(content);
+
+  // Main axis (width) is the scroll direction → must keep the natural 500.
+  scrollView.Measure(300.0f, 300.0f);
+  MeasuredSize measured = scrollView.GetMeasuredSize();
+  scrollView.Arrange(LayoutRect(0.0f, 0.0f, 300.0f, 300.0f));
+
+  DALI_TEST_EQUALS(measured.width, 500.0f, TEST_LOCATION);
+
+  END_TEST;
+}

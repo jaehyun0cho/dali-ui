@@ -586,3 +586,60 @@ int UtcDaliAbsoluteLayoutBoundsRepeatedUpdateP(void)
   }
   END_TEST;
 }
+
+// abs03-1: a position-only-proportional child on a WRAP container axis has a
+// determinate extent, so it must contribute that extent to the WRAP intrinsic
+// size (only its circular position offset is dropped). Buggy code excluded it
+// entirely, collapsing the WRAP width to 0.
+int UtcDaliAbsoluteLayoutWrapWidthPositionOnlyProportionalP(void)
+{
+  UiTestApplication application;
+  AbsoluteLayout    layout = AbsoluteLayout::New();
+  // Width stays WRAP_CONTENT (default); height fixed so only width is exercised.
+  layout.SetRequestedHeight(150.0f);
+  View child = View::New();
+  layout.Add(child);
+  // X proportional (0.5) but width is a determinate fixed 100; height fixed 50.
+  child.SetLayoutParams(AbsoluteLayoutParams::New()
+                          .SetBounds(LayoutRect(0.5f, 20.0f, 100.0f, 50.0f))
+                          .SetFlags(AbsoluteLayoutFlags::X_PROPORTIONAL));
+  MeasuredSize m = layout.Measure(300.0f, 150.0f);
+  // Buggy: child excluded -> width 0. Fixed: contributes w + marginW = 100.
+  DALI_TEST_CHECK(m.GetWidth() >= 100.0f);
+  END_TEST;
+}
+
+// abs03-1 guard: a width-proportional child stays excluded on a WRAP width axis
+// (genuinely circular), so the WRAP width remains 0. Passes before and after.
+int UtcDaliAbsoluteLayoutWrapWidthSizeProportionalExcludedP(void)
+{
+  UiTestApplication application;
+  AbsoluteLayout    layout = AbsoluteLayout::New();
+  layout.SetRequestedHeight(150.0f); // width WRAP_CONTENT
+  View child = View::New();
+  layout.Add(child);
+  // Width is proportional (0.4): circular on a WRAP axis -> excluded.
+  child.SetLayoutParams(AbsoluteLayoutParams::New()
+                          .SetBounds(LayoutRect(10.0f, 20.0f, 0.4f, 50.0f))
+                          .SetFlags(AbsoluteLayoutFlags::WIDTH_PROPORTIONAL));
+  MeasuredSize m = layout.Measure(300.0f, 150.0f);
+  DALI_TEST_EQUALS(m.GetWidth(), 0.0f, TEST_LOCATION);
+  END_TEST;
+}
+
+// abs03-1 symmetric height: position-only Y-proportional child on a WRAP height
+// axis must contribute its determinate height. Buggy: collapses to 0.
+int UtcDaliAbsoluteLayoutWrapHeightPositionOnlyProportionalP(void)
+{
+  UiTestApplication application;
+  AbsoluteLayout    layout = AbsoluteLayout::New();
+  layout.SetRequestedWidth(200.0f); // height WRAP_CONTENT
+  View child = View::New();
+  layout.Add(child);
+  child.SetLayoutParams(AbsoluteLayoutParams::New()
+                          .SetBounds(LayoutRect(10.0f, 0.5f, 80.0f, 60.0f))
+                          .SetFlags(AbsoluteLayoutFlags::Y_PROPORTIONAL));
+  MeasuredSize m = layout.Measure(200.0f, 300.0f);
+  DALI_TEST_CHECK(m.GetHeight() >= 60.0f);
+  END_TEST;
+}

@@ -81,6 +81,15 @@ MeasuredSize AbsoluteLayoutManager::Measure(ViewImpl* view, float widthConstrain
   float maxRight  = 0.0f;
   float maxBottom = 0.0f;
 
+  // abs-03: size circularity guard. When the container axis is WRAP_CONTENT,
+  // its intrinsic size is what we are computing here, yet a proportional
+  // child resolves its extent/position against that very (still undetermined)
+  // size. Letting such a child feed maxRight/maxBottom would make the
+  // proportional result define the basis it depends on. A proportional value
+  // therefore does not contribute to the WRAP axis intrinsic size.
+  const bool containerWrapW = (view->GetRequestedWidth() == WRAP_CONTENT);
+  const bool containerWrapH = (view->GetRequestedHeight() == WRAP_CONTENT);
+
   for(uint32_t i = 0; i < count; ++i)
   {
     View      child     = GetChildAt(view, i);
@@ -169,8 +178,41 @@ MeasuredSize AbsoluteLayoutManager::Measure(ViewImpl* view, float widthConstrain
       y *= childScale;
     }
 
-    maxRight  = std::max(maxRight, x + w + marginW);
-    maxBottom = std::max(maxBottom, y + h + marginH);
+    // abs-03: on a WRAP container axis the intrinsic size is what we are
+    // computing, so only the genuinely circular contribution must be dropped.
+    // A WIDTH_PROPORTIONAL child resolves its extent against that undetermined
+    // size, so it is excluded entirely. A position-only proportional child
+    // (X_PROPORTIONAL && !WIDTH_PROPORTIONAL) has a determinate extent w; only
+    // its proportional position offset x = (contentWidth - w) * p is circular.
+    // For it, contribute the determinate extent (w + marginW) while dropping
+    // the circular position offset. Non-WRAP axes accumulate normally.
+    if(containerWrapW && widthProportional)
+    {
+      // Size-proportional on a WRAP axis: fully circular, exclude.
+    }
+    else if(containerWrapW && xProportional)
+    {
+      // Position-only proportional on a WRAP axis: drop the circular x offset,
+      // keep the determinate extent.
+      maxRight = std::max(maxRight, w + marginW);
+    }
+    else
+    {
+      maxRight = std::max(maxRight, x + w + marginW);
+    }
+
+    if(containerWrapH && heightProportional)
+    {
+      // Size-proportional on a WRAP axis: fully circular, exclude.
+    }
+    else if(containerWrapH && yProportional)
+    {
+      maxBottom = std::max(maxBottom, h + marginH);
+    }
+    else
+    {
+      maxBottom = std::max(maxBottom, y + h + marginH);
+    }
   }
 
   return MeasuredSize(maxRight, maxBottom);

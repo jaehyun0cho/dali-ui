@@ -1117,7 +1117,11 @@ MeasuredSize ViewImpl::OnMeasure(float widthConstraint, float heightConstraint)
   {
     float maxRight  = 0.0f;
     float maxBottom = 0.0f;
-    for(auto& childView : mImpl->mChildren)
+    // Snapshot the children: a child's Measure() may mutate mImpl->mChildren
+    // (e.g. add/remove during measurement), which would invalidate iterators
+    // over the live container. Iterate the fixed snapshot instead.
+    std::vector<Ui::View> childSnapshot(mImpl->mChildren.Begin(), mImpl->mChildren.End());
+    for(auto& childView : childSnapshot)
     {
       ViewImpl& childImpl = GetImpl(childView);
 
@@ -1158,6 +1162,12 @@ MeasuredSize ViewImpl::OnMeasure(float widthConstraint, float heightConstraint)
     else
     {
       size.width = maxRight + pw;
+      // measure-02: clamp WRAP result to the incoming AT_MOST budget (natW),
+      // where a negative budget means unbounded.
+      if(natW >= 0.0f)
+      {
+        size.width = std::min(size.width, natW);
+      }
     }
     if(mImpl->mRequestedHeight >= 0)
     {
@@ -1170,6 +1180,11 @@ MeasuredSize ViewImpl::OnMeasure(float widthConstraint, float heightConstraint)
     else
     {
       size.height = maxBottom + ph;
+      // measure-02: clamp WRAP result to the incoming AT_MOST budget (natH).
+      if(natH >= 0.0f)
+      {
+        size.height = std::min(size.height, natH);
+      }
     }
     return {size.width * s, size.height * s};
   }
@@ -1185,8 +1200,21 @@ MeasuredSize ViewImpl::OnMeasure(float widthConstraint, float heightConstraint)
   }
   else
   {
-    Vector3 naturalSize = Self().GetNaturalSize();
-    size.width          = ((naturalSize.width > 0) ? naturalSize.width : 0.0f) + pw;
+    // pad-01: extract the content (visual) natural width, then re-add view
+    // padding so a leaf WRAP view always reserves its padding. GetNaturalSize()
+    // already includes padding when a visual exists (the subtract/re-add
+    // cancels); with no visual it returns ZERO, so contentNaturalW floors at 0
+    // and the result becomes pw instead of collapsing to 0. Mirrors the
+    // has-children path which adds pw to maxRight.
+    Vector3 naturalSize     = Self().GetNaturalSize();
+    float   contentNaturalW = std::max(0.0f, naturalSize.width - pw);
+    size.width              = contentNaturalW + pw;
+    // measure-02: clamp WRAP result to the incoming AT_MOST budget (natW),
+    // where a negative budget means unbounded.
+    if(natW >= 0.0f)
+    {
+      size.width = std::min(size.width, natW);
+    }
   }
   if(mImpl->mRequestedHeight >= 0)
   {
@@ -1198,8 +1226,20 @@ MeasuredSize ViewImpl::OnMeasure(float widthConstraint, float heightConstraint)
   }
   else
   {
-    Vector3 naturalSize = Self().GetNaturalSize();
-    size.height         = ((naturalSize.height > 0) ? naturalSize.height : 0.0f) + ph;
+    // pad-01: extract the content (visual) natural height, then re-add view
+    // padding so a leaf WRAP view always reserves its padding. GetNaturalSize()
+    // already includes padding when a visual exists (the subtract/re-add
+    // cancels); with no visual it returns ZERO, so contentNaturalH floors at 0
+    // and the result becomes ph instead of collapsing to 0. Mirrors the
+    // has-children path which adds ph to maxBottom.
+    Vector3 naturalSize     = Self().GetNaturalSize();
+    float   contentNaturalH = std::max(0.0f, naturalSize.height - ph);
+    size.height             = contentNaturalH + ph;
+    // measure-02: clamp WRAP result to the incoming AT_MOST budget (natH).
+    if(natH >= 0.0f)
+    {
+      size.height = std::min(size.height, natH);
+    }
   }
   return {size.width * s, size.height * s};
 }
@@ -1262,7 +1302,10 @@ MeasuredSize ViewImpl::OnArrange(const LayoutRect& bounds)
     float visPadTop    = static_cast<float>(mImpl->mPadding.top) * s;
     float visPadBottom = static_cast<float>(mImpl->mPadding.bottom) * s;
 
-    for(auto& childView : mImpl->mChildren)
+    // Snapshot the children: a child's Measure()/Arrange() may mutate
+    // mImpl->mChildren, invalidating iterators over the live container.
+    std::vector<Ui::View> childSnapshot(mImpl->mChildren.Begin(), mImpl->mChildren.End());
+    for(auto& childView : childSnapshot)
     {
       ViewImpl& childImpl = GetImpl(childView);
 
@@ -1298,7 +1341,11 @@ MeasuredSize ViewImpl::OnArrange(const LayoutRect& bounds)
       float childX = visPadLeft + visMarginStart + childImpl.GetRequestedPositionX() * s;
       float childY = visPadTop + visMarginTop + childImpl.GetRequestedPositionY() * s;
 
-      // MATCH_PARENT children: re-measure with the actual final visual size.
+      // MATCH_PARENT children: re-measure with the actual final visual size so
+      // the child's measure cache/dirty state stays coherent with the final
+      // arrange bounds. B2-revert: discard the Measure return and keep the
+      // computed fill size (childW/childH); OnMeasure returns GetMinimum (0)
+      // for a MATCH_PARENT child, so adopting the return would collapse it.
       if(childImpl.GetRequestedWidth() == MATCH_PARENT || childImpl.GetRequestedHeight() == MATCH_PARENT)
       {
         childImpl.Measure(childW, childH);
@@ -1314,7 +1361,9 @@ MeasuredSize ViewImpl::OnArrange(const LayoutRect& bounds)
 
 void ViewImpl::MeasureStandaloneChildren(float visEffW, float visEffH)
 {
-  for(auto& childView : mImpl->mChildren)
+  // Snapshot: a child's Measure() may mutate mImpl->mChildren.
+  std::vector<Ui::View> childSnapshot(mImpl->mChildren.Begin(), mImpl->mChildren.End());
+  for(auto& childView : childSnapshot)
   {
     ViewImpl& childImpl = GetImpl(childView);
     if(!IntegrationView::IsLayoutModeStandalone(childImpl))
@@ -1333,7 +1382,9 @@ void ViewImpl::MeasureStandaloneChildren(float visEffW, float visEffH)
 
 void ViewImpl::ArrangeStandaloneChildren(const LayoutRect& bounds)
 {
-  for(auto& childView : mImpl->mChildren)
+  // Snapshot: a child's Arrange() may mutate mImpl->mChildren.
+  std::vector<Ui::View> childSnapshot(mImpl->mChildren.Begin(), mImpl->mChildren.End());
+  for(auto& childView : childSnapshot)
   {
     ViewImpl& childImpl = GetImpl(childView);
     if(!IntegrationView::IsLayoutModeStandalone(childImpl))
@@ -3018,7 +3069,10 @@ void ViewImpl::OnChildOrderChanged(Actor orderChangedChild)
     }
   }
 
-  InvalidateArrange();
+  // A logical child-order change can alter the measured size (e.g. a wrap
+  // layout where line-breaking depends on child order), so invalidate measure
+  // — not just arrange — mirroring the Insert/MoveChild reorder path.
+  InvalidateMeasure();
 }
 
 void ViewImpl::OnPropertySet(Property::Index index, const Property::Value& propertyValue)
