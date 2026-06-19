@@ -68,6 +68,7 @@
 #include <dali-ui-foundation/internal/visuals/visual-string-constants.h>
 #include <dali-ui-foundation/public-api/align-enumerations.h>
 #include <dali-ui-foundation/public-api/focus-manager/focus-manager.h>
+#include <dali-ui-foundation/public-api/group-selectable-trait.h>
 #include <dali-ui-foundation/public-api/image-view.h>
 #include <dali-ui-foundation/public-api/layouts/layout-params.h>
 #include <dali-ui-foundation/public-api/render-effects/render-effect.h>
@@ -400,11 +401,6 @@ void ViewImpl::OnSceneConnection(int depth)
 {
   mImpl->OnSceneConnection();
 
-  if(auto* interactiveTrait = mImpl->GetInteractiveTrait())
-  {
-    interactiveTrait->OnSceneConnection(View::DownCast(Self()));
-  }
-
   CreateClippingRenderer(*this);
 
   // Register as a layout root if this view is:
@@ -636,6 +632,20 @@ Ui::SelectableTrait ViewImpl::EnsureSelectableTrait()
     Ui::SelectableTrait selectable = Ui::SelectableTrait::New();
     IntegrationView::SetTrait(*this, Integration::ReservedTraitId::SELECTABLE_TRAIT, AsTraitObject(selectable));
     return selectable;
+  }
+
+  return existing;
+}
+
+Ui::GroupSelectableTrait ViewImpl::EnsureGroupSelectableTrait()
+{
+  Ui::GroupSelectableTrait existing = GetKnownTraitHandle<Ui::GroupSelectableTrait>(*this, Integration::ReservedTraitId::GROUP_SELECTABLE_TRAIT);
+
+  if(!existing)
+  {
+    Ui::GroupSelectableTrait groupSelectable = Ui::GroupSelectableTrait::New();
+    IntegrationView::SetTrait(*this, Integration::ReservedTraitId::GROUP_SELECTABLE_TRAIT, AsTraitObject(groupSelectable));
+    return groupSelectable;
   }
 
   return existing;
@@ -2773,11 +2783,6 @@ void ViewImpl::OnSceneDisconnection()
   // already calls UnregisterFromAll as a last resort, but doing it here
   // avoids stale pending work between disconnect and destruction.
   LayoutController::UnregisterFromAll(this);
-
-  if(auto* interactiveTrait = mImpl->GetInteractiveTrait())
-  {
-    interactiveTrait->OnSceneDisconnection(View::DownCast(Self()));
-  }
 
   mImpl->OnSceneDisconnection();
 

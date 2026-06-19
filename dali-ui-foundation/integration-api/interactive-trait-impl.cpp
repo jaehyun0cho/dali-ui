@@ -174,11 +174,7 @@ void InteractiveTraitImpl::OnEnabledChanged(View view, bool enabled)
   }
 }
 
-void InteractiveTraitImpl::OnSceneConnection(View)
-{
-}
-
-void InteractiveTraitImpl::OnSceneDisconnection(View)
+void InteractiveTraitImpl::OnOwnerOffScene(Dali::Actor /*actor*/)
 {
   Internal::PendingPressManager::Get().Cancel(*this);
   ClearKeyPressedHistory();
@@ -261,6 +257,8 @@ void InteractiveTraitImpl::OnAttached(TraitId id, View& view)
 {
   DALI_ASSERT_ALWAYS(!(mOwner.GetHandle()) && "The trait can not be attached multiple target views");
   mOwner = view;
+
+  view.OffSceneSignal().Connect(this, &InteractiveTraitImpl::OnOwnerOffScene);
 
   view.TouchedSignal().Connect(this, &InteractiveTraitImpl::OnTouchInternal);
   mTapGestureDetector.Attach(view);

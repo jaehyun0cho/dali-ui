@@ -38,6 +38,7 @@ namespace ReservedTraitId
 
 DALI_UI_API extern const TraitId INTERACTION_TRAIT;
 DALI_UI_API extern const TraitId SELECTABLE_TRAIT;
+DALI_UI_API extern const TraitId GROUP_SELECTABLE_TRAIT;
 DALI_UI_API extern const TraitId STATE_HANDLER_TRAIT;
 
 DALI_UI_API extern const TraitId ABSOLUTE_LAYOUT_PARAMS;

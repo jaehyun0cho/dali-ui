@@ -558,6 +558,15 @@ public: // Non-virtual API (safe to reorder / extend)
   Ui::SelectableTrait EnsureSelectableTrait();
 
   /**
+   * @brief Ensures this View has a group-selectable trait and returns it.
+   *
+   * Reuses the existing GROUP_SELECTABLE_TRAIT slot trait if present, otherwise
+   * creates and attaches a new one. The new trait's OnAttached ensures a
+   * SelectableTrait too, so the View becomes selectable.
+   */
+  Ui::GroupSelectableTrait EnsureGroupSelectableTrait();
+
+  /**
    * @copydoc Ui::View::IsSelectable()
    */
   bool IsSelectable() const;

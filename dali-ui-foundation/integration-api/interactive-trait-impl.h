@@ -142,16 +142,6 @@ public: // InteractiveTrait
    */
   virtual void OnEnabledChanged(View view, bool enabled);
 
-  /**
-   * @brief Called when the view is connected to a scene.
-   */
-  virtual void OnSceneConnection(View view);
-
-  /**
-   * @brief Called when the view is disconnected from a scene.
-   */
-  virtual void OnSceneDisconnection(View view);
-
 protected:
   /**
    * @copydoc Dali::Ui::InteractiveTrait::~InteractiveTrait
@@ -211,6 +201,7 @@ protected:
 private:
   friend class Dali::Ui::Internal::PendingPressManager;
 
+  void OnOwnerOffScene(Dali::Actor actor);
   bool OnTouchInternal(Actor actor, TouchEvent touchEvent);
   void OnTapInternal(Actor actor, TapGesture event);
   void OnLongPressedInternal(Actor actor, LongPressGesture event);

@@ -30,6 +30,7 @@
 #include <dali-ui-foundation/public-api/attachment-id.h>
 #include <dali-ui-foundation/public-api/callback.h>
 #include <dali-ui-foundation/public-api/dali-ui-common.h>
+#include <dali-ui-foundation/public-api/group-selectable-trait.h>
 #include <dali-ui-foundation/public-api/interactive-trait.h>
 #include <dali-ui-foundation/public-api/layouts/layout-params.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
@@ -1084,6 +1085,23 @@ public: // Properties
    * @return SelectableTrait handle
    */
   SelectableTrait AsSelectable();
+
+  /**
+   * @brief Attaches the group-selectable trait to this View and returns it.
+   *
+   * Declarative single-selection grouping. A View has at most one
+   * GroupSelectableTrait; if one already exists, the existing trait is reused.
+   * Attaching it also ensures the View has a SelectableTrait (the group trait
+   * composes the selectable one), so the View becomes selectable.
+   *
+   * By default the View joins the SelectionGroup associated with its parent View
+   * while connected to a scene; set an explicit group name via
+   * GroupSelectableTrait::SetGroupName() to join a named group instead (an
+   * explicit name takes precedence over parent auto-grouping).
+   *
+   * @return GroupSelectableTrait handle
+   */
+  GroupSelectableTrait AsGroupSelectable();
 
   /**
    * @brief Sets layout parameters on this View.

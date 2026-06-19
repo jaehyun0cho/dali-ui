@@ -20,6 +20,7 @@
 #include <dali-ui-foundation/internal/views/view/view-renderers.h>
 #include <dali-ui-foundation/public-api/animation/view-animation-bridge.autogen.h>
 #include <dali-ui-foundation/public-api/animation/view-animation-spec.autogen.h>
+#include <dali-ui-foundation/public-api/group-selectable-trait.h>
 #include <dali-ui-foundation/public-api/interactive-trait.h>
 #include <dali-ui-foundation/public-api/layouts/layout-manager.h>
 #include <dali-ui-foundation/public-api/layouts/layout-transition.h>
@@ -624,6 +625,11 @@ bool View::IsInteractive() const
 SelectableTrait View::AsSelectable()
 {
   return GetImpl(*this).EnsureSelectableTrait();
+}
+
+GroupSelectableTrait View::AsGroupSelectable()
+{
+  return GetImpl(*this).EnsureGroupSelectableTrait();
 }
 
 bool View::IsSelectable() const
