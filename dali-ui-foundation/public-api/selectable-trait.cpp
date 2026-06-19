@@ -21,6 +21,7 @@
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/integration-api/selectable-trait-impl.h>
 #include <dali-ui-foundation/public-api/selectable-trait.h>
+#include <dali-ui-foundation/public-api/selection-group.h>
 
 namespace Dali
 {
@@ -80,6 +81,11 @@ bool SelectableTrait::IsToggleByClickEnabled() const
 void SelectableTrait::EnableToggleByClick(bool enabled)
 {
   GetImpl(*this).EnableToggleByClick(enabled);
+}
+
+SelectionGroup SelectableTrait::GetGroup() const
+{
+  return GetImpl(*this).GetGroup();
 }
 
 } // namespace Ui

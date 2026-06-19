@@ -22,6 +22,9 @@
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali-ui-foundation/integration-api/selectable-trait-impl.h>
 #include <dali-ui-foundation/integration-api/view-integ.h>
+#include <dali-ui-foundation/public-api/selectable-trait.h>
+#include <dali-ui-foundation/public-api/selection-group.h>
+#include <dali-ui-foundation/public-api/view-accessibility-enums.h>
 #include <dali-ui-test-suite-utils.h>
 #include <test-gesture-generator.h>
 #include <dali/integration-api/events/key-event-integ.h>
@@ -654,5 +657,43 @@ int UtcDaliViewAsInteractiveAsSelectableChainingP(void)
 
   DALI_TEST_CHECK(view.IsInteractive());
   DALI_TEST_CHECK(view.IsSelectable());
+  END_TEST;
+}
+
+// ============================================================================
+// Standalone (ungrouped) selectable never touches accessibility (I4)
+// ============================================================================
+
+int UtcDaliSelectableTraitStandaloneNoAccessibilityN(void)
+{
+  UiTestApplication application;
+  View              view = CreateSelectableView(application);
+
+  // A standalone selectable is not bound to any group.
+  SelectableTrait selectable = view.AsSelectable();
+  DALI_TEST_CHECK(!selectable.GetGroup());
+
+  const int checkedMask = 1 << static_cast<int>(AccessibilityState::CHECKED);
+
+  // It must never acquire the RADIO_BUTTON role nor write the CHECKED bit, regardless
+  // of selection state changes (radio accessibility is a group-only behaviour).
+  DALI_TEST_EQUALS(view.GetProperty<int>(View::Property::ACCESSIBILITY_ROLE),
+                   static_cast<int>(AccessibilityRole::NONE),
+                   TEST_LOCATION);
+  DALI_TEST_CHECK((view.GetProperty<int>(View::Property::ACCESSIBILITY_STATES) & checkedMask) == 0);
+
+  selectable.SetSelected(true);
+  DALI_TEST_CHECK(selectable.IsSelected());
+  DALI_TEST_EQUALS(view.GetProperty<int>(View::Property::ACCESSIBILITY_ROLE),
+                   static_cast<int>(AccessibilityRole::NONE),
+                   TEST_LOCATION);
+  DALI_TEST_CHECK((view.GetProperty<int>(View::Property::ACCESSIBILITY_STATES) & checkedMask) == 0);
+
+  selectable.SetSelected(false);
+  DALI_TEST_CHECK(!selectable.IsSelected());
+  DALI_TEST_EQUALS(view.GetProperty<int>(View::Property::ACCESSIBILITY_ROLE),
+                   static_cast<int>(AccessibilityRole::NONE),
+                   TEST_LOCATION);
+  DALI_TEST_CHECK((view.GetProperty<int>(View::Property::ACCESSIBILITY_STATES) & checkedMask) == 0);
   END_TEST;
 }

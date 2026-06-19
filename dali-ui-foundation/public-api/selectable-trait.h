@@ -35,6 +35,9 @@ namespace Ui
 // Forward declaration (view.h provides full definition when needed)
 class View;
 
+// Forward declaration (selection-group.h provides full definition when needed)
+class SelectionGroup;
+
 // Forward declarations
 namespace Integration
 {
@@ -106,7 +109,7 @@ public: // Signals
    * This signal is emitted when the View's selected state changes, either
    * programmatically via SetSelected() or through toggle-by-click interaction.
    *
-   * The callback signature is: void YourCallbackName(View view, bool selected)
+   * The callback signature is: void YourCallbackName(View view, bool selected, InputEvent event)
    *
    * @return The selection changed signal
    */
@@ -150,6 +153,17 @@ public: // API
    * @param[in] enabled True to enable toggle-by-click, false to disable
    */
   void EnableToggleByClick(bool enabled = true);
+
+  /**
+   * @brief Returns the SelectionGroup this trait is bound to, if any.
+   *
+   * A trait is bound to a group while it is a member of one (added via
+   * SelectionGroup::Add). The returned handle is for inspection only; use
+   * SelectionGroup::Add / Remove to change membership.
+   *
+   * @return The owning SelectionGroup, or an empty handle if not bound to a group
+   */
+  SelectionGroup GetGroup() const;
 
 public: // Not intended for application developers
   /**

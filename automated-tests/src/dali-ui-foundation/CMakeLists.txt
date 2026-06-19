@@ -33,6 +33,7 @@ SET(TC_SOURCES
         utc-Dali-InteractiveView.cpp
         utc-Dali-StateEffect.cpp
         utc-Dali-SelectableTrait.cpp
+        utc-Dali-SelectionGroup.cpp
         utc-Dali-ViewState.cpp
         utc-Dali-ViewStateHandler.cpp
         utc-Dali-ViewState.cpp
