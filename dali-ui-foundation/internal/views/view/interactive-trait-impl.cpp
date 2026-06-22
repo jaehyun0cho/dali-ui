@@ -16,7 +16,7 @@
  */
 
 // CLASS HEADER
-#include <dali-ui-foundation/integration-api/interactive-trait-impl.h>
+#include <dali-ui-foundation/internal/views/view/interactive-trait-impl.h>
 
 // EXTERNAL INCLUDES
 #include <dali/integration-api/input-options.h>
@@ -29,14 +29,14 @@
 #include <dali-ui-foundation/public-api/input-event.h>
 #include <dali-ui-foundation/public-api/view-impl.h>
 
-namespace Dali::Ui::Integration
+namespace Dali::Ui::Internal
 {
 
 InteractiveTraitImpl::InteractiveTraitImpl()
 : mTapGestureDetector(TapGestureDetector::New()),
   mPressedChangedSignal(),
   mPseudoDisabledChangedSignal(),
-  mKeyClickPolicy(UiConfigManager::Get().GetConfig().GetKeyClickPolicy()),
+  mKeyClickPolicy(Integration::UiConfigManager::Get().GetConfig().GetKeyClickPolicy()),
   mPressedExecutionKey(),
   mPressedExecutionKeyCount(0),
   mPseudoDisabled(false),
@@ -45,7 +45,7 @@ InteractiveTraitImpl::InteractiveTraitImpl()
   mClickBlockedByTouch(false),
   mClickBlockedByKey(false)
 {
-  Dali::Integration::SetTapRecognizerTime(UiConfigManager::Get().GetConfig().GetTapRecognizerTime());
+  Dali::Integration::SetTapRecognizerTime(Integration::UiConfigManager::Get().GetConfig().GetTapRecognizerTime());
 
   mTapGestureDetector.DetectedSignal().Connect(this, &InteractiveTraitImpl::OnTapInternal);
 }
@@ -257,7 +257,7 @@ View InteractiveTraitImpl::GetOwner() const
   return mOwner.GetHandle();
 }
 
-void InteractiveTraitImpl::OnAttached(TraitId id, View& view)
+void InteractiveTraitImpl::OnAttached(View& view)
 {
   DALI_ASSERT_ALWAYS(!(mOwner.GetHandle()) && "The trait can not be attached multiple target views");
   mOwner = view;
@@ -273,7 +273,7 @@ void InteractiveTraitImpl::OnAttached(TraitId id, View& view)
   }
 }
 
-void InteractiveTraitImpl::OnDetaching(TraitId id, View& view)
+void InteractiveTraitImpl::OnDetaching(View& view)
 {
   Internal::PendingPressManager::Get().Cancel(*this);
   DALI_ASSERT_ALWAYS(false && "The trait can not be detached once it attached to a view");
@@ -304,7 +304,7 @@ bool InteractiveTraitImpl::OnTouch(View view, TouchEvent touchEvent)
       }
 
       if(Internal::ScrollStateObserver::Get().IsGestureDisambiguating() &&
-         UiConfigManager::Get().GetConfig().GetAmbiguousPressDelay() > 0u)
+         Integration::UiConfigManager::Get().GetConfig().GetAmbiguousPressDelay() > 0u)
       {
         Internal::PendingPressManager::Get().AddPendingPress(*this, inputEvent, touchEvent.GetDeviceId(0));
         return true;
@@ -360,7 +360,7 @@ void InteractiveTraitImpl::OnTap(View view, TapGesture tap)
 
 void InteractiveTraitImpl::OnPressedChanged(View view, InputEvent inputEvent)
 {
-  if(auto* receiver = dynamic_cast<InteractiveEventReceiverInterface*>(&GetImpl(view)))
+  if(auto* receiver = dynamic_cast<Integration::InteractiveEventReceiverInterface*>(&GetImpl(view)))
   {
     receiver->OnPressedChanged(view, mPressed, inputEvent);
   }
@@ -369,7 +369,7 @@ void InteractiveTraitImpl::OnPressedChanged(View view, InputEvent inputEvent)
 
 void InteractiveTraitImpl::OnClicked(View view, InputEvent inputEvent)
 {
-  if(auto* receiver = dynamic_cast<InteractiveEventReceiverInterface*>(&GetImpl(view)))
+  if(auto* receiver = dynamic_cast<Integration::InteractiveEventReceiverInterface*>(&GetImpl(view)))
   {
     receiver->OnClicked(view, inputEvent);
   }
@@ -379,7 +379,7 @@ void InteractiveTraitImpl::OnClicked(View view, InputEvent inputEvent)
 bool InteractiveTraitImpl::OnLongPressed(View view, InputEvent inputEvent)
 {
   bool consumed = false;
-  if(auto* receiver = dynamic_cast<InteractiveEventReceiverInterface*>(&GetImpl(view)))
+  if(auto* receiver = dynamic_cast<Integration::InteractiveEventReceiverInterface*>(&GetImpl(view)))
   {
     consumed = receiver->OnLongPressed(view, inputEvent);
   }
@@ -389,7 +389,7 @@ bool InteractiveTraitImpl::OnLongPressed(View view, InputEvent inputEvent)
 
 bool InteractiveTraitImpl::IsExecutionKey(const Dali::String& keyName) const
 {
-  return UiConfigManager::Get().GetConfig().GetExecutionKeyPredicate()(keyName);
+  return Integration::UiConfigManager::Get().GetConfig().GetExecutionKeyPredicate()(keyName);
 }
 
 bool InteractiveTraitImpl::OnTouchInternal(Actor actor, TouchEvent touchEvent)
@@ -473,7 +473,7 @@ bool InteractiveTraitImpl::ShouldKeyPressTriggerClicked() const
 bool InteractiveTraitImpl::ShouldKeyPressTriggerLongPressed() const
 {
   return mClickable && mKeyClickPolicy == KeyClickPolicy::ON_RELEASE &&
-         (mPressedExecutionKeyCount >= UiConfigManager::Get().GetConfig().GetKeyLongPressThreshold());
+         (mPressedExecutionKeyCount >= Integration::UiConfigManager::Get().GetConfig().GetKeyLongPressThreshold());
 }
 
-} // namespace Dali::Ui::Integration
+} // namespace Dali::Ui::Internal
