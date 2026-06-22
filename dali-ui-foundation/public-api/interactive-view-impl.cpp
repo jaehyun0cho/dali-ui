@@ -18,19 +18,13 @@
 #include <dali/devel-api/object/type-registry-helper.h>
 
 // INTERNAL INCLUDES
-#include <dali-ui-foundation/integration-api/interactive-view-impl.h>
+#include <dali-ui-foundation/public-api/interactive-view-impl.h>
 #include <dali-ui-foundation/public-api/interactive-view.h>
-
-// INTERNAL INCLUDES
-#include <dali-ui-foundation/integration-api/interactive-trait-impl.h>
 
 namespace Dali
 {
 
 namespace Ui
-{
-
-namespace Integration
 {
 
 namespace
@@ -55,12 +49,7 @@ InteractiveViewImplPtr InteractiveViewImpl::New()
 void InteractiveViewImpl::OnInitialize()
 {
   ViewImpl::OnInitialize();
-  mCachedTrait = EnsureInteractiveTrait();
-}
-
-Ui::InteractiveTrait InteractiveViewImpl::GetInteractiveTrait() const
-{
-  return mCachedTrait;
+  EnsureInteractiveTrait();
 }
 
 InteractiveViewImpl::InteractiveViewImpl()
@@ -70,26 +59,6 @@ InteractiveViewImpl::InteractiveViewImpl()
 InteractiveViewImpl::~InteractiveViewImpl()
 {
 }
-
-void InteractiveViewImpl::EnableLongPressDetection()
-{
-  GetImpl(mCachedTrait).EnableLongPressDetection();
-}
-
-void InteractiveViewImpl::OnClicked(Ui::View /*view*/, const Ui::InputEvent& /*event*/)
-{
-}
-
-void InteractiveViewImpl::OnPressedChanged(Ui::View /*view*/, bool /*pressed*/, const Ui::InputEvent& /*event*/)
-{
-}
-
-bool InteractiveViewImpl::OnLongPressed(Ui::View /*view*/, const Ui::InputEvent& /*event*/)
-{
-  return false;
-}
-
-} // namespace Integration
 
 } // namespace Ui
 
