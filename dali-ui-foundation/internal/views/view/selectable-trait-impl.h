@@ -72,14 +72,42 @@ public: // API
   void SetSelected(bool selected);
 
   /**
+   * @brief Sets the selection state, carrying the originating input cause.
+   *
+   * Internal-only overload (not exposed on the public SelectableTrait handle) used by
+   * collaborators such as GroupSelectableTraitImpl to preserve the real click cause
+   * instead of substituting InputEvent::Programmatic().
+   *
+   * @param[in] selected True to select, false to deselect
+   * @param[in] event    The originating input cause
+   */
+  void SetSelected(bool selected, InputEvent event);
+
+  /**
    * @copydoc Dali::Ui::SelectableTrait::IsToggleByClickEnabled
    */
   bool IsToggleByClickEnabled() const;
 
   /**
    * @copydoc Dali::Ui::SelectableTrait::EnableToggleByClick
+   *
+   * @note While toggle-by-click is locked (see SetToggleByClickLocked), this is a no-op:
+   * external enable/disable requests are ignored until the lock is cleared.
    */
   void EnableToggleByClick(bool enabled);
+
+  /**
+   * @brief Locks or unlocks toggle-by-click.
+   *
+   * While locked, EnableToggleByClick() is ignored (a no-op), so the current
+   * toggle-by-click wiring cannot be changed from outside. This is a generic mechanism:
+   * the caller forces toggle-by-click to the desired value, then locks it to keep it
+   * pinned, and unlocks before restoring the prior value. It carries no knowledge of why
+   * the lock is held.
+   *
+   * @param[in] locked True to lock (EnableToggleByClick ignored), false to unlock
+   */
+  void SetToggleByClickLocked(bool locked);
 
   /**
    * @copydoc Dali::Ui::SelectableTrait::~SelectableTrait
@@ -111,6 +139,7 @@ private:
   Signal<void(View, bool, InputEvent)> mSelectionChangedSignal;
   bool                                 mSelected : 1;
   bool                                 mToggleByClickEnabled : 1;
+  bool                                 mToggleByClickLocked : 1; ///< While set, EnableToggleByClick() is a no-op.
   bool                                 mAttached : 1;
 };
 

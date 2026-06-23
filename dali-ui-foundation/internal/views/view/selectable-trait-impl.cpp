@@ -43,6 +43,7 @@ SelectableTraitImpl::SelectableTraitImpl()
 : mSelectionChangedSignal(),
   mSelected(false),
   mToggleByClickEnabled(true),
+  mToggleByClickLocked(false),
   mAttached(false)
 {
 }
@@ -64,6 +65,11 @@ bool SelectableTraitImpl::IsSelected() const
 void SelectableTraitImpl::SetSelected(bool selected)
 {
   SetSelectedInternal(selected, InputEvent::Programmatic());
+}
+
+void SelectableTraitImpl::SetSelected(bool selected, InputEvent event)
+{
+  SetSelectedInternal(selected, event);
 }
 
 void SelectableTraitImpl::SetSelectedInternal(bool selected, InputEvent event)
@@ -95,6 +101,12 @@ bool SelectableTraitImpl::IsToggleByClickEnabled() const
 
 void SelectableTraitImpl::EnableToggleByClick(bool enabled)
 {
+  if(mToggleByClickLocked)
+  {
+    // Locked: ignore external enable/disable requests until unlocked.
+    return;
+  }
+
   if(mToggleByClickEnabled == enabled)
   {
     return;
@@ -113,6 +125,11 @@ void SelectableTraitImpl::EnableToggleByClick(bool enabled)
       DisconnectClickable();
     }
   }
+}
+
+void SelectableTraitImpl::SetToggleByClickLocked(bool locked)
+{
+  mToggleByClickLocked = locked;
 }
 
 View SelectableTraitImpl::GetOwner() const
