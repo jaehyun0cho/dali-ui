@@ -54,6 +54,11 @@ class CoreInteractionObject;
  * APIs and interactive APIs such as ClickedSignal().
  *
  * Internally both traits share the core interaction trait slot.
+ *
+ * @note InteractiveTrait, SelectableTrait, and GroupSelectableTrait are facets of a
+ * single shared interaction object on a View. Comparing handles with operator== compares
+ * that same underlying object, and DownCast is presence-based (does the requested facet's
+ * sub-implementation exist?) rather than identity-based.
  */
 class DALI_UI_API SelectableTrait : public InteractiveTrait
 {
@@ -140,6 +145,14 @@ public: // API
    * disables automatic selection toggling; the inherited InteractiveTrait
    * behavior remains attached to the owner View.
    *
+   * @note While the View is a member of a SelectionGroup, this call is IGNORED (a no-op).
+   * A grouped member's toggle-by-click is managed by its GroupSelectableTrait (forced off
+   * and locked while grouped, restored on Remove()), so single-selection cannot be broken
+   * by externally re-enabling toggle (which would otherwise let a click deselect the
+   * winner and empty the group). On Remove() the member's pre-join toggle-by-click value
+   * is restored and EnableToggleByClick() works normally again; calls made while grouped
+   * are discarded (not deferred).
+   *
    * @param[in] enabled True to enable toggle-by-click, false to disable
    */
   void EnableToggleByClick(bool enabled = true);
@@ -163,7 +176,7 @@ public: // Not intended for application developers
    */
   DALI_INTERNAL static SelectableTrait New(Internal::CoreInteractionObject* container);
 
-private:
+protected:
   explicit DALI_INTERNAL SelectableTrait(Internal::CoreInteractionObject* container);
 };
 
