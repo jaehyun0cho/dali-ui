@@ -66,6 +66,11 @@ void SelectableTraitImpl::SetSelected(bool selected)
   SetSelectedInternal(selected, InputEvent::Programmatic());
 }
 
+void SelectableTraitImpl::SetSelected(bool selected, InputEvent event)
+{
+  SetSelectedInternal(selected, event);
+}
+
 void SelectableTraitImpl::SetSelectedInternal(bool selected, InputEvent event)
 {
   if(mSelected == selected)

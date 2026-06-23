@@ -72,6 +72,18 @@ public: // API
   void SetSelected(bool selected);
 
   /**
+   * @brief Sets the selection state, carrying the originating input cause.
+   *
+   * Internal-only overload (not exposed on the public SelectableTrait handle) used by
+   * collaborators such as GroupSelectableTraitImpl to preserve the real click cause
+   * instead of substituting InputEvent::Programmatic().
+   *
+   * @param[in] selected True to select, false to deselect
+   * @param[in] event    The originating input cause
+   */
+  void SetSelected(bool selected, InputEvent event);
+
+  /**
    * @copydoc Dali::Ui::SelectableTrait::IsToggleByClickEnabled
    */
   bool IsToggleByClickEnabled() const;
