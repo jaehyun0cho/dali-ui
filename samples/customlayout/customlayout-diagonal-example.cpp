@@ -43,9 +43,9 @@ public:
     float totalWidth  = 0.0f;
     float totalHeight = 0.0f;
 
-    for(uint32_t i = 0; i < self.GetChildCount(); ++i)
+    for(uint32_t i = 0; i < self.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
     {
-      View         child = self.GetChildAt(i);
+      View         child = View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN));
       MeasuredSize sz    = child.Measure(widthConstraint - totalWidth, heightConstraint - totalHeight);
       totalWidth += sz.width;
       totalHeight += sz.height;
@@ -59,9 +59,9 @@ public:
     float x = bounds.x;
     float y = bounds.y;
 
-    for(uint32_t i = 0; i < self.GetChildCount(); ++i)
+    for(uint32_t i = 0; i < self.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
     {
-      View         child = self.GetChildAt(i);
+      View         child = View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN));
       MeasuredSize sz    = child.GetMeasuredSize();
       child.Arrange({x, y, sz.width, sz.height});
       x += sz.width;

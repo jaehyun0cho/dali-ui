@@ -721,11 +721,11 @@ int UtcDaliInteractiveViewDefaultOverlayEffectP(void)
   UiTestApplication application;
   InteractiveView   view = CreateTestInteractiveView(application);
 
-  uint32_t initialChildCount = view.GetChildCount();
+  uint32_t initialChildCount = view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
 
   ProcessTouch(application, PointState::DOWN);
 
-  DALI_TEST_EQUALS(view.GetChildCount(), initialChildCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), initialChildCount, TEST_LOCATION);
   DALI_TEST_EQUALS(view.GetVisualCount(OVERLAY_VISUAL_RANGE), 1u, TEST_LOCATION);
   ColorVisual overlay = GetOverlayVisual(view);
   DALI_TEST_CHECK(overlay);
@@ -733,7 +733,7 @@ int UtcDaliInteractiveViewDefaultOverlayEffectP(void)
 
   ProcessTouch(application, PointState::FINISHED, 120u);
 
-  DALI_TEST_EQUALS(view.GetChildCount(), initialChildCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), initialChildCount, TEST_LOCATION);
   DALI_TEST_EQUALS(view.GetVisualCount(OVERLAY_VISUAL_RANGE), 0u, TEST_LOCATION);
   END_TEST;
 }
@@ -1419,7 +1419,7 @@ int UtcDaliInteractiveViewOverlayEffectSuppressesDefaultFocusIndicatorP(void)
   SetFocusIndicated(view);
   focusManager.SetDefaultFocusIndicatorEnabled(true);
 
-  DALI_TEST_EQUALS(view.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
 
   focusManager.ClearFocus();
   END_TEST;
@@ -1437,10 +1437,10 @@ int UtcDaliInteractiveViewOverlayEffectStopsSuppressingDefaultFocusIndicatorP(vo
   SetFocusIndicated(view);
   focusManager.SetDefaultFocusIndicatorEnabled(true);
 
-  DALI_TEST_EQUALS(view.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
 
   view.SetStateEffect(StateEffect::None());
-  DALI_TEST_EQUALS(view.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
 
   focusManager.ClearFocus();
   END_TEST;

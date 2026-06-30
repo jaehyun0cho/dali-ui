@@ -2,7 +2,7 @@
 
 ## Overview
 
-The layout system in DALi UI Foundation computes **size (Measure)** and **position (Arrange)** of child views over a **View** hierarchy. Child management uses the inherited Actor `Add`/`Remove` API; `Insert(index, View)` and `RemoveAllChildren()` are provided by View for index-based insertion and bulk removal.
+The layout system in DALi UI Foundation computes **size (Measure)** and **position (Arrange)** of child views over a **View** hierarchy. Child management uses the inherited Actor `Add`/`Remove` API; `Insert(index, View, ZOrderPolicy)` and `RemoveAllChildren()` are provided by View for index-based insertion and bulk removal.
 
 Layout processing is driven by **LayoutController** per window. Each frame, it runs Measure then Arrange on layout roots that have been invalidated.
 
@@ -17,10 +17,10 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
   - `GetSize()` returns the actual rendered size (read-only).
   - Measure/Arrange are invoked internally by the layout system; applications may request recomputation via `InvalidateMeasure()` / `InvalidateArrange()`.
   - `AttachLayoutManager(Dali::UniquePtr<LayoutManager>)` attaches a layout algorithm to any View; the View then dispatches Measure/Arrange to the manager (a Measure/Arrange callback, if set, takes priority over the manager).
-  - Child add/remove uses inherited Actor `Add`/`Remove`. `Insert(index, View)` and `RemoveAllChildren()` are available for index-based insertion and bulk removal.
+  - Child add/remove uses inherited Actor `Add`/`Remove`. `Insert(index, View, ZOrderPolicy)` inserts a child at an index and `RemoveAllChildren()` removes all children. `Insert(index, View, ZOrderPolicy)` chooses whether the layout-order change also reorders the visual z-order (`UPDATE` syncs the Actor sibling order to the new layout index; `PRESERVE` leaves z-order unchanged). This is the converse of the `LayoutOrderPolicy` on `Raise`/`Lower`.
 
 - **Layout** (inherits View)
-  - Child management: `Add(View)` (inherited from Actor), `Insert(index, View)`, `Remove(View)` (inherited from Actor), `RemoveAllChildren()`, `GetChildCount()`, `GetChildAt(index)`, `IndexOfChild(View)`, `Children(initializer_list<View>)`.
+  - Child management: `Add(View)` (inherited from Actor), `Insert(index, View, ZOrderPolicy)`, `Remove(View)` (inherited from Actor), `RemoveAllChildren()`, `GetChildCount(ChildScopePolicy)`, `GetChildAt(index, ChildScopePolicy)`, `IndexOfChild(View)`, `Children(initializer_list<View>)`. The `ChildScopePolicy` selects the query scope: `LAYOUT_CHILDREN` targets only layout-participating View children, while `ALL_CHILDREN` targets every Actor child including non-View actors added via `IntegrationView::AddActorChild` (`GetChildAt(index, ChildScopePolicy::ALL_CHILDREN)` returns an `Actor`, which may be a non-View actor).
   - Always has a LayoutManager stored as a Trait (`ReservedTraitId::LAYOUT_MANAGER`); derived classes attach Stack/Flex/Grid/Absolute algorithms in `OnInitialize()`.
 
 - **Custom Layout Callbacks**
@@ -65,7 +65,7 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
 
 - **ViewImpl** (DALi ControlImpl-derived)
   - Holds the actual Measure/Arrange logic, size specifications, margin/padding/alignment/visibility, and child container.
-  - Provides `Insert(index, View)`, `RemoveAllChildren`, `GetChildCount`, `GetChildAt`, `IndexOfChild`, `Contents`, etc. Child add/remove uses Actor `Add`/`Remove` with `OnChildAdd`/`OnChildRemove` callbacks to sync the internal child container. Child order changes (via `Raise`/`Lower`/etc.) are detected via `ChildOrderChangedSignal` to keep `mChildren` in sync.
+  - Provides `Insert(index, View, ZOrderPolicy)`, `RemoveAllChildren`, `GetChildCount(ChildScopePolicy)`, `GetChildAt(index, ChildScopePolicy)`, `IndexOfChild`, `Contents`, etc. Child add/remove uses Actor `Add`/`Remove` with `OnChildAdd`/`OnChildRemove` callbacks to sync the internal child container. Child order changes (via `Raise`/`Lower`/etc.) are detected via `ChildOrderChangedSignal` to keep `mChildren` in sync.
   - `GetParentLayout()`, `IsLayout()`, and invalidation propagate to the parent until a layout root is reached, which registers with the LayoutController.
 
 - **LayoutImpl** (inherits ViewImpl)
@@ -327,6 +327,6 @@ When layout must be recomputed (e.g. size or child change):
 
 | Area | Description |
 |------|-------------|
-| Public child API | Child add/remove uses Actor::Add/Remove. View provides Insert(index, View) for index-based insertion and RemoveAllChildren() for bulk removal. GetChildCount, GetChildAt, IndexOfChild, Children are available on View. |
+| Public child API | Child add/remove uses Actor::Add/Remove. View provides Insert(index, View, ZOrderPolicy) for index-based insertion (optionally syncing the visual z-order to the new layout index) and RemoveAllChildren() for bulk removal. IndexOfChild and Children are available on View; GetChildCount(ChildScopePolicy)/GetChildAt(index, ChildScopePolicy) select between LAYOUT_CHILDREN (View children only) and ALL_CHILDREN (all Actor children, including non-View actors). |
 | Layout processing | LayoutController collects layout roots per window and runs Measure then Arrange once per frame. |
 | Implementation | ViewImpl holds children and can attach a LayoutManager as a Trait via `View::AttachLayoutManager()`. Applications can customize measure/arrange via `SetMeasureCallback()`/`SetArrangeCallback()`. |

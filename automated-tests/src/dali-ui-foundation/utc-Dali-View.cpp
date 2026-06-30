@@ -2813,11 +2813,214 @@ int UtcDaliViewInsertReordersMChildrenP(void)
   DALI_TEST_EQUALS(parent.IndexOfChild(b), 1, TEST_LOCATION);
   DALI_TEST_EQUALS(parent.IndexOfChild(c), 2, TEST_LOCATION);
 
-  parent.Insert(0, c); // move c from index 2 to index 0
+  parent.Insert(0, c, ZOrderPolicy::PRESERVE); // move c from index 2 to index 0
 
   DALI_TEST_EQUALS(parent.IndexOfChild(c), 0, TEST_LOCATION);
   DALI_TEST_EQUALS(parent.IndexOfChild(a), 1, TEST_LOCATION);
   DALI_TEST_EQUALS(parent.IndexOfChild(b), 2, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderPreserveP(void)
+{
+  // PRESERVE: layout order changes, visual z-order stays unchanged. Move a
+  // NON-top child (a is at visual index 0) so the unchanged-visual assertion is
+  // unambiguous: had PRESERVE wrongly touched z-order, a's visual index would move.
+  UiTestApplication application;
+  OrderFixture      f = MakeOrderFixture(); // [a, b, c] in both layout and visual
+
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 0u, TEST_LOCATION);
+
+  f.parent.Insert(2, f.a, ZOrderPolicy::PRESERVE); // a to layout end
+
+  // Layout order changed: a is now last.
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.b), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.c), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 2, TEST_LOCATION);
+  // Visual z-order unchanged.
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.b), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.c), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateFrontP(void)
+{
+  // UPDATE at front: BOTH layout and visual order change.
+  UiTestApplication application;
+  OrderFixture      f = MakeOrderFixture(); // [a, b, c]
+
+  f.parent.Insert(0, f.c, ZOrderPolicy::UPDATE); // c to front
+
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.c), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.c), 0u, TEST_LOCATION);
+  // Siblings shifted up accordingly, in both orders.
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.b), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.b), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateMiddleP(void)
+{
+  // UPDATE at middle: a moves from index 0 to index 1; z-order follows.
+  UiTestApplication application;
+  OrderFixture      f = MakeOrderFixture(); // [a, b, c]
+
+  f.parent.Insert(1, f.a, ZOrderPolicy::UPDATE);
+
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 1u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateEndP(void)
+{
+  // UPDATE at end: a moves from index 0 to the last index; z-order follows.
+  UiTestApplication application;
+  OrderFixture      f = MakeOrderFixture(); // [a, b, c]
+
+  f.parent.Insert(2, f.a, ZOrderPolicy::UPDATE);
+
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateSingleChildP(void)
+{
+  // UPDATE single-child edge: Insert(0, child, UPDATE) must not crash and the
+  // sole child stays at index 0 in both layout and visual order.
+  UiTestApplication application;
+  View              parent = View::New();
+  View              child  = View::New();
+  parent.Add(child);
+
+  parent.Insert(0, child, ZOrderPolicy::UPDATE);
+
+  DALI_TEST_EQUALS(parent.IndexOfChild(child), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(parent, child), 0u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateWithNonViewActorP(void)
+{
+  // UPDATE must keep the View z-order matching the View layout order even when a
+  // non-View Actor is interleaved among the actor siblings. The relative
+  // RaiseAbove/LowerBelow positioning must not be skewed by the non-View actor.
+  UiTestApplication application;
+  View              parent = View::New();
+  View              a      = View::New();
+  View              b      = View::New();
+  parent.Add(a);
+  parent.Add(b);
+
+  // Add a non-View actor on top; actor siblings: [a, b, plainActor].
+  Dali::Actor plainActor = Dali::Actor::New();
+  IntegrationView::AddActorChild(parent, plainActor);
+
+  Dali::Actor parentActor = parent;
+  DALI_TEST_EQUALS(parentActor.GetChildCount(), 3u, TEST_LOCATION);
+
+  // Move b to the layout front with UPDATE: layout [b, a], and the View z-order
+  // must follow (b below a) while the non-View actor stays on top.
+  parent.Insert(0, b, ZOrderPolicy::UPDATE);
+
+  DALI_TEST_EQUALS(parent.IndexOfChild(b), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.IndexOfChild(a), 1, TEST_LOCATION);
+  // View z-order matches the layout order.
+  DALI_TEST_EQUALS(VisualIndexOf(parent, b), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(parent, a), 1u, TEST_LOCATION);
+  // The non-View actor is untouched and remains the top sibling.
+  DALI_TEST_CHECK(parentActor.GetChildAt(2) == plainActor);
+  // Layout children list still excludes the non-View actor.
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::ALL_CHILDREN), 3u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateAfterDivergeP(void)
+{
+  // After a prior PRESERVE divergence (z != layout), an UPDATE Insert must FULLY
+  // reconcile the visual z-order to the new layout order, not just position the
+  // inserted child. The old single-child patch left z diverged here.
+  UiTestApplication application;
+  OrderFixture      f = MakeOrderFixture(); // [a,b,c] z==layout
+
+  f.a.RaiseToTop(LayoutOrderPolicy::PRESERVE); // diverge: z=[b,c,a], layout=[a,b,c]
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 0, TEST_LOCATION);
+
+  f.parent.Insert(0, f.b, ZOrderPolicy::UPDATE); // layout -> [b,a,c]; z must FULLY match
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.b), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.c), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.b), 0u, TEST_LOCATION); // <- fails for the old local patch
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.c), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewInsertZOrderUpdateInvalidIndexNoopP(void)
+{
+  // An out-of-range Insert of an EXISTING child performs NO layout-order change,
+  // so UPDATE must NOT reconcile (touch) the visual z-order. Regression for the
+  // reconcile previously running unconditionally on UPDATE.
+  UiTestApplication application;
+  OrderFixture      f = MakeOrderFixture(); // [a,b,c] z==layout
+
+  f.a.RaiseToTop(LayoutOrderPolicy::PRESERVE); // diverge: z=[b,c,a], layout=[a,b,c]
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.b), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.c), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 2u, TEST_LOCATION);
+
+  f.parent.Insert(999u, f.b, ZOrderPolicy::UPDATE); // out-of-range existing child: no-op layout
+
+  // Layout order unchanged.
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.a), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.b), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(f.parent.IndexOfChild(f.c), 2, TEST_LOCATION);
+  // Visual z-order unchanged (no layout-order change -> no reconcile).
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.b), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.c), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(VisualIndexOf(f.parent, f.a), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewGetChildScopeP(void)
+{
+  // LAYOUT scope counts/indexes only View children; ALL scope includes a
+  // non-View Actor child added via IntegrationView::AddActorChild.
+  UiTestApplication application;
+  View              parent = View::New();
+  View              a      = View::New();
+  View              b      = View::New();
+  parent.Add(a);
+  parent.Add(b);
+
+  Dali::Actor plainActor = Dali::Actor::New();
+  IntegrationView::AddActorChild(parent, plainActor);
+
+  // Counts.
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::ALL_CHILDREN), 3u, TEST_LOCATION);
+
+  // ALL scope: index 2 is the non-View actor, equal to the raw actor child.
+  Dali::Actor parentActor = parent;
+  DALI_TEST_CHECK(parent.GetChildAt(2, ChildScopePolicy::ALL_CHILDREN) == plainActor);
+  DALI_TEST_CHECK(parent.GetChildAt(2, ChildScopePolicy::ALL_CHILDREN) == parentActor.GetChildAt(2));
+
+  // LAYOUT scope: only View children; DownCast succeeds for indices 0 and 1.
+  DALI_TEST_CHECK(View::DownCast(parent.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN)) == a);
+  DALI_TEST_CHECK(View::DownCast(parent.GetChildAt(1, ChildScopePolicy::LAYOUT_CHILDREN)) == b);
+  // LAYOUT out-of-range index returns an empty Actor.
+  DALI_TEST_CHECK(!parent.GetChildAt(2, ChildScopePolicy::LAYOUT_CHILDREN));
+  // ALL_CHILDREN out-of-range also returns an empty Actor (must NOT assert in
+  // dali-core's Actor::GetChildAt). parent has 3 actor children (a, b, plain).
+  DALI_TEST_CHECK(!parent.GetChildAt(3u, ChildScopePolicy::ALL_CHILDREN));
+  DALI_TEST_CHECK(!parent.GetChildAt(99u, ChildScopePolicy::ALL_CHILDREN));
   END_TEST;
 }
 
@@ -3142,13 +3345,13 @@ int UtcDaliViewReentrantChildAddDuringMeasureP(void)
   gSiblingToAdd.SetRequestedHeight(10.0f);
   gSiblingToAdd.SetMeasureCallback(MeasureCallback::New(&PlainMeasure));
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 4u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 4u, TEST_LOCATION);
 
   // Drives the default OnMeasure snapshot loop; the first child's Measure adds
   // a sibling mid-iteration. Must complete without crashing.
   parent.Measure(200.0f, 100.0f);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 5u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 5u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToAdd.Reset();
@@ -3187,12 +3390,12 @@ int UtcDaliViewReentrantChildRemoveDuringMeasureP(void)
   third.SetMeasureCallback(MeasureCallback::New(&PlainMeasure));
   parent.Add(third);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 3u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 3u, TEST_LOCATION);
 
   // First child's Measure removes the sibling mid-loop. Must complete cleanly.
   parent.Measure(200.0f, 100.0f);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToRemove.Reset();
@@ -3233,13 +3436,13 @@ int UtcDaliViewReentrantChildRemoveDuringArrangeP(void)
   third.SetArrangeCallback(ArrangeCallback::New(&PlainArrange));
   parent.Add(third);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 3u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 3u, TEST_LOCATION);
 
   parent.Measure(200.0f, 100.0f);
   // First child's Arrange removes the sibling mid-loop. Must complete cleanly.
   parent.Arrange(LayoutRect(0.0f, 0.0f, 200.0f, 100.0f));
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToRemove.Reset();
@@ -3281,13 +3484,13 @@ int UtcDaliViewReentrantStandaloneChildRemoveDuringMeasureP(void)
   third.SetMeasureCallback(MeasureCallback::New(&PlainMeasure));
   parent.Add(third);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 3u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 3u, TEST_LOCATION);
 
   // Drives MeasureStandaloneChildren (called at view-impl.cpp:940); the first
   // standalone child's Measure removes a standalone sibling mid-loop.
   parent.Measure(200.0f, 100.0f);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToRemove.Reset();
@@ -3332,14 +3535,14 @@ int UtcDaliViewReentrantStandaloneChildRemoveDuringArrangeP(void)
   third.SetArrangeCallback(ArrangeCallback::New(&PlainArrange));
   parent.Add(third);
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 3u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 3u, TEST_LOCATION);
 
   parent.Measure(200.0f, 100.0f);
   // Drives ArrangeStandaloneChildren (called at view-impl.cpp:1113); the first
   // standalone child's Arrange removes a standalone sibling mid-loop.
   parent.Arrange(LayoutRect(0.0f, 0.0f, 200.0f, 100.0f));
 
-  DALI_TEST_EQUALS(parent.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToRemove.Reset();

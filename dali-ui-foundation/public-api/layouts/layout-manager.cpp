@@ -46,12 +46,12 @@ LayoutManager::~LayoutManager()
 
 uint32_t LayoutManager::GetChildCount(ViewImpl* view) const
 {
-  return view ? view->GetChildCount() : 0u;
+  return view ? view->GetChildCount(Ui::ChildScopePolicy::LAYOUT_CHILDREN) : 0u;
 }
 
 View LayoutManager::GetChildAt(ViewImpl* view, uint32_t index) const
 {
-  return view ? view->GetChildAt(index) : View();
+  return view ? Ui::View::DownCast(view->GetChildAt(index, Ui::ChildScopePolicy::LAYOUT_CHILDREN)) : View();
 }
 
 bool LayoutManager::IsStandalone(ViewImpl* child) const

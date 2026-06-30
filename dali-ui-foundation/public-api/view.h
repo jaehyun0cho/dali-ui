@@ -1320,12 +1320,25 @@ public: // Properties
   }
 
   /**
-   * @brief Inserts a child at the specified index.
+   * @brief Inserts a child at the specified index, choosing whether the
+   * layout-order change also reorders the visual z-order.
    *
-   * @param[in] index The index where to insert
-   * @param[in] child The child to insert
+   * The child is placed at @p index in this view's layout children order.
+   * @c ZOrderPolicy::PRESERVE keeps the child's visual z-order (Actor sibling
+   * order) unchanged; only the layout children order changes.
+   * @c ZOrderPolicy::UPDATE also moves the child's Actor sibling order (visual
+   * z-order) to match its resulting layout index relative to its View siblings.
+   *
+   * @note This is the converse of the @c LayoutOrderPolicy on
+   * @c Raise / @c Lower: there, a visual z-order change optionally drives the
+   * layout order; here, a layout-order change optionally drives the visual
+   * z-order.
+   *
+   * @param[in] index  The index where to insert
+   * @param[in] child  The child to insert
+   * @param[in] policy Whether to also reorder the visual z-order to match
    */
-  void Insert(uint32_t index, View child);
+  void Insert(uint32_t index, View child, ZOrderPolicy policy);
 
   /**
    * @brief Removes all children from this View.
@@ -1362,7 +1375,8 @@ public: // Properties
    * the own and inherited EXIT effects (see @c RemovePolicy).
    *
    * @note During the EXIT animation the child is logically absent from
-   * this view's child list (@c GetChildCount / @c GetChildAt skip it)
+   * this view's child list (@c GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN) /
+   * @c GetChildAt(index, ChildScopePolicy::LAYOUT_CHILDREN) skip it)
    * but still attached to the actor tree. Re-adding the SAME child to
    * the SAME parent in this state via @c View::Insert or inherited
    * @c Actor::Add is silently ignored — the EXIT continues, and the
@@ -1382,19 +1396,35 @@ public: // Properties
   void Remove(View child, RemovePolicy policy);
 
   /**
-   * @brief Gets the number of child views.
+   * @brief Gets the number of children in the requested scope.
    *
-   * @return The child count
+   * @c ChildScopePolicy::LAYOUT_CHILDREN returns the count of layout-participating View
+   * children.
+   * @c ChildScopePolicy::ALL_CHILDREN returns the count of all Actor children, including
+   * non-View actors added via @c IntegrationView::AddActorChild.
+   *
+   * @param[in] policy Whether to count only layout (View) children or all children
+   * @return The child count in the requested scope
    */
-  uint32_t GetChildCount() const;
+  uint32_t GetChildCount(ChildScopePolicy policy) const;
 
   /**
-   * @brief Gets the child view at the specified index.
+   * @brief Gets the child at the specified index in the requested scope.
    *
-   * @param[in] index The child index
-   * @return The child view at the index
+   * @c ChildScopePolicy::LAYOUT_CHILDREN returns the layout-participating View child at
+   * @p index (as an Actor handle).
+   * @c ChildScopePolicy::ALL_CHILDREN returns the Actor child at @p index, which may be a
+   * non-View actor added via @c IntegrationView::AddActorChild. An empty Actor
+   * is returned when @p index is out of range.
+   *
+   * The return type is @c Actor (not @c View) because the @c ALL scope can
+   * include non-View actors.
+   *
+   * @param[in] index  The child index
+   * @param[in] policy Whether to index only layout (View) children or all children
+   * @return The child at the index, or an empty Actor when out of range
    */
-  View GetChildAt(uint32_t index) const;
+  Actor GetChildAt(uint32_t index, ChildScopePolicy policy) const;
 
   /**
    * @brief Returns the index of the given child view, or -1 if not found.

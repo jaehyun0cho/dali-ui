@@ -48,6 +48,35 @@ enum class LayoutOrderPolicy
 };
 
 /**
+ * @brief Controls whether a layout-order change (View::Insert) also reorders
+ * the visual z-order (Actor sibling order).
+ *
+ * This is the CONVERSE of LayoutOrderPolicy: LayoutOrderPolicy controls whether
+ * a sibling-order (z-order) change also reorders the layout children, whereas
+ * ZOrderPolicy controls whether a layout-order change (View::Insert) also
+ * reorders the visual z-order.
+ */
+enum class ZOrderPolicy
+{
+  UPDATE   = 0, ///< Also reorder visual z-order (Actor sibling order) to match the new layout order.
+  PRESERVE = 1, ///< Keep visual z-order unchanged; only layout children order changes.
+};
+
+/**
+ * @brief Controls whether a child-query operation targets only the
+ * layout-participating View children or all children.
+ *
+ * A View's layout children are the View-typed children that participate in
+ * layout. A View can also hold non-View Actor children (added via
+ * IntegrationView::AddActorChild) that do not participate in layout.
+ */
+enum class ChildScopePolicy
+{
+  LAYOUT_CHILDREN = 0, ///< Only layout-participating View children (the current default).
+  ALL_CHILDREN    = 1, ///< All children including non-View Actors added via IntegrationView::AddActorChild.
+};
+
+/**
  * @brief Controls how View::Remove(View, RemovePolicy) treats an attached
  * LayoutTransition's EXIT slot.
  *

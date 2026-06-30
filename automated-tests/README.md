@@ -223,11 +223,11 @@ Use additional scope to control the life of stack allocated objects, such as DAL
     {
         Actor temporaryParent = Actor::New();
         temporaryParent.Add( child );
-        DALI_TEST_EQUALS( parent2.GetChildCount(), 0u, TEST_LOCATION );
+        DALI_TEST_EQUALS( parent2.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION );
     }
     // temporaryParent has now died, reparent the orphaned child
     parent2.Add( child );
-    DALI_TEST_EQUALS( parent2.GetChildCount(), 1u, TEST_LOCATION );
+    DALI_TEST_EQUALS( parent2.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION );
 
 Always test the output of your test by making your code fail!!!
 

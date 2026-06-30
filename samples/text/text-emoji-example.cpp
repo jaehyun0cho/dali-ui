@@ -1492,7 +1492,7 @@ private:
       return false;
     }
 
-    ClearLog(mLogView.GetChildCount() / 2);
+    ClearLog(mLogView.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN) / 2);
     return true;
   }
 
@@ -1611,10 +1611,10 @@ private:
 
   void AddLog(const std::string& unicode)
   {
-    const int calcedHeight = static_cast<int>(mLogView.GetChildCount() + 1) * (mHeight / 2 + 1);
+    const int calcedHeight = static_cast<int>(mLogView.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN) + 1) * (mHeight / 2 + 1);
     if(calcedHeight > mLogHeight)
     {
-      ClearLog(mLogView.GetChildCount() / 2);
+      ClearLog(mLogView.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN) / 2);
     }
 
     View row = CreateContainerView(MATCH_PARENT, WRAP_CONTENT, true);
@@ -1658,9 +1658,9 @@ private:
 
   void ClearLog(int count)
   {
-    for(int i = 0; i < count && mLogView.GetChildCount() > 0; ++i)
+    for(int i = 0; i < count && mLogView.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN) > 0; ++i)
     {
-      Actor child = mLogView.GetChildAt(0);
+      Actor child = mLogView.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN);
       mLogView.Remove(child);
 
       if(!mHistory.empty())
@@ -1672,10 +1672,10 @@ private:
 
   void ClearAll()
   {
-    const int childCount = mView.GetChildCount();
+    const int childCount = mView.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     for(int i = 0; i < childCount; ++i)
     {
-      mView.Remove(mView.GetChildAt(0));
+      mView.Remove(mView.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN));
     }
     window.Remove(mView);
   }

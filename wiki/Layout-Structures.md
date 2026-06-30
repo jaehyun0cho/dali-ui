@@ -67,7 +67,7 @@ root.Add(child2);
 window.Add(root);
 ```
 
-> **Note:** All layout types inherit from `Layout`, which inherits from `View`. Child management uses `Add(View)`, `Insert(index, View)`, `Remove(View)`, and `RemoveAllChildren()`.
+> **Note:** All layout types inherit from `Layout`, which inherits from `View`. Child management uses `Add(View)`, `Insert(index, View, ZOrderPolicy)`, `Remove(View)`, and `RemoveAllChildren()`.
 
 ---
 

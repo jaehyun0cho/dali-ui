@@ -193,12 +193,12 @@ public:
 
   void RemoveLastChild()
   {
-    const uint32_t count = mStack.GetChildCount();
+    const uint32_t count = mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     if(count == 0)
     {
       return;
     }
-    mStack.Remove(mStack.GetChildAt(count - 1), RemovePolicy::ANIMATE_EXIT);
+    mStack.Remove(View::DownCast(mStack.GetChildAt(count - 1, ChildScopePolicy::LAYOUT_CHILDREN)), RemovePolicy::ANIMATE_EXIT);
   }
 
   bool OnEnterTouched(Actor /*actor*/, TouchEvent touch)
@@ -229,10 +229,10 @@ public:
     }
     mExpanded             = !mExpanded;
     const float newHeight = mExpanded ? 160.0f : 80.0f;
-    const uint32_t count  = mStack.GetChildCount();
+    const uint32_t count  = mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     for(uint32_t i = 0; i < count; ++i)
     {
-      mStack.GetChildAt(i).SetRequestedHeight(newHeight);
+      View::DownCast(mStack.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN)).SetRequestedHeight(newHeight);
     }
     return true;
   }

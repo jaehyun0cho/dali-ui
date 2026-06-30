@@ -105,8 +105,8 @@ int UtcDaliLayoutAddP(void)
   Layout layout = Layout::New();
   View child = View::New();
   layout.Add(child);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
-  DALI_TEST_CHECK(layout.GetChildAt(0) == child);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
+  DALI_TEST_CHECK(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN) == child);
   END_TEST;
 }
 
@@ -117,10 +117,10 @@ int UtcDaliLayoutInsertAtIndexP(void)
   View child0 = View::New();
   View child1 = View::New();
   layout.Add(child0);
-  layout.Insert(0, child1);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 2u, TEST_LOCATION);
-  DALI_TEST_CHECK(layout.GetChildAt(0) == child1);
-  DALI_TEST_CHECK(layout.GetChildAt(1) == child0);
+  layout.Insert(0, child1, ZOrderPolicy::PRESERVE);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
+  DALI_TEST_CHECK(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN) == child1);
+  DALI_TEST_CHECK(layout.GetChildAt(1, ChildScopePolicy::LAYOUT_CHILDREN) == child0);
   END_TEST;
 }
 
@@ -130,9 +130,9 @@ int UtcDaliLayoutRemoveP(void)
   Layout layout = Layout::New();
   View child = View::New();
   layout.Add(child);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   layout.Remove(child);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -142,8 +142,8 @@ int UtcDaliLayoutRemoveAtP(void)
   Layout layout = Layout::New();
   View child = View::New();
   layout.Add(child);
-  layout.Remove(layout.GetChildAt(0));
-  DALI_TEST_EQUALS(layout.GetChildCount(), 0u, TEST_LOCATION);
+  layout.Remove(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN));
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -153,9 +153,9 @@ int UtcDaliLayoutRemoveAllChildrenP(void)
   Layout layout = Layout::New();
   layout.Add(View::New());
   layout.Add(View::New());
-  DALI_TEST_EQUALS(layout.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
   layout.RemoveAllChildren();
-  DALI_TEST_EQUALS(layout.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -163,9 +163,9 @@ int UtcDaliLayoutGetChildCountP(void)
 {
   UiTestApplication application;
   Layout layout = Layout::New();
-  DALI_TEST_EQUALS(layout.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   layout.Add(View::New());
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -175,7 +175,7 @@ int UtcDaliLayoutGetChildAtP(void)
   Layout layout = Layout::New();
   View child = View::New();
   layout.Add(child);
-  DALI_TEST_CHECK(layout.GetChildAt(0) == child);
+  DALI_TEST_CHECK(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN) == child);
   END_TEST;
 }
 
@@ -198,9 +198,9 @@ int UtcDaliLayoutContentsP(void)
   View a = View::New();
   View b = View::New();
   layout.AddChildren({a, b});
-  DALI_TEST_EQUALS(layout.GetChildCount(), 2u, TEST_LOCATION);
-  DALI_TEST_CHECK(layout.GetChildAt(0) == a);
-  DALI_TEST_CHECK(layout.GetChildAt(1) == b);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
+  DALI_TEST_CHECK(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN) == a);
+  DALI_TEST_CHECK(layout.GetChildAt(1, ChildScopePolicy::LAYOUT_CHILDREN) == b);
   END_TEST;
 }
 
@@ -209,7 +209,7 @@ int UtcDaliLayoutContentsEmptyP(void)
   UiTestApplication application;
   Layout layout = Layout::New();
   layout.AddChildren({});
-  DALI_TEST_EQUALS(layout.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -221,7 +221,7 @@ int UtcDaliLayoutRemoveNonChildP(void)
   layout.Add(child);
   View notChild = View::New();
   layout.Remove(notChild);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -229,7 +229,7 @@ int UtcDaliLayoutGetChildAtEmptyP(void)
 {
   UiTestApplication application;
   Layout layout = Layout::New();
-  View v = layout.GetChildAt(0);
+  View v = View::DownCast(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN));
   DALI_TEST_CHECK(!v);
   END_TEST;
 }
@@ -239,9 +239,9 @@ int UtcDaliLayoutInsertIndexClampP(void)
   UiTestApplication application;
   Layout layout = Layout::New();
   View child = View::New();
-  layout.Insert(99u, child);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
-  DALI_TEST_CHECK(layout.GetChildAt(0) == child);
+  layout.Insert(99u, child, ZOrderPolicy::PRESERVE);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
+  DALI_TEST_CHECK(layout.GetChildAt(0, ChildScopePolicy::LAYOUT_CHILDREN) == child);
   END_TEST;
 }
 
@@ -250,9 +250,9 @@ int UtcDaliLayoutRemoveAtInvalidIndexP(void)
   UiTestApplication application;
   Layout layout = Layout::New();
   layout.Add(View::New());
-  View invalid = layout.GetChildAt(5u);
+  View invalid = View::DownCast(layout.GetChildAt(5u, ChildScopePolicy::LAYOUT_CHILDREN));
   DALI_TEST_CHECK(!invalid); // Out-of-bounds returns empty handle
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -270,7 +270,7 @@ int UtcDaliLayoutGetChildAtOutOfRangeP(void)
   UiTestApplication application;
   Layout layout = Layout::New();
   layout.Add(View::New());
-  View v = layout.GetChildAt(1);
+  View v = View::DownCast(layout.GetChildAt(1, ChildScopePolicy::LAYOUT_CHILDREN));
   DALI_TEST_CHECK(!v);
   END_TEST;
 }
@@ -290,7 +290,7 @@ int UtcDaliLayoutContentsSetterP(void)
   Layout layout = Layout::New();
   View a = View::New();
   layout.AddChildren({a});
-  DALI_TEST_EQUALS(layout.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   END_TEST;
 }
 
@@ -299,9 +299,9 @@ namespace
 MeasuredSize HorizontalLineMeasure(View self, float widthConstraint, float heightConstraint)
 {
   float maxHeight = 0.0f;
-  for(uint32_t i = 0; i < self.GetChildCount(); ++i)
+  for(uint32_t i = 0; i < self.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
   {
-    View         child = self.GetChildAt(i);
+    View         child = View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN));
     MeasuredSize sz    = child.Measure(widthConstraint, heightConstraint);
     maxHeight          = std::max(maxHeight, sz.height);
   }
@@ -311,9 +311,9 @@ MeasuredSize HorizontalLineMeasure(View self, float widthConstraint, float heigh
 MeasuredSize HorizontalLineArrange(View self, const LayoutRect& bounds)
 {
   float x = bounds.x;
-  for(uint32_t i = 0; i < self.GetChildCount(); ++i)
+  for(uint32_t i = 0; i < self.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
   {
-    View         child = self.GetChildAt(i);
+    View         child = View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN));
     MeasuredSize sz    = child.GetMeasuredSize();
     child.Arrange({x, bounds.y, sz.width, sz.height});
     x += sz.width;

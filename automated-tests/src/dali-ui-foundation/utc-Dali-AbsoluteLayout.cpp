@@ -719,12 +719,12 @@ int UtcDaliAbsoluteLayoutReentrantChildRemoveDuringMeasureP(void)
   third.SetMeasureCallback(MeasureCallback::New(&PlainMeasure));
   layout.Add(third);
 
-  DALI_TEST_EQUALS(layout.GetChildCount(), 3u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 3u, TEST_LOCATION);
 
   // First child's Measure removes the sibling mid-loop. Must complete cleanly.
   layout.Measure(200.0f, 100.0f);
 
-  DALI_TEST_EQUALS(layout.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToRemove.Reset();
@@ -765,13 +765,13 @@ int UtcDaliAbsoluteLayoutReentrantChildRemoveDuringArrangeP(void)
   third.SetArrangeCallback(ArrangeCallback::New(&PlainArrange));
   layout.Add(third);
 
-  DALI_TEST_EQUALS(layout.GetChildCount(), 3u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 3u, TEST_LOCATION);
 
   layout.Measure(200.0f, 100.0f);
   // First child's Arrange removes the sibling mid-loop. Must complete cleanly.
   layout.Arrange(LayoutRect(0.0f, 0.0f, 200.0f, 100.0f));
 
-  DALI_TEST_EQUALS(layout.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
 
   gReentrantParent.Reset();
   gSiblingToRemove.Reset();

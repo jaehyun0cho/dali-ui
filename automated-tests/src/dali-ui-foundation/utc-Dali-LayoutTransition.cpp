@@ -594,7 +594,7 @@ int UtcDaliLayoutTransitionRemoveAllChildrenExitP(void)
   parent.RemoveAllChildren();
 
   // Logical child list is cleared immediately; actors stay during EXIT.
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
 
   application.SendNotification();
   application.Render(0);
@@ -626,7 +626,7 @@ int UtcDaliLayoutTransitionRemoveAllChildrenNoTransitionP(void)
 
   // No transition attached — bulk remove path.
   parent.RemoveAllChildren();
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
 
   application.SendNotification();
   application.Render(0);
@@ -757,7 +757,7 @@ int UtcDaliLayoutTransitionRemoveImmediatePolicyP(void)
   parent.Remove(child, RemovePolicy::IMMEDIATE);
 
   // Synchronously unparented (not a deferred EXIT ghost).
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   DALI_TEST_CHECK(child.GetParent() != parent);
 
   application.SendNotification();
@@ -797,13 +797,13 @@ int UtcDaliLayoutTransitionRemoveInheritedImmediateP(void)
 
   // Derived (StackLayout) handle, one-argument inherited Remove -> immediate.
   parent.Remove(childA);
-  DALI_TEST_EQUALS(parent.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   DALI_TEST_CHECK(childA.GetParent() != parent);
 
   // Actor-typed handle, same one-argument call -> same immediate behavior.
   Actor actorHandle = parent;
   actorHandle.Remove(childB);
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   DALI_TEST_CHECK(childB.GetParent() != parent);
 
   END_TEST;
@@ -1004,7 +1004,7 @@ int UtcDaliLayoutTransitionInsertMarksAllSiblingsReorderedP(void)
   // Move c to index 0. mChildren becomes [c, a, b]; in a vertical stack
   // all three children's y positions change (c moves to top, a and b
   // shift down).
-  parent.Insert(0, c);
+  parent.Insert(0, c, ZOrderPolicy::PRESERVE);
 
   // Allow several ticks for animator callbacks to fire on each child.
   for(int i = 0; i < 5; ++i)
@@ -1904,7 +1904,7 @@ int UtcDaliLayoutTransitionChangeCauseReorderedBeatsSiblingAddedP(void)
   parent.SetLayoutTransition(transition);
 
   // Move b to index 0. Insert with an already-tracked child reorders.
-  parent.Insert(0, b);
+  parent.Insert(0, b, ZOrderPolicy::PRESERVE);
 
   for(int i = 0; i < 5; ++i)
   {
@@ -2141,7 +2141,7 @@ int UtcDaliLayoutTransitionExitBoundsEffectOnlyDefersRemoveP(void)
 
   // Logical child list cleared immediately; actor stays under parent
   // during the deferred EXIT.
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   DALI_TEST_CHECK(child.GetParent() == parent);
 
   application.SendNotification();
@@ -2185,7 +2185,7 @@ int UtcDaliLayoutTransitionExitBoundsEffectOnlyRemoveAllP(void)
 
   // Logical child list cleared immediately; actors remain attached
   // during deferred EXIT.
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
 
   application.SendNotification();
   application.Render(0);
@@ -2224,7 +2224,7 @@ int UtcDaliLayoutTransitionExitBoundsEffectNoopIsImmediateP(void)
   parent.Remove(child, RemovePolicy::ANIMATE_EXIT);
 
   // No EXIT is scheduled — child is unparented synchronously.
-  DALI_TEST_EQUALS(parent.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(parent.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   DALI_TEST_CHECK(!child.GetParent());
 
   application.SendNotification();
@@ -2514,7 +2514,7 @@ int UtcDaliLayoutTransitionResizeWithReorderKeepsReorderedCauseP(void)
   View c = View::New();
   c.SetRequestedWidth(100.0f);
   c.SetRequestedHeight(40.0f);
-  parent.Insert(0, c);
+  parent.Insert(0, c, ZOrderPolicy::PRESERVE);
 
   for(int i = 0; i < 5; ++i)
   {

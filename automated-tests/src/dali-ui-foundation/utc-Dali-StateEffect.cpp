@@ -308,11 +308,11 @@ int UtcDaliStateEffectDefaultFocusIndicatorSuppressionP(void)
   DALI_TEST_CHECK(focusManager.SetCurrentFocusView(view));
   SetFocusIndicatedAndRefreshDefaultIndicator(view);
 
-  DALI_TEST_EQUALS(view.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   DALI_TEST_EQUALS(impl->suppressQueryCount, 2, TEST_LOCATION);
 
   view.SetStateEffect(StateEffect::None());
-  DALI_TEST_EQUALS(view.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
 
   focusManager.ClearFocus();
   END_TEST;
@@ -334,15 +334,15 @@ int UtcDaliStateEffectDefaultFocusIndicatorSuppressionInvalidationP(void)
   DALI_TEST_CHECK(focusManager.SetCurrentFocusView(view));
   SetFocusIndicatedAndRefreshDefaultIndicator(view);
 
-  DALI_TEST_EQUALS(view.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   DALI_TEST_EQUALS(impl->suppressQueryCount, 2, TEST_LOCATION);
 
   impl->SetSuppressDefaultFocusIndicator(view, true);
-  DALI_TEST_EQUALS(view.GetChildCount(), 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 0u, TEST_LOCATION);
   DALI_TEST_EQUALS(impl->suppressQueryCount, 3, TEST_LOCATION);
 
   impl->SetSuppressDefaultFocusIndicator(view, false);
-  DALI_TEST_EQUALS(view.GetChildCount(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 1u, TEST_LOCATION);
   DALI_TEST_EQUALS(impl->suppressQueryCount, 4, TEST_LOCATION);
 
   focusManager.ClearFocus();

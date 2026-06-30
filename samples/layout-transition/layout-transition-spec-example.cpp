@@ -166,12 +166,12 @@ public:
 
   void RemoveLastChild()
   {
-    const uint32_t count = mStack.GetChildCount();
+    const uint32_t count = mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     if(count == 0)
     {
       return;
     }
-    View last = mStack.GetChildAt(count - 1);
+    View last = View::DownCast(mStack.GetChildAt(count - 1, ChildScopePolicy::LAYOUT_CHILDREN));
     // Use View::Remove so the EXIT slot is honoured (deferred-remove).
     mStack.Remove(last, RemovePolicy::ANIMATE_EXIT);
   }
@@ -204,10 +204,10 @@ public:
     }
     mExpanded             = !mExpanded;
     const float newHeight = mExpanded ? 160.0f : 80.0f;
-    const uint32_t count  = mStack.GetChildCount();
+    const uint32_t count  = mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     for(uint32_t i = 0; i < count; ++i)
     {
-      mStack.GetChildAt(i).SetRequestedHeight(newHeight);
+      View::DownCast(mStack.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN)).SetRequestedHeight(newHeight);
     }
     return true;
   }

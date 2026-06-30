@@ -1002,9 +1002,9 @@ View ScrollViewImpl::FindNextFocusableInContent(View currentFocusedView, const V
 void ScrollViewImpl::CollectNextFocusCandidate(View container, View excludeView, const Vector2& currentPos,
                                                FocusDirection direction, View& bestView, float& bestDist) const
 {
-  for(uint32_t i = 0; i < container.GetChildCount(); ++i)
+  for(uint32_t i = 0; i < container.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
   {
-    View child = View::DownCast(container.GetChildAt(i));
+    View child = View::DownCast(container.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN));
     if(!child)
     {
       continue;

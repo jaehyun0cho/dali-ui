@@ -677,9 +677,9 @@ void View::SetLayoutParams(LayoutParams params)
   GetImpl(*this).SetLayoutParams(params);
 }
 
-void View::Insert(uint32_t index, View child)
+void View::Insert(uint32_t index, View child, ZOrderPolicy policy)
 {
-  GetImpl(*this).Insert(index, child);
+  GetImpl(*this).Insert(index, child, policy);
 }
 
 void View::RemoveAllChildren()
@@ -692,14 +692,14 @@ void View::Remove(View child, RemovePolicy policy)
   GetImpl(*this).Remove(child, policy);
 }
 
-uint32_t View::GetChildCount() const
+uint32_t View::GetChildCount(ChildScopePolicy policy) const
 {
-  return GetImpl(*this).GetChildCount();
+  return GetImpl(*this).GetChildCount(policy);
 }
 
-View View::GetChildAt(uint32_t index) const
+Actor View::GetChildAt(uint32_t index, ChildScopePolicy policy) const
 {
-  return GetImpl(*this).GetChildAt(index);
+  return GetImpl(*this).GetChildAt(index, policy);
 }
 
 int32_t View::IndexOfChild(View view) const

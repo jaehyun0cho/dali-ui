@@ -66,7 +66,7 @@ root.Add(child2);
 window.Add(root);
 ```
 
-> **참고:** 모든 레이아웃 타입은 `Layout`을 상속하고, `Layout`은 `View`를 상속합니다. 자식 관리에는 `Add(View)`, `Insert(index, View)`, `Remove(View)`, `RemoveAllChildren()`을 사용합니다.
+> **참고:** 모든 레이아웃 타입은 `Layout`을 상속하고, `Layout`은 `View`를 상속합니다. 자식 관리에는 `Add(View)`, `Insert(index, View, ZOrderPolicy)`, `Remove(View)`, `RemoveAllChildren()`을 사용합니다.
 
 ---
 

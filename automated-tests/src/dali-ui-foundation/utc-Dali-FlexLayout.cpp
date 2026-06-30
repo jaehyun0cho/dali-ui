@@ -456,7 +456,7 @@ int UtcDaliFlexLayoutAlignItemsVariantsP(void)
   layout.Measure(200.0f, 100.0f);
   layout.Arrange(LayoutRect(0, 0, 200, 100));
   MeasuredSize ma = layout.Measure(200.0f, 100.0f);
-  DALI_TEST_EQUALS(layout.GetChildCount(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(layout.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN), 2u, TEST_LOCATION);
   DALI_TEST_EQUALS(ma.GetWidth(), 200.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(ma.GetHeight(), 100.0f, TEST_LOCATION);
   END_TEST;

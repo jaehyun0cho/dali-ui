@@ -38,7 +38,7 @@ class LayoutImpl;
  * SetArrangeCallback() on View.
  *
  * Child management uses Actor::Add/Remove (inherited from View's base class).
- * Insert(index, View) and RemoveAllChildren() are provided by View.
+ * Insert(index, View, ZOrderPolicy) and RemoveAllChildren() are provided by View.
  */
 class DALI_UI_API Layout : public View
 {

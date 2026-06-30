@@ -218,9 +218,9 @@ struct DiagonalLayout
   static MeasuredSize OnMeasure(View self, float wConstraint, float hConstraint)
   {
     float totalW = 0, totalH = 0;
-    for(uint32_t i = 0; i < self.GetChildCount(); ++i)
+    for(uint32_t i = 0; i < self.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
     {
-      auto sz = self.GetChildAt(i).Measure(wConstraint - totalW, hConstraint - totalH);
+      auto sz = View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN)).Measure(wConstraint - totalW, hConstraint - totalH);
       totalW += sz.width;
       totalH += sz.height;
     }
@@ -230,10 +230,10 @@ struct DiagonalLayout
   static MeasuredSize OnArrange(View self, const LayoutRect& bounds)
   {
     float x = bounds.x, y = bounds.y;
-    for(uint32_t i = 0; i < self.GetChildCount(); ++i)
+    for(uint32_t i = 0; i < self.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++i)
     {
-      auto sz = self.GetChildAt(i).GetMeasuredSize();
-      self.GetChildAt(i).Arrange({x, y, sz.width, sz.height});
+      auto sz = View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN)).GetMeasuredSize();
+      View::DownCast(self.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN)).Arrange({x, y, sz.width, sz.height});
       x += sz.width;
       y += sz.height;
     }

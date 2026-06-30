@@ -916,9 +916,9 @@ public: // Non-virtual API (safe to reorder / extend)
   // Child Management
 
   /**
-   * @copydoc Ui::View::Insert()
+   * @copydoc Ui::View::Insert(uint32_t, Ui::View, Ui::ZOrderPolicy)
    */
-  void Insert(uint32_t index, Ui::View child);
+  void Insert(uint32_t index, Ui::View child, Ui::ZOrderPolicy policy);
 
   /**
    * @copydoc Ui::View::RemoveAllChildren()
@@ -931,14 +931,14 @@ public: // Non-virtual API (safe to reorder / extend)
   void Remove(Ui::View child, Ui::RemovePolicy policy);
 
   /**
-   * @copydoc Ui::View::GetChildCount()
+   * @copydoc Ui::View::GetChildCount(Ui::ChildScopePolicy)
    */
-  uint32_t GetChildCount() const;
+  uint32_t GetChildCount(Ui::ChildScopePolicy policy) const;
 
   /**
-   * @copydoc Ui::View::GetChildAt()
+   * @copydoc Ui::View::GetChildAt(uint32_t, Ui::ChildScopePolicy)
    */
-  Ui::View GetChildAt(uint32_t index) const;
+  Dali::Actor GetChildAt(uint32_t index, Ui::ChildScopePolicy policy) const;
 
   /**
    * @copydoc Ui::View::IndexOfChild()

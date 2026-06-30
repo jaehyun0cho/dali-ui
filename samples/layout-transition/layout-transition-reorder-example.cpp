@@ -194,13 +194,13 @@ public:
   {
     CancelDrag();
 
-    const uint32_t count = mStack.GetChildCount();
+    const uint32_t count = mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     if(count == 0u)
     {
       return;
     }
 
-    mStack.Remove(mStack.GetChildAt(count - 1u), RemovePolicy::ANIMATE_EXIT);
+    mStack.Remove(View::DownCast(mStack.GetChildAt(count - 1u, ChildScopePolicy::LAYOUT_CHILDREN)), RemovePolicy::ANIMATE_EXIT);
   }
 
   bool OnEnterTouched(Actor /*actor*/, TouchEvent touch)
@@ -345,9 +345,9 @@ private:
 
   int32_t FindIndexInStack(View child) const
   {
-    for(uint32_t index = 0u; index < mStack.GetChildCount(); ++index)
+    for(uint32_t index = 0u; index < mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN); ++index)
     {
-      if(mStack.GetChildAt(index) == child)
+      if(mStack.GetChildAt(index, ChildScopePolicy::LAYOUT_CHILDREN) == child)
       {
         return static_cast<int32_t>(index);
       }
@@ -386,7 +386,7 @@ private:
 
   uint32_t ComputeTargetIndexFromDraggedY(float draggedRootY) const
   {
-    const uint32_t count = mStack.GetChildCount();
+    const uint32_t count = mStack.GetChildCount(ChildScopePolicy::LAYOUT_CHILDREN);
     if(count == 0u)
     {
       return 0u;
@@ -409,7 +409,7 @@ private:
     uint32_t target = 0u;
     for(uint32_t i = 0u; i < count; ++i)
     {
-      View child = mStack.GetChildAt(i);
+      View child = View::DownCast(mStack.GetChildAt(i, ChildScopePolicy::LAYOUT_CHILDREN));
       if(child == mDragProxy)
       {
         continue;
@@ -463,7 +463,7 @@ private:
     mDragProxy.SetRequestedHeight(mDraggedOriginalReqH);
     mDragProxy.SetProperty(Actor::Property::OPACITY, 0.0f);
     mDragProxy.SetProperty(Actor::Property::SENSITIVE, false);
-    mStack.Insert(mDraggedIndex, mDragProxy);
+    mStack.Insert(mDraggedIndex, mDragProxy, ZOrderPolicy::PRESERVE);
 
     mStack.SetLayoutTransition(savedTransition);
 
@@ -520,7 +520,7 @@ private:
       // targetIndex and fires REORDERED CHANGE on every sibling so the
       // visual reflow animates. The transition stays attached here so the
       // configured CHANGE timing drives the animation.
-      mStack.Insert(targetIndex, mDragProxy);
+      mStack.Insert(targetIndex, mDragProxy, ZOrderPolicy::PRESERVE);
       mDraggedIndex = targetIndex;
     }
   }
@@ -612,7 +612,7 @@ private:
     droppedChild.SetRequestedHeight(originalReqH);
     droppedChild.SetRequestedPositionX(0.0f);
     droppedChild.SetRequestedPositionY(0.0f);
-    mStack.Insert(targetIndex, droppedChild);
+    mStack.Insert(targetIndex, droppedChild, ZOrderPolicy::PRESERVE);
 
     mStack.SetLayoutTransition(savedTransition);
   }

@@ -1961,7 +1961,7 @@ bool ViewImpl::IsInitialLayoutDone() const
 // Child Management API
 // =============================================================================
 
-void ViewImpl::Insert(uint32_t index, Ui::View child)
+void ViewImpl::Insert(uint32_t index, Ui::View child, Ui::ZOrderPolicy policy)
 {
   if(!child)
   {
@@ -1972,68 +1972,98 @@ void ViewImpl::Insert(uint32_t index, Ui::View child)
   // the single source of truth for registering the child in mChildren and
   // for invalidating the new parent chain. Insert only takes additional
   // responsibility for positioning the child at the requested index.
-  Self().Add(child);
+  const size_t childCountBefore = mImpl->mChildren.Count();
+  Self().Add(child); // OnChildAdd registers a View child in mChildren + puts the actor on top of z-order
 
-  if(index >= mImpl->mChildren.Count())
+  // A fresh View child grows mChildren via OnChildAdd; an existing child (or a
+  // non-View actor) leaves the count unchanged.
+  const bool addedNewChild = mImpl->mChildren.Count() > childCountBefore;
+  bool       reordered     = false;
+  if(index < mImpl->mChildren.Count())
   {
-    // OnChildAdd push_back'd the child at the end; target index is end.
-    return;
-  }
-
-  // Fast path: when this was a fresh add, OnChildAdd push_back'd the child,
-  // so it is at the tail of mChildren. Avoid an O(N) scan in that case.
-  IntegrationView::ChildContainer::Iterator it;
-  if(mImpl->mChildren.Count() > 0 && *(mImpl->mChildren.End() - 1) == child)
-  {
-    it = mImpl->mChildren.End() - 1;
-  }
-  else
-  {
-    it = std::find(mImpl->mChildren.Begin(), mImpl->mChildren.End(), child);
-    if(it == mImpl->mChildren.End())
+    // Fast path: when this was a fresh add, OnChildAdd push_back'd the child,
+    // so it is at the tail of mChildren. Avoid an O(N) scan in that case.
+    IntegrationView::ChildContainer::Iterator it;
+    if(mImpl->mChildren.Count() > 0 && *(mImpl->mChildren.End() - 1) == child)
     {
-      // OnChildAdd did not register this child (e.g. non-View actor). Nothing
-      // to reorder.
-      return;
+      it = mImpl->mChildren.End() - 1;
+    }
+    else
+    {
+      it = std::find(mImpl->mChildren.Begin(), mImpl->mChildren.End(), child);
+    }
+
+    // When it == End(), OnChildAdd did not register this child (e.g. non-View
+    // actor); nothing to reorder.
+    if(it != mImpl->mChildren.End())
+    {
+      const size_t currentIdx = static_cast<size_t>(std::distance(mImpl->mChildren.Begin(), it));
+      if(currentIdx != index)
+      {
+        Ui::View moved = std::move(*it);
+        mImpl->mChildren.Erase(it);
+        mImpl->mChildren.Insert(mImpl->mChildren.Begin() + index, std::move(moved));
+        reordered = true;
+
+        // Tag every logical child so the layout transition dispatcher reports
+        // CHANGE cause as LayoutChangeCause::REORDERED for both the moved child
+        // and the siblings whose indices shifted as a result. dali-core's
+        // OnChildOrderChanged fires only on actor-tree sibling order changes;
+        // Insert() touches the logical (mChildren) order alone, so this is the
+        // only place that records the reorder for the CHANGE classifier.
+        // Matches OnChildOrderChanged's full-list tagging so a logical reorder
+        // and an actor-tree reorder produce the same cause classification.
+        // Skip the record when no transition is attached — the dispatcher
+        // would never consume it, and stale raw pointers could outlive the
+        // child without any global cleanup.
+        if(mImpl->mLayoutTransition)
+        {
+          for(auto& childView : mImpl->mChildren)
+          {
+            mImpl->mPendingReorderedChildren.insert(&GetImpl(childView));
+          }
+        }
+      }
     }
   }
 
-  const size_t currentIdx = static_cast<size_t>(std::distance(mImpl->mChildren.Begin(), it));
-  if(currentIdx == index)
+  if(reordered)
   {
-    return;
+    // mChildren order affects layout output (e.g. LinearLayout visual order,
+    // GridLayout cell assignment). When the child was already under this view
+    // (Self().Add is a no-op in that case), OnChildAdd does not fire, so this
+    // is the only invalidation point for the reorder. When the child was a
+    // fresh add, self is already dirty from OnChildAdd and the guard makes
+    // this a no-op.
+    InvalidateMeasure();
   }
 
-  Ui::View moved = std::move(*it);
-  mImpl->mChildren.Erase(it);
-  mImpl->mChildren.Insert(mImpl->mChildren.Begin() + index, std::move(moved));
-
-  // Tag every logical child so the layout transition dispatcher reports
-  // CHANGE cause as LayoutChangeCause::REORDERED for both the moved child and the
-  // siblings whose indices shifted as a result. dali-core's
-  // OnChildOrderChanged fires only on actor-tree sibling order changes;
-  // Insert() touches the logical (mChildren) order alone, so this is the
-  // only place that records the reorder for the CHANGE classifier.
-  // Matches OnChildOrderChanged's full-list tagging so a logical reorder
-  // and an actor-tree reorder produce the same cause classification.
-  // Skip the record when no transition is attached — the dispatcher
-  // would never consume it, and stale raw pointers could outlive the
-  // child without any global cleanup.
-  if(mImpl->mLayoutTransition)
+  // Only reconcile the visual z-order when this Insert actually changed the
+  // layout order (added a new child or moved an existing one). A no-op Insert
+  // (e.g. an out-of-range index for an existing child, or re-inserting a child
+  // at its current index) makes no layout-order change, so per the API contract
+  // (UPDATE syncs z-order to a layout-order change) it must not touch z-order.
+  if(policy == Ui::ZOrderPolicy::UPDATE && (addedNewChild || reordered))
   {
-    for(auto& childView : mImpl->mChildren)
+    // Reconcile the visual z-order (Actor sibling order) to the FULL layout
+    // order, mirroring the converse LayoutOrderPolicy::UPDATE (which fully
+    // rebuilds the layout order from the actor order in OnChildOrderChanged).
+    // A child is moved only when it is not already above its layout predecessor,
+    // so already-ordered pairs - and any interleaved non-View actors between
+    // them - are left undisturbed. RaiseAbove fires ChildOrderChangedSignal
+    // synchronously, so guard mSkipChildrenUpdate to keep mChildren authoritative.
+    ScopedSkipChildrenUpdate guard(mImpl->mSkipChildrenUpdate);
+    for(uint32_t i = 1; i < mImpl->mChildren.Count(); ++i)
     {
-      mImpl->mPendingReorderedChildren.insert(&GetImpl(childView));
+      Dali::Actor previous = mImpl->mChildren[i - 1];
+      Dali::Actor current  = mImpl->mChildren[i];
+      if(current.GetProperty<int>(DevelActor::Property::SIBLING_ORDER) <
+         previous.GetProperty<int>(DevelActor::Property::SIBLING_ORDER))
+      {
+        current.RaiseAbove(previous);
+      }
     }
   }
-
-  // mChildren order affects layout output (e.g. LinearLayout visual order,
-  // GridLayout cell assignment). When the child was already under this view
-  // (Self().Add is a no-op in that case), OnChildAdd does not fire, so this
-  // is the only invalidation point for the reorder. When the child was a
-  // fresh add, self is already dirty from OnChildAdd and the guard makes
-  // this a no-op.
-  InvalidateMeasure();
 }
 
 void ViewImpl::RemoveAllChildren()
@@ -2269,18 +2299,22 @@ void ViewImpl::Remove(Ui::View child, Ui::RemovePolicy policy)
   }
 }
 
-uint32_t ViewImpl::GetChildCount() const
+uint32_t ViewImpl::GetChildCount(Ui::ChildScopePolicy policy) const
 {
-  return static_cast<uint32_t>(mImpl->mChildren.Count());
+  return policy == Ui::ChildScopePolicy::ALL_CHILDREN ? Self().GetChildCount() : static_cast<uint32_t>(mImpl->mChildren.Count());
 }
 
-Ui::View ViewImpl::GetChildAt(uint32_t index) const
+Dali::Actor ViewImpl::GetChildAt(uint32_t index, Ui::ChildScopePolicy policy) const
 {
-  if(index < mImpl->mChildren.Count())
+  if(policy == Ui::ChildScopePolicy::ALL_CHILDREN)
   {
-    return mImpl->mChildren[index];
+    // Dali::Actor::GetChildAt asserts on an out-of-range index, but View's
+    // contract returns an empty Actor for out-of-range, so bounds-check first
+    // (matching the LAYOUT_CHILDREN path below).
+    Dali::Actor self = Self();
+    return index < self.GetChildCount() ? self.GetChildAt(index) : Dali::Actor();
   }
-  return Ui::View();
+  return index < mImpl->mChildren.Count() ? Dali::Actor(mImpl->mChildren[index]) : Dali::Actor();
 }
 
 int32_t ViewImpl::IndexOfChild(Ui::View view) const
@@ -2683,10 +2717,10 @@ View ViewImpl::RequestChildFirstFocus()
     return DefaultOnFocusRequested();
   }
 
-  const uint32_t childCount = self.GetChildCount();
+  const uint32_t childCount = self.GetChildCount(Ui::ChildScopePolicy::LAYOUT_CHILDREN);
   for(uint32_t i = 0; i < childCount; ++i)
   {
-    View child = self.GetChildAt(i);
+    View child = View::DownCast(self.GetChildAt(i, Ui::ChildScopePolicy::LAYOUT_CHILDREN));
     if(child && child.IsVisible())
     {
       View resolved = GetImpl(child).RequestFocus();
