@@ -241,7 +241,7 @@ View FindStateEffectTarget(View owner, int32_t targetId)
 void ArrangeStandaloneChild(ViewImpl& childImpl, float parentFullWidth, float parentFullHeight)
 {
   float        childScale = childImpl.GetEffectiveScale();
-  Extents      margin     = childImpl.GetMargin();
+  Insets       margin     = childImpl.GetMargin();
   float        marginW    = static_cast<float>(margin.start + margin.end) * childScale;
   float        marginH    = static_cast<float>(margin.top + margin.bottom) * childScale;
   MeasuredSize measured   = childImpl.GetMeasuredSize();
@@ -564,8 +564,8 @@ Dali::Integration::Accessibility::RelationType ToIntegrationRelationType(Dali::U
 // clang-format off
 // Properties registered without macro to use specific member variables.
 const PropertyRegistration ViewDataImpl::PROPERTY_5(typeRegistration,  "background",                     Ui::View::Property::BACKGROUND,                       Property::MAP,     &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
-const PropertyRegistration ViewDataImpl::PROPERTY_6(typeRegistration,  "margin",                         Ui::View::Property::MARGIN,                           Property::EXTENTS, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
-const PropertyRegistration ViewDataImpl::PROPERTY_7(typeRegistration,  "padding",                        Ui::View::Property::PADDING,                          Property::EXTENTS, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
+const PropertyRegistration ViewDataImpl::PROPERTY_6(typeRegistration,  "margin",                         Ui::View::Property::MARGIN,                           Property::VECTOR4, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
+const PropertyRegistration ViewDataImpl::PROPERTY_7(typeRegistration,  "padding",                        Ui::View::Property::PADDING,                          Property::VECTOR4, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
 const PropertyRegistration ViewDataImpl::PROPERTY_11(typeRegistration, "leftFocusableViewId",           Ui::View::Property::LEFT_FOCUSABLE_VIEW_ID,          Property::INTEGER, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
 const PropertyRegistration ViewDataImpl::PROPERTY_12(typeRegistration, "rightFocusableViewId",          Ui::View::Property::RIGHT_FOCUSABLE_VIEW_ID,         Property::INTEGER, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
 const PropertyRegistration ViewDataImpl::PROPERTY_13(typeRegistration, "upFocusableViewId",             Ui::View::Property::UP_FOCUSABLE_VIEW_ID,            Property::INTEGER, &ViewDataImpl::SetProperty, &ViewDataImpl::GetProperty);
@@ -730,7 +730,7 @@ MeasuredSize ViewDataImpl::MeasureDefault(float widthConstraint, float heightCon
       }
 
       float        childScale            = childImpl.GetEffectiveScale();
-      Extents      margin                = childImpl.GetMargin();
+      Insets       margin                = childImpl.GetMargin();
       float        marginW               = static_cast<float>(margin.start + margin.end) * childScale;
       float        marginH               = static_cast<float>(margin.top + margin.bottom) * childScale;
       float        childWidthConstraint  = std::max(0.0f, contentWidth * s - marginW);
@@ -849,7 +849,7 @@ MeasuredSize ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
       }
 
       float        childScale      = childImpl.GetEffectiveScale();
-      Extents      margin          = childImpl.GetMargin();
+      Insets       margin          = childImpl.GetMargin();
       float        visMarginStart  = static_cast<float>(margin.start) * childScale;
       float        visMarginEnd    = static_cast<float>(margin.end) * childScale;
       float        visMarginTop    = static_cast<float>(margin.top) * childScale;
@@ -934,7 +934,7 @@ void ViewDataImpl::RelayoutDefault(const Vector2& size, RelayoutContainer& conta
       Actor   child = mViewImpl.Self().GetChildAt(i);
       Vector2 newChildSize(size);
 
-      Extents padding = mPadding;
+      Insets padding = mPadding;
 
       Dali::LayoutDirection::Type layoutDirection = GetEffectiveLayoutDirection();
 
@@ -1716,22 +1716,22 @@ float ViewDataImpl::GetMaximumHeight() const
   return mSizeConstraints ? mSizeConstraints->maxHeight : std::numeric_limits<float>::max();
 }
 
-void ViewDataImpl::SetMargin(const Extents& margin)
+void ViewDataImpl::SetMargin(const Insets& margin)
 {
-  mViewImpl.Self().SetProperty(Ui::View::Property::MARGIN, margin);
+  mViewImpl.Self().SetProperty(Ui::View::Property::MARGIN, Vector4(margin));
 }
 
-Extents ViewDataImpl::GetMargin() const
+Insets ViewDataImpl::GetMargin() const
 {
   return mMargin;
 }
 
-void ViewDataImpl::SetPadding(const Extents& padding)
+void ViewDataImpl::SetPadding(const Insets& padding)
 {
-  mViewImpl.Self().SetProperty(Ui::View::Property::PADDING, padding);
+  mViewImpl.Self().SetProperty(Ui::View::Property::PADDING, Vector4(padding));
 }
 
-Extents ViewDataImpl::GetPadding() const
+Insets ViewDataImpl::GetPadding() const
 {
   return mPadding;
 }
@@ -2836,12 +2836,12 @@ void ViewDataImpl::MeasureStandaloneChildren(float visEffW, float visEffH)
     {
       continue;
     }
-    float   childScale = childImpl.GetEffectiveScale();
-    Extents margin     = childImpl.GetMargin();
-    float   visMarginW = static_cast<float>(margin.start + margin.end) * childScale;
-    float   visMarginH = static_cast<float>(margin.top + margin.bottom) * childScale;
-    float   childVisW  = std::max(0.0f, visEffW - visMarginW);
-    float   childVisH  = std::max(0.0f, visEffH - visMarginH);
+    float  childScale = childImpl.GetEffectiveScale();
+    Insets margin     = childImpl.GetMargin();
+    float  visMarginW = static_cast<float>(margin.start + margin.end) * childScale;
+    float  visMarginH = static_cast<float>(margin.top + margin.bottom) * childScale;
+    float  childVisW  = std::max(0.0f, visEffW - visMarginW);
+    float  childVisH  = std::max(0.0f, visEffH - visMarginH);
     childImpl.Measure(childVisW, childVisH);
   }
 }
@@ -3078,9 +3078,9 @@ MeasuredSize ViewDataImpl::DispatchMeasureWithLayoutManager(LayoutManager* manag
 {
   float s = mViewImpl.GetEffectiveScale();
 
-  Extents padding = mViewImpl.GetPadding();
-  float   visPadW = static_cast<float>(padding.start + padding.end) * s;
-  float   visPadH = static_cast<float>(padding.top + padding.bottom) * s;
+  Insets padding = mViewImpl.GetPadding();
+  float  visPadW = static_cast<float>(padding.start + padding.end) * s;
+  float  visPadH = static_cast<float>(padding.top + padding.bottom) * s;
 
   float requestedWidth  = mViewImpl.GetRequestedWidth();
   float requestedHeight = mViewImpl.GetRequestedHeight();
@@ -3121,8 +3121,8 @@ MeasuredSize ViewDataImpl::DispatchArrangeWithLayoutManager(LayoutManager* manag
   self.SetWidth(visualBounds.width);
   self.SetHeight(visualBounds.height);
 
-  float   s       = mViewImpl.GetEffectiveScale();
-  Extents padding = mViewImpl.GetPadding();
+  float  s       = mViewImpl.GetEffectiveScale();
+  Insets padding = mViewImpl.GetPadding();
 
   LayoutRect visContentBounds;
   visContentBounds.x      = static_cast<float>(padding.start) * s;
@@ -3739,13 +3739,14 @@ void ViewDataImpl::SetProperty(BaseObject* object, Property::Index index, const 
 
       case Ui::View::Property::MARGIN:
       {
-        Extents margin;
+        Vector4 margin;
         if(value.Get(margin))
         {
           ViewDataImpl& dataImpl = viewImpl.GetViewDataImpl();
-          if(dataImpl.mMargin != margin)
+          Insets        marginInsets(margin.x, margin.y, margin.z, margin.w);
+          if(dataImpl.mMargin != marginInsets)
           {
-            dataImpl.mMargin = margin;
+            dataImpl.mMargin = marginInsets;
             viewImpl.InvalidateMeasure();
           }
         }
@@ -3754,13 +3755,14 @@ void ViewDataImpl::SetProperty(BaseObject* object, Property::Index index, const 
 
       case Ui::View::Property::PADDING:
       {
-        Extents padding;
+        Vector4 padding;
         if(value.Get(padding))
         {
           ViewDataImpl& dataImpl = viewImpl.GetViewDataImpl();
-          if(dataImpl.mPadding != padding)
+          Insets        paddingInsets(padding.x, padding.y, padding.z, padding.w);
+          if(dataImpl.mPadding != paddingInsets)
           {
-            dataImpl.mPadding = padding;
+            dataImpl.mPadding = paddingInsets;
             viewImpl.InvalidateMeasure();
           }
         }
@@ -4324,13 +4326,13 @@ Property::Value ViewDataImpl::GetProperty(BaseObject* object, Property::Index in
 
       case Ui::View::Property::MARGIN:
       {
-        value = viewImpl.GetMargin();
+        value = Vector4(viewImpl.GetMargin());
         break;
       }
 
       case Ui::View::Property::PADDING:
       {
-        value = viewImpl.GetPadding();
+        value = Vector4(viewImpl.GetPadding());
         break;
       }
 
