@@ -23,7 +23,7 @@
 #include <vector>
 
 // INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/flex-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/flex-layout-params-trait.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
@@ -37,25 +37,25 @@ namespace
 
 float GetFlexGrow(ViewImpl& childImpl)
 {
-  auto* params = Internal::FlexLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::FlexLayoutParamsTrait::Get(childImpl);
   return params ? params->GetFlexGrow() : 0.0f;
 }
 
 float GetFlexShrink(ViewImpl& childImpl)
 {
-  auto* params = Internal::FlexLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::FlexLayoutParamsTrait::Get(childImpl);
   return params ? params->GetFlexShrink() : 1.0f;
 }
 
 FlexAlign GetAlignSelf(ViewImpl& childImpl)
 {
-  auto* params = Internal::FlexLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::FlexLayoutParamsTrait::Get(childImpl);
   return params ? params->GetAlignSelf() : FlexAlign::AUTO;
 }
 
 float GetFlexBasis(ViewImpl& childImpl)
 {
-  auto* params = Internal::FlexLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::FlexLayoutParamsTrait::Get(childImpl);
   return params ? params->GetFlexBasis() : WRAP_CONTENT;
 }
 

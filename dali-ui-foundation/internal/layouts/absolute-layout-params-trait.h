@@ -1,0 +1,94 @@
+#pragma once
+
+/*
+ * Copyright (c) 2026 Samsung Electronics Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+// INTERNAL INCLUDES
+#include <dali-ui-foundation/integration-api/reserved-trait-id.h>
+#include <dali-ui-foundation/integration-api/view-integ.h>
+#include <dali-ui-foundation/public-api/layouts/absolute-layout-params.h>
+#include <dali-ui-foundation/public-api/traits/trait-id.h>
+#include <dali-ui-foundation/public-api/traits/trait-object.h>
+
+namespace Dali
+{
+namespace Ui
+{
+namespace Internal
+{
+
+/**
+ * @brief Trait implementation that stores AbsoluteLayout child parameters.
+ */
+class AbsoluteLayoutParamsTrait final : public TraitObject
+{
+public:
+  explicit AbsoluteLayoutParamsTrait(const AbsoluteLayoutParams& params)
+  : mBounds(params.GetBounds()),
+    mFlags(params.GetFlags())
+  {
+  }
+
+  void CopyTo(AbsoluteLayoutParams& params) const
+  {
+    params.SetBounds(mBounds)
+      .SetFlags(mFlags);
+  }
+
+  /**
+   * @brief Gets the absolute position and size of the child within the layout.
+   * @return The layout bounds.
+   */
+  const LayoutRect& GetBounds() const
+  {
+    return mBounds;
+  }
+
+  /**
+   * @brief Gets the layout flags that control proportional sizing behavior.
+   * @return The absolute layout flags.
+   */
+  AbsoluteLayoutFlags GetFlags() const
+  {
+    return mFlags;
+  }
+
+  /**
+   * @brief Retrieves the AbsoluteLayoutParams trait attached to a view, if any.
+   * @param[in] viewImpl The view implementation to query.
+   * @return Pointer to the params, or nullptr if not attached.
+   * @warning Do not retain the pointer across trait replacement or removal.
+   */
+  static const AbsoluteLayoutParamsTrait* Get(const ViewImpl& viewImpl)
+  {
+    IntrusivePtr<TraitObject> object = Integration::View::GetTrait(viewImpl, Integration::ReservedTraitId::ABSOLUTE_LAYOUT_PARAMS);
+    DALI_ASSERT_DEBUG(!object || (dynamic_cast<const AbsoluteLayoutParamsTrait*>(object.Get()) && "ABSOLUTE_LAYOUT_PARAMS trait must be an AbsoluteLayoutParamsTrait"));
+    return object ? static_cast<const AbsoluteLayoutParamsTrait*>(object.Get()) : nullptr;
+  }
+
+protected:
+  ~AbsoluteLayoutParamsTrait() override = default;
+
+private:
+  const LayoutRect          mBounds;
+  const AbsoluteLayoutFlags mFlags;
+};
+
+} // namespace Internal
+
+} // namespace Ui
+} // namespace Dali

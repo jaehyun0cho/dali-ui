@@ -17,9 +17,11 @@
  *
  */
 
+// EXTERNAL INCLUDES
+#include <cstddef>
+
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/public-api/dali-ui-common.h>
-#include <dali-ui-foundation/public-api/layouts/layout-params.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
 
 namespace Dali
@@ -27,34 +29,28 @@ namespace Dali
 namespace Ui
 {
 
-// Forward declarations
-namespace Internal
-{
-class StackLayoutParamsImpl;
-}
-
 /**
  * @brief StackLayoutParams stores per-child layout parameters for StackLayout.
  *
- * This handle provides direct access to the layout weight attached to a child view.
+ * This value type provides layout weight and alignment for a child view.
  * Use View::SetLayoutParams() to attach parameters to a child view.
  *
  * @code
  * view.SetLayoutParams(StackLayoutParams::New().SetWeight(1.0f));
  * @endcode
  */
-class DALI_UI_API StackLayoutParams : public LayoutParams
+class DALI_UI_API StackLayoutParams
 {
 public:
   /**
-   * @brief Creates an uninitialized handle.
+   * @brief Creates parameters with default values.
    */
   StackLayoutParams();
 
   /**
    * @brief Creates a new StackLayoutParams with default values.
    *
-   * @return A handle to a newly allocated StackLayoutParams
+   * @return A value initialized with default parameters
    */
   static StackLayoutParams New();
 
@@ -62,36 +58,40 @@ public:
    * @brief Creates a new StackLayoutParams by copying values from an existing one.
    *
    * @param[in] other The params to copy from
-   * @return A handle to a newly allocated StackLayoutParams with copied values
+   * @return An independent copy of @p other
    */
   static StackLayoutParams New(const StackLayoutParams& other);
 
   /**
    * @brief Copy constructor.
    *
-   * @param[in] handle Handle to copy
+   * @param[in] other Value to copy
    */
-  StackLayoutParams(const StackLayoutParams& handle);
+  StackLayoutParams(const StackLayoutParams& other);
+
+  /**
+   * @brief Creates a value by moving another value.
+   *
+   * @post @p other remains valid, but its value is unspecified.
+   */
+  StackLayoutParams(StackLayoutParams&& other) noexcept;
+
+  /**
+   * @brief Copies another value.
+   */
+  StackLayoutParams& operator=(const StackLayoutParams& other);
+
+  /**
+   * @brief Moves another value.
+   *
+   * @post @p other remains valid, but its value is unspecified.
+   */
+  StackLayoutParams& operator=(StackLayoutParams&& other) noexcept;
 
   /**
    * @brief Destructor.
    */
   ~StackLayoutParams();
-
-  /**
-   * @brief Downcasts a handle to StackLayoutParams.
-   *
-   * @param[in] handle Handle to an object
-   * @return A valid handle or an uninitialized handle
-   */
-  static StackLayoutParams DownCast(BaseHandle handle);
-
-  /**
-   * @brief Returns the layout params type identifier.
-   *
-   * @return LayoutParamsType::STACK
-   */
-  static LayoutParamsType GetLayoutParamsType();
 
   /**
    * @brief Sets the weight for proportional space distribution along the stack axis.
@@ -131,10 +131,18 @@ public:
    */
   LayoutAlignment GetAlignment() const;
 
-public: // Not intended for application developers
-  /// @cond internal
-  explicit StackLayoutParams(Internal::StackLayoutParamsImpl* implementation);
-  /// @endcond
+private:
+  static constexpr std::size_t STORAGE_SIZE      = 16u;
+  static constexpr std::size_t STORAGE_ALIGNMENT = 8u;
+
+  class Impl;
+
+  static void ValidateStorage() noexcept;
+
+  Impl*       ImplPtr() noexcept;
+  const Impl* ImplPtr() const noexcept;
+
+  alignas(STORAGE_ALIGNMENT) std::byte mStorage[STORAGE_SIZE];
 };
 
 } // namespace Ui

@@ -23,7 +23,7 @@
 #include <vector>
 
 // INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/absolute-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/absolute-layout-params-trait.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
@@ -35,7 +35,7 @@ namespace Ui
 namespace
 {
 
-LayoutRect GetChildBounds(Internal::AbsoluteLayoutParamsImpl* params)
+LayoutRect GetChildBounds(const Internal::AbsoluteLayoutParamsTrait* params)
 {
   if(params)
   {
@@ -44,7 +44,7 @@ LayoutRect GetChildBounds(Internal::AbsoluteLayoutParamsImpl* params)
   return LayoutRect(0.0f, 0.0f, -1.0f, -1.0f);
 }
 
-AbsoluteLayoutFlags GetChildFlags(Internal::AbsoluteLayoutParamsImpl* params)
+AbsoluteLayoutFlags GetChildFlags(const Internal::AbsoluteLayoutParamsTrait* params)
 {
   if(params)
   {
@@ -110,7 +110,7 @@ MeasuredSize AbsoluteLayoutManager::Measure(ViewImpl* view, float widthConstrain
     }
 
     float               childScale = childImpl.GetEffectiveScale();
-    auto*               params     = Internal::AbsoluteLayoutParamsImpl::Get(childImpl);
+    auto*               params     = Internal::AbsoluteLayoutParamsTrait::Get(childImpl);
     LayoutRect          bounds     = GetChildBounds(params);
     AbsoluteLayoutFlags flags      = GetChildFlags(params);
 
@@ -258,7 +258,7 @@ MeasuredSize AbsoluteLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bo
     }
 
     float               childScale      = childImpl.GetEffectiveScale();
-    auto*               params          = Internal::AbsoluteLayoutParamsImpl::Get(childImpl);
+    auto*               params          = Internal::AbsoluteLayoutParamsTrait::Get(childImpl);
     LayoutRect          childBoundsSpec = GetChildBounds(params);
     AbsoluteLayoutFlags flags           = GetChildFlags(params);
 

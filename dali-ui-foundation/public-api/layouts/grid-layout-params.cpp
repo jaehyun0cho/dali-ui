@@ -19,120 +19,174 @@
 #include <dali-ui-foundation/public-api/layouts/grid-layout-params.h>
 
 // EXTERNAL INCLUDES
-#include <dali/public-api/object/ref-object.h>
-
-// INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/grid-layout-params-impl.h>
+#include <algorithm>
+#include <new>
+#include <type_traits>
+#include <utility>
 
 namespace Dali
 {
 namespace Ui
 {
 
+class GridLayoutParams::Impl
+{
+public:
+  Impl()
+  : mRow(0u),
+    mColumn(0u),
+    mRowSpan(1u),
+    mColumnSpan(1u),
+    mHorizontalAlignment(LayoutAlignment::FILL),
+    mVerticalAlignment(LayoutAlignment::FILL)
+  {
+  }
+
+  uint32_t        mRow;
+  uint32_t        mColumn;
+  uint32_t        mRowSpan;
+  uint32_t        mColumnSpan;
+  LayoutAlignment mHorizontalAlignment;
+  LayoutAlignment mVerticalAlignment;
+};
+
+static_assert(sizeof(GridLayoutParams) == 32u, "GridLayoutParams ABI size changed");
+static_assert(alignof(GridLayoutParams) == 8u, "GridLayoutParams ABI alignment changed");
+
+void GridLayoutParams::ValidateStorage() noexcept
+{
+  static_assert(sizeof(Impl) <= STORAGE_SIZE, "GridLayoutParams storage is too small");
+  static_assert(alignof(Impl) <= STORAGE_ALIGNMENT, "GridLayoutParams storage alignment is insufficient");
+  static_assert(std::is_nothrow_move_constructible_v<Impl>, "GridLayoutParams::Impl move construction must be noexcept");
+  static_assert(std::is_nothrow_move_assignable_v<Impl>, "GridLayoutParams::Impl move assignment must be noexcept");
+  static_assert(std::is_nothrow_destructible_v<Impl>, "GridLayoutParams::Impl destruction must be noexcept");
+}
+
+GridLayoutParams::Impl* GridLayoutParams::ImplPtr() noexcept
+{
+  return std::launder(reinterpret_cast<Impl*>(mStorage));
+}
+
+const GridLayoutParams::Impl* GridLayoutParams::ImplPtr() const noexcept
+{
+  return std::launder(reinterpret_cast<const Impl*>(mStorage));
+}
+
 GridLayoutParams::GridLayoutParams()
 {
+  ValidateStorage();
+  ::new(static_cast<void*>(mStorage)) Impl();
 }
 
-GridLayoutParams GridLayoutParams::New()
+GridLayoutParams::GridLayoutParams(const GridLayoutParams& other)
 {
-  IntrusivePtr<Internal::GridLayoutParamsImpl> impl(new Internal::GridLayoutParamsImpl());
-  return GridLayoutParams(impl.Get());
+  ValidateStorage();
+  ::new(static_cast<void*>(mStorage)) Impl(*other.ImplPtr());
 }
 
-GridLayoutParams GridLayoutParams::New(const GridLayoutParams& other)
+GridLayoutParams::GridLayoutParams(GridLayoutParams&& other) noexcept
 {
-  IntrusivePtr<Internal::GridLayoutParamsImpl> impl(new Internal::GridLayoutParamsImpl(GetImpl(other)));
-  return GridLayoutParams(impl.Get());
+  ValidateStorage();
+  ::new(static_cast<void*>(mStorage)) Impl(std::move(*other.ImplPtr()));
 }
 
-GridLayoutParams::GridLayoutParams(const GridLayoutParams& handle)
-: LayoutParams(handle)
+GridLayoutParams& GridLayoutParams::operator=(const GridLayoutParams& other)
 {
+  if(this != &other)
+  {
+    *ImplPtr() = *other.ImplPtr();
+  }
+  return *this;
+}
+
+GridLayoutParams& GridLayoutParams::operator=(GridLayoutParams&& other) noexcept
+{
+  if(this != &other)
+  {
+    *ImplPtr() = std::move(*other.ImplPtr());
+  }
+  return *this;
 }
 
 GridLayoutParams::~GridLayoutParams()
 {
+  ImplPtr()->~Impl();
 }
 
-GridLayoutParams::GridLayoutParams(Internal::GridLayoutParamsImpl* implementation)
-: LayoutParams(implementation)
+GridLayoutParams GridLayoutParams::New()
 {
+  return GridLayoutParams();
 }
 
-GridLayoutParams GridLayoutParams::DownCast(BaseHandle handle)
+GridLayoutParams GridLayoutParams::New(const GridLayoutParams& other)
 {
-  return GridLayoutParams(dynamic_cast<Internal::GridLayoutParamsImpl*>(handle.GetObjectPtr()));
-}
-
-LayoutParamsType GridLayoutParams::GetLayoutParamsType()
-{
-  return LayoutParamsType::GRID;
+  return GridLayoutParams(other);
 }
 
 GridLayoutParams& GridLayoutParams::SetRow(uint32_t row)
 {
-  GetImpl(*this).SetRow(row);
+  ImplPtr()->mRow = row;
   return *this;
 }
 
 uint32_t GridLayoutParams::GetRow() const
 {
-  return GetImpl(*this).GetRow();
+  return ImplPtr()->mRow;
 }
 
 GridLayoutParams& GridLayoutParams::SetColumn(uint32_t column)
 {
-  GetImpl(*this).SetColumn(column);
+  ImplPtr()->mColumn = column;
   return *this;
 }
 
 uint32_t GridLayoutParams::GetColumn() const
 {
-  return GetImpl(*this).GetColumn();
+  return ImplPtr()->mColumn;
 }
 
 GridLayoutParams& GridLayoutParams::SetRowSpan(uint32_t span)
 {
-  GetImpl(*this).SetRowSpan(span);
+  ImplPtr()->mRowSpan = std::max(1u, span);
   return *this;
 }
 
 uint32_t GridLayoutParams::GetRowSpan() const
 {
-  return GetImpl(*this).GetRowSpan();
+  return ImplPtr()->mRowSpan;
 }
 
 GridLayoutParams& GridLayoutParams::SetColumnSpan(uint32_t span)
 {
-  GetImpl(*this).SetColumnSpan(span);
+  ImplPtr()->mColumnSpan = std::max(1u, span);
   return *this;
 }
 
 uint32_t GridLayoutParams::GetColumnSpan() const
 {
-  return GetImpl(*this).GetColumnSpan();
+  return ImplPtr()->mColumnSpan;
 }
 
 GridLayoutParams& GridLayoutParams::SetHorizontalAlignment(LayoutAlignment alignment)
 {
-  GetImpl(*this).SetHorizontalAlignment(alignment);
+  ImplPtr()->mHorizontalAlignment = alignment;
   return *this;
 }
 
 LayoutAlignment GridLayoutParams::GetHorizontalAlignment() const
 {
-  return GetImpl(*this).GetHorizontalAlignment();
+  return ImplPtr()->mHorizontalAlignment;
 }
 
 GridLayoutParams& GridLayoutParams::SetVerticalAlignment(LayoutAlignment alignment)
 {
-  GetImpl(*this).SetVerticalAlignment(alignment);
+  ImplPtr()->mVerticalAlignment = alignment;
   return *this;
 }
 
 LayoutAlignment GridLayoutParams::GetVerticalAlignment() const
 {
-  return GetImpl(*this).GetVerticalAlignment();
+  return ImplPtr()->mVerticalAlignment;
 }
 
 } // namespace Ui

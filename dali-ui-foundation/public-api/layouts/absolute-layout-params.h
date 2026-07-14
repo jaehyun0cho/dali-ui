@@ -17,9 +17,11 @@
  *
  */
 
+// EXTERNAL INCLUDES
+#include <cstddef>
+
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/public-api/dali-ui-common.h>
-#include <dali-ui-foundation/public-api/layouts/layout-params.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
 
 namespace Dali
@@ -27,16 +29,10 @@ namespace Dali
 namespace Ui
 {
 
-// Forward declarations
-namespace Internal
-{
-class AbsoluteLayoutParamsImpl;
-}
-
 /**
  * @brief AbsoluteLayoutParams stores per-child layout parameters for AbsoluteLayout.
  *
- * This handle provides direct access to bounds and flags attached to a child view.
+ * This value type provides bounds and flags for a child view.
  * Use View::SetLayoutParams() to attach parameters to a child view.
  *
  * @code
@@ -45,18 +41,18 @@ class AbsoluteLayoutParamsImpl;
  *   .SetFlags(AbsoluteLayoutFlags::POSITION_PROPORTIONAL));
  * @endcode
  */
-class DALI_UI_API AbsoluteLayoutParams : public LayoutParams
+class DALI_UI_API AbsoluteLayoutParams
 {
 public:
   /**
-   * @brief Creates an uninitialized handle.
+   * @brief Creates parameters with default values.
    */
   AbsoluteLayoutParams();
 
   /**
    * @brief Creates a new AbsoluteLayoutParams with default values.
    *
-   * @return A handle to a newly allocated AbsoluteLayoutParams
+   * @return A value initialized with default parameters
    */
   static AbsoluteLayoutParams New();
 
@@ -64,36 +60,40 @@ public:
    * @brief Creates a new AbsoluteLayoutParams by copying values from an existing one.
    *
    * @param[in] other The params to copy from
-   * @return A handle to a newly allocated AbsoluteLayoutParams with copied values
+   * @return An independent copy of @p other
    */
   static AbsoluteLayoutParams New(const AbsoluteLayoutParams& other);
 
   /**
    * @brief Copy constructor.
    *
-   * @param[in] handle Handle to copy
+   * @param[in] other Value to copy
    */
-  AbsoluteLayoutParams(const AbsoluteLayoutParams& handle);
+  AbsoluteLayoutParams(const AbsoluteLayoutParams& other);
+
+  /**
+   * @brief Creates a value by moving another value.
+   *
+   * @post @p other remains valid, but its value is unspecified.
+   */
+  AbsoluteLayoutParams(AbsoluteLayoutParams&& other) noexcept;
+
+  /**
+   * @brief Copies another value.
+   */
+  AbsoluteLayoutParams& operator=(const AbsoluteLayoutParams& other);
+
+  /**
+   * @brief Moves another value.
+   *
+   * @post @p other remains valid, but its value is unspecified.
+   */
+  AbsoluteLayoutParams& operator=(AbsoluteLayoutParams&& other) noexcept;
 
   /**
    * @brief Destructor.
    */
   ~AbsoluteLayoutParams();
-
-  /**
-   * @brief Downcasts a handle to AbsoluteLayoutParams.
-   *
-   * @param[in] handle Handle to an object
-   * @return A valid handle or an uninitialized handle
-   */
-  static AbsoluteLayoutParams DownCast(BaseHandle handle);
-
-  /**
-   * @brief Returns the layout params type identifier.
-   *
-   * @return LayoutParamsType::ABSOLUTE
-   */
-  static LayoutParamsType GetLayoutParamsType();
 
   /**
    * @brief Sets the absolute position and size of the child within the layout.
@@ -189,10 +189,18 @@ public:
    */
   AbsoluteLayoutFlags GetFlags() const;
 
-public: // Not intended for application developers
-  /// @cond internal
-  explicit AbsoluteLayoutParams(Internal::AbsoluteLayoutParamsImpl* implementation);
-  /// @endcond
+private:
+  static constexpr std::size_t STORAGE_SIZE      = 32u;
+  static constexpr std::size_t STORAGE_ALIGNMENT = 8u;
+
+  class Impl;
+
+  static void ValidateStorage() noexcept;
+
+  Impl*       ImplPtr() noexcept;
+  const Impl* ImplPtr() const noexcept;
+
+  alignas(STORAGE_ALIGNMENT) std::byte mStorage[STORAGE_SIZE];
 };
 
 } // namespace Ui

@@ -17,9 +17,11 @@
  *
  */
 
+// EXTERNAL INCLUDES
+#include <cstddef>
+
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/public-api/dali-ui-common.h>
-#include <dali-ui-foundation/public-api/layouts/layout-params.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
 
 namespace Dali
@@ -27,17 +29,10 @@ namespace Dali
 namespace Ui
 {
 
-// Forward declarations
-namespace Internal
-{
-class FlexLayoutParamsImpl;
-}
-
 /**
  * @brief FlexLayoutParams stores per-child layout parameters for FlexLayout.
  *
- * This handle provides direct access to flex grow, shrink, basis, and align-self
- * attached to a child view.
+ * This value type provides flex grow, shrink, basis, and align-self for a child view.
  * Use View::SetLayoutParams() to attach parameters to a child view.
  *
  * @code
@@ -47,18 +42,18 @@ class FlexLayoutParamsImpl;
  *   .SetAlignSelf(FlexAlign::CENTER));
  * @endcode
  */
-class DALI_UI_API FlexLayoutParams : public LayoutParams
+class DALI_UI_API FlexLayoutParams
 {
 public:
   /**
-   * @brief Creates an uninitialized handle.
+   * @brief Creates parameters with default values.
    */
   FlexLayoutParams();
 
   /**
    * @brief Creates a new FlexLayoutParams with default values.
    *
-   * @return A handle to a newly allocated FlexLayoutParams
+   * @return A value initialized with default parameters
    */
   static FlexLayoutParams New();
 
@@ -66,36 +61,40 @@ public:
    * @brief Creates a new FlexLayoutParams by copying values from an existing one.
    *
    * @param[in] other The params to copy from
-   * @return A handle to a newly allocated FlexLayoutParams with copied values
+   * @return An independent copy of @p other
    */
   static FlexLayoutParams New(const FlexLayoutParams& other);
 
   /**
    * @brief Copy constructor.
    *
-   * @param[in] handle Handle to copy
+   * @param[in] other Value to copy
    */
-  FlexLayoutParams(const FlexLayoutParams& handle);
+  FlexLayoutParams(const FlexLayoutParams& other);
+
+  /**
+   * @brief Creates a value by moving another value.
+   *
+   * @post @p other remains valid, but its value is unspecified.
+   */
+  FlexLayoutParams(FlexLayoutParams&& other) noexcept;
+
+  /**
+   * @brief Copies another value.
+   */
+  FlexLayoutParams& operator=(const FlexLayoutParams& other);
+
+  /**
+   * @brief Moves another value.
+   *
+   * @post @p other remains valid, but its value is unspecified.
+   */
+  FlexLayoutParams& operator=(FlexLayoutParams&& other) noexcept;
 
   /**
    * @brief Destructor.
    */
   ~FlexLayoutParams();
-
-  /**
-   * @brief Downcasts a handle to FlexLayoutParams.
-   *
-   * @param[in] handle Handle to an object
-   * @return A valid handle or an uninitialized handle
-   */
-  static FlexLayoutParams DownCast(BaseHandle handle);
-
-  /**
-   * @brief Returns the layout params type identifier.
-   *
-   * @return LayoutParamsType::FLEX
-   */
-  static LayoutParamsType GetLayoutParamsType();
 
   /**
    * @brief Sets the flex grow factor for distributing remaining space.
@@ -157,10 +156,18 @@ public:
    */
   FlexAlign GetAlignSelf() const;
 
-public: // Not intended for application developers
-  /// @cond internal
-  explicit FlexLayoutParams(Internal::FlexLayoutParamsImpl* implementation);
-  /// @endcond
+private:
+  static constexpr std::size_t STORAGE_SIZE      = 24u;
+  static constexpr std::size_t STORAGE_ALIGNMENT = 8u;
+
+  class Impl;
+
+  static void ValidateStorage() noexcept;
+
+  Impl*       ImplPtr() noexcept;
+  const Impl* ImplPtr() const noexcept;
+
+  alignas(STORAGE_ALIGNMENT) std::byte mStorage[STORAGE_SIZE];
 };
 
 } // namespace Ui

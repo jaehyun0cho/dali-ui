@@ -25,7 +25,7 @@
 #include <vector>
 
 // INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/grid-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/grid-layout-params-trait.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
@@ -39,37 +39,37 @@ namespace
 
 uint32_t GetChildRow(ViewImpl& childImpl)
 {
-  auto* params = Internal::GridLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::GridLayoutParamsTrait::Get(childImpl);
   return params ? params->GetRow() : 0;
 }
 
 uint32_t GetChildColumn(ViewImpl& childImpl)
 {
-  auto* params = Internal::GridLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::GridLayoutParamsTrait::Get(childImpl);
   return params ? params->GetColumn() : 0;
 }
 
 uint32_t GetChildRowSpan(ViewImpl& childImpl)
 {
-  auto* params = Internal::GridLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::GridLayoutParamsTrait::Get(childImpl);
   return params ? params->GetRowSpan() : 1;
 }
 
 uint32_t GetChildColumnSpan(ViewImpl& childImpl)
 {
-  auto* params = Internal::GridLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::GridLayoutParamsTrait::Get(childImpl);
   return params ? params->GetColumnSpan() : 1;
 }
 
 LayoutAlignment GetChildHorizontalAlignment(ViewImpl& childImpl)
 {
-  auto* params = Internal::GridLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::GridLayoutParamsTrait::Get(childImpl);
   return params ? params->GetHorizontalAlignment() : LayoutAlignment::FILL;
 }
 
 LayoutAlignment GetChildVerticalAlignment(ViewImpl& childImpl)
 {
-  auto* params = Internal::GridLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::GridLayoutParamsTrait::Get(childImpl);
   return params ? params->GetVerticalAlignment() : LayoutAlignment::FILL;
 }
 

@@ -42,12 +42,32 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
     - `view.SetLayoutParams(GridLayoutParams::New().SetRow(2).SetColumn(3).SetRowSpan(1).SetColumnSpan(2))`
     - `view.SetLayoutParams(FlexLayoutParams::New().SetFlexGrow(1.0f).SetFlexShrink(0.0f))`
     - `view.SetLayoutParams(AbsoluteLayoutParams::New().SetBounds(rect).SetFlags(flags))`
-  - `SetLayoutParams()` stores the params handle and invalidates the View's measure cache.
+  - `SetLayoutParams()` stores an independent copy and invalidates the View's measure cache.
   - Internally these store data via type-safe Trait objects attached to each child view.
 
 - **AbsoluteLayoutParams, FlexLayoutParams, GridLayoutParams, StackLayoutParams**
-  - Public Trait handle classes that provide direct access to per-child layout parameters.
-  - Attached via `View::SetLayoutParams()` which stores the params handle onto the View.
+  - Public value classes with fixed-capacity opaque inline storage. Construction, copying, and
+    retrieval do not allocate per-value implementation objects.
+  - `View::SetLayoutParams()` copies the supplied values into the View. Later changes to the
+    supplied value do not affect the View.
+  - `View::TryGetLayoutParams(out)` copies out an independent snapshot. Modify the snapshot and
+    pass it back to `SetLayoutParams()` to commit changes:
+    ```cpp
+    StackLayoutParams params;
+    if(view.TryGetLayoutParams(params))
+    {
+      params.SetWeight(2.0f);
+      view.SetLayoutParams(params);
+    }
+    ```
+  - `View::GetLayoutParamsOrDefault<T>()` is the concise alternative when attachment presence
+    is not needed. It returns the attached snapshot or `T{}` without attaching parameters or
+    invalidating layout:
+    ```cpp
+    auto params = view.GetLayoutParamsOrDefault<StackLayoutParams>();
+    params.SetWeight(2.0f);
+    view.SetLayoutParams(params);
+    ```
   - Setters return `*this` for method chaining.
   - `New()` creates a new instance with default values; `New(other)` creates an independent copy:
     ```cpp
@@ -55,7 +75,7 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
     viewA.SetLayoutParams(GridLayoutParams::New(base).SetColumn(0));
     viewB.SetLayoutParams(GridLayoutParams::New(base).SetColumn(1));
     ```
-  - **Note:** `SetLayoutParams()` stores the handle as-is (no deep copy). Passing the same handle to multiple Views causes them to share state. Use `New(other)` to create an independent copy when reusing params across Views.
+  - Passing the same value to multiple Views is safe because each View stores an independent copy.
 
 - **LayoutController**  
   - Singleton per window via `LayoutController::Get(Window)`.  
@@ -77,10 +97,11 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
 - **StackLayoutImpl, FlexLayoutImpl, GridLayoutImpl, AbsoluteLayoutImpl**
   - Each creates and attaches its LayoutManager via `View::AttachLayoutManager()` in `OnInitialize()`.
 
-- **AbsoluteLayoutParamsImpl, FlexLayoutParamsImpl, GridLayoutParamsImpl, StackLayoutParamsImpl**
-  - TraitImpl-derived classes that store per-child layout parameters (e.g., bounds/flags, grow/shrink/basis/alignSelf, row/column/span, weight).
+- **AbsoluteLayoutParamsTrait, FlexLayoutParamsTrait, GridLayoutParamsTrait, StackLayoutParamsTrait**
+  - Immutable TraitObject-derived snapshots that store per-child layout parameters (e.g., bounds/flags, grow/shrink/basis/alignSelf, row/column/span, weight).
   - Attached to child views via `ReservedTraitId` and accessed by layout managers during Measure/Arrange.
-  - Each provides `Get(ViewImpl&)` (returns nullptr if not attached) and `GetOrCreate(ViewImpl&)` (creates if missing).
+  - Each provides read-only getters, `CopyTo()` for public copy-out, and `Get(const ViewImpl&)`,
+    which returns nullptr if the parameters are not attached.
 
 - **LayoutControllerImpl**  
   - Keeps layout roots in `mPendingViews`; `ProcessLayouts()` resolves constraints, then runs Measure and Arrange for each root during the pre-process phase. Once the pending work drains, it schedules the `LayoutFinished` emit for the post-process phase (after core size negotiation) rather than emitting inline.
@@ -95,7 +116,7 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
 - **StackLayoutManager, FlexLayoutManager, GridLayoutManager, AbsoluteLayoutManager**  
   - Concrete implementations that measure and arrange children according to stack, flex, grid, or absolute rules.
   - Each is defined in **public-api** as a separate header and source pair: `stack-layout-manager.h`/`.cpp`, `grid-layout-manager.h`/`.cpp`, `flex-layout-manager.h`/`.cpp`, `absolute-layout-manager.h`/`.cpp` (and `scroll-view-layout-manager.h`/`.cpp` for ScrollView).
-  - Each reads per-child parameters from the corresponding `*ParamsImpl` trait attached to child views (e.g., `AbsoluteLayoutManager` reads `AbsoluteLayoutParamsImpl`).
+  - Each reads per-child parameters from the corresponding immutable `*ParamsTrait` attached to child views (e.g., `AbsoluteLayoutManager` reads `AbsoluteLayoutParamsTrait`).
   - Custom layouts can subclass `LayoutManager` (or one of these managers) and attach it to any View via `View::AttachLayoutManager()`, or use `View::SetMeasureCallback()`/`SetArrangeCallback()` from the public API.
 
 ### 4. Layout Types (layout-types)

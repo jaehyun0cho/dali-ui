@@ -19,76 +19,121 @@
 #include <dali-ui-foundation/public-api/layouts/stack-layout-params.h>
 
 // EXTERNAL INCLUDES
-#include <dali/public-api/object/ref-object.h>
-
-// INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/stack-layout-params-impl.h>
+#include <new>
+#include <type_traits>
+#include <utility>
 
 namespace Dali
 {
 namespace Ui
 {
 
+class StackLayoutParams::Impl
+{
+public:
+  Impl()
+  : mWeight(0.0f),
+    mAlignment(LayoutAlignment::START)
+  {
+  }
+
+  float           mWeight;
+  LayoutAlignment mAlignment;
+};
+
+static_assert(sizeof(StackLayoutParams) == 16u, "StackLayoutParams ABI size changed");
+static_assert(alignof(StackLayoutParams) == 8u, "StackLayoutParams ABI alignment changed");
+
+void StackLayoutParams::ValidateStorage() noexcept
+{
+  static_assert(sizeof(Impl) <= STORAGE_SIZE, "StackLayoutParams storage is too small");
+  static_assert(alignof(Impl) <= STORAGE_ALIGNMENT, "StackLayoutParams storage alignment is insufficient");
+  static_assert(std::is_nothrow_move_constructible_v<Impl>, "StackLayoutParams::Impl move construction must be noexcept");
+  static_assert(std::is_nothrow_move_assignable_v<Impl>, "StackLayoutParams::Impl move assignment must be noexcept");
+  static_assert(std::is_nothrow_destructible_v<Impl>, "StackLayoutParams::Impl destruction must be noexcept");
+}
+
+StackLayoutParams::Impl* StackLayoutParams::ImplPtr() noexcept
+{
+  return std::launder(reinterpret_cast<Impl*>(mStorage));
+}
+
+const StackLayoutParams::Impl* StackLayoutParams::ImplPtr() const noexcept
+{
+  return std::launder(reinterpret_cast<const Impl*>(mStorage));
+}
+
 StackLayoutParams::StackLayoutParams()
 {
+  ValidateStorage();
+  ::new(static_cast<void*>(mStorage)) Impl();
 }
 
-StackLayoutParams StackLayoutParams::New()
+StackLayoutParams::StackLayoutParams(const StackLayoutParams& other)
 {
-  IntrusivePtr<Internal::StackLayoutParamsImpl> impl(new Internal::StackLayoutParamsImpl());
-  return StackLayoutParams(impl.Get());
+  ValidateStorage();
+  ::new(static_cast<void*>(mStorage)) Impl(*other.ImplPtr());
 }
 
-StackLayoutParams StackLayoutParams::New(const StackLayoutParams& other)
+StackLayoutParams::StackLayoutParams(StackLayoutParams&& other) noexcept
 {
-  IntrusivePtr<Internal::StackLayoutParamsImpl> impl(new Internal::StackLayoutParamsImpl(GetImpl(other)));
-  return StackLayoutParams(impl.Get());
+  ValidateStorage();
+  ::new(static_cast<void*>(mStorage)) Impl(std::move(*other.ImplPtr()));
 }
 
-StackLayoutParams::StackLayoutParams(const StackLayoutParams& handle)
-: LayoutParams(handle)
+StackLayoutParams& StackLayoutParams::operator=(const StackLayoutParams& other)
 {
+  if(this != &other)
+  {
+    *ImplPtr() = *other.ImplPtr();
+  }
+  return *this;
+}
+
+StackLayoutParams& StackLayoutParams::operator=(StackLayoutParams&& other) noexcept
+{
+  if(this != &other)
+  {
+    *ImplPtr() = std::move(*other.ImplPtr());
+  }
+  return *this;
 }
 
 StackLayoutParams::~StackLayoutParams()
 {
+  ImplPtr()->~Impl();
 }
 
-StackLayoutParams::StackLayoutParams(Internal::StackLayoutParamsImpl* implementation)
-: LayoutParams(implementation)
+StackLayoutParams StackLayoutParams::New()
 {
+  return StackLayoutParams();
 }
 
-StackLayoutParams StackLayoutParams::DownCast(BaseHandle handle)
+StackLayoutParams StackLayoutParams::New(const StackLayoutParams& other)
 {
-  return StackLayoutParams(dynamic_cast<Internal::StackLayoutParamsImpl*>(handle.GetObjectPtr()));
-}
-
-LayoutParamsType StackLayoutParams::GetLayoutParamsType()
-{
-  return LayoutParamsType::STACK;
+  return StackLayoutParams(other);
 }
 
 StackLayoutParams& StackLayoutParams::SetWeight(float weight)
 {
-  GetImpl(*this).SetWeight(weight);
+  ImplPtr()->mWeight = weight;
   return *this;
 }
 
 float StackLayoutParams::GetWeight() const
 {
-  return GetImpl(*this).GetWeight();
+  return ImplPtr()->mWeight;
 }
 
 StackLayoutParams& StackLayoutParams::SetAlignment(LayoutAlignment alignment)
 {
-  GetImpl(*this).SetAlignment(alignment);
+  ImplPtr()->mAlignment = alignment;
   return *this;
 }
 
 LayoutAlignment StackLayoutParams::GetAlignment() const
 {
-  return GetImpl(*this).GetAlignment();
+  return ImplPtr()->mAlignment;
 }
 
 } // namespace Ui

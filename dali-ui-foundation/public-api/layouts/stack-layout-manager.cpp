@@ -25,7 +25,7 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
-#include <dali-ui-foundation/internal/layouts/stack-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/stack-layout-params-trait.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
@@ -39,13 +39,13 @@ namespace
 
 float GetChildWeight(ViewImpl& childImpl)
 {
-  auto* params = Internal::StackLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::StackLayoutParamsTrait::Get(childImpl);
   return params ? params->GetWeight() : 0.0f;
 }
 
 LayoutAlignment GetChildAlignment(ViewImpl& childImpl)
 {
-  auto* params = Internal::StackLayoutParamsImpl::Get(childImpl);
+  auto* params = Internal::StackLayoutParamsTrait::Get(childImpl);
   return params ? params->GetAlignment() : LayoutAlignment::START;
 }
 
