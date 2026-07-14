@@ -414,12 +414,12 @@ MeasuredSize ViewImpl::OnMeasure(float widthConstraint, float heightConstraint)
   return mImpl->MeasureDefault(widthConstraint, heightConstraint);
 }
 
-MeasuredSize ViewImpl::Arrange(const LayoutRect& bounds)
+LayoutRect ViewImpl::Arrange(const LayoutRect& bounds)
 {
   return mImpl->Arrange(bounds);
 }
 
-MeasuredSize ViewImpl::OnArrange(const LayoutRect& bounds)
+LayoutRect ViewImpl::OnArrange(const LayoutRect& bounds)
 {
   return mImpl->ArrangeDefault(bounds);
 }
