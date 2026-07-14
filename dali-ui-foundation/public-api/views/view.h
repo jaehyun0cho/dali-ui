@@ -510,6 +510,80 @@ public: // Properties
    */
   Extents GetPadding() const;
 
+  /**
+   * @brief Sets the view margin for each edge.
+   *
+   * @param[in] start The start margin
+   * @param[in] end The end margin
+   * @param[in] top The top margin
+   * @param[in] bottom The bottom margin
+   */
+  void SetMargin(int16_t start, int16_t end, int16_t top, int16_t bottom);
+
+  /**
+   * @brief Sets the horizontal and vertical view margin.
+   *
+   * @param[in] horizontal The start and end margin
+   * @param[in] vertical The top and bottom margin
+   */
+  void SetMargin(int16_t horizontal, int16_t vertical);
+
+  /**
+   * @brief Sets the same view margin for all edges.
+   *
+   * @param[in] margin The margin for all edges
+   */
+  void SetMargin(int16_t margin);
+
+  /** @brief Sets the start view margin. */
+  void SetStartMargin(int16_t margin);
+
+  /** @brief Sets the end view margin. */
+  void SetEndMargin(int16_t margin);
+
+  /** @brief Sets the top view margin. */
+  void SetTopMargin(int16_t margin);
+
+  /** @brief Sets the bottom view margin. */
+  void SetBottomMargin(int16_t margin);
+
+  /**
+   * @brief Sets the view padding for each edge.
+   *
+   * @param[in] start The start padding
+   * @param[in] end The end padding
+   * @param[in] top The top padding
+   * @param[in] bottom The bottom padding
+   */
+  void SetPadding(int16_t start, int16_t end, int16_t top, int16_t bottom);
+
+  /**
+   * @brief Sets the horizontal and vertical view padding.
+   *
+   * @param[in] horizontal The start and end padding
+   * @param[in] vertical The top and bottom padding
+   */
+  void SetPadding(int16_t horizontal, int16_t vertical);
+
+  /**
+   * @brief Sets the same view padding for all edges.
+   *
+   * @param[in] padding The padding for all edges
+   */
+  void SetPadding(int16_t padding);
+
+  /** @brief Sets the start view padding. */
+  void SetStartPadding(int16_t padding);
+
+  /** @brief Sets the end view padding. */
+  void SetEndPadding(int16_t padding);
+
+  /** @brief Sets the top view padding. */
+  void SetTopPadding(int16_t padding);
+
+  /** @brief Sets the bottom view padding. */
+  void SetBottomPadding(int16_t padding);
+
   // The Dali::Actor geometry setters below are deleted on View because a View's
   // rendered geometry (size and position) is owned by the layout system: every
   // Measure/Arrange pass writes the Actor POSITION_* and SIZE_* properties
