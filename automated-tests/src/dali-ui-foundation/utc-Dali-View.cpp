@@ -239,6 +239,139 @@ LayoutRect ReentrantRemoveArrange(View, const LayoutRect& bounds)
   return bounds;
 }
 
+// --- Same-view re-entrancy helpers (a view's own Measure/Arrange producer calls
+// Measure/Arrange on that same view). The engine must absorb this in RELEASE
+// builds: return the last COMPLETED result instead of re-running the producer.
+// The local depth guard below only bounds the damage if that engine guard ever
+// regresses (the test then fails on the recorded value instead of overflowing
+// the stack); it never re-enters more than once itself. ---
+Ui::View     gSelfReentrantView;
+int          gSelfReentrantDepth        = 0;
+int          gSelfMeasureProducerCount  = 0;
+int          gSelfArrangeProducerCount  = 0;
+MeasuredSize gSelfReentrantMeasureInner = MeasuredSize(-1.0f, -1.0f);
+LayoutRect   gSelfReentrantArrangeInner = LayoutRect(-1.0f, -1.0f, -1.0f, -1.0f);
+bool         gSelfReentrantDidReenter   = false;
+
+const LayoutRect SELF_REENTRANT_INNER_BOUNDS(5.0f, 7.0f, 50.0f, 60.0f);
+
+MeasuredSize SelfReentrantMeasure(View, float, float)
+{
+  ++gSelfMeasureProducerCount;
+  ++gSelfReentrantDepth;
+  if(gSelfReentrantDepth == 1 && gSelfReentrantView)
+  {
+    gSelfReentrantDidReenter   = true;
+    gSelfReentrantMeasureInner = gSelfReentrantView.Measure(200.0f, 100.0f);
+  }
+  --gSelfReentrantDepth;
+  return MeasuredSize(40.0f, 30.0f);
+}
+
+LayoutRect SelfReentrantArrange(View, const LayoutRect& bounds)
+{
+  ++gSelfArrangeProducerCount;
+  ++gSelfReentrantDepth;
+  if(gSelfReentrantDepth == 1 && gSelfReentrantView)
+  {
+    gSelfReentrantDidReenter   = true;
+    gSelfReentrantArrangeInner = gSelfReentrantView.Arrange(SELF_REENTRANT_INNER_BOUNDS);
+  }
+  --gSelfReentrantDepth;
+  return bounds;
+}
+
+// --- "Ignoring parent" helpers: a custom parent whose Measure AND Arrange
+// producers never touch their children. Such a parent never calls a child's
+// Measure()/Arrange(), and a view's dirty flags are cleared only by its OWN
+// pass -- so a child under this parent stays dirty forever. Used to prove that
+// a later invalidation of that already-dirty child still reaches the layout
+// root instead of being swallowed. ---
+int gIgnoringMeasureProducerCount = 0;
+int gIgnoringArrangeProducerCount = 0;
+
+MeasuredSize IgnoringChildrenMeasure(View, float, float)
+{
+  ++gIgnoringMeasureProducerCount;
+  return MeasuredSize(200.0f, 100.0f);
+}
+
+LayoutRect IgnoringChildrenArrange(View, const LayoutRect& bounds)
+{
+  ++gIgnoringArrangeProducerCount;
+  return bounds;
+}
+
+// --- Mid-pass self-invalidation helpers: a producer that invalidates its OWN
+// view while that view's pass is running. Dirty is consumed at pass ENTRY, so
+// such a re-invalidation is still standing when the pass reaches its publish
+// point; the publish is therefore declined and the next call recomputes the
+// post-invalidation value instead of serving the pre-invalidation one. ---
+Ui::View gMidPassView;
+int      gMidPassMeasureProducerCount = 0;
+int      gMidPassArrangeProducerCount = 0;
+
+const float MID_PASS_FIRST_WIDTH  = 40.0f;
+const float MID_PASS_FIRST_HEIGHT = 30.0f;
+const float MID_PASS_LATER_WIDTH  = 80.0f;
+const float MID_PASS_LATER_HEIGHT = 60.0f;
+
+MeasuredSize MidPassInvalidatingMeasure(View, float, float)
+{
+  ++gMidPassMeasureProducerCount;
+  if(gMidPassMeasureProducerCount == 1 && gMidPassView)
+  {
+    // Re-invalidate this very view while its measure pass is running.
+    gMidPassView.InvalidateMeasure();
+    return MeasuredSize(MID_PASS_FIRST_WIDTH, MID_PASS_FIRST_HEIGHT);
+  }
+  return MeasuredSize(MID_PASS_LATER_WIDTH, MID_PASS_LATER_HEIGHT);
+}
+
+LayoutRect MidPassInvalidatingArrange(View, const LayoutRect& bounds)
+{
+  ++gMidPassArrangeProducerCount;
+  if(gMidPassArrangeProducerCount == 1 && gMidPassView)
+  {
+    gMidPassView.InvalidateArrange();
+  }
+  return bounds;
+}
+
+// --- "Poison once" helpers: a producer that re-enters its own view's
+// Measure()/Arrange() on its FIRST invocation only. Re-entrancy poisons the
+// running pass without going through Invalidate*(), so nothing propagates to a
+// layout root: the pass itself must register exactly one follow-up layout, and
+// the follow-up (which no longer re-enters) must complete and stop. ---
+Ui::View gPoisonOnceView;
+int      gPoisonOnceMeasureProducerCount = 0;
+int      gPoisonOnceArrangeProducerCount = 0;
+int      gPoisonOnceDepth                = 0;
+
+MeasuredSize PoisonOnceMeasure(View, float, float)
+{
+  ++gPoisonOnceMeasureProducerCount;
+  if(gPoisonOnceMeasureProducerCount == 1 && gPoisonOnceView && gPoisonOnceDepth == 0)
+  {
+    ++gPoisonOnceDepth;
+    gPoisonOnceView.Measure(10.0f, 10.0f); // absorbed by the re-entrancy guard
+    --gPoisonOnceDepth;
+  }
+  return MeasuredSize(40.0f, 30.0f);
+}
+
+LayoutRect PoisonOnceArrange(View, const LayoutRect& bounds)
+{
+  ++gPoisonOnceArrangeProducerCount;
+  if(gPoisonOnceArrangeProducerCount == 1 && gPoisonOnceView && gPoisonOnceDepth == 0)
+  {
+    ++gPoisonOnceDepth;
+    gPoisonOnceView.Arrange(LayoutRect(1.0f, 2.0f, 3.0f, 4.0f)); // absorbed by the guard
+    --gPoisonOnceDepth;
+  }
+  return bounds;
+}
+
 Shadow GetShadowProperty(View view)
 {
   Property::Value      shadowValue = view.GetProperty(View::Property::SHADOW);
@@ -3615,5 +3748,388 @@ int UtcDaliViewExtensionGeometrySettersP(void)
   DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), 56.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 78.0f, TEST_LOCATION);
 
+  END_TEST;
+}
+
+// A MeasureCallback that calls Measure() on its OWN view must not re-run the
+// producer. Measure() is public and LayoutController::ProcessLayouts() is
+// nestable, so this is reachable from application code and must be safe in
+// RELEASE, not just guarded by a debug assertion. Contract:
+//   - the re-entrant call returns immediately with the last COMPLETED result
+//     ({0,0} while no pass has completed), so there is no unbounded recursion;
+//   - the outer pass is poisoned, so it cannot serve a cache hit afterwards;
+//   - poison is per-pass: once a pass runs without re-entrancy, the next
+//     same-constraint Measure hits the cache again.
+int UtcDaliViewReentrantSameViewMeasureReturnsLastCompletedP(void)
+{
+  UiTestApplication application;
+
+  View view = View::New();
+  view.SetMeasureCallback(MeasureCallback::New(&SelfReentrantMeasure));
+
+  gSelfReentrantView         = view;
+  gSelfReentrantDepth        = 0;
+  gSelfMeasureProducerCount  = 0;
+  gSelfReentrantDidReenter   = false;
+  gSelfReentrantMeasureInner = MeasuredSize(-1.0f, -1.0f);
+
+  // Pass 1: nothing has completed yet, so the re-entrant call must hand back
+  // the "never measured" result rather than recursing into the producer.
+  MeasuredSize outer1 = view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gSelfReentrantDidReenter, true, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfMeasureProducerCount, 1, TEST_LOCATION); // producer ran once, not twice
+  DALI_TEST_EQUALS(gSelfReentrantMeasureInner.GetWidth(), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantMeasureInner.GetHeight(), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer1.GetWidth(), 40.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer1.GetHeight(), 30.0f, TEST_LOCATION);
+
+  // Pass 2: same constraint. Pass 1 was poisoned by the re-entrancy, so this
+  // must MISS (producer runs again) and the inner call now sees pass 1's
+  // completed result.
+  MeasuredSize outer2 = view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gSelfMeasureProducerCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantMeasureInner.GetWidth(), 40.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantMeasureInner.GetHeight(), 30.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer2.GetWidth(), 40.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer2.GetHeight(), 30.0f, TEST_LOCATION);
+
+  // Stop re-entering: pass 3 still misses (pass 2 was poisoned) but completes
+  // cleanly, which clears the poison for good.
+  gSelfReentrantView.Reset();
+  view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gSelfMeasureProducerCount, 3, TEST_LOCATION);
+
+  // Pass 4: clean cache entry, same constraint -> hit, producer not re-run.
+  MeasuredSize outer4 = view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gSelfMeasureProducerCount, 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer4.GetWidth(), 40.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer4.GetHeight(), 30.0f, TEST_LOCATION);
+
+  gSelfReentrantView.Reset();
+  END_TEST;
+}
+
+// An ArrangeCallback that calls Arrange() on its OWN view. This used to be a
+// DEBUG-only assertion (undefined behaviour in release); it is now absorbed in
+// release too. Contract:
+//   - the re-entrant call returns its own input bounds while no arrange pass
+//     has completed, and the last COMPLETED bounds afterwards;
+//   - the producer is not re-run, so the outer pass's self geometry is the
+//     rect the outer pass resolved, not the re-entrant one.
+int UtcDaliViewReentrantSameViewArrangeDoesNotAssertOrCorruptP(void)
+{
+  UiTestApplication application;
+
+  View view = View::New();
+  view.SetArrangeCallback(ArrangeCallback::New(&SelfReentrantArrange));
+
+  gSelfReentrantView         = view;
+  gSelfReentrantDepth        = 0;
+  gSelfArrangeProducerCount  = 0;
+  gSelfReentrantDidReenter   = false;
+  gSelfReentrantArrangeInner = LayoutRect(-1.0f, -1.0f, -1.0f, -1.0f);
+
+  const LayoutRect outerBounds(0.0f, 0.0f, 200.0f, 100.0f);
+
+  // Pass 1: no completed arrange yet -> the re-entrant call falls back to the
+  // bounds it was handed, and does not re-run the producer.
+  LayoutRect outer1 = view.Arrange(outerBounds);
+  DALI_TEST_EQUALS(gSelfReentrantDidReenter, true, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfArrangeProducerCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.x, SELF_REENTRANT_INNER_BOUNDS.x, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.y, SELF_REENTRANT_INNER_BOUNDS.y, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.width, SELF_REENTRANT_INNER_BOUNDS.width, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.height, SELF_REENTRANT_INNER_BOUNDS.height, TEST_LOCATION);
+
+  // The outer pass still publishes its own resolved rect; the re-entrant call
+  // must not have overwritten the self geometry.
+  DALI_TEST_EQUALS(outer1.x, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer1.y, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer1.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer1.height, 100.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::POSITION_X), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::POSITION_Y), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 100.0f, TEST_LOCATION);
+
+  // Pass 2: a completed arrange now exists, so the re-entrant call returns it.
+  LayoutRect outer2 = view.Arrange(outerBounds);
+  DALI_TEST_EQUALS(gSelfArrangeProducerCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.x, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.y, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gSelfReentrantArrangeInner.height, 100.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer2.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(outer2.height, 100.0f, TEST_LOCATION);
+
+  gSelfReentrantView.Reset();
+  END_TEST;
+}
+
+// InvalidateMeasure() must NOT short-circuit on "this view is already dirty".
+// A view's dirty flags are consumed only by its OWN Measure()/Arrange(), so a
+// custom parent that never measures/arranges its children leaves those children
+// dirty indefinitely. With an "already dirty -> return" guard the child's next
+// invalidation never reaches the layout root, the root is never re-registered,
+// and the change is lost for good. Invalidation must therefore always propagate
+// and register; the controller's pending set coalesces the duplicates.
+int UtcDaliViewInvalidateMeasureNotSwallowedWhenAlreadyDirtyP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  gIgnoringMeasureProducerCount = 0;
+  gIgnoringArrangeProducerCount = 0;
+
+  // Parent is the layout root; both producers ignore children entirely.
+  View parent = View::New();
+  parent.SetRequestedWidth(200.0f);
+  parent.SetRequestedHeight(100.0f);
+  parent.SetMeasureCallback(MeasureCallback::New(&IgnoringChildrenMeasure));
+  parent.SetArrangeCallback(ArrangeCallback::New(&IgnoringChildrenArrange));
+
+  // DEFAULT layout mode: the child contributes to the parent, so its
+  // invalidation must propagate to the parent (it is not a layout boundary).
+  View child = View::New();
+  child.SetRequestedWidth(10.0f);
+  child.SetRequestedHeight(10.0f);
+  parent.Add(child);
+  window.Add(parent);
+
+  // Drain the initial layout. The parent runs one measure pass; the child is
+  // never measured (the producer ignores it), so the child's measure-dirty
+  // raised by Add() is still standing after this pass.
+  application.SendNotification();
+  const int measureAfterFirstPass = gIgnoringMeasureProducerCount;
+  DALI_TEST_CHECK(measureAfterFirstPass > 0);
+
+  // Nothing pending: an idle cycle must not run another pass. This pins the
+  // baseline so the assertion below can only be satisfied by a NEW pass.
+  application.SendNotification();
+  DALI_TEST_EQUALS(gIgnoringMeasureProducerCount, measureAfterFirstPass, TEST_LOCATION);
+
+  // Change the still-dirty child. This must reach the layout root and
+  // re-register it, even though the child was already dirty.
+  child.SetRequestedWidth(80.0f);
+  DALI_TEST_EQUALS(child.GetRequestedWidth(), 80.0f, TEST_LOCATION);
+
+  application.SendNotification();
+  DALI_TEST_CHECK(gIgnoringMeasureProducerCount > measureAfterFirstPass);
+
+  // A second change on the (still unconsumed) child is likewise not swallowed.
+  const int measureAfterSecondPass = gIgnoringMeasureProducerCount;
+  child.SetRequestedWidth(120.0f);
+  application.SendNotification();
+  DALI_TEST_CHECK(gIgnoringMeasureProducerCount > measureAfterSecondPass);
+  DALI_TEST_EQUALS(child.GetRequestedWidth(), 120.0f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// Arrange-axis mirror of the case above: InvalidateArrange() must not
+// short-circuit on mArrangeDirty either. mArrangeDirty is cleared only by the
+// view's own Arrange(), so under a parent that never arranges its children the
+// flag is pinned true and every later InvalidateArrange() would be dropped.
+int UtcDaliViewInvalidateArrangeNotSwallowedWhenAlreadyDirtyP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  gIgnoringMeasureProducerCount = 0;
+  gIgnoringArrangeProducerCount = 0;
+
+  View parent = View::New();
+  parent.SetRequestedWidth(200.0f);
+  parent.SetRequestedHeight(100.0f);
+  parent.SetMeasureCallback(MeasureCallback::New(&IgnoringChildrenMeasure));
+  parent.SetArrangeCallback(ArrangeCallback::New(&IgnoringChildrenArrange));
+
+  View child = View::New();
+  child.SetRequestedWidth(10.0f);
+  child.SetRequestedHeight(10.0f);
+  parent.Add(child);
+  window.Add(parent);
+
+  // Initial drain. The parent's arrange producer runs; the child is never
+  // arranged, so the child's arrange-dirty raised by Add() is still standing.
+  application.SendNotification();
+  const int arrangeAfterFirstPass = gIgnoringArrangeProducerCount;
+  DALI_TEST_CHECK(arrangeAfterFirstPass > 0);
+
+  application.SendNotification();
+  DALI_TEST_EQUALS(gIgnoringArrangeProducerCount, arrangeAfterFirstPass, TEST_LOCATION);
+
+  // Invalidate the already-arrange-dirty child: must reach the root.
+  const int measureBefore = gIgnoringMeasureProducerCount;
+  child.InvalidateArrange();
+
+  application.SendNotification();
+  DALI_TEST_CHECK(gIgnoringArrangeProducerCount > arrangeAfterFirstPass);
+
+  // Arrange-only invalidation: the parent's measure cache is untouched, so the
+  // measure producer must NOT be re-run by this pass.
+  DALI_TEST_EQUALS(gIgnoringMeasureProducerCount, measureBefore, TEST_LOCATION);
+
+  // Repeat: still not swallowed.
+  const int arrangeAfterSecondPass = gIgnoringArrangeProducerCount;
+  child.InvalidateArrange();
+  application.SendNotification();
+  DALI_TEST_CHECK(gIgnoringArrangeProducerCount > arrangeAfterSecondPass);
+
+  END_TEST;
+}
+
+// A Measure producer that re-invalidates its OWN view mid-pass must not have
+// that invalidation wiped by its own pass's cache publish (plan33 3.1, "loss A").
+// Dirty is consumed at pass ENTRY, so the mid-pass invalidation is still
+// standing at publish time; the publish is declined and the next call with the
+// SAME constraint misses and recomputes the post-invalidation value. Without
+// this, the pre-invalidation result would be pinned in the cache until some
+// unrelated invalidation happened to arrive.
+//
+// Note that the same Invalidate*() call also poisons the running pass, and the
+// poison is an independent second guard on the same outcome. This test pins the
+// OUTCOME (recompute, then settle), so it holds whichever guard fires first.
+int UtcDaliViewMidPassSelfInvalidationBlocksMeasurePublishAndRecomputesP(void)
+{
+  UiTestApplication application;
+
+  View view = View::New();
+  view.SetMeasureCallback(MeasureCallback::New(&MidPassInvalidatingMeasure));
+
+  gMidPassView                 = view;
+  gMidPassMeasureProducerCount = 0;
+
+  // Pass 1: the producer invalidates its own view while the pass is running,
+  // then returns the "stale" size.
+  MeasuredSize first = view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gMidPassMeasureProducerCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(first.GetWidth(), MID_PASS_FIRST_WIDTH, TEST_LOCATION);
+  DALI_TEST_EQUALS(first.GetHeight(), MID_PASS_FIRST_HEIGHT, TEST_LOCATION);
+
+  // Pass 2, SAME constraint: must MISS (the mid-pass invalidation blocked the
+  // publish) and hand back the recomputed value.
+  MeasuredSize second = view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gMidPassMeasureProducerCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(second.GetWidth(), MID_PASS_LATER_WIDTH, TEST_LOCATION);
+  DALI_TEST_EQUALS(second.GetHeight(), MID_PASS_LATER_HEIGHT, TEST_LOCATION);
+
+  // Pass 3: pass 2 completed cleanly, so this is a genuine cache hit. This
+  // pins that the miss above came from the invalidation, not from a cache
+  // that the mid-pass invalidation disabled for good.
+  MeasuredSize third = view.Measure(200.0f, 100.0f);
+  DALI_TEST_EQUALS(gMidPassMeasureProducerCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(third.GetWidth(), MID_PASS_LATER_WIDTH, TEST_LOCATION);
+  DALI_TEST_EQUALS(third.GetHeight(), MID_PASS_LATER_HEIGHT, TEST_LOCATION);
+
+  gMidPassView.Reset();
+  END_TEST;
+}
+
+// Arrange-axis twin: an ArrangeCallback that calls InvalidateArrange() on its
+// own view mid-pass. mArrangeDirty is consumed at pass ENTRY and is no longer
+// cleared where the arranged bounds are published, so the invalidation survives
+// the pass and the follow-up layout it registered runs the producer again.
+// It must also SETTLE: exactly one follow-up, no per-frame re-arrange spin.
+int UtcDaliViewMidPassSelfInvalidationBlocksArrangePublishP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  View view = View::New();
+  view.SetRequestedWidth(200.0f);
+  view.SetRequestedHeight(100.0f);
+  view.SetArrangeCallback(ArrangeCallback::New(&MidPassInvalidatingArrange));
+
+  gMidPassView                 = view;
+  gMidPassArrangeProducerCount = 0;
+
+  window.Add(view);
+
+  // Frame 1: the first arrange pass invalidates its own view mid-pass.
+  application.SendNotification();
+  DALI_TEST_EQUALS(gMidPassArrangeProducerCount, 1, TEST_LOCATION);
+
+  // Frame 2: the invalidation was not swallowed -- a follow-up pass runs.
+  application.SendNotification();
+  DALI_TEST_EQUALS(gMidPassArrangeProducerCount, 2, TEST_LOCATION);
+
+  // Frames 3+: the producer no longer invalidates, so the layout settles.
+  application.SendNotification();
+  application.SendNotification();
+  DALI_TEST_EQUALS(gMidPassArrangeProducerCount, 2, TEST_LOCATION);
+
+  gMidPassView.Reset();
+  END_TEST;
+}
+
+// A measure pass poisoned by same-view re-entrancy declines to publish, but the
+// re-entrancy never went through InvalidateMeasure(), so nothing propagated to a
+// layout root and nothing registered a follow-up. Without an explicit follow-up
+// the view would sit with an invalid cache and no pass scheduled to refill it.
+// The pass must therefore register exactly ONE follow-up layout, and that
+// follow-up -- which completes cleanly -- must not register another (no spin).
+int UtcDaliViewPoisonedMeasurePassSchedulesOneFollowUpLayoutP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  View view = View::New();
+  view.SetRequestedWidth(200.0f);
+  view.SetRequestedHeight(100.0f);
+  view.SetMeasureCallback(MeasureCallback::New(&PoisonOnceMeasure));
+
+  gPoisonOnceView                 = view;
+  gPoisonOnceMeasureProducerCount = 0;
+  gPoisonOnceDepth                = 0;
+
+  window.Add(view);
+
+  // Frame 1: the pass is poisoned by the re-entrant Measure() and publishes
+  // nothing; the producer ran exactly once (the re-entrant call is absorbed).
+  application.SendNotification();
+  DALI_TEST_EQUALS(gPoisonOnceMeasureProducerCount, 1, TEST_LOCATION);
+
+  // Frame 2: the follow-up layout registered by the poisoned pass runs.
+  application.SendNotification();
+  DALI_TEST_EQUALS(gPoisonOnceMeasureProducerCount, 2, TEST_LOCATION);
+
+  // Frames 3+: the follow-up completed cleanly, so it published and stopped.
+  application.SendNotification();
+  application.SendNotification();
+  DALI_TEST_EQUALS(gPoisonOnceMeasureProducerCount, 2, TEST_LOCATION);
+
+  gPoisonOnceView.Reset();
+  END_TEST;
+}
+
+// Arrange-axis twin of the case above.
+int UtcDaliViewPoisonedArrangePassSchedulesOneFollowUpLayoutP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  View view = View::New();
+  view.SetRequestedWidth(200.0f);
+  view.SetRequestedHeight(100.0f);
+  view.SetArrangeCallback(ArrangeCallback::New(&PoisonOnceArrange));
+
+  gPoisonOnceView                 = view;
+  gPoisonOnceArrangeProducerCount = 0;
+  gPoisonOnceDepth                = 0;
+
+  window.Add(view);
+
+  application.SendNotification();
+  DALI_TEST_EQUALS(gPoisonOnceArrangeProducerCount, 1, TEST_LOCATION);
+
+  application.SendNotification();
+  DALI_TEST_EQUALS(gPoisonOnceArrangeProducerCount, 2, TEST_LOCATION);
+
+  application.SendNotification();
+  application.SendNotification();
+  DALI_TEST_EQUALS(gPoisonOnceArrangeProducerCount, 2, TEST_LOCATION);
+
+  gPoisonOnceView.Reset();
   END_TEST;
 }
