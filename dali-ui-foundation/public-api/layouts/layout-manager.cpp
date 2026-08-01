@@ -55,6 +55,33 @@ bool LayoutManager::IsArrangeProducerPure() const
   return mImpl != nullptr && mImpl->IsArrangePureForType(typeid(*this));
 }
 
+void LayoutManager::SetOwnerView(ViewImpl* owner)
+{
+  if(mImpl)
+  {
+    mImpl->SetOwner(owner);
+  }
+}
+
+void LayoutManager::InvalidateOwnerMeasure()
+{
+  // Null owner == not attached yet (a manager is normally configured before
+  // View::AttachLayoutManager runs) -- a no-op then, because there is no cached
+  // result to retract and nothing to schedule.
+  if(ViewImpl* owner = (mImpl ? mImpl->GetOwner() : nullptr))
+  {
+    owner->InvalidateMeasure();
+  }
+}
+
+void LayoutManager::InvalidateOwnerArrange()
+{
+  if(ViewImpl* owner = (mImpl ? mImpl->GetOwner() : nullptr))
+  {
+    owner->InvalidateArrange();
+  }
+}
+
 uint32_t LayoutManager::GetChildViewCount(ViewImpl* view) const
 {
   return view ? view->GetChildViewCount() : 0u;

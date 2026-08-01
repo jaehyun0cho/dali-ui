@@ -336,6 +336,17 @@ public:
   {
     return mArrangeProducerPure;
   }
+  /// The epoch each axis last propagated its invalidation to a layout root in.
+  /// Compared against LayoutInvalidation::CurrentEpoch() to decide whether a further
+  /// invalidation may skip the ancestor walk; 0 means never propagated.
+  uint32_t GetMeasurePropagationEpoch() const
+  {
+    return mMeasurePropagationEpoch;
+  }
+  uint32_t GetArrangePropagationEpoch() const
+  {
+    return mArrangePropagationEpoch;
+  }
   /// @}
 
   Ui::Layout GetParentLayout() const;
@@ -887,7 +898,7 @@ private:
   void OnChildOrderChanged(Actor parent, Actor orderChangedChild);
 
   /**
-   * @brief Invalidates this view's ARRANGE after its effective layout direction
+   * @brief Invalidates this view's LAYOUT after its effective layout direction
    * changed.
    *
    * Connected in ViewImpl::Initialize() to the actor's layout-direction-changed
@@ -897,27 +908,26 @@ private:
    * or root-layer ancestor. Every affected View is therefore reached
    * individually, so the handler never has to walk the subtree itself.
    *
-   * Scope is the arrange axis only: the direction moves a child's x, never any
-   * measured size, and no FIRST-PARTY measure producer reads it (verified across
-   * the layout managers and components; text views resolve direction inside their
-   * own signal handlers, not via the arrange cache). GetEffectiveLayoutDirection()
-   * is public and OnMeasure() is virtual, so a third-party subclass COULD size on
-   * direction.
+   * Invalidates the MEASURE axis (which raises the arrange dirty with it), not
+   * arrange alone. Arrange alone would be exactly correct for every first-party
+   * producer -- the direction is consumed by ApplyLayoutDirection, and no in-library
+   * measure producer reads it (verified across the layout managers and components;
+   * text views resolve direction inside their own signal handlers) -- but
+   * GetEffectiveLayoutDirection() is public and OnMeasure() is virtual, so an
+   * APPLICATION's measure producer can size on it, and the measure cache key
+   * (mLastMeasureConstraint) has no direction term. Invalidating measure here is what
+   * lets that just work instead of becoming a contract the application has to know.
    *
-   * Measure() does serve cache hits, and its key (mLastMeasureConstraint) has no
-   * direction term, so a producer that sized on the layout direction would keep its
-   * pre-change measured size until some unrelated invalidation. That is CLOSED BY
-   * CONTRACT, not by a key: ViewImpl::OnMeasure(), View::Measure(),
-   * View::SetMeasureCallback() and LayoutManager::Measure() all now state that a
-   * measure producer must not depend on the layout direction, and that a producer
-   * depending on any state outside the measure key owns its own InvalidateMeasure().
+   * The rejected alternative was a direction term in the measure cache KEY: that puts
+   * a layout-direction read into the measure HIT predicate, which runs per view per
+   * pass, whereas this handler runs only on an actual direction change. The cost paid
+   * here is one re-measure of the affected subtree per locale / direction switch.
    *
-   * A mLastMeasureDirection key term was the alternative and was rejected: it buys
-   * nothing for any first-party producer (there are none that read direction in
-   * measure, per the audit above) and it would add a layout-direction property read
-   * to the measure hit predicate, which runs against the standing goal of getting
-   * actor property access OUT of the hit path. Invalidating arrange alone stays
-   * exactly correct for every first-party producer.
+   * The ARRANGE cache keeps its own recorded direction (mLastArrangeDirection) as a
+   * key term regardless. That is belt and braces for a different failure: the
+   * direction lives in dali-core and can be moved through actors dali-ui does not
+   * own, so a missed signal must degrade to a cache MISS, never to an arrangement
+   * mirrored the wrong way round.
    *
    * @param[in] actor The actor whose resolved layout direction changed (this view)
    * @param[in] type The new resolved layout direction
@@ -1328,12 +1338,30 @@ private:
   View::FocusChangedSignalType         mFocusChangedSignal;
   View::LayoutFinishedSignalType       mLayoutFinishedSignal;
 
-  float                                 mRequestedX;
-  float                                 mRequestedY;
-  MeasuredSize                          mMeasuredSize;          ///< Last completed measure result. Always readable (GetMeasuredSize() and layout managers consume it during Arrange regardless of cache state); mMeasureCacheValid only governs whether the KEY below may serve a cache hit.
-  MeasuredSize                          mLastMeasureConstraint; ///< Pure cache KEY: the effective natural constraint the cached mMeasuredSize was produced for. Carries no dirty/never-measured sentinel meaning; validity lives in mMeasureCacheValid / mMeasureDirty.
-  LayoutRect                            mArrangedBounds;
-  LayoutRect                            mLastArrangeInput;             ///< Pure cache KEY: the input bounds mArrangedBounds was produced for. Valid only while mArrangeCacheValid is true.
+  float        mRequestedX;
+  float        mRequestedY;
+  MeasuredSize mMeasuredSize;          ///< Last completed measure result. Always readable (GetMeasuredSize() and layout managers consume it during Arrange regardless of cache state); mMeasureCacheValid only governs whether the KEY below may serve a cache hit.
+  MeasuredSize mLastMeasureConstraint; ///< Pure cache KEY: the effective natural constraint the cached mMeasuredSize was produced for. Carries no dirty/never-measured sentinel meaning; validity lives in mMeasureCacheValid / mMeasureDirty.
+  LayoutRect   mArrangedBounds;
+  LayoutRect   mLastArrangeInput; ///< Pure cache KEY: the input bounds mArrangedBounds was produced for. Valid only while mArrangeCacheValid is true.
+  /// @name Invalidation propagation records
+  /// The epoch in which this view's last InvalidateMeasure() / InvalidateArrange()
+  /// walked its ancestor chain to a layout root and registered it. While a record
+  /// still equals LayoutInvalidation::CurrentEpoch(), that registration is known to
+  /// be live and not yet processed, so a further invalidation on the SAME axis may
+  /// skip the walk entirely. 0 = never propagated.
+  ///
+  /// The two axes are separate and must not be merged. An arrange walk marks the
+  /// ancestors' arrange dirty but leaves their MEASURE caches valid, so an
+  /// InvalidateMeasure() that skipped its walk on the strength of an arrange record
+  /// would leave every ancestor's measure hitting -- and an ancestor measure hit does
+  /// not re-measure its children, so this view's new measured size would never be
+  /// computed at all.
+  /// @{
+  uint32_t mMeasurePropagationEpoch;
+  uint32_t mArrangePropagationEpoch;
+  /// @}
+
   Dali::LayoutDirection::Type           mLastArrangeDirection;         ///< Pure cache KEY: the effective layout direction mArrangedBounds was produced under. Valid only while mArrangeCacheValid is true. Unlike the effective scale -- whose freshness is carried by a sync bit this class owns -- the direction lives in dali-core and can be moved through actors dali-ui does not own, so it is recorded as a KEY: a missed invalidation then degrades to "no cache hit", never to a wrong result.
   Insets                                mMargin;                       ///< Layout margin
   Insets                                mPadding;                      ///< Layout padding
@@ -1368,7 +1396,6 @@ private:
   mutable bool mLogicalContextValid : 1;                          ///< THE sync bit for mEffectiveScale: true exactly when mEffectiveScale equals what ComputeEffectiveScale() would return now. Set by the lazy compute in the const GetEffectiveScale() (hence mutable), cleared by every scale-context invalidation.
   bool         mEffectiveScaleActorSynced : 1;                    ///< THE sync bit for the ACTOR-side copy of the scale (the animatable VIEW_EFFECTIVE_SCALE property): true exactly when that property is known to hold mEffectiveScale. The second half of the pair whose first half is mLogicalContextValid -- that one says the CACHED scale is usable, this one says the ACTOR already has it. Set by Measure()'s push (after the write, which re-enters the clear below), cleared by DropCachedLogicalContext() (the value it names has been retracted) and by ViewDataImpl::SetProperty for that index, which is the single funnel every event-side write of the property passes through. Default false, so the first Measure() always pushes.
   bool         mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.
-  bool         mKeyEventDispatchInProgress;                       ///< True while this view's key event dispatch is on the stack; guards unsupported same-view re-entrancy (plain bool so ScopedTrueFlag can bind a bool&).
   bool         mInitialLayoutDone : 1;                            ///< True after this view has completed at least one arrange pass; used by the dispatcher to suppress ENTER on initial mount
   bool         mIsFocusGroup : 1;                                 ///< Stores whether the view is a focus group.
   bool         mDispatchKeyEvents : 1;                            ///< Whether the actor emits key event signals
@@ -1376,6 +1403,13 @@ private:
   bool         mProcessorRegistered : 1;                          ///< Whether the processor is registered.
   bool         mFittingModeLayoutFinishedSignalConnected : 1;     ///< Whether layout-finished signal is connected for fitting mode update.
   bool         mDefaultFocusIndicatorSuppressedByStateEffect : 1; ///< Whether the current StateEffect suppresses the default focus indicator.
+
+  /// Kept OUT of the bit-field run above, and placed after it rather than inside it:
+  /// ScopedTrueFlag binds a `bool&`, which a bit-field cannot provide, so this one has
+  /// to be a whole bool. Sitting between two bit-fields it would split their shared
+  /// allocation unit in two and cost several bytes per View on every compiler; at the
+  /// end it costs one.
+  bool mKeyEventDispatchInProgress; ///< True while this view's key event dispatch is on the stack; guards unsupported same-view re-entrancy.
 
   static constexpr uint32_t VIEW_BEHAVIOUR_FLAG_COUNT = Dali::Log<static_cast<uint32_t>(ViewImpl::LAST_VIEW_BEHAVIOUR_FLAG) - 1>::value + 1;
   ViewImpl::ViewBehaviour   mFlags : VIEW_BEHAVIOUR_FLAG_COUNT; ///< Flags passed in from constructor.

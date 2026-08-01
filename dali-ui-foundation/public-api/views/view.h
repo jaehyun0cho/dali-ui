@@ -178,13 +178,10 @@ public: // Measure / Arrange API
    * Unlike the arrange side, this is not opt-in: there is no measure purity
    * declaration, so measure caching applies to every producer including one written
    * outside this library. A measure producer is REQUIRED to be a pure function of its
-   * constraints, the view's effective scale, the view's own layout-tracked state and
-   * its children's measured sizes. A producer that reads anything else owns the
-   * invalidation and must call InvalidateMeasure() when that state changes.
-   *
-   * In particular a measure producer must NOT size on the effective layout direction:
-   * a direction change invalidates arrange, not measure, so such a producer would keep
-   * its pre-change measured size. See ViewImpl::OnMeasure().
+   * constraints, the view's effective scale, the view's own layout-tracked state, the
+   * effective layout direction and its children's measured sizes. A producer that
+   * reads anything else owns the invalidation and must call InvalidateMeasure() when
+   * that state changes. See ViewImpl::OnMeasure().
    *
    * @param[in] widthConstraint The width constraint for measurement
    * @param[in] heightConstraint The height constraint for measurement
@@ -262,11 +259,11 @@ public: // Measure / Arrange API
    *
    * @note The callback becomes this view's measure producer, so the measure contract
    * documented on Measure() applies to it unchanged: it must be a pure function of
-   * its constraints, the view's effective scale, the view's own layout-tracked state
-   * and its children's measured sizes, and it is NOT called on a measure-cache hit.
-   * There is no purity opt-in to decline this with -- caching is always on -- so a
-   * callback that depends on anything else, the effective layout direction included,
-   * must call View::InvalidateMeasure() itself when that state changes.
+   * its constraints, the view's effective scale, the view's own layout-tracked state,
+   * the effective layout direction and its children's measured sizes, and it is NOT
+   * called on a measure-cache hit. There is no purity opt-in to decline this with --
+   * caching is always on -- so a callback that depends on anything else must call
+   * View::InvalidateMeasure() itself when that state changes.
    *
    * @param[in] callback The measure callback (ownership transferred)
    *

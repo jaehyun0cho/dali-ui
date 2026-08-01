@@ -25,7 +25,6 @@
 #include <string>
 
 // INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/public-api/configuration/ui-theme-manager.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h> // public GetImpl(Ui::View&)
 
@@ -411,6 +410,15 @@ LayoutRect CheckBoxImpl::OnArrange(const LayoutRect& bounds)
   //
   // The Lottie artwork itself is direction-independent and is never mirrored; only the
   // icon/label placement flips (icon leading, label trailing, in both directions).
+  //
+  // The two child Measure() calls below deliberately carry NO layout-dependency owner
+  // scope. Both children are DIRECT children of this view, and this view is
+  // arrange-in-progress while they run, which is precisely the condition the
+  // ancestor-invalidation walk stops on for a direct parent -- so the walk breaks at
+  // this view either way and an explicit scope would change nothing. That matters
+  // here beyond tidiness: the scope type lives in a foundation header this project
+  // does not install, so reaching for it from the components library would make this
+  // file compile only in a same-tree build.
   float contentX = static_cast<float>(padding.start) * s;
   float contentY = static_cast<float>(padding.top) * s;
   float contentW = std::max(0.0f, bounds.width - static_cast<float>(padding.start + padding.end) * s);
@@ -430,10 +438,7 @@ LayoutRect CheckBoxImpl::OnArrange(const LayoutRect& bounds)
   iconRect.y      = contentY + std::max(0.0f, (contentH - iconHVis) * 0.5f);
 
   Ui::View iconView = mIcon.GetView(); // the composed drawing view; use public GetImpl(Ui::View&)
-  {
-    LayoutDependency::ArrangeOwnedMeasureScope ownerScope(this);
-    GetImpl(iconView).Measure(iconRect.width, iconRect.height);
-  }
+  GetImpl(iconView).Measure(iconRect.width, iconRect.height);
   GetImpl(iconView).Arrange(iconRect);
 
   // Optional trailing label.
@@ -442,10 +447,7 @@ LayoutRect CheckBoxImpl::OnArrange(const LayoutRect& bounds)
   labelRect.height = contentH;
   labelRect.x      = contentX + iconWVis + gapVis;
   labelRect.y      = contentY;
-  {
-    LayoutDependency::ArrangeOwnedMeasureScope ownerScope(this);
-    GetImpl(mLabel).Measure(labelRect.width, labelRect.height);
-  }
+  GetImpl(mLabel).Measure(labelRect.width, labelRect.height);
   GetImpl(mLabel).Arrange(labelRect);
 
   return bounds;

@@ -94,10 +94,38 @@ public:
     return mArrangePureType != nullptr && *mArrangePureType == dynamicType;
   }
 
+  /**
+   * @brief Records the View this manager is attached to.
+   *
+   * Called once, from ViewDataImpl::AttachLayoutManager. A manager can never be
+   * replaced or detached (AttachLayoutManager asserts on a second attach), so there
+   * is no reverse edge and no re-attach to mirror.
+   *
+   * @param[in] owner The attaching View
+   */
+  void SetOwner(ViewImpl* owner)
+  {
+    mOwner = owner;
+  }
+
+  /**
+   * @brief Returns the View this manager is attached to, or nullptr before attach.
+   * @return The owning View
+   */
+  ViewImpl* GetOwner() const
+  {
+    return mOwner;
+  }
+
 private:
   /// The type that declared Arrange() PURE, or nullptr for the IMPURE default. The
   /// pointee is a static type_info with static storage duration, so it never dangles.
   const std::type_info* mArrangePureType{nullptr};
+
+  /// The attached View, or nullptr while unattached. A RAW pointer, deliberately: the
+  /// View owns this manager (through the LAYOUT_MANAGER trait) and destroys it, so the
+  /// pointee strictly outlives the pointer and an owning reference would be a cycle.
+  ViewImpl* mOwner{nullptr};
 };
 
 } // namespace Ui

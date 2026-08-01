@@ -24,7 +24,6 @@
 #include <algorithm>
 
 // INTERNAL INCLUDES
-#include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/public-api/text/text-enumerations.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
@@ -256,10 +255,13 @@ LayoutRect TextButtonImpl::OnArrange(const LayoutRect& bounds)
   contentBounds.width  = std::max(0.0f, bounds.width - static_cast<float>(padding.start + padding.end) * s);
   contentBounds.height = std::max(0.0f, bounds.height - static_cast<float>(padding.top + padding.bottom) * s);
 
-  {
-    LayoutDependency::ArrangeOwnedMeasureScope ownerScope(this);
-    GetImpl(mLabel).Measure(contentBounds.width, contentBounds.height);
-  }
+  // No layout-dependency owner scope on this Measure(): mLabel is a DIRECT child and
+  // this view is arrange-in-progress while it runs, which is exactly the condition the
+  // ancestor-invalidation walk stops on for a direct parent, so the walk breaks here
+  // either way. Relevant beyond tidiness -- the scope type lives in a foundation header
+  // this project does not install, so using it from the components library would make
+  // this file compile only in a same-tree build.
+  GetImpl(mLabel).Measure(contentBounds.width, contentBounds.height);
   GetImpl(mLabel).Arrange(contentBounds);
 
   return bounds;
