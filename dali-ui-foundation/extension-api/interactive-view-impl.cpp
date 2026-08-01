@@ -48,7 +48,20 @@ DALI_TYPE_REGISTRATION_END()
 
 InteractiveViewImplPtr InteractiveViewImpl::New()
 {
-  return new InteractiveViewImpl();
+  InteractiveViewImplPtr impl(new InteractiveViewImpl());
+
+  // PURE producer: this class adds interaction state only -- it overrides no
+  // OnArrange and attaches no LayoutManager -- so the object built here, whose
+  // most-derived type IS InteractiveViewImpl, has ViewImpl::OnArrange ->
+  // ArrangeDefault as its provable arrange producer. See ViewImpl::New().
+  //
+  // Declared HERE and not in the constructor, deliberately: this class exists to be
+  // subclassed (button- and checkbox-style components derive from it), and every such
+  // subclass runs its OWN factory, so none of them can inherit this declaration. They
+  // stay IMPURE by default until they declare their own override pure.
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
+  return impl;
 }
 
 void InteractiveViewImpl::OnInitialize()

@@ -40,6 +40,13 @@ Ui::DummyComponent DummyComponentImpl::New()
   // Pass ownership to CustomActor handle
   Ui::DummyComponent handle = Ui::DummyComponent(*impl);
 
+  // PURE producer: this class overrides no OnArrange and attaches no LayoutManager,
+  // so the object built here -- whose most-derived type IS DummyComponentImpl -- has
+  // ViewImpl::OnArrange -> ArrangeDefault as its provable arrange producer. Declared
+  // HERE and not in the constructor, so a subclass running its own factory cannot
+  // inherit it. See ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
   // Second-phase initialization
   impl->Initialize();
 

@@ -837,21 +837,17 @@ protected:
    *
    * The override must therefore be a pure function of its two constraints, this
    * view's effective scale, its own layout-tracked state (requested size, padding,
-   * margin, size bounds) and its children's measured sizes -- nothing else. If it
-   * reads any state outside that envelope, it OWNS the invalidation: it must call
-   * InvalidateMeasure() itself whenever that state changes, or the view keeps its
-   * previous measured size until some unrelated invalidation arrives.
+   * margin, size bounds), the effective layout direction and its children's measured
+   * sizes -- nothing else. If it reads any state outside that envelope, it OWNS the
+   * invalidation: it must call InvalidateMeasure() itself whenever that state
+   * changes, or the view keeps its previous measured size until some unrelated
+   * invalidation arrives.
    *
-   * Layout direction is the case worth naming, because it is the one input the
-   * arrange side keys on and the measure side does not. A direction change
-   * invalidates ARRANGE only, so an OnMeasure() that sizes on
-   * GetEffectiveLayoutDirection() will keep its pre-change measured size. Do not
-   * size on the layout direction here; measure the content, and let the arrange
-   * pass place it. (The framework already mirrors a non-standalone child's x for
-   * RTL, so a direction-independent measure plus the default arrange is the
-   * correct way to be RTL-aware.) If a design genuinely needs it, connect to the
-   * actor's layout-direction-changed signal and call InvalidateMeasure() from
-   * there, per the rule above.
+   * The effective layout direction IS inside that envelope: a direction change
+   * invalidates this view's measure, so sizing on GetEffectiveLayoutDirection() here
+   * is safe. It is rarely what you want, though -- the framework already mirrors a
+   * non-standalone child's x for right-to-left, so a direction-independent measure
+   * plus the default arrange is usually the correct way to be direction-aware.
    *
    * @param[in] widthConstraint  Available visual (scale-applied) width, or WRAP_CONTENT / MATCH_PARENT.
    * @param[in] heightConstraint Available visual (scale-applied) height, or WRAP_CONTENT / MATCH_PARENT.

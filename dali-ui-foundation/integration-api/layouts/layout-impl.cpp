@@ -45,7 +45,28 @@ DALI_TYPE_REGISTRATION_END()
 
 LayoutImplPtr LayoutImpl::New()
 {
-  return LayoutImplPtr(new LayoutImpl());
+  LayoutImplPtr impl(new LayoutImpl());
+
+  // PURE producer, on exactly the same grounds as ViewImpl::New(): LayoutImpl adds no
+  // OnArrange override and attaches no LayoutManager of its own, so the object built
+  // here -- whose most-derived type IS LayoutImpl -- has ViewImpl::OnArrange ->
+  // ArrangeDefault as its provable arrange producer. That reads only the bounds, the
+  // padding, each child's margin / requested position / measured size and the
+  // effective scale, all of which are cache KEY terms or invalidation-tracked state,
+  // and it arranges the same child set for the same inputs.
+  //
+  // This one matters beyond its own cache. A bare Ui::Layout is the canonical
+  // container, and the arrange cache's subtree gate re-tests purity at EVERY node it
+  // would elide, so leaving this undeclared kept not only the Layout itself but every
+  // ANCESTOR of one permanently out of the hit.
+  //
+  // Declared HERE and not in the constructor, deliberately: AbsoluteLayoutImpl,
+  // StackLayoutImpl, GridLayoutImpl and FlexLayoutImpl all derive from this class and
+  // run their OWN New(), so they cannot inherit the declaration -- they get their
+  // purity from the LayoutManager each attaches instead. See ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
+  return impl;
 }
 
 LayoutImpl::LayoutImpl()

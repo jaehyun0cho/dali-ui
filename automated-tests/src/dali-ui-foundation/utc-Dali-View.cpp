@@ -6984,30 +6984,25 @@ int UtcDaliViewArrangeCacheHitDoesNotScheduleFurtherLayoutSubtreeP(void)
 // screen at all. The four geometry-free managers now declare PURE; ScrollView's does
 // not, and utc-Dali-ScrollView.cpp pins that exclusion behaviourally.
 //
-// INSTRUMENT. A manager IS the producer, so "did the producer run" cannot be observed
-// with a counting ViewImpl subclass the way it is above, and a counting subclass of a
-// concrete manager is no use either: the declaration is per EXACT type, so a subclass
-// is IMPURE by construction (which is the point -- see
-// UtcDaliArrangeCacheLayoutManagerPurityIsPerExactTypeP in the internal suite).
-//
-// What these tests use instead is the manager's OWN configuration, mutated through the
-// manager handle rather than through the owning view. StackLayout::SetSpacing and
-// friends pair the write with an InvalidateMeasure on the owner (stack-layout-impl.cpp)
-// and are the supported route; writing straight to the manager deliberately skips that
-// pairing, so the new value can only appear in the geometry if the manager's Arrange
-// actually ran during the next pass. It is a probe, not a supported usage -- and each
-// test ends by invalidating the owner properly and showing the manager does run and
-// does pick the value up, so "the geometry did not move" cannot be explained by the
-// manager never running at all.
+// The declaration is sound only because a manager's OWN state is layout-tracked:
+// every built-in setter -- StackLayoutManager::SetSpacing and friends -- pairs its
+// write with an owner invalidation (LayoutManager::InvalidateOwnerMeasure), so a
+// state change always retracts the cached result it would falsify. That closes the
+// probe these tests once used (a direct manager write that nothing invalidated), and
+// with it the last black-box observable of the skip itself: a PURE producer re-run on
+// unchanged inputs is result-identical to a served cache, by definition. The skip is
+// therefore pinned white-box, with a counting manager, in the internal suite --
+// UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP -- and the per-manager
+// declarations by UtcDaliArrangeCacheInLibraryLayoutManagerPurityP. What remains
+// OBSERVABLE here, and what these two tests pin, is the setter contract itself: a
+// direct manager write alone reaches the screen (it schedules the pass and the
+// manager honours the new value), and a same-value write moves nothing.
 // ---------------------------------------------------------------------------
 
-// Non-vacuity (verified by mutation): removing the DeclareArrangePurity call from
-// StackLayoutManager's constructor makes the container miss, the manager re-runs with
-// the probe spacing, and the "unchanged" assertions on `second` fail.
-int UtcDaliViewArrangeCacheHitSkipsStackLayoutManagerP(void)
+int UtcDaliViewStackLayoutManagerSetterInvalidatesOwnerP(void)
 {
   UiTestApplication application;
-  tet_infoline("A settled StackLayoutManager container does not re-run its manager");
+  tet_infoline("A StackLayoutManager setter alone re-lays-out its owner; a same-value write moves nothing");
 
   View root = View::New();
   root.SetRequestedWidth(200.0f);
@@ -7033,60 +7028,49 @@ int UtcDaliViewArrangeCacheHitSkipsStackLayoutManagerP(void)
   second.SetRequestedHeight(30.0f);
   stack.Add(second);
 
-  // The reason a pass happens at all: a sibling of the container, so its invalidation
-  // walks up to the root and never touches the container.
-  View sibling = View::New();
-  sibling.SetRequestedWidth(30.0f);
-  sibling.SetRequestedHeight(30.0f);
-  root.Add(sibling);
-
   SettleLayout(application);
 
-  const LayoutRect stackRect  = ActorRectOf(stack);
-  const LayoutRect firstRect  = ActorRectOf(first);
-  const LayoutRect secondRect = ActorRectOf(second);
+  const LayoutRect stackRect = ActorRectOf(stack);
 
   // The manager really did stack them, so the geometry below is its output.
-  DALI_TEST_EQUALS(firstRect.y, 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(secondRect.y, 30.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(first.GetProperty<float>(Actor::Property::POSITION_Y), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(second.GetProperty<float>(Actor::Property::POSITION_Y), 30.0f, TEST_LOCATION);
 
-  // The probe (see the block comment): a manager-state change with no invalidation.
+  // The setter ALONE: nothing else invalidates, nothing else is touched. The write
+  // must invalidate its owner and schedule the pass by itself; before the owner
+  // back-pointer existed this exact sequence left the tree settled on the old
+  // spacing indefinitely (and, with the manager declared PURE, the arrange cache
+  // would have kept serving that stale placement forever).
   manager->SetSpacing(20.0f);
-
-  sibling.SetRequestedX(11.0f);
-  SettleLayout(application);
-
-  // The pass really happened...
-  DALI_TEST_EQUALS(sibling.GetProperty<float>(Actor::Property::POSITION_X), 11.0f, TEST_LOCATION);
-
-  // ...and the container was served from cache: its manager never ran, so the probe
-  // spacing is nowhere in the geometry, and every node is byte-identical.
-  CheckActorRect(stack, stackRect, TEST_LOCATION);
-  CheckActorRect(first, firstRect, TEST_LOCATION);
-  CheckActorRect(second, secondRect, TEST_LOCATION);
-
-  // Non-vacuity, in-test: invalidate the container properly and the manager runs again
-  // -- and now the probe spacing appears. So the assertions above are about the hit,
-  // not about a manager that had stopped working.
-  stack.SetRequestedWidth(121.0f);
   SettleLayout(application);
 
   DALI_TEST_EQUALS(first.GetProperty<float>(Actor::Property::POSITION_Y), 0.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(second.GetProperty<float>(Actor::Property::POSITION_Y), 50.0f, TEST_LOCATION);
 
+  // The container's own slot is a function of its FIXED requested size, not of the
+  // spacing, so the setter re-laid-out the children without moving the container.
+  CheckActorRect(stack, stackRect, TEST_LOCATION);
+
+  // Same-value write: the setter's equality guard makes it a no-op, so the settled
+  // geometry is byte-identical.
+  const LayoutRect firstRect  = ActorRectOf(first);
+  const LayoutRect secondRect = ActorRectOf(second);
+  manager->SetSpacing(20.0f);
+  SettleLayout(application);
+
+  CheckActorRect(stack, stackRect, TEST_LOCATION);
+  CheckActorRect(first, firstRect, TEST_LOCATION);
+  CheckActorRect(second, secondRect, TEST_LOCATION);
+
   END_TEST;
 }
 
-// The same statement for a second geometry-free manager, so the declaration is not
-// pinned on StackLayoutManager alone.
-//
-// Non-vacuity (verified by mutation): removing the DeclareArrangePurity call from
-// FlexLayoutManager's constructor makes the container miss and the probe justification
-// moves the children, failing the "unchanged" assertions.
-int UtcDaliViewArrangeCacheHitSkipsFlexLayoutManagerP(void)
+// The same statement for a second geometry-free manager, so the setter contract is
+// not pinned on StackLayoutManager alone.
+int UtcDaliViewFlexLayoutManagerSetterInvalidatesOwnerP(void)
 {
   UiTestApplication application;
-  tet_infoline("A settled FlexLayoutManager container does not re-run its manager");
+  tet_infoline("A FlexLayoutManager setter alone re-lays-out its owner; a same-value write moves nothing");
 
   View root = View::New();
   root.SetRequestedWidth(300.0f);
@@ -7095,7 +7079,7 @@ int UtcDaliViewArrangeCacheHitSkipsFlexLayoutManagerP(void)
 
   Dali::UniquePtr<FlexLayoutManager> owned(new FlexLayoutManager(
     FlexDirection::ROW, FlexWrap::NO_WRAP, FlexJustify::FLEX_START, FlexAlign::FLEX_START, FlexAlign::FLEX_START));
-  FlexLayoutManager* manager = owned.Get();
+  FlexLayoutManager*                 manager = owned.Get();
 
   View flex = View::New();
   flex.SetRequestedWidth(200.0f);
@@ -7113,40 +7097,33 @@ int UtcDaliViewArrangeCacheHitSkipsFlexLayoutManagerP(void)
   second.SetRequestedHeight(20.0f);
   flex.Add(second);
 
-  View sibling = View::New();
-  sibling.SetRequestedWidth(30.0f);
-  sibling.SetRequestedHeight(30.0f);
-  root.Add(sibling);
-
   SettleLayout(application);
 
-  const LayoutRect flexRect   = ActorRectOf(flex);
-  const LayoutRect firstRect  = ActorRectOf(first);
-  const LayoutRect secondRect = ActorRectOf(second);
+  const LayoutRect flexRect = ActorRectOf(flex);
 
   // FLEX_START packs them at the start of the 200-wide main axis.
-  DALI_TEST_EQUALS(firstRect.x, 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(secondRect.x, 40.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(first.GetProperty<float>(Actor::Property::POSITION_X), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(second.GetProperty<float>(Actor::Property::POSITION_X), 40.0f, TEST_LOCATION);
 
-  // The probe: FLEX_END would move both children to the far end of the main axis.
+  // The setter ALONE must invalidate its owner and schedule the pass by itself; the
+  // manager then honours the new justification: FLEX_END moves both children to the
+  // far end of the main axis.
   manager->SetJustifyContent(FlexJustify::FLEX_END);
-
-  sibling.SetRequestedX(11.0f);
-  SettleLayout(application);
-
-  DALI_TEST_EQUALS(sibling.GetProperty<float>(Actor::Property::POSITION_X), 11.0f, TEST_LOCATION);
-
-  CheckActorRect(flex, flexRect, TEST_LOCATION);
-  CheckActorRect(first, firstRect, TEST_LOCATION);
-  CheckActorRect(second, secondRect, TEST_LOCATION);
-
-  // Non-vacuity, in-test: a proper invalidation re-runs the manager, which now honours
-  // the probe justification.
-  flex.SetRequestedHeight(101.0f);
   SettleLayout(application);
 
   DALI_TEST_EQUALS(first.GetProperty<float>(Actor::Property::POSITION_X), 120.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(second.GetProperty<float>(Actor::Property::POSITION_X), 160.0f, TEST_LOCATION);
+  CheckActorRect(flex, flexRect, TEST_LOCATION);
+
+  // Same-value write: the equality guard makes it a no-op.
+  const LayoutRect firstRect  = ActorRectOf(first);
+  const LayoutRect secondRect = ActorRectOf(second);
+  manager->SetJustifyContent(FlexJustify::FLEX_END);
+  SettleLayout(application);
+
+  CheckActorRect(flex, flexRect, TEST_LOCATION);
+  CheckActorRect(first, firstRect, TEST_LOCATION);
+  CheckActorRect(second, secondRect, TEST_LOCATION);
 
   END_TEST;
 }
@@ -7168,7 +7145,8 @@ int UtcDaliViewBackgroundChangeInvalidatesMeasureP(void)
   view.SetRequestedWidth(WRAP_CONTENT);
   view.SetRequestedHeight(WRAP_CONTENT);
 
-  auto backgroundMap = [](int width, int height) {
+  auto backgroundMap = [](int width, int height)
+  {
     Property::Map map;
     map.Insert(Ui::VisualBasePropertyIndex::TYPE, static_cast<int>(Ui::Integration::InternalVisualType::IMAGE));
     map.Insert(Ui::ImageVisualPropertyIndex::URL, "background-image.png");

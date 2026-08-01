@@ -403,7 +403,17 @@ FlexLayoutManager::~FlexLayoutManager()
 
 void FlexLayoutManager::SetDirection(FlexDirection direction)
 {
-  GetImplAs<Impl>()->mDirection = direction;
+  Impl* impl = GetImplAs<Impl>();
+  if(impl->mDirection == direction)
+  {
+    return;
+  }
+  impl->mDirection = direction;
+
+  // Line breaking, main-axis distribution and cross-axis alignment are all read by
+  // Measure() as well as Arrange(), and neither cache key can see this manager's own
+  // state, so the owner has to be told. See LayoutManager::InvalidateOwnerMeasure.
+  InvalidateOwnerMeasure();
 }
 
 FlexDirection FlexLayoutManager::GetDirection() const
@@ -413,7 +423,15 @@ FlexDirection FlexLayoutManager::GetDirection() const
 
 void FlexLayoutManager::SetWrap(FlexWrap wrap)
 {
-  GetImplAs<Impl>()->mWrap = wrap;
+  Impl* impl = GetImplAs<Impl>();
+  if(impl->mWrap == wrap)
+  {
+    return;
+  }
+  impl->mWrap = wrap;
+
+  // See SetDirection.
+  InvalidateOwnerMeasure();
 }
 
 FlexWrap FlexLayoutManager::GetWrap() const
@@ -423,7 +441,15 @@ FlexWrap FlexLayoutManager::GetWrap() const
 
 void FlexLayoutManager::SetJustifyContent(FlexJustify justify)
 {
-  GetImplAs<Impl>()->mJustifyContent = justify;
+  Impl* impl = GetImplAs<Impl>();
+  if(impl->mJustifyContent == justify)
+  {
+    return;
+  }
+  impl->mJustifyContent = justify;
+
+  // See SetDirection.
+  InvalidateOwnerMeasure();
 }
 
 FlexJustify FlexLayoutManager::GetJustifyContent() const
@@ -433,7 +459,15 @@ FlexJustify FlexLayoutManager::GetJustifyContent() const
 
 void FlexLayoutManager::SetAlignItems(FlexAlign align)
 {
-  GetImplAs<Impl>()->mAlignItems = align;
+  Impl* impl = GetImplAs<Impl>();
+  if(impl->mAlignItems == align)
+  {
+    return;
+  }
+  impl->mAlignItems = align;
+
+  // See SetDirection.
+  InvalidateOwnerMeasure();
 }
 
 FlexAlign FlexLayoutManager::GetAlignItems() const
@@ -443,7 +477,15 @@ FlexAlign FlexLayoutManager::GetAlignItems() const
 
 void FlexLayoutManager::SetAlignContent(FlexAlign align)
 {
-  GetImplAs<Impl>()->mAlignContent = align;
+  Impl* impl = GetImplAs<Impl>();
+  if(impl->mAlignContent == align)
+  {
+    return;
+  }
+  impl->mAlignContent = align;
+
+  // See SetDirection.
+  InvalidateOwnerMeasure();
 }
 
 FlexAlign FlexLayoutManager::GetAlignContent() const

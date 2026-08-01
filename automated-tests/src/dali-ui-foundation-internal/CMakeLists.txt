@@ -91,6 +91,7 @@ SET(TC_SOURCES
     utc-Dali-UiScaleLogicalContext-internal.cpp
     utc-Dali-LayoutDirectionArrangeCache-internal.cpp
     utc-Dali-ArrangeCacheHit-internal.cpp
+    utc-Dali-LayoutInvalidationEpoch-internal.cpp
 )
 
 # ---------------------------------------------------------
@@ -174,6 +175,7 @@ SET_SOURCE_FILES_PROPERTIES(
     utc-Dali-TextVisualAsyncPublication-internal.cpp
     utc-Dali-TextGradientVisualMaskPlumbing-internal.cpp
     utc-Dali-ArrangeCacheHit-internal.cpp
+    utc-Dali-LayoutInvalidationEpoch-internal.cpp
     PROPERTIES COMPILE_OPTIONS "-Wno-error=overloaded-virtual")
 
 FOREACH(directory ${DALICORE_LIBRARY_DIRS})
