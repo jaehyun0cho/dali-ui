@@ -86,6 +86,7 @@ SET(TC_SOURCES
     utc-Dali-Accessibility-Text-internal.cpp
     utc-Dali-ViewFittingMode-internal.cpp
     utc-Dali-View-order-internal.cpp
+    utc-Dali-UiScaleLogicalContext-internal.cpp
 )
 
 # ---------------------------------------------------------

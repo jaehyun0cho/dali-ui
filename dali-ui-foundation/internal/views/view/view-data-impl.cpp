@@ -1613,7 +1613,7 @@ void ViewDataImpl::SetUiScalePolicy(UiScalePolicy policy)
   if(mScalePolicy != policy)
   {
     mScalePolicy = policy;
-    ResetEffectiveScaleRecursive();
+    InvalidateLogicalContextRecursive();
     InvalidateMeasure();
   }
 }
@@ -1625,10 +1625,29 @@ UiScalePolicy ViewDataImpl::GetUiScalePolicy() const
 
 float ViewDataImpl::GetEffectiveScale() const
 {
-  if(mEffectiveScale < 0.0f)
+  // mLogicalContextValid -- not a value sentinel on mEffectiveScale itself -- is
+  // what says whether the cached scale is usable. Every scale-context
+  // invalidation clears that bit; this is the only place that sets it, which is
+  // exactly what makes "bit true" mean "mEffectiveScale is what
+  // ComputeEffectiveScale() would return now".
+  if(!mLogicalContextValid)
   {
-    mEffectiveScale = ComputeEffectiveScale();
+    mEffectiveScale      = ComputeEffectiveScale();
+    mLogicalContextValid = true;
   }
+#if defined(DEBUG_ENABLED)
+  // A non-fatal detector, deliberately NOT a hard assert yet: two scale-context
+  // invalidation gaps are still open -- a removed subtree keeps its cached scale
+  // (fixed in a later Phase 3 increment) and an off-scene root re-added after a
+  // global SetScale is never reset (it is not a registered layout root while
+  // detached). Both leave the bit live but stale, and a hard assert would turn
+  // those pre-existing bugs into a DEBUG-build exception. Log until the gaps
+  // close, then promote this to DALI_ASSERT_DEBUG.
+  if(!IsLogicalContextInSyncNonMutating())
+  {
+    DALI_LOG_ERROR("Effective-scale sync bit is live but out of sync; layout may use a stale scale\n");
+  }
+#endif
   return mEffectiveScale;
 }
 
@@ -1655,20 +1674,21 @@ void ViewDataImpl::InvalidateMeasure()
   // idempotent: each level sets its own flags and calls its parent exactly
   // once, and LayoutController::RequestLayout inserts into a pending set, so
   // duplicate registrations coalesce. See plan34 27.5.
-  mEffectiveScale    = -1.0f;
-  mMeasureDirty      = true;
-  mMeasureCacheValid = false;
-  mArrangeDirty      = true;
-  mArrangeCacheValid = false;
+  //
+  // Drop the cached logical context: whatever changed may have moved this view's
+  // effective scale (a reparent re-roots the INHERIT chain), so the next
+  // GetEffectiveScale() must recompute rather than serve the cached value.
+  DropCachedLogicalContext();
 
-  if(mMeasureInProgress)
-  {
-    mMeasurePassPoisoned = true;
-  }
-  if(mArrangeInProgress)
-  {
-    mArrangePassPoisoned = true;
-  }
+  // Both caches go with it: a cached measured size or arranged bounds produced
+  // under the previous context is not a result this call may leave standing.
+  InvalidateLayoutCaches();
+
+  // ...and, unlike a pure freshness drop, this call also records that there is
+  // now unconsumed layout work here. That is exactly the part
+  // InvalidateLayoutCaches() must not do on its own.
+  mMeasureDirty = true;
+  mArrangeDirty = true;
 
   // Layout boundary: a standalone view is excluded from its parent's
   // OnMeasure/OnArrange accumulation, so its measure result cannot change
@@ -2574,8 +2594,9 @@ void ViewDataImpl::OnChildAdded(Actor& child, bool allowNonViewChild)
     // producing incorrect font sizes, paddings, and decorations even though
     // the layout container size updates correctly.
     //
-    // ResetEffectiveScaleRecursive() sets mEffectiveScale = -1.0f and clears
-    // mMeasureCacheValid for every node in the subtree, guaranteeing:
+    // InvalidateLogicalContextRecursive() clears the effective-scale sync bit
+    // (mLogicalContextValid) and both layout caches (mMeasureCacheValid and
+    // mArrangeCacheValid) for every node in the subtree, guaranteeing:
     //   (a) scale is recomputed from the new parent chain on next GetEffectiveScale(), and
     //   (b) the invalid measure cache forces a cache miss in Measure() so all
     //       nodes fully re-measure with the new scale.
@@ -2584,7 +2605,7 @@ void ViewDataImpl::OnChildAdded(Actor& child, bool allowNonViewChild)
     // propagates up to the new layout root. Invalidation always propagates and
     // registers now (there is no dirty short-circuit), so this reaches the new
     // root regardless of the child's prior dirty state.
-    ViewDataImpl::Get(childImpl).ResetEffectiveScaleRecursive();
+    ViewDataImpl::Get(childImpl).InvalidateLogicalContextRecursive();
 
     // Invalidate the child's measure cache -- its previous cache was computed
     // under a different parent's constraints and is no longer reliable.
@@ -2678,6 +2699,18 @@ void ViewDataImpl::OnChildRemoved(Actor& child)
         mLayoutTransitionData->hasPendingChildRemoval = true;
       }
 
+      // Removal re-roots the removed subtree's effective-scale chain: an INHERIT
+      // node's ComputeEffectiveScale walks its parent chain, and severing this
+      // link re-roots that chain (ultimately at UiScaleManager's global scale).
+      // So the whole removed subtree's cached logical context is now stale. The
+      // InvalidateMeasure() below drops it on the direct child ONLY and
+      // propagates upward, never into the subtree -- the mirror of OnChildAdded's
+      // recursive reset. Without this, a subtree removed from a scale-DISABLED
+      // parent and re-added under a plain Actor / Window (which fires no
+      // ViewDataImpl::OnChildAdded) renders torn: the root at the new scale, its
+      // descendants at the old one.
+      ViewDataImpl::Get(childImpl).InvalidateLogicalContextRecursive();
+
       // Invalidate the removed child's measure cache so that it gets
       // re-measured when re-parented to a different container.
       // Note: Actor parent-child relationship is already severed at this
@@ -2725,8 +2758,25 @@ void ViewDataImpl::OnViewSceneConnection()
   // (RegisterWithLayoutController silently no-ops without a window). Once
   // connected to a scene here, it must register so the pending state is
   // picked up in the new window's controller.
+  const bool isLayoutRoot = !GetParentView();
+
+  // Off-scene scale gap. While this view is a detached layout root it is not in
+  // UiScaleManager's root set, so a global SetScale() cannot reach it -- its
+  // cached effective scale, and the whole subtree's for INHERIT chains, may be
+  // stale (computed against the scale in force before it was detached). On
+  // (re)connection re-derive the subtree's logical context so the layout pass
+  // registered below measures and arranges at the CURRENT scale. On a first-ever
+  // connection this is a cheap no-op (the caches are empty and the scale merely
+  // recomputes to the same value). This is the mirror, for the Window/Actor
+  // remove-then-add path, of OnChildRemoved's recursive invalidation for the
+  // View reparent path.
+  if(isLayoutRoot)
+  {
+    InvalidateLogicalContextRecursive();
+  }
+
   const bool isDirty = mMeasureDirty || mArrangeDirty;
-  if(!GetParentView() || (IntegrationView::IsLayoutModeStandalone(mViewImpl) && isDirty))
+  if(isLayoutRoot || (IntegrationView::IsLayoutModeStandalone(mViewImpl) && isDirty))
   {
     RegisterWithLayoutController();
   }
@@ -3405,6 +3455,16 @@ LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
   // for this scope.
   ArrangePassGuard pass(*this);
 
+  // Establish this view's logical layout context for the pass, exactly as
+  // Measure() does at its own entry. Every arrange producer that touches
+  // children reads the effective scale anyway, but the DEFAULT arrange of a
+  // CHILDLESS view never does (ArrangeDefault's scale read sits behind its
+  // child loop), so without this read the sync bit would still be false at the
+  // publish gate below and a settled leaf could never cache. Amortised O(1):
+  // the walk stops at the first ancestor whose bit is already live. Return value
+  // intentionally discarded -- called for its side effect of establishing the bit.
+  (void)mViewImpl.GetEffectiveScale();
+
   // Phase 1: apply the input bounds as provisional self geometry, so a
   // customization hook that reads back self event-side geometry observes the
   // input (as before this refactor), not stale prior-pass geometry.
@@ -3449,9 +3509,7 @@ LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
   // direction-agnostic.
   ApplyLayoutDirection(finalBounds.width);
 
-  // Conditional cache publish, mirroring Measure. The logical context is
-  // re-validated only when nothing invalidated it DURING this pass (a reparent
-  // or a scale-context reset), never unconditionally (plan34 27.22).
+  // Conditional cache publish, mirroring Measure.
   //
   // The input KEY is published only when every premise of this pass still
   // holds at its end: no re-invalidation (mArrangeDirty was consumed at entry,
@@ -3460,10 +3518,20 @@ LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
   // ever measured used default/stale measured sizes for its children and must
   // not be frozen into the cache (plan34 11).
   //
-  // Nothing reads mArrangeCacheValid / mLastArrangeInput / mLogicalContextValid
-  // yet: there is no arrange cache-hit path in this increment, so this block is
-  // inert bookkeeping. The one live part is that mArrangeDirty is no longer
-  // cleared here, so a mid-pass InvalidateArrange() survives its pass.
+  // The logical context is READ here, never written: mLogicalContextValid is the
+  // effective-scale sync bit, owned solely by GetEffectiveScale() and the
+  // invalidation paths. Both logical terms are required and neither implies the
+  // other. mLogicalContextValid alone would accept a pass whose context was
+  // reset mid-flight and then re-validated by a later GetEffectiveScale() -- the
+  // work done before that reset used the OLD scale. mLogicalContextPoisonedDuringPass
+  // alone would accept a pass that simply never established a context (the bit
+  // still false at entry), which is what the GetEffectiveScale() at pass entry
+  // rules out for the childless-default case.
+  //
+  // Nothing reads mArrangeCacheValid / mLastArrangeInput yet: there is no
+  // arrange cache-hit path in this increment, so what this block WRITES is inert
+  // bookkeeping. The one live part is that mArrangeDirty is no longer cleared
+  // here, so a mid-pass InvalidateArrange() survives its pass.
   //
   // mArrangeCacheBlockedDuringPass is the freshness-only member of this
   // predicate: a cache-only invalidation that arrived mid-pass declines the
@@ -3472,8 +3540,15 @@ LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
   // turn into a scheduled layout). The ancestor-invalidation walk sets it on an
   // unowned arrange-in-progress ancestor it clears, so this view's arrange cache
   // cannot be re-published over that clear before the pass ends.
-  mLogicalContextValid = !mLogicalContextPoisonedDuringPass;
-  if(!mArrangeDirty && !mArrangePassPoisoned && !mArrangeCacheBlockedDuringPass && mLogicalContextValid && mMeasureCacheValid)
+#if defined(DEBUG_ENABLED)
+  // Non-fatal detector (see GetEffectiveScale): logs, does not throw, while the
+  // known scale-invalidation gaps remain open.
+  if(!IsLogicalContextInSyncNonMutating())
+  {
+    DALI_LOG_ERROR("Effective-scale sync bit is live but out of sync at the arrange publish gate\n");
+  }
+#endif
+  if(!mArrangeDirty && !mArrangePassPoisoned && !mArrangeCacheBlockedDuringPass && mLogicalContextValid && !mLogicalContextPoisonedDuringPass && mMeasureCacheValid)
   {
     mLastArrangeInput  = bounds;
     mArrangeCacheValid = true;
@@ -3619,42 +3694,106 @@ float ViewDataImpl::ComputeEffectiveScale() const
   return UiScaleManager::Get().GetScale();
 }
 
-void ViewDataImpl::ResetEffectiveScaleRecursive()
+bool ViewDataImpl::IsLogicalContextInSyncNonMutating() const
 {
-  mEffectiveScale = -1.0f;
+  // A cleared bit claims nothing about mEffectiveScale, so there is nothing to
+  // check. This is also the state every not-yet-computed view is in.
+  if(!mLogicalContextValid)
+  {
+    return true;
+  }
 
-  // Drop the cached results back to the "never measured" state so every node
-  // re-measures with the new scale.
-  //
-  // mMeasureDirty is explicitly CLEARED here, not left alone: this function
-  // resets the view to the "never measured" state, and every caller follows it
-  // with InvalidateMeasure() (SetUiScalePolicy, UiScaleManagerImpl::...,
-  // OnChildAdded) which propagates up the new ancestor chain and calls
-  // RegisterWithLayoutController(). That follow-up call now runs
-  // unconditionally, so leaving the flag set would no longer suppress the
-  // re-layout -- but the clear is kept so the state matches "never measured".
-  //
-  // This reproduces the previous sentinel encoding exactly, where this
-  // function overwrote the constraint with NaN ("never measured") on top of
-  // whatever was there — including the dirty sentinel.
-  mMeasureCacheValid   = false;
-  mMeasureDirty        = false;
-  mArrangeCacheValid   = false;
+  if(mScalePolicy == UiScalePolicy::DISABLED)
+  {
+    return FloatEqual(mEffectiveScale, 1.0f);
+  }
+  if(mScalePolicy == UiScalePolicy::ENABLED)
+  {
+    return FloatEqual(mEffectiveScale, UiScaleManager::Get().GetScale());
+  }
+
+  // INHERIT: mirror ComputeEffectiveScale's chain (Layout first) but only ONE
+  // level, reading the parent's already-cached value instead of recursing --
+  // this predicate must not compute, or it would repair the state it checks and
+  // could never fail. A parent whose own bit is stale has no value to compare
+  // against, so the check is skipped there.
+  Ui::Layout parentLayout = GetParentLayout();
+  if(parentLayout)
+  {
+    const ViewDataImpl& parentData = ViewDataImpl::Get(GetImpl(parentLayout));
+    return !parentData.mLogicalContextValid || FloatEqual(mEffectiveScale, parentData.mEffectiveScale);
+  }
+
+  Ui::View parentView = GetParentView();
+  if(parentView)
+  {
+    const ViewDataImpl& parentData = ViewDataImpl::Get(GetImpl(parentView));
+    return !parentData.mLogicalContextValid || FloatEqual(mEffectiveScale, parentData.mEffectiveScale);
+  }
+
+  // Root of an INHERIT chain: the global scale is the expectation.
+  return FloatEqual(mEffectiveScale, UiScaleManager::Get().GetScale());
+}
+
+void ViewDataImpl::DropCachedLogicalContext()
+{
+  // Clearing mLogicalContextValid IS the scale drop: it is the sync bit for
+  // mEffectiveScale, so the next GetEffectiveScale() on this node recomputes
+  // from the (possibly re-rooted) parent chain.
   mLogicalContextValid = false;
 
+  if(mArrangeInProgress)
+  {
+    // The running pass has already arranged part of this view against the OLD
+    // scale, so its result must not be published even if a later
+    // GetEffectiveScale() re-validates the bit before the pass ends.
+    mLogicalContextPoisonedDuringPass = true;
+  }
+}
+
+void ViewDataImpl::InvalidateLayoutCaches()
+{
+  mMeasureCacheValid = false;
+  mArrangeCacheValid = false;
+
+  // mMeasureDirty is deliberately NOT touched here.
+  //
+  // Dirty and cache-valid are different bits with different owners. "Cache
+  // valid" is a FRESHNESS claim about a stored result and is exactly what an
+  // invalidation must retract. "Dirty" is a record that this view has layout
+  // work which has not been consumed yet; it is consumed at pass entry
+  // (MeasurePassGuard) and re-armed only by InvalidateMeasure(). Clearing it
+  // from an invalidation does not invalidate anything -- it DISCARDS pending
+  // work.
+  //
+  // This function used to clear it (a leftover from the era when this reset
+  // restored the "never measured" state wholesale). On the recursive path that
+  // was wrong: the callers follow the reset with InvalidateMeasure(), which
+  // re-arms the node it is called on and propagates UPWARD only, so a
+  // DESCENDANT that was dirty before the reset lost that dirty with nothing to
+  // give it back -- the one place it is still read (OnViewSceneConnection's
+  // standalone `isDirty` self-registration) would then decline to re-register a
+  // reconnecting standalone descendant that genuinely had work pending.
   if(mMeasureInProgress)
   {
     mMeasurePassPoisoned = true;
   }
   if(mArrangeInProgress)
   {
-    mArrangePassPoisoned              = true;
-    mLogicalContextPoisonedDuringPass = true;
+    mArrangePassPoisoned = true;
   }
+}
+
+void ViewDataImpl::InvalidateLogicalContextRecursive()
+{
+  // The two concerns of a scale-context reset, applied in order: the cached
+  // scale itself, then every cached layout result that was derived from it.
+  DropCachedLogicalContext();
+  InvalidateLayoutCaches();
 
   for(auto& childView : mChildren)
   {
-    ViewDataImpl::Get(GetImpl(childView)).ResetEffectiveScaleRecursive();
+    ViewDataImpl::Get(GetImpl(childView)).InvalidateLogicalContextRecursive();
   }
 }
 
