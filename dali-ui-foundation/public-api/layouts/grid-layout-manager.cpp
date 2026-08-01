@@ -508,6 +508,14 @@ GridLayoutManager::GridLayoutManager(const Dali::Vector<GridLength>& rows, const
                                      float rowSpacing, float columnSpacing)
 : LayoutManager(new Impl(rows, columns, rowSpacing, columnSpacing))
 {
+  // PURE ARRANGE, on the same terms as StackLayoutManager: every cell rectangle is
+  // derived from the bounds handed in, the owner's effective scale, and layout-tracked
+  // state only -- padding, margins, requested/measured sizes, GridLayoutParams
+  // row/column placement, and this manager's own definitions and spacings. No actor
+  // geometry is read.
+  //
+  // Declared for the EXACT type, so a subclass overriding Arrange() stays IMPURE.
+  GetImplAs<Impl>()->DeclareArrangePurity(ArrangePurity::PURE, typeid(GridLayoutManager));
 }
 
 GridLayoutManager::~GridLayoutManager()

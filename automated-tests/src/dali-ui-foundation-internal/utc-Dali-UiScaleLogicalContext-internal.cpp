@@ -45,11 +45,13 @@ void utc_dali_ui_scale_logical_context_internal_cleanup(void)
 // White-box coverage for the effective-scale sync bit (mLogicalContextValid) and
 // for the arrange-cache bookkeeping that depends on it.
 //
-// None of this is observable through geometry in this increment: the arrange
-// cache has no hit path yet, so mArrangeCacheValid is write-only from the
-// library's point of view. These tests therefore read the bits directly through
-// ViewDataImpl's white-box accessors, which is the only position they can be
-// observed from at all.
+// The arrange cache now has a hit path, but it serves CHILDLESS views only, so the
+// bookkeeping pinned here is still not observable through geometry from most of the
+// shapes these tests build. These tests therefore read the bits directly through
+// ViewDataImpl's white-box accessors, which states the claim about the bits
+// themselves rather than about a hit that happens to depend on them. The
+// producer-level, geometry-observable side is covered by the arrange cache suites
+// (utc-Dali-ArrangeCacheHit-internal.cpp and the black-box cases in utc-Dali-View.cpp).
 //
 // UiScaleManagerImpl keeps the scale in a process-wide singleton, so every test
 // here records the incoming scale and restores it before returning.

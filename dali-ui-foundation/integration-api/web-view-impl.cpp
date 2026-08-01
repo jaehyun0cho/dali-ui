@@ -483,6 +483,16 @@ MeasuredSize WebViewImpl::OnMeasure(float widthConstraint, float heightConstrain
   return MeasuredSize(w, h);
 }
 
+// IMPURE PRODUCER -- deliberately does NOT call SetArrangePurity(ArrangePurity::PURE),
+// and must never be "optimised" into doing so. CalculateDisplayArea() reads
+// Actor::Property::SCREEN_POSITION, a function of the whole ancestor chain, and
+// SetDisplayArea() pushes it to a surface outside the actor tree
+// (mWebEngine.UpdateDisplayArea). Neither input is in the arrange cache key, and an
+// ancestor move invalidates nothing here, so serving this view a cached arrange would
+// strand the web engine's surface at a stale offset. The WORLD_POSITION
+// StepCondition(1.0f, 1.0f) notification is a coarse backstop, not an equivalent: it
+// cannot see sub-pixel-per-frame drift.
+// Pinned by UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP.
 LayoutRect WebViewImpl::OnArrange(const LayoutRect& bounds)
 {
   DALI_LOG_DEBUG_INFO("[WebViewImpl] OnArrange: bounds=(x=%.0f,y=%.0f,w=%.0f,h=%.0f)\n",

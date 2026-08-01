@@ -44,6 +44,17 @@ LayoutManager::~LayoutManager()
   delete mImpl;
 }
 
+bool LayoutManager::IsArrangeProducerPure() const
+{
+  // typeid on a polymorphic glvalue yields the MOST-DERIVED type, which is what makes
+  // the stored declaration type-exact: a subclass of a manager that declared PURE
+  // compares unequal here and falls back to the IMPURE default. Reading it here rather
+  // than latching a bool at construction is what allows the declaration to be made from
+  // a constructor at all -- inside a constructor typeid(*this) would name the
+  // constructor's own class and the check would be vacuous.
+  return mImpl != nullptr && mImpl->IsArrangePureForType(typeid(*this));
+}
+
 uint32_t LayoutManager::GetChildViewCount(ViewImpl* view) const
 {
   return view ? view->GetChildViewCount() : 0u;

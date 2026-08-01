@@ -328,9 +328,48 @@ using MeasureCallback = Callback<MeasuredSize(View, float, float)>;
  * view.SetArrangeCallback(ArrangeCallback::New(this, &MyClass::OnArrange));
  * @endcode
  *
- * @note Signature: MeasuredSize(View view, const LayoutRect& bounds)
+ * @note Signature: LayoutRect(View view, const LayoutRect& bounds)
+ *
+ * @note A callback installed through the one-argument SetArrangeCallback() is
+ *       treated as ArrangePurity::IMPURE and therefore runs on every arrange
+ *       pass. Use the two-argument overload with ArrangePurity::PURE only when
+ *       the callback is a pure function of its bounds argument, the view's
+ *       effective layout direction, its effective scale, and state tracked by
+ *       the layout invalidation system.
  */
 using ArrangeCallback = Callback<LayoutRect(View, const LayoutRect&)>;
+
+/**
+ * @brief Whether an arrange producer may be replaced by a cached result.
+ *
+ * The framework caches arrange results. When a view is re-arranged with the same
+ * bounds, the same effective layout direction and the same effective scale, and
+ * nothing has invalidated its layout, the cached result may be served WITHOUT
+ * running the view's arrange producer -- its OnArrange() override, or an
+ * ArrangeCallback set through SetArrangeCallback() -- at all.
+ *
+ * That is only sound when the producer is a pure function of those inputs, so
+ * the framework never assumes it: the default is IMPURE, and a producer is
+ * skipped only after whoever wrote it has declared it PURE.
+ *
+ * @see Ui::ViewImpl::SetArrangePurity()
+ * @see Ui::View::SetArrangeCallback(ArrangeCallback, ArrangePurity)
+ */
+enum class ArrangePurity : uint8_t
+{
+  /**
+   * @brief Default. The producer runs on EVERY arrange pass; it is never skipped.
+   */
+  IMPURE = 0,
+
+  /**
+   * @brief The producer is a pure function of the input bounds, this view's
+   * effective layout direction, its effective scale, and state tracked by the
+   * layout invalidation system. The framework MAY skip it and serve a cached
+   * result.
+   */
+  PURE = 1
+};
 
 /**
  * @brief Enumeration for stack layout orientation.

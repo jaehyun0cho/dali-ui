@@ -43,6 +43,20 @@ class ScrollViewLayoutManager::Impl : public LayoutManager::Impl
 ScrollViewLayoutManager::ScrollViewLayoutManager()
 : LayoutManager(new Impl())
 {
+  // IMPURE PRODUCER -- deliberately does NOT call DeclareArrangePurity, and IMPURE is
+  // the default so the omission is the whole declaration.
+  //
+  // Arrange() below takes the scrolled child's CURRENT ACTOR POSITION as that child's
+  // arrange input (childBounds.x = child.GetPositionX() * s, and the same for y). That
+  // read is exactly how a scrolled content view survives a layout pass: ScrollView
+  // drives scrolling through Ui::Extension::SetPositionX/Y on its content
+  // (ScrollViewImpl::ApplyScrollPosition), which writes the actor property WITHOUT
+  // invalidating layout, and this manager reads it back on the next pass.
+  //
+  // Declaring PURE here would let a settled ScrollView serve its children from the
+  // arrange cache and re-apply the bounds published BEFORE the scroll, so the content
+  // would snap back and scrolling would visibly freeze.
+  // UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassP pins this.
 }
 
 ScrollViewLayoutManager::~ScrollViewLayoutManager()

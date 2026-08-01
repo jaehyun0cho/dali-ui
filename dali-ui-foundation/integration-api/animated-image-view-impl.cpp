@@ -148,7 +148,24 @@ void AnimatedImageViewImpl::Reload()
 
 AnimatedImageViewImplPtr AnimatedImageViewImpl::New()
 {
-  return new AnimatedImageViewImpl();
+  AnimatedImageViewImplPtr impl(new AnimatedImageViewImpl());
+
+  // PURE producer: OnArrange is `return ViewImpl::OnArrange(bounds);`, i.e.
+  // ArrangeDefault -- a bare echo of the input bounds for a childless view, and for a
+  // view WITH children a placement derived only from those bounds, the padding, each
+  // child's margin / requested position / measured size and the effective scale.
+  // Every one of those is a cache KEY term or invalidation-tracked state, and the
+  // child set it arranges is the same for the same inputs, so it is skippable at
+  // every level.
+  //
+  // Declared HERE and not in the constructor, deliberately: the object built here has
+  // AnimatedImageViewImpl as its most-derived type, so the producer this declares is
+  // provably AnimatedImageViewImpl::OnArrange. A subclass runs its OWN New() and never
+  // this one, so it cannot inherit the declaration and stays IMPURE by default -- see
+  // ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
+  return impl;
 }
 
 void AnimatedImageViewImpl::SetProperty(Dali::BaseObject* object, Dali::Property::Index index, const Dali::Property::Value& value)

@@ -113,6 +113,11 @@ void View::SetArrangeCallback(ArrangeCallback callback)
   GetImpl(*this).SetArrangeCallback(std::move(callback));
 }
 
+void View::SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity)
+{
+  GetImpl(*this).SetArrangeCallback(std::move(callback), purity);
+}
+
 void View::SetLayoutTransition(LayoutTransition transition)
 {
   GetImpl(*this).SetLayoutTransition(transition);

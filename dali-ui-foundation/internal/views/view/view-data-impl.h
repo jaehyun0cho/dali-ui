@@ -242,8 +242,13 @@ public:
   void                      RaiseAbove(View target, LayoutOrderPolicy policy);
   void                      LowerBelow(View target, LayoutOrderPolicy policy);
 
-  void             SetMeasureCallback(MeasureCallback callback);
-  void             SetArrangeCallback(ArrangeCallback callback);
+  void SetMeasureCallback(MeasureCallback callback);
+  void SetArrangeCallback(ArrangeCallback callback);
+  void SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity);
+  /// Declares the purity of this view's OnArrange(). Callable from a constructor,
+  /// before the CustomActor handle exists: it only invalidates when a published
+  /// cache entry actually exists (see the comment on the definition).
+  void             SetArrangePurity(ArrangePurity purity);
   MeasureCallback* GetMeasureCallback();
   ArrangeCallback* GetArrangeCallback();
   void             AttachLayoutManager(Dali::UniquePtr<LayoutManager> manager);
@@ -316,6 +321,13 @@ public:
   bool IsLogicalContextValid() const
   {
     return mLogicalContextValid;
+  }
+  /// The DERIVED purity bit -- the term the arrange cache-HIT predicate reads.
+  /// False unless the ACTIVE producer has been declared pure, which is what makes
+  /// an undeclared (third-party) producer permanently ineligible for the hit.
+  bool IsArrangeProducerPure() const
+  {
+    return mArrangeProducerPure;
   }
   /// @}
 
@@ -883,9 +895,15 @@ private:
    * the layout managers and components; text views resolve direction inside their
    * own signal handlers, not via the arrange cache). GetEffectiveLayoutDirection()
    * is public and OnMeasure() is virtual, so a third-party subclass COULD size on
-   * direction; when Phase 5 introduces a measure cache HIT, that case needs its own
-   * key (a mLastMeasureDirection) or the first-party contract stated here. Today,
-   * with no measure HIT path, invalidating arrange alone is exactly correct.
+   * direction.
+   *
+   * KNOWN LIMITATION. Measure() does serve cache hits, and its key
+   * (mLastMeasureConstraint) has no direction term, so a third-party OnMeasure that
+   * sized on the layout direction would keep its pre-change measured size until some
+   * unrelated invalidation. Closing that needs either a mLastMeasureDirection key
+   * term or the first-party "measure is direction-independent" contract stated above
+   * made explicit in the OnMeasure documentation; invalidating arrange alone is
+   * exactly correct for every first-party producer.
    *
    * @param[in] actor The actor whose resolved layout direction changed (this view)
    * @param[in] type The new resolved layout direction
@@ -913,8 +931,10 @@ private:
    * measured value is a function of a standalone child's slot, so there is
    * nothing for this walk to invalidate. Their slot is corrected on the ARRANGE
    * side instead -- mMeasuredSlotUnconsumed plus the corrective re-measure in
-   * ArrangeStandaloneChild -- which is reached on every pass rather than only on
-   * an ancestor's measure miss.
+   * ArrangeStandaloneChild -- which is reached whenever the parent arranges,
+   * rather than only on an ancestor's measure miss. The arrange cache-HIT path
+   * keeps that reachable by testing HasUnconsumedStandaloneChild(): a parent with
+   * an unconsumed standalone child cannot hit.
    */
   void InvalidateAncestorLayoutCachesForMeasureMiss();
 
@@ -928,6 +948,81 @@ private:
    * precondition that an arrange pass is actually running.
    */
   void BlockArrangeCachePublishDuringPass();
+
+  /**
+   * @brief Recomputes mArrangeProducerPure from the ACTIVE producer's own declaration.
+   *
+   * The declaration is the callback's (mArrangeCallbackPure), the attached
+   * LayoutManager's (LayoutManager::IsArrangeProducerPure(), declared per exact
+   * manager type at the manager's own construction) or this view's OnArrange
+   * declaration (mArrangeOverridePure), whichever producer would actually run.
+   *
+   * Mirrors the producer dispatch order in Arrange() exactly -- ArrangeCallback >
+   * LayoutManager > OnArrange -- so the bit always describes the code that would
+   * actually run on a miss. Called only from the closed set of mutation points
+   * (ViewImpl::New / SetArrangePurity / both SetArrangeCallback overloads /
+   * AttachLayoutManager / OnArrangeProducerTraitChanged), never from the hit path:
+   * the two lookups it performs
+   * (GetArrangeCallback, GetLayoutManager) are trait lookups, one of them with a
+   * dynamic_cast, which is exactly why the derived value is cached in a bit rather
+   * than recomputed inside the predicate.
+   */
+  void RefreshArrangeProducerPurity();
+
+  /**
+   * @brief Re-derives the arrange producer purity after a reserved layout trait was
+   * added, replaced or removed.
+   *
+   * A no-op unless @p id is ReservedTraitId::LAYOUT_SIGNALS (the ArrangeCallback) or
+   * ReservedTraitId::LAYOUT_MANAGER (the LayoutManager) -- the only two traits that
+   * change WHICH producer Arrange() dispatches to. For LAYOUT_SIGNALS it also clears
+   * the declared callback purity, since that declaration belonged to the callback
+   * object being replaced. Defensive: it exists for the public
+   * Integration::View::SetTrait/RemoveTrait surface, which can reach those ids
+   * without going through SetArrangeCallback()/AttachLayoutManager().
+   *
+   * @param[in] id The trait that changed
+   */
+  void OnArrangeProducerTraitChanged(TraitId id);
+
+  /**
+   * @brief Whether any DIRECT child is a standalone view whose freshly measured
+   * slot this view has not consumed yet.
+   *
+   * A term of the arrange cache-HIT predicate, and the reason the forward note on
+   * ArrangeStandaloneChildren (see view-data-impl.cpp) exists: the corrective
+   * re-measure for an unconsumed standalone slot lives on the ARRANGE path, so an
+   * Arrange() that returns early on a cache hit would silently skip it. Declining
+   * the hit while such a child exists keeps the correction reachable; the very
+   * next (missing) pass consumes the slot and clears the bit, so this can decline
+   * at most one pass per out-of-band Measure().
+   *
+   * Cost-ordered on purpose, and the SELECTIVE term goes first:
+   * mMeasuredSlotUnconsumed is set unconditionally at every measure publish and is
+   * cleared only by the two standalone loops, so it is TRUE for every regular child
+   * in the steady state and decides nothing. IsLayoutModeStandalone is the term that
+   * actually rejects, so it is tested first and the bit only qualifies the few
+   * standalone children. O(direct children), no recursion.
+   *
+   * @note This is NOT the guard for a NEVER-MEASURED standalone child.
+   * mMeasuredSlotUnconsumed is initialised false and is raised only at a measure
+   * publish, so a standalone child that was just added and has not been measured yet
+   * leaves this query FALSE. What keeps that child reachable is the ARRANGE
+   * invalidation ViewDataImpl::OnChildAdded issues on the standalone-child path: it
+   * retracts the cache entry that was published for the older child set. This query
+   * covers only the other half -- an already measured standalone child whose fresh
+   * slot the parent has not consumed yet.
+   *
+   * @note O(direct children) is exactly the scope of this query, so on its own it
+   * says nothing about a DESCENDANT holding an unconsumed slot. What extends the
+   * claim to a subtree is CanReplayArrangeSubtreeFromCache(), which evaluates this
+   * same term at every node it would elide and refuses the whole hit if any node
+   * fails it.
+   *
+   * @return True when at least one direct child is standalone AND has an
+   *         unconsumed measured slot
+   */
+  bool HasUnconsumedStandaloneChild() const;
 
   /**
    * @brief DEBUG self-check for the effective-scale sync bit.
@@ -962,12 +1057,13 @@ private:
    * @warning A scale change DOES invalidate this view's arranged result (the
    * arrangement is scale-applied). The invariant the arrange cache relies on --
    * "mArrangeCacheValid is true only while the effective scale is unchanged
-   * since publish", which lets the (future) arrange cache-HIT predicate omit a
-   * scale term -- holds ONLY because every caller that drops the scale ALSO
-   * calls InvalidateLayoutCaches() on the same view. Do NOT add a freshness-only
-   * caller of this alone: it would leave a valid arrange cache computed against
-   * the old scale, served as a hit with no test to catch it. Pair the two, or
-   * use InvalidateLogicalContextRecursive() which does.
+   * since publish", which lets the arrange cache-HIT predicate omit a scale term
+   * (and assert mLogicalContextValid instead) -- holds ONLY because every caller
+   * that drops the scale ALSO calls InvalidateLayoutCaches() on the same view.
+   * Do NOT add a freshness-only caller of this alone: it would leave a valid
+   * arrange cache computed against the old scale, served as a hit with no test
+   * to catch it. Pair the two, or use InvalidateLogicalContextRecursive() which
+   * does.
    */
   void DropCachedLogicalContext();
 
@@ -987,6 +1083,66 @@ private:
    * whose dirty was cleared here would never get it back.
    */
   void InvalidateLayoutCaches();
+
+  /**
+   * @brief The NODE-LOCAL half of the arrange cache-HIT predicate.
+   *
+   * "May THIS view's arrange producer be elided for THIS input?" -- the entry exists
+   * and is fresh, the producer is declared PURE, the input matches the cache KEY, the
+   * effective layout direction matches, and no direct standalone child is holding an
+   * unconsumed measured slot. The full, cost-ordered rationale for each term is in
+   * ViewDataImpl::Arrange, which is the only caller.
+   *
+   * Says nothing about descendants. CanReplayArrangeSubtreeFromCache() is the other
+   * half, and a hit requires both.
+   *
+   * @param[in] bounds The candidate arrange input
+   * @return True when this view's producer may be elided for @p bounds
+   */
+  bool CanServeArrangeFromCache(const LayoutRect& bounds) const;
+
+  /**
+   * @brief Whether every node strictly BELOW this one may have its producer elided.
+   *
+   * The recursive half of the arrange cache-HIT gate. Read-only and side-effect-free:
+   * it is phase one of a validate-then-replay hit, so that "hit" stays atomic. A
+   * fused walk that bailed out half way would already have written cached bounds into
+   * part of the subtree, and the MISS that followed would not necessarily revisit
+   * every node it wrote.
+   *
+   * Per node it re-tests the node-local terms of CanServeArrangeFromCache() MINUS the
+   * cache KEY -- a descendant has no candidate bounds, and does not need one: with
+   * this view's own key matched and every producer PURE, each producer hands its
+   * children the same slots as last pass, which is exactly what those children
+   * resolved into the arranged bounds the replay applies. Children with no arrange
+   * result are skipped, because the replay does not visit them either (a Label's
+   * children, for instance).
+   *
+   * Cost is one read-only walk, paid only by a node whose own cache is already live
+   * -- which implies no non-standalone descendant is dirty, since dirtiness
+   * propagates upward. A childless view never enters it at all.
+   *
+   * @return True when the whole subtree below this view may be replayed from cache
+   */
+  bool CanReplayArrangeSubtreeFromCache() const;
+
+  /**
+   * @brief Serves the arrange cache for this view and its settled subtree.
+   *
+   * Phase two of the hit: a pre-order walk that performs, per node, exactly the
+   * observable work an arrange MISS performs -- reconcile the actor against the
+   * node's cached arranged bounds, recurse into the children that hold an arrange
+   * result, mirror the direct children under RTL, mark the initial layout done and
+   * register for LayoutFinished -- while eliding only the PRODUCER.
+   *
+   * It is NOT a prune. Skipping the subtree would drop the per-level reconciliation
+   * that repairs actor geometry written outside layout, which View::Arrange documents
+   * as a promise ("the arranged geometry is reconciled either way").
+   *
+   * @pre CanServeArrangeFromCache() holds for this view and, unless it is childless,
+   *      CanReplayArrangeSubtreeFromCache() does too.
+   */
+  void ReplayArrangeSubtreeFromCache();
 
   MeasuredSize ApplyConstraints(const MeasuredSize& size) const;
   void         MeasureStandaloneChildren(float effectiveWidth, float effectiveHeight);
@@ -1189,6 +1345,9 @@ private:
   bool         mArrangePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's arrange pass was running.
   bool         mArrangeCacheBlockedDuringPass : 1;                ///< True when a cache-ONLY invalidation arrived while this view's arrange pass was running. Declines the cache publish without poisoning the pass, so no follow-up layout is registered. Set by InvalidateAncestorLayoutCachesForMeasureMiss on an unowned arrange-in-progress ancestor; see BlockArrangeCachePublishDuringPass.
   bool         mArrangeResultAvailable : 1;                       ///< True once at least one arrange pass has published a result into mArrangedBounds.
+  bool         mArrangeOverridePure : 1;                          ///< Purity DECLARED for this view's OnArrange(), via ViewImpl::SetArrangePurity(). True for a plain View (declared in ViewImpl::New(), where the producer is provably ViewImpl::OnArrange -> ArrangeDefault). Default FALSE, so an undeclared subclass override is never skipped.
+  bool         mArrangeCallbackPure : 1;                          ///< Purity DECLARED for the ArrangeCallback currently installed, via the two-argument SetArrangeCallback(). Reset to FALSE by the one-argument overload, so installing a callback always clears any previously declared callback purity. Default FALSE.
+  bool         mArrangeProducerPure : 1;                          ///< DERIVED from which producer is ACTIVE plus that producer's own declaration -- the two bits above, or, when a LayoutManager is the producer, LayoutManager::IsArrangeProducerPure() (see RefreshArrangeProducerPurity). The single term the arrange cache-HIT predicate reads for producer purity. Default FALSE: an undeclared producer is never served from cache.
   mutable bool mLogicalContextValid : 1;                          ///< THE sync bit for mEffectiveScale: true exactly when mEffectiveScale equals what ComputeEffectiveScale() would return now. Set by the lazy compute in the const GetEffectiveScale() (hence mutable), cleared by every scale-context invalidation.
   bool         mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.
   bool         mKeyEventDispatchInProgress;                       ///< True while this view's key event dispatch is on the stack; guards unsupported same-view re-entrancy (plain bool so ScopedTrueFlag can bind a bool&).
