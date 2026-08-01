@@ -67,6 +67,23 @@ Ui::TextButton TextButtonImpl::New(TextButtonStyle style)
   DALI_ASSERT_ALWAYS(style && "TextButtonStyle must be initialized");
   IntrusivePtr<TextButtonImpl> impl(new TextButtonImpl());
   Ui::TextButton               handle(*impl);
+
+  // PURE producer: OnArrange derives the label's slot from the arrange bounds, the
+  // effective scale and the padding, and nothing else. The bounds are a cache KEY term,
+  // the scale is carried by Corollary C, and the padding is layout-tracked (SetPadding
+  // writes View::Property::PADDING, whose setter calls InvalidateMeasure). Alignment does
+  // not enter here at all -- it is pushed into the label's own text alignment by
+  // ApplyAlignment(). It reads no ancestor or world geometry (no SCREEN_POSITION /
+  // WORLD_*) and pushes to no sink outside the actor tree: the only writes are
+  // Measure()/Arrange() on its single label child, which the subtree replay reproduces
+  // from that child's own cache entry.
+  //
+  // Declared HERE and not in the constructor, deliberately: the object built here has
+  // TextButtonImpl as its most-derived type, so the producer this declares is provably
+  // TextButtonImpl::OnArrange. A subclass runs its OWN New() and never this one, so it
+  // cannot inherit the declaration and stays IMPURE by default -- see ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
   impl->Initialize();
   impl->ApplyInitialStyle(style);
   return handle;

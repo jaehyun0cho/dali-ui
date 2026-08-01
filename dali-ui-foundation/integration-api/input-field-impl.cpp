@@ -2138,7 +2138,12 @@ void InputFieldImpl::OnLongPressDetected(Actor actor, LongPressGesture gesture)
 
 MeasuredSize InputFieldImpl::OnMeasure(float widthConstraint, float heightConstraint)
 {
-  DALI_LOG_RELEASE_INFO("[%p] widthConstraint:%f, heightConstraint:%f\n", mController.Get(), widthConstraint, heightConstraint);
+  // DEBUG, not RELEASE: entry/result tracing on the per-view, per-pass measure hot
+  // path. A release-level line here costs every input field two formatted logs on
+  // every measure miss while saying nothing the caller did not already know -- the
+  // constraint is the caller's own argument and the result is its return value.
+  // Same reasoning, and same gating, as the arrange log below.
+  DALI_LOG_DEBUG_INFO("[%p] widthConstraint:%f, heightConstraint:%f\n", mController.Get(), widthConstraint, heightConstraint);
 
   mMeasureInvalidated = false;
 
@@ -2215,14 +2220,19 @@ MeasuredSize InputFieldImpl::OnMeasure(float widthConstraint, float heightConstr
     measuredHeight               = ClampWithMinPriority(naturalHeight, minHeight, allowedMaxHeight);
   }
 
-  DALI_LOG_RELEASE_INFO("[%p] measured:%f,%f\n", mController.Get(), measuredWidth, measuredHeight);
+  DALI_LOG_DEBUG_INFO("[%p] measured:%f,%f\n", mController.Get(), measuredWidth, measuredHeight);
   return MeasuredSize(measuredWidth, measuredHeight);
 }
 
 LayoutRect InputFieldImpl::OnArrange(const LayoutRect& bounds)
 {
-  DALI_LOG_RELEASE_INFO("[%p] pos:%f,%f, size:%f,%f\n", mController.Get(), bounds.x, bounds.y, bounds.width,
-                        bounds.height);
+  // DEBUG, not RELEASE: this is a no-op producer on the per-view, per-pass arrange
+  // hot path, so a release-level line here costs every field a formatted log on
+  // every arrange miss while saying nothing the caller did not already know.
+  // Matches how the other hot-path arrange logs are gated (ImageViewImpl::OnArrange,
+  // WebViewImpl::OnArrange).
+  DALI_LOG_DEBUG_INFO("[%p] pos:%f,%f, size:%f,%f\n", mController.Get(), bounds.x, bounds.y, bounds.width,
+                      bounds.height);
   return bounds;
 }
 

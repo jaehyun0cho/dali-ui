@@ -169,8 +169,22 @@ public: // Measure / Arrange API
    * @brief Measures the view with the given constraints.
    *
    * This method implements caching to avoid redundant calculations.
-   * It calls OnMeasure() (Template Method pattern) only when the cached result
-   * cannot be reused.
+   * It calls the view's measure producer -- OnMeasure(), an attached LayoutManager,
+   * or a MeasureCallback set through SetMeasureCallback() -- following the Template
+   * Method pattern, and caches the result. When the view is re-measured with the same
+   * normalised constraint and nothing has invalidated its layout, the cached result is
+   * served and the producer is NOT called.
+   *
+   * Unlike the arrange side, this is not opt-in: there is no measure purity
+   * declaration, so measure caching applies to every producer including one written
+   * outside this library. A measure producer is REQUIRED to be a pure function of its
+   * constraints, the view's effective scale, the view's own layout-tracked state and
+   * its children's measured sizes. A producer that reads anything else owns the
+   * invalidation and must call InvalidateMeasure() when that state changes.
+   *
+   * In particular a measure producer must NOT size on the effective layout direction:
+   * a direction change invalidates arrange, not measure, so such a producer would keep
+   * its pre-change measured size. See ViewImpl::OnMeasure().
    *
    * @param[in] widthConstraint The width constraint for measurement
    * @param[in] heightConstraint The height constraint for measurement
@@ -245,6 +259,14 @@ public: // Measure / Arrange API
    *
    * When set, the callback replaces the default measurement behavior
    * during the layout pass. Pass a default-constructed callback to remove.
+   *
+   * @note The callback becomes this view's measure producer, so the measure contract
+   * documented on Measure() applies to it unchanged: it must be a pure function of
+   * its constraints, the view's effective scale, the view's own layout-tracked state
+   * and its children's measured sizes, and it is NOT called on a measure-cache hit.
+   * There is no purity opt-in to decline this with -- caching is always on -- so a
+   * callback that depends on anything else, the effective layout direction included,
+   * must call View::InvalidateMeasure() itself when that state changes.
    *
    * @param[in] callback The measure callback (ownership transferred)
    *

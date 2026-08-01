@@ -64,6 +64,21 @@ public:
    * This method calculates the desired size of the view based on the
    * constraints and the sizes of its children.
    *
+   * @note The owning View caches the result and does NOT call this again while the
+   * normalised constraint is unchanged and nothing has invalidated the owner's
+   * layout. There is no measure counterpart to IsArrangeProducerPure(): measure
+   * caching is unconditional, so this applies to every manager, including one
+   * written outside this library. The override must therefore be a pure function of
+   * the constraints, the owner's effective scale, the owner's layout-tracked state
+   * and the children's measured sizes. In particular it must not size on the
+   * owner's effective layout direction, which invalidates arrange only.
+   *
+   * A manager that keeps hidden state of its own -- a spacing or orientation held on
+   * the manager and mutated through its own setter -- is outside that envelope, and
+   * mutating an attached manager directly is unspecified for exactly this reason.
+   * Route such state through the owning layout view, whose setter invalidates the
+   * owner, or invalidate the owner from the manager's setter.
+   *
    * @param[in] view The view to measure
    * @param[in] widthConstraint The available width constraint
    * @param[in] heightConstraint The available height constraint
