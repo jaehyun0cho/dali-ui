@@ -238,7 +238,23 @@ UiConfig::SystemFontSize ToUiConfigSystemFontSize(Dali::Integration::SystemSetti
 
 LabelImplPtr LabelImpl::New()
 {
-  return LabelImplPtr(new LabelImpl());
+  LabelImplPtr impl(new LabelImpl());
+
+  // PURE producer: OnArrange logs and returns its input bounds. It never touches
+  // children -- not even the logical one a masked Label gains (SetMaskEffect ->
+  // Self().Add) -- so it is a pure function of the arrange cache key at any child
+  // count, and "arranges the same child set for the same inputs" holds trivially:
+  // that set is always empty. The subtree replay visits only children that hold an
+  // arrange result, so a Label's children are left exactly where a re-run would leave
+  // them, which is untouched.
+  //
+  // Declared HERE and not in the constructor, deliberately: the object built here has
+  // LabelImpl as its most-derived type, so the producer this declares is provably
+  // LabelImpl::OnArrange. A subclass runs its OWN New() and never this one, so it
+  // cannot inherit the declaration and stays IMPURE by default -- see ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
+  return impl;
 }
 
 LabelImpl::LabelImpl()

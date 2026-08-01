@@ -52,8 +52,10 @@ void utc_dali_layout_direction_arrange_cache_internal_cleanup(void)
 // invalidation must degrade to "no hit", never to an arrangement mirrored the
 // wrong way round.
 //
-// There is no arrange cache-hit path yet, so both are library-side write-only
-// and can only be observed through ViewDataImpl's white-box accessors.
+// Both are cache bookkeeping rather than geometry, so they are observed here
+// through ViewDataImpl's white-box accessors. The arrange cache-HIT path that
+// consumes them is exercised from the outside in utc-Dali-ArrangeCacheHit-internal
+// and in the UtcDaliViewArrangeCache* cases of utc-Dali-View.
 
 namespace
 {

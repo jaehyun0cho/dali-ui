@@ -101,7 +101,21 @@ CanvasViewImpl::~CanvasViewImpl()
 
 CanvasViewImplPtr CanvasViewImpl::New(const Vector2& viewBox)
 {
-  return new CanvasViewImpl(viewBox);
+  CanvasViewImplPtr impl(new CanvasViewImpl(viewBox));
+
+  // PURE producer: OnArrange delegates to ViewImpl::OnArrange (ArrangeDefault, itself
+  // a pure function of the cache key -- see ViewImpl::New()) and then does its own
+  // work gated on `newSize != mSize`, where newSize is (bounds.width, bounds.height)
+  // -- both cache KEY terms. A hit implies the slot is unchanged, i.e. that the gate
+  // would have been false anyway, so the skipped call had no work to do.
+  //
+  // Declared HERE and not in the constructor, deliberately: the object built here has
+  // CanvasViewImpl as its most-derived type, so the producer this declares is provably
+  // CanvasViewImpl::OnArrange. A subclass runs its OWN New() and never this one, so it
+  // cannot inherit the declaration and stays IMPURE by default -- see ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
+  return impl;
 }
 
 // ---------------------------------------------------------------------------

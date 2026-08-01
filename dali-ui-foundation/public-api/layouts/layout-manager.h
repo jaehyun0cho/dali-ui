@@ -82,6 +82,31 @@ public:
    */
   virtual void Arrange(ViewImpl* view, const LayoutRect& bounds) = 0;
 
+  // ============================================================
+  // Non-virtual, library-internal API.
+  // Outside the freeze above: it occupies no vtable slot and, being DALI_INTERNAL
+  // (hidden visibility), exports no symbol, so it is additive for both the vtable
+  // layout and the exported symbol set.
+  // ============================================================
+
+  /**
+   * @brief Returns whether this manager declared its Arrange() PURE.
+   *
+   * A PURE Arrange is a pure function of the bounds it is handed, the owner's
+   * effective layout direction and effective scale, and layout-tracked state; the
+   * owning View's arrange cache may therefore serve a settled result instead of
+   * calling it again. The default is IMPURE: a manager that declares nothing -- in
+   * particular any manager written outside this library -- is never skipped.
+   *
+   * The declaration is per EXACT TYPE: a subclass of a manager that declared PURE
+   * reports false, because its Arrange() override is its own and has not been vetted.
+   *
+   * @return True if this manager's Arrange() may be skipped when its inputs are unchanged
+   * @note Internal: not part of the public ABI. Declared through
+   *       LayoutManager::Impl::DeclareArrangePurity().
+   */
+  DALI_INTERNAL bool IsArrangeProducerPure() const;
+
 protected:
   class Impl;
 

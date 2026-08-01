@@ -115,7 +115,23 @@ ImageViewImpl::~ImageViewImpl() = default;
 
 ImageViewImplPtr ImageViewImpl::New()
 {
-  return new ImageViewImpl();
+  ImageViewImplPtr impl(new ImageViewImpl());
+
+  // PURE producer: OnArrange logs and delegates to ViewImpl::OnArrange, i.e.
+  // ArrangeDefault -- a bare echo of the input bounds for a childless view, and for a
+  // view WITH children a placement derived only from those bounds, the padding, each
+  // child's margin / requested position / measured size and the effective scale.
+  // Every one of those is a cache KEY term or invalidation-tracked state, and the
+  // child set it arranges is the same for the same inputs, so it is skippable at
+  // every level.
+  //
+  // Declared HERE and not in the constructor, deliberately: the object built here has
+  // ImageViewImpl as its most-derived type, so the producer this declares is provably
+  // ImageViewImpl::OnArrange. A subclass runs its OWN New() and never this one, so it
+  // cannot inherit the declaration and stays IMPURE by default -- see ViewImpl::New().
+  impl->SetArrangePurity(ArrangePurity::PURE);
+
+  return impl;
 }
 
 void ImageViewImpl::SetProperty(Dali::BaseObject* object, Dali::Property::Index index, const Dali::Property::Value& value)
