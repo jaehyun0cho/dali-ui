@@ -830,6 +830,43 @@ private:
   void         OnConstraintAnimatableProperty(Constraint& constraint, Property::Index index, bool applied);
   void         OnChildOrderChanged(Actor parent, Actor orderChangedChild);
 
+  /**
+   * @brief Drops the ANCESTOR measure/arrange cache entries after this view has
+   * taken a full Measure() miss, up to the nearest layout dependency boundary.
+   *
+   * A completed Measure() rewrites this view's stored measured size, which every
+   * ancestor consumes while arranging (ArrangeDefault and the five layout
+   * managers all read the stored slot). When that Measure() did not originate
+   * from an ancestor's own pass -- an external View::Measure(), or a measure
+   * issued from an unrelated view's producer -- the ancestors' cached results
+   * were produced against the PREVIOUS slot, so an ancestor cache hit on the
+   * next pass would skip re-measuring this view and then arrange it from the
+   * overwritten slot.
+   *
+   * Cache-only: no dirty bit is raised and nothing is registered with the
+   * LayoutController, so this can never schedule (or spin) a layout pass. See
+   * the definition in view-data-impl.cpp for the stop conditions.
+   *
+   * Standalone views are excluded outright (an early return): no ancestor's
+   * measured value is a function of a standalone child's slot, so there is
+   * nothing for this walk to invalidate. Their slot is corrected on the ARRANGE
+   * side instead -- mMeasuredSlotUnconsumed plus the corrective re-measure in
+   * ArrangeStandaloneChild -- which is reached on every pass rather than only on
+   * an ancestor's measure miss.
+   */
+  void InvalidateAncestorLayoutCachesForMeasureMiss();
+
+  /**
+   * @brief Declines this view's arrange cache publish for the CURRENT pass because a
+   * cache-ONLY invalidation reached it mid-pass.
+   *
+   * Unlike a poison it registers no follow-up: a cache-only invalidation must never
+   * turn into a scheduled layout. Pass-local by construction (ArrangePassGuard clears
+   * the bit at pass entry, the publish gate reads it at pass exit), hence the
+   * precondition that an arrange pass is actually running.
+   */
+  void BlockArrangeCachePublishDuringPass();
+
   MeasuredSize ApplyConstraints(const MeasuredSize& size) const;
   void         MeasureStandaloneChildren(float effectiveWidth, float effectiveHeight);
   void         ArrangeStandaloneChildren(const LayoutRect& bounds);
@@ -1024,10 +1061,12 @@ private:
   bool mMeasureInProgress : 1;                            ///< True while this view's own Measure() is on the stack.
   bool mMeasurePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's measure pass was running.
   bool mMeasureResultAvailable : 1;                       ///< True once at least one measure pass has published a result into mMeasuredSize.
+  bool mMeasuredSlotUnconsumed : 1;                       ///< True while the measured size published by the last completed measure pass has not been consumed by this view's parent. Set unconditionally at the publish; cleared by the parent in MeasureStandaloneChildren / ArrangeStandaloneChildren. Read only on the standalone path: it tells ArrangeStandaloneChild that the slot may be the leftover of an out-of-band Measure() and must be re-measured against the parent's extent before it is placed.
   bool mArrangeCacheValid : 1;                            ///< True when mLastArrangeInput + mArrangedBounds hold a usable cache entry.
   bool mArrangeDirty : 1;                                 ///< True when invalidated since the last arrange.
   bool mArrangeInProgress : 1;                            ///< True while this view's own Arrange() is on the stack; guards same-view re-entrancy.
   bool mArrangePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's arrange pass was running.
+  bool mArrangeCacheBlockedDuringPass : 1;                ///< True when a cache-ONLY invalidation arrived while this view's arrange pass was running. Declines the cache publish without poisoning the pass, so no follow-up layout is registered. Set by InvalidateAncestorLayoutCachesForMeasureMiss on an unowned arrange-in-progress ancestor; see BlockArrangeCachePublishDuringPass.
   bool mArrangeResultAvailable : 1;                       ///< True once at least one arrange pass has published a result into mArrangedBounds.
   bool mLogicalContextValid : 1;                          ///< True when the cached logical layout context (effective scale and friends) is usable.
   bool mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.
