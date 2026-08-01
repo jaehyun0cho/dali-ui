@@ -324,6 +324,13 @@ public:
   {
     return mLogicalContextValid;
   }
+  /// The ACTOR-side half of the scale sync pair: true when the animatable
+  /// VIEW_EFFECTIVE_SCALE property is known to hold mEffectiveScale, which is what
+  /// lets Measure() skip reading that property on a cache hit.
+  bool IsEffectiveScaleActorSynced() const
+  {
+    return mEffectiveScaleActorSynced;
+  }
   /// The DERIVED purity bit -- the term the arrange cache-HIT predicate reads.
   /// False unless the ACTIVE producer has been declared pure, which is what makes
   /// an undeclared (third-party) producer permanently ineligible for the hit.
@@ -907,12 +914,19 @@ private:
    * is public and OnMeasure() is virtual, so a third-party subclass COULD size on
    * direction.
    *
-   * KNOWN LIMITATION. Measure() does serve cache hits, and its key
-   * (mLastMeasureConstraint) has no direction term, so a third-party OnMeasure that
-   * sized on the layout direction would keep its pre-change measured size until some
-   * unrelated invalidation. Closing that needs either a mLastMeasureDirection key
-   * term or the first-party "measure is direction-independent" contract stated above
-   * made explicit in the OnMeasure documentation; invalidating arrange alone is
+   * Measure() does serve cache hits, and its key (mLastMeasureConstraint) has no
+   * direction term, so a producer that sized on the layout direction would keep its
+   * pre-change measured size until some unrelated invalidation. That is CLOSED BY
+   * CONTRACT, not by a key: ViewImpl::OnMeasure(), View::Measure(),
+   * View::SetMeasureCallback() and LayoutManager::Measure() all now state that a
+   * measure producer must not depend on the layout direction, and that a producer
+   * depending on any state outside the measure key owns its own InvalidateMeasure().
+   *
+   * A mLastMeasureDirection key term was the alternative and was rejected: it buys
+   * nothing for any first-party producer (there are none that read direction in
+   * measure, per the audit above) and it would add a layout-direction property read
+   * to the measure hit predicate, which runs against the standing goal of getting
+   * actor property access OUT of the hit path. Invalidating arrange alone stays
    * exactly correct for every first-party producer.
    *
    * @param[in] actor The actor whose resolved layout direction changed (this view)
@@ -1056,10 +1070,13 @@ private:
   /**
    * @brief Drops this view's cached effective scale.
    *
-   * Single concern: the CACHED SCALE only. Clears the sync bit so the next
+   * Single concern: the CACHED SCALE only. Clears BOTH of its sync bits -- the
+   * one that says the cached value is usable (mLogicalContextValid), so the next
    * GetEffectiveScale() recomputes from the (possibly re-rooted) parent chain,
-   * and records the drop when it lands inside a running arrange pass so that
-   * pass declines to publish a result produced against the old scale.
+   * and the one that says the ACTOR already holds that value
+   * (mEffectiveScaleActorSynced), whose claim names the very value being
+   * retracted -- and records the drop when it lands inside a running arrange pass
+   * so that pass declines to publish a result produced against the old scale.
    *
    * It touches no cache and no dirty bit: whether dropping the scale must also
    * drop cached layout results is the caller's decision, not this function's.
@@ -1360,6 +1377,7 @@ private:
   bool         mArrangeCallbackPure : 1;                          ///< Purity DECLARED for the ArrangeCallback currently installed, via the two-argument SetArrangeCallback(). Reset to FALSE by the one-argument overload, so installing a callback always clears any previously declared callback purity. Default FALSE.
   bool         mArrangeProducerPure : 1;                          ///< DERIVED from which producer is ACTIVE plus that producer's own declaration -- the two bits above, or, when a LayoutManager is the producer, LayoutManager::IsArrangeProducerPure() (see RefreshArrangeProducerPurity). The single term the arrange cache-HIT predicate reads for producer purity. Default FALSE: an undeclared producer is never served from cache.
   mutable bool mLogicalContextValid : 1;                          ///< THE sync bit for mEffectiveScale: true exactly when mEffectiveScale equals what ComputeEffectiveScale() would return now. Set by the lazy compute in the const GetEffectiveScale() (hence mutable), cleared by every scale-context invalidation.
+  bool         mEffectiveScaleActorSynced : 1;                    ///< THE sync bit for the ACTOR-side copy of the scale (the animatable VIEW_EFFECTIVE_SCALE property): true exactly when that property is known to hold mEffectiveScale. The second half of the pair whose first half is mLogicalContextValid -- that one says the CACHED scale is usable, this one says the ACTOR already has it. Set by Measure()'s push (after the write, which re-enters the clear below), cleared by DropCachedLogicalContext() (the value it names has been retracted) and by ViewDataImpl::SetProperty for that index, which is the single funnel every event-side write of the property passes through. Default false, so the first Measure() always pushes.
   bool         mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.
   bool         mKeyEventDispatchInProgress;                       ///< True while this view's key event dispatch is on the stack; guards unsupported same-view re-entrancy (plain bool so ScopedTrueFlag can bind a bool&).
   bool         mInitialLayoutDone : 1;                            ///< True after this view has completed at least one arrange pass; used by the dispatcher to suppress ENTER on initial mount

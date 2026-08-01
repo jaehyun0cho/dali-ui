@@ -897,6 +897,7 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   mArrangeCallbackPure(false),
   mArrangeProducerPure(false),
   mLogicalContextValid(false),
+  mEffectiveScaleActorSynced(false),
   mLogicalContextPoisonedDuringPass(false),
   mKeyEventDispatchInProgress(false),
   mInitialLayoutDone(false),
@@ -3483,15 +3484,65 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
 
   // Push effective scale to the actor animatable property so that decoration
   // constraints (corner radius, borderline width) can read it as a scale input.
-  // Read back the current actor property value to skip redundant scene-graph writes.
-  // This also naturally corrects any value set externally on EFFECTIVE_SCALE.
-  if(!Dali::Equals(s, mViewImpl.Self().GetProperty<float>(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX)))
+  //
+  // GATED by mEffectiveScaleActorSynced, the sync bit for that ACTOR-side copy --
+  // the second half of the pair whose first half, mLogicalContextValid, is the sync
+  // bit for mEffectiveScale itself. While the bit is true the property is known to
+  // hold `s`, so the read-back below is skipped. That read sits ABOVE the cache-hit
+  // test (it has to: `s` is an input to the KEY computed just after it), so before
+  // the gate it ran on every HIT as well -- the one actor property access left on
+  // the settled measure path.
+  //
+  // The gate is BEHAVIOUR-NEUTRAL rather than merely cheaper, because every way the
+  // property can stop matching `s` from the event side clears the bit:
+  //   - the cached scale moving: DropCachedLogicalContext() clears BOTH bits in one
+  //     breath, which is also why this bit stores no value of its own. Every
+  //     scale-context change routes through it (InvalidateMeasure,
+  //     InvalidateLogicalContextRecursive), so the same subtree-wide invalidation
+  //     the arrange cache relies on for Corollary C covers this bit too.
+  //   - anyone writing the property: it is a REGISTERED animatable property with a
+  //     set function (ANIMATABLE_PROPERTY_7 at the top of this file), so every
+  //     event-side write -- the push below included -- is routed by dali-core
+  //     through ViewDataImpl::SetProperty, which clears the bit. An external clobber
+  //     is therefore still corrected by the very next Measure(), cache HIT or MISS,
+  //     exactly as it was before the gate.
+  // The bit is set AFTER the write for precisely that reason: the push re-enters
+  // ViewDataImpl::SetProperty and clears it first.
+  //
+  // Known gap, deliberately left open: an Animation targeting this property updates
+  // the event-side cached value through Object::NotifyPropertyAnimation, which does
+  // NOT run the registered setter, so the bit survives. Animating a framework-owned
+  // property was never supported (the push below has always fought it), and the
+  // DEBUG detector is what makes that -- or any future missed clear -- visible
+  // rather than silent.
+  if(!mEffectiveScaleActorSynced)
   {
-    // SetProperty triggers ViewDataImpl::SetProperty(VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX), which:
-    //   - updates the actor animatable so decoration constraints re-evaluate, and
-    //   - calls UpdateCornerRadius() for active RenderEffect / OffScreenRendering.
-    mViewImpl.Self().SetProperty(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX, s);
+    // Read back the current actor property value to skip redundant scene-graph writes.
+    // This also naturally corrects any value set externally on EFFECTIVE_SCALE.
+    if(!Dali::Equals(s, mViewImpl.Self().GetProperty<float>(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX)))
+    {
+      // SetProperty triggers ViewDataImpl::SetProperty(VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX), which:
+      //   - updates the actor animatable so decoration constraints re-evaluate, and
+      //   - calls UpdateCornerRadius() for active RenderEffect / OffScreenRendering.
+      mViewImpl.Self().SetProperty(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX, s);
+    }
+    mEffectiveScaleActorSynced = true;
   }
+#if defined(DEBUG_ENABLED)
+  else if(!Dali::Equals(s, mViewImpl.Self().GetProperty<float>(Internal::VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX)))
+  {
+    // The live check for the claim the elision above rests on: performs, in DEBUG
+    // only, the exact read the gate skipped and states that it would have found
+    // nothing to do. A missed clear of the bit shows up here on the first Measure()
+    // after it, instead of as a decoration silently stuck at an old scale.
+    //
+    // Logs rather than asserts, like the two other scale detectors in this file
+    // (GetEffectiveScale and the arrange publish gate): this is a per-view,
+    // per-frame hot path, and the one known gap above is an unsupported app
+    // action, not a framework bug to terminate on.
+    DALI_LOG_ERROR("Effective-scale actor sync bit is live but the actor property is out of sync\n");
+  }
+#endif
 
   float natW = (visualW > 0.f) ? visualW / s : visualW;
   float natH = (visualH > 0.f) ? visualH / s : visualH;
@@ -4313,6 +4364,16 @@ void ViewDataImpl::DropCachedLogicalContext()
   // mEffectiveScale, so the next GetEffectiveScale() on this node recomputes
   // from the (possibly re-rooted) parent chain.
   mLogicalContextValid = false;
+
+  // The ACTOR-side copy goes with it. That bit's claim is "the animatable
+  // VIEW_EFFECTIVE_SCALE property holds mEffectiveScale", and mEffectiveScale is
+  // exactly what has just been retracted -- the recompute may land on a different
+  // value, which Measure() must then push. Clearing the two together is what makes
+  // the bit mean "in sync with the CURRENT effective scale" rather than "in sync
+  // with whatever scale was current when it was set", and it is why this bit needs
+  // no invalidation path of its own: every scale-context change already comes
+  // through here.
+  mEffectiveScaleActorSynced = false;
 
   if(mArrangeInProgress)
   {
@@ -5509,8 +5570,19 @@ void ViewDataImpl::SetProperty(BaseObject* object, Property::Index index, const 
 
       case VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX:
       {
+        ViewDataImpl& dataImpl = viewImpl.GetViewDataImpl();
+
+        // This is the single funnel for EVERY event-side write of the property --
+        // the framework's own push from Measure() and any external clobber alike,
+        // because dali-core routes a registered animatable property's writes
+        // through its set function. So it is the one place that can retract the
+        // actor-side sync bit, and retracting it is what keeps Measure()'s
+        // corrective push reachable on a cache HIT (see the gate there). Measure()
+        // sets the bit AFTER its own SetProperty, so this clear does not fight it.
+        dataImpl.mEffectiveScaleActorSynced = false;
+
         // We don't need to hold data for it. But need to apply fitting mode now.
-        viewImpl.GetViewDataImpl().SizeOrUiScaleChanged();
+        dataImpl.SizeOrUiScaleChanged();
         break;
       }
 
@@ -7213,12 +7285,26 @@ void ViewDataImpl::ClearAnimationConstraints(const Dali::BaseObject& animationOb
 
 void ViewDataImpl::Process(bool postProcessor)
 {
+  // Consume the registration BEFORE doing the work, never after.
+  //
+  // RegisterProcessorOnce() is guarded by this very flag, so as long as it stays
+  // set the guard swallows every new request. ApplyFittingMode() runs arbitrary
+  // visual code and can itself raise one (a fitting apply that resizes a visual
+  // whose readiness or size feeds back into this view), and with the flag cleared
+  // afterwards that request was silently dropped: nothing re-registered, and the
+  // fitting stayed one step behind until some unrelated size or scale change came
+  // along. Clearing first makes the re-request re-register for the next pass.
+  //
+  // There is deliberately no persistent "pending logical size" to go with it: the
+  // re-registered run reads mSize at the time it runs, so it uses the CURRENT size
+  // rather than replaying whatever size was current when the request was raised.
+  mProcessorRegistered = false;
+
   if(DALI_LIKELY(mVisualData))
   {
     // Call ApplyFittingMode
     mVisualData->ApplyFittingMode(mSize, false);
   }
-  mProcessorRegistered = false;
 }
 
 } // namespace Internal

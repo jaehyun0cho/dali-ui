@@ -17,6 +17,7 @@
 
 #include <dali-ui-test-suite-utils.h>
 #include <dali-ui-components/dali-ui-components.h>
+#include <dali-ui-foundation/public-api/views/text-controls/label.h>
 
 using namespace Dali;
 using namespace Dali::Ui;
@@ -310,5 +311,81 @@ int UtcDaliTextButtonStyleDefaultKeyP(void)
   DALI_TEST_EQUALS(style.GetFontSize(), 16.0f, TEST_LOCATION);
   DALI_TEST_CHECK(style.GetStateEffect());
   DALI_TEST_CHECK(!style.GetStateEffect().IsNone());
+  END_TEST;
+}
+
+// ---------------------------------------------------------------------------
+// A settled TextButton serves its whole subtree from the arrange cache.
+//
+// TextButtonImpl::New declares ArrangePurity::PURE, so re-arranging a settled TextButton
+// into the SAME slot elides its producer and replays the cached subtree instead
+// (ViewDataImpl::ReplayArrangeSubtreeFromCache): each node is reconciled against its OWN
+// cached bounds rather than against bounds the producer recomputes.
+//
+// That is observed here by moving the label out of band first. `label.Arrange(shifted)`
+// republishes the LABEL's own arrange entry at a shifted x -- and only x, so no SIZE_*
+// write reaches OnSizeSet and nothing invalidates the TextButton. The subtree gate
+// (CanReplayArrangeSubtreeFromCache) deliberately does NOT re-test a descendant's cache
+// KEY, so the TextButton still HITS and the replay re-applies the label's own shifted
+// entry. A MISS would instead re-run TextButtonImpl::OnArrange, which hands the label the
+// content slot it computes and snaps it back.
+//
+// Non-vacuity (verified by mutation): deleting the
+// `impl->SetArrangePurity(ArrangePurity::PURE);` line from TextButtonImpl::New leaves the
+// producer IMPURE (the framework default), the second Arrange MISSES, and the label is
+// pulled back to the padding start -- the final assertion fails.
+int UtcDaliTextButtonSettledArrangeIsServedFromCacheP(void)
+{
+  UiTestApplication application(Components::UiConfig::New());
+  tet_infoline("A settled TextButton replays its subtree from the arrange cache instead of re-running OnArrange");
+
+  const float width     = 200.0f;
+  const float height    = 50.0f;
+  const float padStart  = 10.0f;
+  const float padEnd    = 4.0f;
+  const float padTop    = 2.0f;
+  const float padBottom = 2.0f;
+  const float contentW  = width - (padStart + padEnd);   // 186
+  const float contentH  = height - (padTop + padBottom); // 46
+
+  TextButtonStyle style = TextButtonStyle::Builder()
+                            .SetPadding(Insets(padStart, padEnd, padTop, padBottom))
+                            .SetStateEffect(StateEffect::None())
+                            .Build();
+
+  TextButton button = TextButton::New("OK", style);
+  button.SetRequestedWidth(width);
+  button.SetRequestedHeight(height);
+  application.GetScene().Add(button);
+
+  button.Measure(width, height);
+  button.Arrange(LayoutRect(0.0f, 0.0f, width, height)); // settles and publishes the entry
+
+  // The label is not exposed on the handle; it is the button's only child View.
+  Ui::Label label = Ui::Label::DownCast(button.GetChildAt(0u));
+  DALI_TEST_CHECK(label);
+
+  // The label fills the padded content band.
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), padStart, TEST_LOCATION);
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_Y), padTop, TEST_LOCATION);
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::SIZE_WIDTH), contentW, TEST_LOCATION);
+
+  // Republish the label's OWN arrange entry at a shifted x. Same size, so this touches
+  // POSITION_X only and invalidates nothing above it.
+  const float shiftedLabelX = padStart + 33.0f;
+  label.Arrange(LayoutRect(shiftedLabelX, padTop, contentW, contentH));
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), shiftedLabelX, TEST_LOCATION);
+
+  // Re-arrange the settled TextButton into the SAME slot.
+  button.Arrange(LayoutRect(0.0f, 0.0f, width, height));
+
+  // The container's own geometry is reconciled either way -- a hit is not a no-op.
+  DALI_TEST_EQUALS(button.GetProperty<float>(Dali::Actor::Property::POSITION_X), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(button.GetProperty<float>(Dali::Actor::Property::SIZE_WIDTH), width, TEST_LOCATION);
+
+  // The producer was elided: the label kept its own cached bounds instead of being handed
+  // a freshly computed content slot.
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), shiftedLabelX, TEST_LOCATION);
+
   END_TEST;
 }

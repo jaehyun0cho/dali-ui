@@ -7150,3 +7150,91 @@ int UtcDaliViewArrangeCacheHitSkipsFlexLayoutManagerP(void)
 
   END_TEST;
 }
+
+// INC-A. The BACKGROUND visual is the one ViewDataImpl::GetNaturalSize() reads, so
+// registering, replacing or removing it changes this view's natural size -- a measure
+// input. Before the fix these paths only asked dali-core for a legacy relayout, which
+// does not touch the dali-ui measure cache, so the cache kept serving the size it had
+// computed for the previous background forever.
+//
+// Deterministic without any image I/O: an image visual reports its DESIRED_WIDTH /
+// DESIRED_HEIGHT as its natural size while it has no texture, and the view is kept
+// off-scene so nothing ever loads.
+int UtcDaliViewBackgroundChangeInvalidatesMeasureP(void)
+{
+  UiTestApplication application;
+
+  View view = View::New();
+  view.SetRequestedWidth(WRAP_CONTENT);
+  view.SetRequestedHeight(WRAP_CONTENT);
+
+  auto backgroundMap = [](int width, int height) {
+    Property::Map map;
+    map.Insert(Ui::VisualBasePropertyIndex::TYPE, static_cast<int>(Ui::Integration::InternalVisualType::IMAGE));
+    map.Insert(Ui::ImageVisualPropertyIndex::URL, "background-image.png");
+    map.Insert(Ui::ImageVisualPropertyIndex::DESIRED_WIDTH, width);
+    map.Insert(Ui::ImageVisualPropertyIndex::DESIRED_HEIGHT, height);
+    return map;
+  };
+
+  // No background at all: GetNaturalSize() is ZERO. This populates the measure cache.
+  MeasuredSize bare = view.Measure(1000.0f, 1000.0f);
+  DALI_TEST_EQUALS(bare.GetWidth(), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(bare.GetHeight(), 0.0f, TEST_LOCATION);
+
+  // Register. Re-measured with the SAME constraints, so a surviving cache entry would
+  // still answer 0x0.
+  view.SetProperty(Ui::View::Property::BACKGROUND, backgroundMap(120, 60));
+  MeasuredSize registered = view.Measure(1000.0f, 1000.0f);
+  DALI_TEST_EQUALS(registered.GetWidth(), 120.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(registered.GetHeight(), 60.0f, TEST_LOCATION);
+
+  // Replace.
+  view.SetProperty(Ui::View::Property::BACKGROUND, backgroundMap(200, 90));
+  MeasuredSize replaced = view.Measure(1000.0f, 1000.0f);
+  DALI_TEST_EQUALS(replaced.GetWidth(), 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(replaced.GetHeight(), 90.0f, TEST_LOCATION);
+
+  // Remove: back to ZERO.
+  view.ClearBackground();
+  MeasuredSize cleared = view.Measure(1000.0f, 1000.0f);
+  DALI_TEST_EQUALS(cleared.GetWidth(), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(cleared.GetHeight(), 0.0f, TEST_LOCATION);
+
+  // The cache is still a cache: re-measuring with nothing changed serves the same
+  // answer, so the assertions above are not passing merely because caching is off.
+  DALI_TEST_EQUALS(view.Measure(1000.0f, 1000.0f).GetWidth(), 0.0f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// INC-A, arranged-geometry half of the same contract: a background registered after
+// the tree has settled must move the view's ARRANGED size too, not just the value
+// Measure() returns. Exercised through the real layout pass on-scene.
+int UtcDaliViewBackgroundChangeAfterSettleUpdatesArrangedSizeP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  View view = View::New();
+  view.SetRequestedWidth(WRAP_CONTENT);
+  view.SetRequestedHeight(WRAP_CONTENT);
+  window.Add(view);
+
+  SettleLayout(application);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 0.0f, TEST_LOCATION);
+
+  Property::Map map;
+  map.Insert(Ui::VisualBasePropertyIndex::TYPE, static_cast<int>(Ui::Integration::InternalVisualType::IMAGE));
+  map.Insert(Ui::ImageVisualPropertyIndex::URL, "background-image.png");
+  map.Insert(Ui::ImageVisualPropertyIndex::DESIRED_WIDTH, 140);
+  map.Insert(Ui::ImageVisualPropertyIndex::DESIRED_HEIGHT, 70);
+  view.SetProperty(Ui::View::Property::BACKGROUND, map);
+
+  SettleLayout(application);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), 140.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 70.0f, TEST_LOCATION);
+
+  END_TEST;
+}
