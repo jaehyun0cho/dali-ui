@@ -862,6 +862,12 @@ private:
 private:
   using TraitEntries = std::vector<std::pair<TraitId, IntrusivePtr<TraitObject>>>;
 
+  /// RAII transaction guards for a single Measure() / Arrange() pass on this view.
+  /// Defined in view-data-impl.cpp; they own the pass-local in-progress / poison
+  /// bits and re-arm the dirty bit when a pass is left before it publishes.
+  struct MeasurePassGuard;
+  struct ArrangePassGuard;
+
   struct SizeConstraints
   {
     float minWidth  = 0.0f;
@@ -983,9 +989,10 @@ private:
 
   float                                 mRequestedX;
   float                                 mRequestedY;
-  MeasuredSize                          mMeasuredSize; ///< mLastMeasuredConstraint.width < 0 means no valid measure cache
-  MeasuredSize                          mLastMeasuredConstraint;
+  MeasuredSize                          mMeasuredSize;          ///< Last completed measure result. Always readable (GetMeasuredSize() and layout managers consume it during Arrange regardless of cache state); mMeasureCacheValid only governs whether the KEY below may serve a cache hit.
+  MeasuredSize                          mLastMeasureConstraint; ///< Pure cache KEY: the effective natural constraint the cached mMeasuredSize was produced for. Carries no dirty/never-measured sentinel meaning; validity lives in mMeasureCacheValid / mMeasureDirty.
   LayoutRect                            mArrangedBounds;
+  LayoutRect                            mLastArrangeInput;             ///< Pure cache KEY: the input bounds mArrangedBounds was produced for. Valid only while mArrangeCacheValid is true.
   Insets                                mMargin;                       ///< Layout margin
   Insets                                mPadding;                      ///< Layout padding
   float                                 mRequestedWidth;               ///< Requested width (WRAP_CONTENT = -1.0f, MATCH_PARENT = -2.0f)
@@ -1001,9 +1008,19 @@ private:
   int32_t                            mAccessibilityRole : Dali::Log<static_cast<uint32_t>(Accessibility::Role::MAX_COUNT)>::value + 2; ///< Frequently touched accessibility-related value kept here to avoid AccessibilityData creation.
 
   bool mSkipChildrenUpdate : 1;
+  bool mMeasureCacheValid : 1;                            ///< True when mLastMeasureConstraint + mMeasuredSize hold a usable cache entry.
+  bool mMeasureDirty : 1;                                 ///< True when invalidated since the last measure.
+  bool mMeasureInProgress : 1;                            ///< True while this view's own Measure() is on the stack.
+  bool mMeasurePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's measure pass was running.
+  bool mMeasureResultAvailable : 1;                       ///< True once at least one measure pass has published a result into mMeasuredSize.
+  bool mArrangeCacheValid : 1;                            ///< True when mLastArrangeInput + mArrangedBounds hold a usable cache entry.
   bool mArrangeDirty : 1;                                 ///< True when invalidated since the last arrange.
-  bool mArrangeInProgress;                                ///< True while this view's own Arrange() is on the stack; guards same-view re-entrancy (plain bool so the scope guard can bind a bool&).
-  bool mKeyEventDispatchInProgress;                       ///< True while this view's key event dispatch is on the stack; guards unsupported same-view re-entrancy.
+  bool mArrangeInProgress : 1;                            ///< True while this view's own Arrange() is on the stack; guards same-view re-entrancy.
+  bool mArrangePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's arrange pass was running.
+  bool mArrangeResultAvailable : 1;                       ///< True once at least one arrange pass has published a result into mArrangedBounds.
+  bool mLogicalContextValid : 1;                          ///< True when the cached logical layout context (effective scale and friends) is usable.
+  bool mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.
+  bool mKeyEventDispatchInProgress;                       ///< True while this view's key event dispatch is on the stack; guards unsupported same-view re-entrancy (plain bool so ScopedTrueFlag can bind a bool&).
   bool mInitialLayoutDone : 1;                            ///< True after this view has completed at least one arrange pass; used by the dispatcher to suppress ENTER on initial mount
   bool mIsFocusGroup : 1;                                 ///< Stores whether the view is a focus group.
   bool mDispatchKeyEvents : 1;                            ///< Whether the actor emits key event signals
