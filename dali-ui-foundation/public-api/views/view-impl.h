@@ -658,9 +658,9 @@ public: // Non-virtual API (safe to reorder / extend)
   void SetArrangeCallback(ArrangeCallback callback);
 
   /**
-   * @copydoc Ui::View::SetArrangeCallback(ArrangeCallback, ArrangePurity)
+   * @copydoc Ui::View::SetArrangeCallback(ArrangeCallback, ArrangePolicy)
    */
-  void SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity);
+  void SetArrangeCallback(ArrangeCallback callback, ArrangePolicy policy);
 
   // Layout Manager
 
@@ -813,8 +813,8 @@ protected:
    * @note This method is NOT guaranteed to run on every measure pass. Measure()
    * caches its result and serves that cache when the view is re-measured with the
    * same normalised constraint and nothing has invalidated its layout, skipping
-   * this call entirely. Unlike OnArrange(), there is no purity declaration to opt
-   * into: measure caching is ALWAYS on, so the contract below is unconditional.
+   * this call entirely. Unlike OnArrange(), there is no execution-policy opt-out:
+   * measure caching is always on, so the contract below is unconditional.
    * Never rely on this method as a per-frame or per-pass tick.
    *
    * The override must therefore be a pure function of its two constraints, this
@@ -844,14 +844,12 @@ protected:
    * framework validates the returned rect and applies its x/y/width/height to
    * the self actor; do NOT call self geometry setters. Default echoes @p bounds.
    *
-   * @note This method is NOT guaranteed to run on every arrange pass. When this
-   * view's arrange result is cached and its inputs are unchanged, the framework may
-   * serve the cached result and skip this call entirely. That only happens after
-   * SetArrangePurity(ArrangePurity::PURE) has been called on this view, from the
-   * factory of the exact type that owns this override; the default is
-   * ArrangePurity::IMPURE, under which this method runs on every pass, and a subclass
-   * never inherits a base's declaration. Never rely on this method as a per-frame or
-   * per-pass tick.
+   * @note This method is NOT guaranteed to run on every arrange pass.
+   * ArrangePolicy::ARRANGE_IF_CHANGED is the default, so the framework may serve a
+   * cached result and skip this call when all tracked inputs are unchanged. Select
+   * ArrangePolicy::ARRANGE_ALWAYS for work that must run on every arrange pass. A
+   * policy selected by a base constructor is inherited by subclasses and may be
+   * replaced by the subclass. Never rely on this method as a per-frame tick.
    */
   virtual LayoutRect OnArrange(const LayoutRect& bounds);
 
@@ -1087,52 +1085,24 @@ protected:
   LayoutManager* GetLayoutManager() const;
 
   /**
-   * @brief Declares whether this view's OnArrange() may be skipped when its inputs
-   * are unchanged.
+   * @brief Sets when this view's OnArrange() producer must execute.
    *
-   * The framework caches arrange results. When a view is re-arranged with the same
-   * bounds, the same effective layout direction and the same effective scale, and
-   * nothing has invalidated its layout, the cached result may be served WITHOUT
-   * calling OnArrange() at all.
+   * The default is ArrangePolicy::ARRANGE_IF_CHANGED. Use
+   * ArrangePolicy::ARRANGE_ALWAYS when OnArrange() reads ancestor or world geometry,
+   * depends on mutable state that is not accompanied by InvalidateArrange(), or
+   * pushes state to a surface outside the actor tree.
    *
-   * That is only sound when OnArrange() is a pure function of those inputs. Call
-   * this with ArrangePurity::PURE to declare that it is. The DEFAULT is
-   * ArrangePurity::IMPURE, so an override that says nothing is never skipped.
+   * The policy is stored on the implementation instance, so a policy set by a base
+   * constructor is inherited by subclasses. A subclass may set its own policy after
+   * the base constructor completes. The policy may also be changed after construction;
+   * an existing arrange cache entry is invalidated when necessary.
    *
-   * Do NOT declare PURE if OnArrange() (or anything it calls):
-   *  - reads ancestor or world geometry (SCREEN_POSITION, WORLD_POSITION,
-   *    WORLD_SCALE, WORLD_MATRIX, window or scene coordinates) -- these change
-   *    without invalidating this view;
-   *  - pushes state to a surface outside the actor tree (a native player, a web
-   *    engine), which a skipped call would strand at a stale offset;
-   *  - depends on mutable state that no InvalidateArrange() accompanies.
+   * @note This policy describes OnArrange() only. An ArrangeCallback replaces
+   * OnArrange() as the active producer and carries its own policy.
    *
-   * WHERE to call it: from the `New()` (or equivalent factory) of the EXACT type whose
-   * OnArrange() the declaration describes, right after the impl is constructed --
-   * mirroring ViewImpl::New(). That is the one place where the most-derived type is
-   * fixed, so the declaration provably describes the override that will actually run.
-   *
-   * Do NOT call it from a constructor or from OnInitialize() of a class that can be
-   * subclassed. Both of those run for every subclass too, so the declaration would
-   * LEAK to a subclass whose OnArrange() override may well be impure, and that
-   * subclass would then be served a stale cached arrange result.
-   *
-   * A subclass does NOT inherit its base's declaration: purity is per exact type,
-   * because a subclass builds its own impl through its own factory. So if you override
-   * OnArrange() and want it skippable, you MUST declare it yourself, from your own
-   * factory. Say nothing and you get ArrangePurity::IMPURE -- always correct, just
-   * never skipped.
-   *
-   * It takes effect from the next arrange pass and may be called again at any time
-   * (a view that only learns it is impure after construction can correct itself).
-   *
-   * @note This declaration describes OnArrange() only. An ArrangeCallback installed
-   * through SetArrangeCallback() REPLACES OnArrange() as this view's producer, and
-   * carries its own purity -- see the two-argument SetArrangeCallback().
-   *
-   * @param[in] purity The purity of this view's OnArrange() override
+   * @param[in] policy When the OnArrange() producer must execute
    */
-  void SetArrangePurity(ArrangePurity purity);
+  void SetArrangePolicy(ArrangePolicy policy);
 
   // ============================================================
   // private

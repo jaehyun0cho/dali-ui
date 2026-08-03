@@ -300,18 +300,6 @@ InputFieldImplPtr InputFieldImpl::New()
 {
   InputFieldImplPtr impl(new InputFieldImpl());
 
-  // PURE producer: OnArrange logs and returns its input bounds. The internal actors
-  // are raw Actors added through Integration::View::AddActorChild, so they are not in
-  // mChildren at all; and the body never touches children in any case, so it stays a
-  // pure function of the arrange cache key even if an application adds a View child
-  // of its own.
-  //
-  // Declared HERE and not in the constructor, deliberately: the object built here has
-  // InputFieldImpl as its most-derived type, so the producer this declares is provably
-  // InputFieldImpl::OnArrange. A subclass runs its OWN New() and never this one, so it
-  // cannot inherit the declaration and stays IMPURE by default -- see ViewImpl::New().
-  impl->SetArrangePurity(ArrangePurity::PURE);
-
   return impl;
 }
 

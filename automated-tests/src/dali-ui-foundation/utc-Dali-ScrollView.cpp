@@ -1341,7 +1341,7 @@ int UtcDaliScrollViewIsViewP(void)
 }
 
 // ---------------------------------------------------------------------------
-// Phase 5c: ScrollViewLayoutManager must stay IMPURE.
+// Phase 5c: ScrollViewLayoutManager must stay ARRANGE_ALWAYS.
 //
 // ScrollViewLayoutManager::Arrange takes the scrolled child's CURRENT actor position
 // as that child's arrange input (childBounds.x = child.GetPositionX() * s, and the
@@ -1349,8 +1349,8 @@ int UtcDaliScrollViewIsViewP(void)
 // with Ui::Extension::SetPositionX/Y on the content (ScrollViewImpl::ApplyScrollPosition),
 // which writes the actor property without invalidating layout.
 //
-// So the manager is NOT a pure function of layout-tracked state, and it is the one
-// in-library manager that declares nothing. If it declared PURE, a settled ScrollView
+// The manager therefore explicitly selects ARRANGE_ALWAYS. If it instead selected
+// ARRANGE_IF_CHANGED, a settled ScrollView
 // would serve its subtree from the arrange cache and re-apply the bounds published
 // before the scroll -- the content would snap back and scrolling would freeze.
 //
@@ -1362,7 +1362,7 @@ int UtcDaliScrollViewIsViewP(void)
 // declaration is the only thing standing between the content and a stale replay.
 //
 // Non-vacuity (verified by mutation): adding
-//   GetImplAs<Impl>()->DeclareArrangePurity(ArrangePurity::PURE, typeid(ScrollViewLayoutManager));
+//   SetArrangePolicy(ArrangePolicy::ARRANGE_IF_CHANGED);
 // to ScrollViewLayoutManager's constructor makes the settled ScrollView hit, the
 // content snaps back to 0 and every assertion after the scroll fails.
 int UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassP(void)

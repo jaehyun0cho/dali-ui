@@ -157,25 +157,27 @@ Anything else it reads, it owns: it must call `InvalidateMeasure()` itself when
 that state changes, or the view keeps its previous measured size until some
 unrelated invalidation happens to arrive.
 
-The **arrange cache** works the same way but is **opt-in**. `View::Arrange()`
-serves a stored result when the input bounds, the effective layout direction and
-the effective scale are unchanged and nothing has invalidated the view — but only
-after the arrange producer has been declared pure. The default is
-`ArrangePurity::IMPURE`, under which the producer runs on every pass:
+The **arrange cache** uses `ArrangePolicy::ARRANGE_IF_CHANGED` by default.
+`View::Arrange()` may serve a stored result when the input bounds, effective layout
+direction and effective scale are unchanged and nothing has invalidated the view.
+The default applies to `OnArrange()`, a callback installed through the one-argument
+`SetArrangeCallback()`, and `LayoutManager::Arrange()`.
 
-| Producer | How it declares purity |
+Use `ArrangePolicy::ARRANGE_ALWAYS` when a producer reads state outside layout
+invalidation or performs externally visible work on every pass:
+
+| Producer | How it selects `ARRANGE_ALWAYS` |
 |---|---|
-| `OnArrange()` override | `ViewImpl::SetArrangePurity(ArrangePurity::PURE)`, from the `New()` of the exact type that owns the override |
-| `ArrangeCallback` | `View::SetArrangeCallback(callback, ArrangePurity::PURE)` |
-| `LayoutManager::Arrange()` | Library-internal; a manager written outside this library is always `IMPURE` |
+| `OnArrange()` override | `ViewImpl::SetArrangePolicy(ArrangePolicy::ARRANGE_ALWAYS)` |
+| `ArrangeCallback` | `View::SetArrangeCallback(callback, ArrangePolicy::ARRANGE_ALWAYS)` |
+| `LayoutManager::Arrange()` | protected `LayoutManager::SetArrangePolicy(ArrangePolicy::ARRANGE_ALWAYS)` |
 
-Purity is **per exact type and is never inherited** — a subclass builds its own
-impl through its own factory, so it starts `IMPURE` until it declares itself. Do
-not declare a producer pure if it reads ancestor or world geometry
-(`SCREEN_POSITION`, `WORLD_POSITION`, window coordinates), pushes state to a
-surface outside the actor tree, or arranges a different set of children depending
-on state outside the list above. `VideoView` and `WebView` are the in-library
-examples of producers that must stay impure.
+Policy is stored on the implementation instance and inherited by subclasses. A
+subclass may select another policy after its base constructor completes. Producers
+that read ancestor or world geometry (`SCREEN_POSITION`, `WORLD_POSITION`, window
+coordinates), push state to a surface outside the actor tree, or depend on mutable
+state without invalidating arrange must use `ARRANGE_ALWAYS`. `VideoView`, `WebView`,
+`RecyclerView` and the ScrollView layout manager are the in-library examples.
 
 **A cache hit is an optimisation of the work, never of the result.** Serving the
 arrange cache for a view with children does not prune the subtree: it replays it,
@@ -183,8 +185,8 @@ performing per node exactly the observable work a re-run performs — reconcilin
 the actor against the node's arranged bounds, mirroring direct children under
 right-to-left, and notifying `LayoutFinishedSignal()` subscribers. Geometry
 written outside layout is repaired either way. What a hit elides is the producer
-call, and with it the recomputation of a result already known. Because the
-declaration is re-read at every level, a single undeclared producer anywhere in a
+call, and with it the recomputation of a result already known. Because the policy
+is evaluated at every level, a single `ARRANGE_ALWAYS` producer anywhere in a
 subtree makes that whole subtree re-run.
 
 `LayoutFinishedSignal()` is therefore **pass-based**: a subscriber is told its
@@ -218,7 +220,7 @@ orientation, a spacing, a set of row definitions — is outside every cache key,
 because neither key can see it. Pair every such setter with
 `LayoutManager::InvalidateOwnerMeasure()` (or `InvalidateOwnerArrange()` when only
 placement is affected); the in-library managers all do, which is what makes their
-state part of the layout-tracked envelope their `Arrange()` is declared pure over.
+that state part of the layout-tracked inputs used by their `Arrange()` implementations.
 
 ### Measure constraints (sign-encoded budget)
 

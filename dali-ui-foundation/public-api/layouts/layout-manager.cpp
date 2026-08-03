@@ -20,6 +20,7 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
+#include <dali-ui-foundation/internal/views/view/view-data-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 #include <dali/public-api/common/dali-common.h>
 
@@ -44,15 +45,20 @@ LayoutManager::~LayoutManager()
   delete mImpl;
 }
 
-bool LayoutManager::IsArrangeProducerPure() const
+ArrangePolicy LayoutManager::GetArrangePolicy() const
 {
-  // typeid on a polymorphic glvalue yields the MOST-DERIVED type, which is what makes
-  // the stored declaration type-exact: a subclass of a manager that declared PURE
-  // compares unequal here and falls back to the IMPURE default. Reading it here rather
-  // than latching a bool at construction is what allows the declaration to be made from
-  // a constructor at all -- inside a constructor typeid(*this) would name the
-  // constructor's own class and the check would be vacuous.
-  return mImpl != nullptr && mImpl->IsArrangePureForType(typeid(*this));
+  return mImpl ? mImpl->GetArrangePolicy() : ArrangePolicy::ARRANGE_IF_CHANGED;
+}
+
+void LayoutManager::SetArrangePolicy(ArrangePolicy policy)
+{
+  if(mImpl && mImpl->SetArrangePolicy(policy))
+  {
+    if(ViewImpl* owner = mImpl->GetOwner())
+    {
+      Internal::ViewDataImpl::Get(*owner).OnLayoutManagerArrangePolicyChanged();
+    }
+  }
 }
 
 void LayoutManager::SetOwnerView(ViewImpl* owner)

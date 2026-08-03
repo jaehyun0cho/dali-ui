@@ -494,21 +494,15 @@ void SettleLayout(UiTestApplication& application)
 // producer whose invocation count measures exactly one thing -- whether this view's
 // Arrange() ran its producer or was served from cache.
 //
-// The purity declaration is made in New(), not the constructor, which is the pattern
-// ViewImpl::SetArrangePurity documents: the factory is where the most-derived type is
-// fixed. `declarePure == false` is what an author who declares nothing gets, and is
-// used to plant an IMPURE node inside an otherwise cacheable subtree.
+// The test factory selects the requested policy explicitly; production subclasses
+// may do the same in a constructor.
 class CountingContainerViewImpl : public ViewImpl
 {
 public:
-  static IntrusivePtr<CountingContainerViewImpl> New(bool declarePure)
+  static IntrusivePtr<CountingContainerViewImpl> New(bool arrangeIfChanged)
   {
     IntrusivePtr<CountingContainerViewImpl> impl(new CountingContainerViewImpl());
-    if(declarePure)
-    {
-      impl->SetArrangePurity(ArrangePurity::PURE);
-    }
-    // else: nothing. ArrangePurity::IMPURE is the default.
+    impl->SetArrangePolicy(arrangeIfChanged ? ArrangePolicy::ARRANGE_IF_CHANGED : ArrangePolicy::ARRANGE_ALWAYS);
     return impl;
   }
 
@@ -537,9 +531,9 @@ private:
 Dali::TypeRegistration countingContainerViewTypeReg(
   typeid(CountingContainerViewImpl), typeid(ViewImpl), nullptr);
 
-View CreateCountingContainer(bool declarePure)
+View CreateCountingContainer(bool arrangeIfChanged)
 {
-  auto impl = CountingContainerViewImpl::New(declarePure);
+  auto impl = CountingContainerViewImpl::New(arrangeIfChanged);
   return View(*impl);
 }
 
@@ -5293,7 +5287,12 @@ int UtcDaliViewUnownedArrangeInProgressAncestorLosesCacheP(void)
   View x = View::New();
   x.SetRequestedWidth(200.0f);
   x.SetRequestedHeight(100.0f);
-  x.SetArrangeCallback(ArrangeCallback::New(&DescendantMeasuringArrange));
+  // ARRANGE_ALWAYS, and honestly so: the callback reads the file-static arming
+  // state, which no layout invalidation tracks. It is also what this test NEEDS --
+  // the armed out-of-band measure below must fire on every driven pass, and under
+  // the ARRANGE_IF_CHANGED default a settled X would be served from cache and
+  // never measure D at all.
+  x.SetArrangeCallback(ArrangeCallback::New(&DescendantMeasuringArrange), ArrangePolicy::ARRANGE_ALWAYS);
 
   View a = View::New();
   a.SetRequestedWidth(200.0f);
@@ -5388,7 +5387,9 @@ int UtcDaliViewUnscopedArrangeReMeasureOfDirectChildIsProtectedP(void)
   View v = View::New();
   v.SetRequestedWidth(200.0f);
   v.SetRequestedHeight(100.0f);
-  v.SetArrangeCallback(ArrangeCallback::New(&DescendantMeasuringArrange));
+  // ARRANGE_ALWAYS for the same two reasons as the sibling test above: the callback
+  // reads untracked arming state, and the armed re-measure must fire on every pass.
+  v.SetArrangeCallback(ArrangeCallback::New(&DescendantMeasuringArrange), ArrangePolicy::ARRANGE_ALWAYS);
 
   View c = View::New();
   c.SetMeasureCallback(MeasureCallback::New(&ClampToConstraintMeasure));
@@ -5675,8 +5676,7 @@ int UtcDaliViewArrangeRestoresExternallyMovedSelfGeometryRtlP(void)
 // OnChildAdded's standalone branch leaves the parent's entry live, the re-Arrange below
 // serves it, and the standalone child is never placed. (While the hit is childless-only
 // this is masked -- the parent stops being childless at the add and misses anyway --
-// which is why the bookkeeping is also pinned white-box in
-// UtcDaliArrangeCacheStandaloneChildAddInvalidatesParentArrangeP.)
+// so this behavioural test is the pin for that bookkeeping.)
 int UtcDaliViewArrangeStandaloneChildAddedAfterSettleIsPlacedP(void)
 {
   UiTestApplication application;
@@ -5761,7 +5761,7 @@ int UtcDaliViewArrangeCacheHitSkipsLeafProducerP(void)
   View leafA = View::New();
   leafA.SetRequestedWidth(50.0f);
   leafA.SetRequestedHeight(50.0f);
-  leafA.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leafA.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leafA);
 
   View leafB = View::New();
@@ -5825,7 +5825,7 @@ int UtcDaliViewArrangeCacheHitPreservesGeometryP(void)
   leaf.SetRequestedY(10.0f);
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -5855,7 +5855,7 @@ int UtcDaliViewArrangeCacheHitPreservesGeometryP(void)
   View standalone = View::New();
   standalone.SetRequestedWidth(50.0f);
   standalone.SetRequestedHeight(40.0f);
-  standalone.SetArrangeCallback(ArrangeCallback::New(&CountingCustomBoundsArrange), ArrangePurity::PURE);
+  standalone.SetArrangeCallback(ArrangeCallback::New(&CountingCustomBoundsArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   application.GetScene().Add(standalone);
 
   const LayoutRect slot(0.0f, 0.0f, 50.0f, 40.0f);
@@ -5911,7 +5911,7 @@ int UtcDaliViewArrangeCacheMissOnDifferentSlotP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -5961,7 +5961,7 @@ int UtcDaliViewArrangeCacheMissOnDirectionChangeP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -6023,7 +6023,7 @@ int UtcDaliViewArrangeCacheMissOnScaleChangeP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -6073,7 +6073,7 @@ int UtcDaliViewArrangeCacheHitStillReconcilesSelfGeometryP(void)
   leaf.SetRequestedX(20.0f);
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -6133,7 +6133,7 @@ int UtcDaliViewArrangeCacheHitReAppliesLogicalBoundsUnderRtlP(void)
   leaf.SetRequestedX(20.0f);
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -6198,7 +6198,7 @@ int UtcDaliViewArrangeCacheMissAfterOwnMeasureP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -6245,7 +6245,7 @@ int UtcDaliViewArrangeCacheHitDoesNotScheduleFurtherLayoutP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
   root.Add(leaf);
 
   SettleLayout(application);
@@ -6274,25 +6274,12 @@ int UtcDaliViewArrangeCacheHitDoesNotScheduleFurtherLayoutP(void)
   END_TEST;
 }
 
-// The core third-party guarantee, stated from the outside: an arrange producer that
-// nobody declared pure is NEVER served from the arrange cache.
-//
-// This is the case an application hits without reading a line of documentation --
-// SetArrangeCallback(cb) on a stock View, no subclassing -- and it is why the default
-// is ArrangePurity::IMPURE. The fixture is deliberately the same shape as
-// UtcDaliViewArrangeCacheHitSkipsLeafProducerP: a settled childless leaf whose slot,
-// direction and scale never change, i.e. one that satisfies every OTHER term of the
-// hit predicate. The single difference is the missing purity declaration.
-//
-// Non-vacuity (verified by mutation): dropping `mArrangeProducerPure &&` from the hit
-// predicate, or seeding mArrangeCallbackPure = true in the one-argument
-// SetArrangeCallback, makes this leaf hit and the exact-count assertions fail.
-// UtcDaliViewArrangePureCallbackStillHitsP is the paired control that rules out the
-// other way this could pass vacuously (a leaf that never cached at all).
-int UtcDaliViewArrangeImpureCallbackAlwaysRunsProducerP(void)
+// ARRANGE_ALWAYS is the explicit opt-out for a callback that must execute on every
+// arrange pass, even when its layout inputs are unchanged.
+int UtcDaliViewArrangeAlwaysCallbackRunsProducerP(void)
 {
   UiTestApplication application;
-  tet_infoline("A callback installed without a purity declaration runs on every arrange pass");
+  tet_infoline("An ARRANGE_ALWAYS callback runs on every arrange pass");
 
   gCountingArrangeProducerCount = 0;
 
@@ -6304,8 +6291,7 @@ int UtcDaliViewArrangeImpureCallbackAlwaysRunsProducerP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  // The one-argument overload: no purity declared, therefore IMPURE.
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange));
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_ALWAYS);
   root.Add(leaf);
 
   View sibling = View::New();
@@ -6318,22 +6304,11 @@ int UtcDaliViewArrangeImpureCallbackAlwaysRunsProducerP(void)
   const int settledCount = gCountingArrangeProducerCount;
   DALI_TEST_CHECK(settledCount > 0);
 
-  // The producer echoes its input, so the settled actor geometry IS the slot the
-  // cache was keyed on -- an identical re-arrange below is a hit candidate on every
-  // term except purity.
   const LayoutRect leafSlot(leaf.GetProperty<float>(Actor::Property::POSITION_X),
                             leaf.GetProperty<float>(Actor::Property::POSITION_Y),
                             leaf.GetProperty<float>(Actor::Property::SIZE_WIDTH),
                             leaf.GetProperty<float>(Actor::Property::SIZE_HEIGHT));
 
-  // The leaf DID publish a cache entry -- being impure declines the HIT, not the
-  // publish -- so this is a genuine "an entry exists and is refused" test rather than
-  // "the leaf never cached". That is not observable from here; it is asserted
-  // white-box in UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP, and the
-  // black-box control for it is UtcDaliViewArrangePureCallbackStillHitsP, which hits
-  // on this same fixture.
-
-  // Direct passes with the identical slot: exactly one producer run each.
   const int PASSES = 4;
   for(int pass = 0; pass < PASSES; ++pass)
   {
@@ -6342,16 +6317,10 @@ int UtcDaliViewArrangeImpureCallbackAlwaysRunsProducerP(void)
   }
 
   const int afterDirect = gCountingArrangeProducerCount;
-
-  // A pass driven entirely by the SIBLING, i.e. one where the leaf's own inputs are
-  // untouched -- the exact scenario the cache hit exists for. The impure producer
-  // still runs.
   sibling.SetRequestedX(11.0f);
   SettleLayout(application);
   DALI_TEST_CHECK(gCountingArrangeProducerCount > afterDirect);
 
-  // Always-miss must still be result-identical: refusing the hit costs work, never
-  // correctness.
   DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::POSITION_X), leafSlot.x, TEST_LOCATION);
   DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::POSITION_Y), leafSlot.y, TEST_LOCATION);
   DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::SIZE_WIDTH), leafSlot.width, TEST_LOCATION);
@@ -6360,23 +6329,12 @@ int UtcDaliViewArrangeImpureCallbackAlwaysRunsProducerP(void)
   END_TEST;
 }
 
-// The paired control for UtcDaliViewArrangeImpureCallbackAlwaysRunsProducerP: the
-// SAME fixture and the SAME producer, differing only in the purity argument, hits on
-// every one of those passes. Without this, the impure test could pass for the wrong
-// reason (a leaf that was never cacheable in the first place).
-//
-// The second half pins the other half of the contract: installing a callback REPLACES
-// the declared purity rather than merging with it, so re-installing the same function
-// through the one-argument overload takes the optimisation away again. That is what
-// makes IMPURE the effective default even for a view that was pure a moment ago.
-//
-// Non-vacuity (verified by mutation): making the one-argument SetArrangeCallback leave
-// mArrangeCallbackPure alone keeps the leaf hitting after the re-install and the
-// second half fails.
-int UtcDaliViewArrangePureCallbackStillHitsP(void)
+// The one-argument callback API uses ARRANGE_IF_CHANGED. Explicit ARRANGE_ALWAYS may
+// opt out, and reinstalling through the one-argument API restores the default.
+int UtcDaliViewDefaultArrangeCallbackSkipsUnchangedP(void)
 {
   UiTestApplication application;
-  tet_infoline("A callback declared PURE still takes the arrange cache hit, until it is re-installed impure");
+  tet_infoline("The one-argument callback uses ARRANGE_IF_CHANGED by default");
 
   gCountingArrangeProducerCount = 0;
 
@@ -6388,7 +6346,7 @@ int UtcDaliViewArrangePureCallbackStillHitsP(void)
   View leaf = View::New();
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange));
   root.Add(leaf);
 
   View sibling = View::New();
@@ -6398,55 +6356,41 @@ int UtcDaliViewArrangePureCallbackStillHitsP(void)
 
   SettleLayout(application);
 
-  const int settledCount = gCountingArrangeProducerCount;
-  DALI_TEST_CHECK(settledCount > 0);
-
   const LayoutRect leafSlot(leaf.GetProperty<float>(Actor::Property::POSITION_X),
                             leaf.GetProperty<float>(Actor::Property::POSITION_Y),
                             leaf.GetProperty<float>(Actor::Property::SIZE_WIDTH),
                             leaf.GetProperty<float>(Actor::Property::SIZE_HEIGHT));
+  const int        PASSES       = 4;
+  const int        defaultCount = gCountingArrangeProducerCount;
+  DALI_TEST_CHECK(defaultCount > 0);
 
-  // --- Part 1: declared PURE, so the counter is FLAT across the same passes the
-  // impure sibling test saw it rise on.
-  const int PASSES = 4;
   for(int pass = 0; pass < PASSES; ++pass)
   {
     leaf.Arrange(leafSlot);
   }
-  DALI_TEST_EQUALS(gCountingArrangeProducerCount, settledCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(gCountingArrangeProducerCount, defaultCount, TEST_LOCATION);
 
   sibling.SetRequestedX(11.0f);
   SettleLayout(application);
-  DALI_TEST_EQUALS(gCountingArrangeProducerCount, settledCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(gCountingArrangeProducerCount, defaultCount, TEST_LOCATION);
 
-  // The geometry is unchanged, which is the other half of the contract.
-  DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::POSITION_X), leafSlot.x, TEST_LOCATION);
-  DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::SIZE_WIDTH), leafSlot.width, TEST_LOCATION);
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_ALWAYS);
+  SettleLayout(application);
+  const int alwaysCount = gCountingArrangeProducerCount;
+  for(int pass = 0; pass < PASSES; ++pass)
+  {
+    leaf.Arrange(leafSlot);
+    DALI_TEST_EQUALS(gCountingArrangeProducerCount, alwaysCount + pass + 1, TEST_LOCATION);
+  }
 
-  // --- Part 2: re-installing the SAME producer through the one-argument overload
-  // clears the declared purity, and the leaf starts running its producer again.
   leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange));
   SettleLayout(application);
-
-  const int reinstalledCount = gCountingArrangeProducerCount;
-
-  for(int pass = 0; pass < PASSES; ++pass)
-  {
-    leaf.Arrange(leafSlot);
-    DALI_TEST_EQUALS(gCountingArrangeProducerCount, reinstalledCount + pass + 1, TEST_LOCATION);
-  }
-
-  // ...and declaring it PURE again brings the optimisation back, so the transition is
-  // a live function of the CURRENT declaration rather than a one-way latch.
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
-  SettleLayout(application);
-
-  const int redeclaredCount = gCountingArrangeProducerCount;
+  const int restoredDefaultCount = gCountingArrangeProducerCount;
   for(int pass = 0; pass < PASSES; ++pass)
   {
     leaf.Arrange(leafSlot);
   }
-  DALI_TEST_EQUALS(gCountingArrangeProducerCount, redeclaredCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(gCountingArrangeProducerCount, restoredDefaultCount, TEST_LOCATION);
 
   END_TEST;
 }
@@ -6775,59 +6719,58 @@ int UtcDaliViewArrangeCacheMissWhenDescendantIsDirtyP(void)
   END_TEST;
 }
 
-// The recursive gate, PURITY half, and the strongest statement of third-party safety
-// this increment makes: an undeclared producer anywhere in a subtree makes the WHOLE
-// subtree re-run. The gate consults mArrangeProducerPure at every node it would elide,
+// The recursive gate: an ARRANGE_ALWAYS producer anywhere in a subtree makes the
+// whole subtree re-run. The gate consults mArrangeProducerAlways at every node it
+// would elide,
 // where the childless-only hit consulted it only at the node being served.
 //
-// The two chains are identical in every respect but the declaration on their deepest
-// node, which is what makes the pure control non-vacuous.
+// The two chains are identical except for the policy on their deepest node.
 //
-// Non-vacuity (verified by mutation): dropping `childData.mArrangeProducerPure` from
-// CanReplayArrangeSubtreeFromCache lets the impure chain hit and its counters go flat.
-int UtcDaliViewArrangeCacheMissWhenDescendantIsImpureP(void)
+// Non-vacuity (verified by mutation): dropping `childData.mArrangeProducerAlways` from
+// CanReplayArrangeSubtreeFromCache lets the ARRANGE_ALWAYS chain hit and its counters go flat.
+int UtcDaliViewArrangeCacheMissWhenDescendantIsAlwaysP(void)
 {
   UiTestApplication application;
-  tet_infoline("An undeclared producer at any depth makes the whole subtree re-run");
+  tet_infoline("An ARRANGE_ALWAYS producer at any depth makes the whole subtree re-run");
 
   View root = View::New();
   root.SetRequestedWidth(200.0f);
   root.SetRequestedHeight(200.0f);
   application.GetScene().Add(root);
 
-  // Chain A: every node declared PURE.
-  View pureMid = CreateCountingContainer(true);
-  pureMid.SetRequestedWidth(120.0f);
-  pureMid.SetRequestedHeight(60.0f);
-  root.Add(pureMid);
+  // Chain A: every node uses ARRANGE_IF_CHANGED.
+  View ifChangedMid = CreateCountingContainer(true);
+  ifChangedMid.SetRequestedWidth(120.0f);
+  ifChangedMid.SetRequestedHeight(60.0f);
+  root.Add(ifChangedMid);
 
-  View pureLeaf = CreateCountingContainer(true);
-  pureLeaf.SetRequestedWidth(50.0f);
-  pureLeaf.SetRequestedHeight(40.0f);
-  pureMid.Add(pureLeaf);
+  View ifChangedLeaf = CreateCountingContainer(true);
+  ifChangedLeaf.SetRequestedWidth(50.0f);
+  ifChangedLeaf.SetRequestedHeight(40.0f);
+  ifChangedMid.Add(ifChangedLeaf);
 
-  // Chain B: identical, except the deepest node declares nothing.
-  View impureMid = CreateCountingContainer(true);
-  impureMid.SetRequestedWidth(120.0f);
-  impureMid.SetRequestedHeight(60.0f);
-  root.Add(impureMid);
+  // Chain B: identical, except the deepest node explicitly uses ARRANGE_ALWAYS.
+  View alwaysMid = CreateCountingContainer(true);
+  alwaysMid.SetRequestedWidth(120.0f);
+  alwaysMid.SetRequestedHeight(60.0f);
+  root.Add(alwaysMid);
 
-  View impureLeaf = CreateCountingContainer(false);
-  impureLeaf.SetRequestedWidth(50.0f);
-  impureLeaf.SetRequestedHeight(40.0f);
-  impureMid.Add(impureLeaf);
+  View alwaysLeaf = CreateCountingContainer(false);
+  alwaysLeaf.SetRequestedWidth(50.0f);
+  alwaysLeaf.SetRequestedHeight(40.0f);
+  alwaysMid.Add(alwaysLeaf);
 
   SettleLayout(application);
 
   const LayoutRect rootSlot = ActorRectOf(root);
 
-  const int pureMidBase    = CountingContainerImplOf(pureMid).GetArrangeCallCount();
-  const int pureLeafBase   = CountingContainerImplOf(pureLeaf).GetArrangeCallCount();
-  const int impureMidBase  = CountingContainerImplOf(impureMid).GetArrangeCallCount();
-  const int impureLeafBase = CountingContainerImplOf(impureLeaf).GetArrangeCallCount();
-  DALI_TEST_CHECK(impureLeafBase > 0);
+  const int ifChangedMidBase  = CountingContainerImplOf(ifChangedMid).GetArrangeCallCount();
+  const int ifChangedLeafBase = CountingContainerImplOf(ifChangedLeaf).GetArrangeCallCount();
+  const int alwaysMidBase     = CountingContainerImplOf(alwaysMid).GetArrangeCallCount();
+  const int alwaysLeafBase    = CountingContainerImplOf(alwaysLeaf).GetArrangeCallCount();
+  DALI_TEST_CHECK(alwaysLeafBase > 0);
 
-  const LayoutRect impureLeafRect = ActorRectOf(impureLeaf);
+  const LayoutRect alwaysLeafRect = ActorRectOf(alwaysLeaf);
 
   const int PASSES = 3;
   for(int pass = 0; pass < PASSES; ++pass)
@@ -6835,18 +6778,18 @@ int UtcDaliViewArrangeCacheMissWhenDescendantIsImpureP(void)
     root.Arrange(rootSlot);
   }
 
-  // The pure chain is served on every pass...
-  DALI_TEST_EQUALS(CountingContainerImplOf(pureMid).GetArrangeCallCount(), pureMidBase, TEST_LOCATION);
-  DALI_TEST_EQUALS(CountingContainerImplOf(pureLeaf).GetArrangeCallCount(), pureLeafBase, TEST_LOCATION);
+  // The ARRANGE_IF_CHANGED chain is served on every pass...
+  DALI_TEST_EQUALS(CountingContainerImplOf(ifChangedMid).GetArrangeCallCount(), ifChangedMidBase, TEST_LOCATION);
+  DALI_TEST_EQUALS(CountingContainerImplOf(ifChangedLeaf).GetArrangeCallCount(), ifChangedLeafBase, TEST_LOCATION);
 
-  // ...while ONE undeclared node re-runs its own producer AND its ancestor's, on every
+  // ...while one ARRANGE_ALWAYS node re-runs its own producer AND its ancestor's, on every
   // pass. (The root misses too, which is why the pure chain above is reached at all:
   // it is served by its own node-local hit, not by the root's.)
-  DALI_TEST_EQUALS(CountingContainerImplOf(impureMid).GetArrangeCallCount(), impureMidBase + PASSES, TEST_LOCATION);
-  DALI_TEST_EQUALS(CountingContainerImplOf(impureLeaf).GetArrangeCallCount(), impureLeafBase + PASSES, TEST_LOCATION);
+  DALI_TEST_EQUALS(CountingContainerImplOf(alwaysMid).GetArrangeCallCount(), alwaysMidBase + PASSES, TEST_LOCATION);
+  DALI_TEST_EQUALS(CountingContainerImplOf(alwaysLeaf).GetArrangeCallCount(), alwaysLeafBase + PASSES, TEST_LOCATION);
 
   // Always-miss must still be result-identical.
-  CheckActorRect(impureLeaf, impureLeafRect, TEST_LOCATION);
+  CheckActorRect(alwaysLeaf, alwaysLeafRect, TEST_LOCATION);
 
   END_TEST;
 }
@@ -7021,24 +6964,22 @@ int UtcDaliViewArrangeCacheHitDoesNotScheduleFurtherLayoutSubtreeP(void)
 }
 
 // ---------------------------------------------------------------------------
-// Phase 5c: a LayoutManager declares its Arrange PURE.
+// Phase 5c: LayoutManager execution policy.
 //
-// Until a manager could declare, every manager-bearing view was forced IMPURE and
-// therefore could never take the arrange hit -- which, since every in-library
-// container attaches a manager, meant the subtree hit could not engage on a real
-// screen at all. The four geometry-free managers now declare PURE; ScrollView's does
-// not, and utc-Dali-ScrollView.cpp pins that exclusion behaviourally.
+// Manager-bearing views use ARRANGE_IF_CHANGED by default, enabling unchanged-result
+// reuse for the four geometry-only in-library managers. ScrollView explicitly uses
+// ARRANGE_ALWAYS, and utc-Dali-ScrollView.cpp pins that exception behaviourally.
 //
-// The declaration is sound only because a manager's OWN state is layout-tracked:
+// ARRANGE_IF_CHANGED is valid only because a manager's own state is layout-tracked:
 // every built-in setter -- StackLayoutManager::SetSpacing and friends -- pairs its
 // write with an owner invalidation (LayoutManager::InvalidateOwnerMeasure), so a
 // state change always retracts the cached result it would falsify. That closes the
 // probe these tests once used (a direct manager write that nothing invalidated), and
-// with it the last black-box observable of the skip itself: a PURE producer re-run on
+// with it the last black-box observable of the skip itself: an ARRANGE_IF_CHANGED producer re-run on
 // unchanged inputs is result-identical to a served cache, by definition. The skip is
 // therefore pinned white-box, with a counting manager, in the internal suite --
-// UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP -- and the per-manager
-// declarations by UtcDaliArrangeCacheInLibraryLayoutManagerPurityP. What remains
+// UtcDaliArrangeCacheIfChangedLayoutManagerContainerSkipsProducerP -- and the per-manager
+// policies by UtcDaliArrangeCacheInLibraryLayoutManagerPolicyP. What remains
 // OBSERVABLE here, and what these two tests pin, is the setter contract itself: a
 // direct manager write alone reaches the screen (it schedules the pass and the
 // manager honours the new value), and a same-value write moves nothing.
@@ -7084,7 +7025,7 @@ int UtcDaliViewStackLayoutManagerSetterInvalidatesOwnerP(void)
   // The setter ALONE: nothing else invalidates, nothing else is touched. The write
   // must invalidate its owner and schedule the pass by itself; before the owner
   // back-pointer existed this exact sequence left the tree settled on the old
-  // spacing indefinitely (and, with the manager declared PURE, the arrange cache
+  // spacing indefinitely (and, with the manager declared ARRANGE_IF_CHANGED, the arrange cache
   // would have kept serving that stale placement forever).
   manager->SetSpacing(20.0f);
   SettleLayout(application);
@@ -7190,7 +7131,7 @@ namespace
 int  gOutOfBandParentArrangeCount = 0;
 View gOutOfBandChild;
 
-// A PURE producer: arranges its one child at a fixed logical slot derived from
+// A ARRANGE_IF_CHANGED producer: arranges its one child at a fixed logical slot derived from
 // nothing but constants, then echoes its bounds.
 LayoutRect OutOfBandParentArrange(View, const LayoutRect& bounds)
 {
@@ -7226,7 +7167,7 @@ int UtcDaliViewOutOfBandChildArrangeMatchesForcedMissP(void)
 
   gOutOfBandChild              = child;
   gOutOfBandParentArrangeCount = 0;
-  parent.SetArrangeCallback(ArrangeCallback::New(&OutOfBandParentArrange), ArrangePurity::PURE);
+  parent.SetArrangeCallback(ArrangeCallback::New(&OutOfBandParentArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
 
   SettleLayout(application);
 
@@ -7330,10 +7271,10 @@ int UtcDaliViewOutOfBandStandaloneArrangeMatchesForcedMissP(void)
 // hit gate treats it as never-arranged -- skipped, exactly as the replay and a
 // forced miss would leave it -- instead of demanding a cache validity it can
 // never regain.
-int UtcDaliViewReparentedChildDoesNotBlockIgnoringPureParentCacheP(void)
+int UtcDaliViewReparentedChildDoesNotBlockIgnoringIfChangedParentCacheP(void)
 {
   UiTestApplication application;
-  tet_infoline("A reparented child under an ignoring PURE producer leaves the parent's cache reachable");
+  tet_infoline("A reparented child under an ignoring ARRANGE_IF_CHANGED producer leaves the parent's cache reachable");
 
   View root = View::New();
   root.SetRequestedWidth(300.0f);
@@ -7352,24 +7293,24 @@ int UtcDaliViewReparentedChildDoesNotBlockIgnoringPureParentCacheP(void)
 
   gCountingArrangeProducerCount = 0;
 
-  View pureParent = View::New();
-  pureParent.SetRequestedWidth(100.0f);
-  pureParent.SetRequestedHeight(50.0f);
-  pureParent.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
-  root.Add(pureParent);
+  View ifChangedParent = View::New();
+  ifChangedParent.SetRequestedWidth(100.0f);
+  ifChangedParent.SetRequestedHeight(50.0f);
+  ifChangedParent.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
+  root.Add(ifChangedParent);
 
   SettleLayout(application);
-  const LayoutRect bSlot = ActorRectOf(pureParent);
+  const LayoutRect bSlot = ActorRectOf(ifChangedParent);
 
-  // Control: settled and childless, the pure producer is served from cache.
+  // Control: settled and childless, the ARRANGE_IF_CHANGED producer is served from cache.
   const int c0 = gCountingArrangeProducerCount;
   DALI_TEST_CHECK(c0 > 0);
-  pureParent.Arrange(bSlot);
+  ifChangedParent.Arrange(bSlot);
   DALI_TEST_EQUALS(gCountingArrangeProducerCount, c0, TEST_LOCATION);
 
   // Move the once-arranged child under the ignoring producer and settle the
   // add-invalidation away.
-  pureParent.Add(child);
+  ifChangedParent.Add(child);
   SettleLayout(application);
   const int c1 = gCountingArrangeProducerCount;
 
@@ -7378,9 +7319,9 @@ int UtcDaliViewReparentedChildDoesNotBlockIgnoringPureParentCacheP(void)
   // Three same-bounds arranges: every one must be a HIT. Before the result
   // record was retracted on reparent, the gate saw a result-holding child whose
   // cache could never revalidate and refused the hit forever.
-  pureParent.Arrange(bSlot);
-  pureParent.Arrange(bSlot);
-  pureParent.Arrange(bSlot);
+  ifChangedParent.Arrange(bSlot);
+  ifChangedParent.Arrange(bSlot);
+  ifChangedParent.Arrange(bSlot);
   DALI_TEST_EQUALS(gCountingArrangeProducerCount, c1, TEST_LOCATION);
 
   // The hits leave the ignored child exactly where a miss would: untouched.

@@ -80,16 +80,6 @@ TextAnchorImplPtr TextAnchorImpl::New()
 {
   TextAnchorImplPtr impl(new TextAnchorImpl());
 
-  // PURE producer: this class holds anchor metadata (character range, URI) only. It
-  // overrides no OnArrange and attaches no LayoutManager, so the object built here --
-  // whose most-derived type IS TextAnchorImpl -- has ViewImpl::OnArrange ->
-  // ArrangeDefault as its provable arrange producer, and none of its own state feeds
-  // that producer. See ViewImpl::New().
-  //
-  // Declared HERE and not in the constructor, deliberately: a subclass would run its
-  // OWN factory and cannot inherit this. See ViewImpl::New().
-  impl->SetArrangePurity(ArrangePurity::PURE);
-
   return impl;
 }
 

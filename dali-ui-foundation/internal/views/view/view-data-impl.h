@@ -258,11 +258,14 @@ public:
 
   void SetMeasureCallback(MeasureCallback callback);
   void SetArrangeCallback(ArrangeCallback callback);
-  void SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity);
-  /// Declares the purity of this view's OnArrange(). Callable from a constructor,
-  /// before the CustomActor handle exists: it only invalidates when a published
-  /// cache entry actually exists (see the comment on the definition).
-  void             SetArrangePurity(ArrangePurity purity);
+  void SetArrangeCallback(ArrangeCallback callback, ArrangePolicy policy);
+  /// Sets this view's OnArrange execution policy. Callable from a constructor
+  /// before the CustomActor handle exists because it only invalidates an existing
+  /// published cache entry.
+  void SetArrangePolicy(ArrangePolicy policy);
+  /// Re-derives the active producer policy after the attached LayoutManager changes
+  /// its policy, then invalidates the previous arrange result.
+  void             OnLayoutManagerArrangePolicyChanged();
   MeasureCallback* GetMeasureCallback();
   ArrangeCallback* GetArrangeCallback();
   void             AttachLayoutManager(Dali::UniquePtr<LayoutManager> manager);
@@ -343,12 +346,10 @@ public:
   {
     return mEffectiveScaleActorSynced;
   }
-  /// The DERIVED purity bit -- the term the arrange cache-HIT predicate reads.
-  /// False unless the ACTIVE producer has been declared pure, which is what makes
-  /// an undeclared (third-party) producer permanently ineligible for the hit.
-  bool IsArrangeProducerPure() const
+  /// Returns the active producer's derived execution policy.
+  bool ArrangesIfChanged() const
   {
-    return mArrangeProducerPure;
+    return !mArrangeProducerAlways;
   }
   /// The epoch each axis last propagated its invalidation to a layout root in.
   /// Compared against LayoutInvalidation::CurrentEpoch() to decide whether a further
@@ -1034,33 +1035,22 @@ private:
   void BlockArrangeCachePublishDuringPass();
 
   /**
-   * @brief Recomputes mArrangeProducerPure from the ACTIVE producer's own declaration.
+   * @brief Recomputes mArrangeProducerAlways from the active producer's policy.
    *
-   * The declaration is the callback's (mArrangeCallbackPure), the attached
-   * LayoutManager's (LayoutManager::IsArrangeProducerPure(), declared per exact
-   * manager type at the manager's own construction) or this view's OnArrange
-   * declaration (mArrangeOverridePure), whichever producer would actually run.
-   *
-   * Mirrors the producer dispatch order in Arrange() exactly -- ArrangeCallback >
-   * LayoutManager > OnArrange -- so the bit always describes the code that would
-   * actually run on a miss. Called only from the closed set of mutation points
-   * (ViewImpl::New / SetArrangePurity / both SetArrangeCallback overloads /
-   * AttachLayoutManager / OnArrangeProducerTraitChanged), never from the hit path:
-   * the two lookups it performs
-   * (GetArrangeCallback, GetLayoutManager) are trait lookups, one of them with a
-   * dynamic_cast, which is exactly why the derived value is cached in a bit rather
-   * than recomputed inside the predicate.
+   * Mirrors the producer dispatch order ArrangeCallback > LayoutManager > OnArrange.
+   * The result is cached at producer mutation points so the arrange cache predicate
+   * only needs one bit test.
    */
-  void RefreshArrangeProducerPurity();
+  void RefreshArrangeProducerPolicy();
 
   /**
-   * @brief Re-derives the arrange producer purity after a reserved layout trait was
+   * @brief Re-derives the arrange producer policy after a reserved layout trait was
    * added, replaced or removed.
    *
    * A no-op unless @p id is ReservedTraitId::LAYOUT_SIGNALS (the ArrangeCallback) or
    * ReservedTraitId::LAYOUT_MANAGER (the LayoutManager) -- the only two traits that
    * change WHICH producer Arrange() dispatches to. For LAYOUT_SIGNALS it also clears
-   * the declared callback purity, since that declaration belonged to the callback
+   * the stored callback policy, since that policy belonged to the callback
    * object being replaced. Defensive: it exists for the public
    * Integration::View::SetTrait/RemoveTrait surface, which can reach those ids
    * without going through SetArrangeCallback()/AttachLayoutManager().
@@ -1175,7 +1165,8 @@ private:
    * @brief The NODE-LOCAL half of the arrange cache-HIT predicate.
    *
    * "May THIS view's arrange producer be elided for THIS input?" -- the entry exists
-   * and is fresh, the producer is declared PURE, the input matches the cache KEY, the
+   * and is fresh, the producer uses ARRANGE_IF_CHANGED, the input matches the cache
+   * KEY, the
    * effective layout direction matches, and no direct standalone child is holding an
    * unconsumed measured slot. The full, cost-ordered rationale for each term is in
    * ViewDataImpl::Arrange, which is the only caller.
@@ -1199,7 +1190,8 @@ private:
    *
    * Per node it re-tests the node-local terms of CanServeArrangeFromCache() MINUS the
    * cache KEY -- a descendant has no candidate bounds, and does not need one: with
-   * this view's own key matched and every producer PURE, each producer hands its
+   * this view's own key matched and every producer using ARRANGE_IF_CHANGED, each
+   * producer hands its
    * children the same slots as last pass, which is exactly what those children
    * resolved into the arranged bounds the replay applies. Children with no arrange
    * result are skipped, because the replay does not visit them either (a Label's
@@ -1450,9 +1442,9 @@ private:
   bool         mArrangePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's arrange pass was running.
   bool         mArrangeCacheBlockedDuringPass : 1;                ///< True when a cache-ONLY invalidation arrived while this view's arrange pass was running. Declines the cache publish without poisoning the pass, so no follow-up layout is registered. Set by InvalidateAncestorLayoutCachesForMeasureMiss on an unowned arrange-in-progress ancestor; see BlockArrangeCachePublishDuringPass.
   bool         mArrangeResultAvailable : 1;                       ///< True once at least one arrange pass has published a result into mArrangedBounds.
-  bool         mArrangeOverridePure : 1;                          ///< Purity DECLARED for this view's OnArrange(), via ViewImpl::SetArrangePurity(). True for a plain View (declared in ViewImpl::New(), where the producer is provably ViewImpl::OnArrange -> ArrangeDefault). Default FALSE, so an undeclared subclass override is never skipped.
-  bool         mArrangeCallbackPure : 1;                          ///< Purity DECLARED for the ArrangeCallback currently installed, via the two-argument SetArrangeCallback(). Reset to FALSE by the one-argument overload, so installing a callback always clears any previously declared callback purity. Default FALSE.
-  bool         mArrangeProducerPure : 1;                          ///< DERIVED from which producer is ACTIVE plus that producer's own declaration -- the two bits above, or, when a LayoutManager is the producer, LayoutManager::IsArrangeProducerPure() (see RefreshArrangeProducerPurity). The single term the arrange cache-HIT predicate reads for producer purity. Default FALSE: an undeclared producer is never served from cache.
+  bool         mArrangeOverrideAlways : 1;                        ///< True when this view's OnArrange() uses ARRANGE_ALWAYS. Default FALSE (ARRANGE_IF_CHANGED).
+  bool         mArrangeCallbackAlways : 1;                        ///< True when the installed ArrangeCallback uses ARRANGE_ALWAYS. The one-argument overload resets it to FALSE.
+  bool         mArrangeProducerAlways : 1;                        ///< Derived from the active producer and read by the arrange cache predicate. Default FALSE (ARRANGE_IF_CHANGED).
   mutable bool mLogicalContextValid : 1;                          ///< THE sync bit for mEffectiveScale: true exactly when mEffectiveScale equals what ComputeEffectiveScale() would return now. Set by the lazy compute in the const GetEffectiveScale() (hence mutable), cleared by every scale-context invalidation.
   bool         mEffectiveScaleActorSynced : 1;                    ///< THE sync bit for the ACTOR-side copy of the scale (the animatable VIEW_EFFECTIVE_SCALE property): true exactly when that property is known to hold mEffectiveScale. The second half of the pair whose first half is mLogicalContextValid -- that one says the CACHED scale is usable, this one says the ACTOR already has it. Set by Measure()'s push (after the write, which re-enters the clear below), cleared by DropCachedLogicalContext() (the value it names has been retracted) and by ViewDataImpl::SetProperty for that index, which is the single funnel every event-side write of the property passes through. Default false, so the first Measure() always pushes.
   bool         mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.

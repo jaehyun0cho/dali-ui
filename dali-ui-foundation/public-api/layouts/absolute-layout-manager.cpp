@@ -63,13 +63,6 @@ class AbsoluteLayoutManager::Impl : public LayoutManager::Impl
 AbsoluteLayoutManager::AbsoluteLayoutManager()
 : LayoutManager(new Impl())
 {
-  // PURE ARRANGE, on the same terms as StackLayoutManager: each child is placed from
-  // its AbsoluteLayoutParams bounds (or its requested position and measured size),
-  // scaled by the owner's effective scale, with margins and padding applied. No actor
-  // geometry is read, and this manager holds no state of its own.
-  //
-  // Declared for the EXACT type, so a subclass overriding Arrange() stays IMPURE.
-  GetImplAs<Impl>()->DeclareArrangePurity(ArrangePurity::PURE, typeid(AbsoluteLayoutManager));
 }
 
 AbsoluteLayoutManager::~AbsoluteLayoutManager()

@@ -387,14 +387,6 @@ FlexLayoutManager::FlexLayoutManager(FlexDirection direction, FlexWrap wrap, Fle
                                      FlexAlign alignContent)
 : LayoutManager(new Impl(direction, wrap, justify, alignItems, alignContent))
 {
-  // PURE ARRANGE, on the same terms as StackLayoutManager: line breaking, main-axis
-  // justification and cross-axis alignment are computed from the bounds handed in, the
-  // owner's effective scale, and layout-tracked state only -- margins,
-  // requested/measured sizes, FlexLayoutParams grow/shrink/basis, and this manager's
-  // own direction/wrap/justify/align. No actor geometry is read.
-  //
-  // Declared for the EXACT type, so a subclass overriding Arrange() stays IMPURE.
-  GetImplAs<Impl>()->DeclareArrangePurity(ArrangePurity::PURE, typeid(FlexLayoutManager));
 }
 
 FlexLayoutManager::~FlexLayoutManager()

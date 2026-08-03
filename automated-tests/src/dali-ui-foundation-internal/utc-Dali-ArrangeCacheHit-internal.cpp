@@ -123,26 +123,16 @@ VideoSource CreateTestVideoSource()
   return VideoSource::New("test.provider", &gDummyVideoSession, VideoSourceOptions(), VideoRenderingMode::Underlay);
 }
 
-// A stand-in for a THIRD-PARTY view: a ViewImpl subclass that overrides OnArrange
-// and counts its invocations. The only difference between two instances is whether
-// the FACTORY declared the override pure, which is exactly the surface the opt-in
-// mechanism protects -- an author who never reads the documentation writes the
-// `declarePure == false` variant by doing nothing at all.
-//
-// The declaration lives in New() and not in the constructor, which is the pattern
-// ViewImpl::SetArrangePurity documents: the factory is where the most-derived type is
-// fixed, so a declaration made there cannot leak into a subclass.
-class PurityCounterViewImpl : public ViewImpl
+// A stand-in for a third-party ViewImpl subclass that counts OnArrange calls. The
+// factory explicitly selects either execution policy so hit and miss behaviour can
+// be compared with otherwise identical producers.
+class PolicyCounterViewImpl : public ViewImpl
 {
 public:
-  static IntrusivePtr<PurityCounterViewImpl> New(bool declarePure)
+  static IntrusivePtr<PolicyCounterViewImpl> New(bool arrangeIfChanged)
   {
-    IntrusivePtr<PurityCounterViewImpl> impl(new PurityCounterViewImpl());
-    if(declarePure)
-    {
-      impl->SetArrangePurity(ArrangePurity::PURE);
-    }
-    // else: nothing. ArrangePurity::IMPURE is the default, which is the whole point.
+    IntrusivePtr<PolicyCounterViewImpl> impl(new PolicyCounterViewImpl());
+    impl->SetArrangePolicy(arrangeIfChanged ? ArrangePolicy::ARRANGE_IF_CHANGED : ArrangePolicy::ARRANGE_ALWAYS);
     return impl;
   }
 
@@ -151,17 +141,15 @@ public:
     return mArrangeCount;
   }
 
-  // SetArrangePurity is protected on ViewImpl (it is a declaration a view makes
-  // about ITSELF, not something a caller may assert on someone else's behalf), so a
-  // test that exercises re-declaration has to go through a subclass -- exactly as a
-  // real third-party view would.
-  void Declare(ArrangePurity purity)
+  // SetArrangePolicy is protected, so a runtime policy-change test exercises it
+  // through the subclass just as a custom View implementation would.
+  void SetPolicy(ArrangePolicy policy)
   {
-    SetArrangePurity(purity);
+    SetArrangePolicy(policy);
   }
 
 protected:
-  PurityCounterViewImpl()
+  PolicyCounterViewImpl()
   : ViewImpl()
   {
   }
@@ -177,18 +165,18 @@ private:
 };
 
 // Register so TypeInfo lookup can walk the chain.
-Dali::TypeRegistration purityCounterViewTypeReg(
-  typeid(PurityCounterViewImpl), typeid(ViewImpl), nullptr);
+Dali::TypeRegistration policyCounterViewTypeReg(
+  typeid(PolicyCounterViewImpl), typeid(ViewImpl), nullptr);
 
-View CreatePurityCounterView(bool declarePure)
+View CreatePolicyCounterView(bool arrangeIfChanged)
 {
-  auto impl = PurityCounterViewImpl::New(declarePure);
+  auto impl = PolicyCounterViewImpl::New(arrangeIfChanged);
   return View(*impl);
 }
 
-PurityCounterViewImpl& PurityCounterImplOf(View view)
+PolicyCounterViewImpl& PolicyCounterImplOf(View view)
 {
-  return static_cast<PurityCounterViewImpl&>(GetImpl(view));
+  return static_cast<PolicyCounterViewImpl&>(GetImpl(view));
 }
 
 LayoutRect SettledSlotOf(View view)
@@ -199,36 +187,20 @@ LayoutRect SettledSlotOf(View view)
                     view.GetProperty<float>(Actor::Property::SIZE_HEIGHT));
 }
 
-// A stand-in for a THIRD-PARTY subclass OF A FIRST-PARTY PURE VIEW. LabelImpl declares
-// its OnArrange pure -- but from LabelImpl::New(), the one place where the object being
-// declared about provably has LabelImpl as its most-derived type. This subclass builds
-// itself through its OWN New(), which declares NOTHING, and overrides OnArrange with a
-// stand-in for an impure body (a counter here; a real one would read world geometry or
-// push to a native sink).
-//
-// Purity must therefore NOT reach it. If LabelImpl declared from its CONSTRUCTOR
-// instead, it would: a base constructor runs for every subclass, so this view would
-// carry mArrangeOverridePure == true without its author writing anything, and its
-// impure override would be silently skipped in favour of a cached rect. That is the
-// regression this class exists to catch.
-//
-// `declarePure` builds the opted-in variant through the SAME subclass, so the two
-// instances differ in the declaration and nothing else -- which is what makes the
-// "undeclared always misses" half non-vacuous.
+// A third-party subclass of a first-party view. Its OnArrange override inherits the
+// framework default ARRANGE_IF_CHANGED policy, and may explicitly opt out when it
+// performs work that cannot be represented by the arrange cache.
 class ProbeLabelImpl : public Dali::Ui::Integration::LabelImpl
 {
 public:
-  static IntrusivePtr<ProbeLabelImpl> New(bool declarePure)
+  static IntrusivePtr<ProbeLabelImpl> New()
   {
-    IntrusivePtr<ProbeLabelImpl> impl(new ProbeLabelImpl());
-    if(declarePure)
-    {
-      // What a third-party author who DID read the documentation writes: the
-      // declaration is made here, for the exact type this factory builds.
-      impl->SetArrangePurity(ArrangePurity::PURE);
-    }
-    // else: nothing at all, which must leave it IMPURE despite LabelImpl being PURE.
-    return impl;
+    return IntrusivePtr<ProbeLabelImpl>(new ProbeLabelImpl());
+  }
+
+  void SetPolicy(ArrangePolicy policy)
+  {
+    SetArrangePolicy(policy);
   }
 
   int GetArrangeCallCount() const
@@ -256,9 +228,9 @@ private:
 Dali::TypeRegistration probeLabelTypeReg(
   typeid(ProbeLabelImpl), typeid(Dali::Ui::Integration::LabelImpl), nullptr);
 
-View CreateProbeLabel(bool declarePure)
+View CreateProbeLabel()
 {
-  auto impl = ProbeLabelImpl::New(declarePure);
+  auto impl = ProbeLabelImpl::New();
   View view(*impl);
   impl->Initialize();
   return view;
@@ -269,34 +241,28 @@ ProbeLabelImpl& ProbeLabelImplOf(View view)
   return static_cast<ProbeLabelImpl&>(GetImpl(view));
 }
 
-// --- LayoutManager purity (Phase 5c) --------------------------------------
+// --- LayoutManager policy (Phase 5c) --------------------------------------
 //
-// A COUNTING layout manager. A manager IS its owner's arrange producer, so "did the
-// producer run" can only be counted by a manager that counts itself -- and a counting
-// SUBCLASS of an in-library manager is no use, because the purity declaration is per
-// exact type and a subclass is therefore IMPURE by construction (which is precisely
-// what UtcDaliArrangeCacheLayoutManagerPurityIsPerExactTypeP pins).
-//
-// This one derives straight from LayoutManager and makes its own declaration through
-// exactly the mechanism the in-library managers use, so the count below measures the
-// real path end to end. Its Arrange stacks children vertically from layout-tracked
-// state only -- measured sizes and the child list -- so the PURE variant is honest.
-//
-// `declarePure == false` is what an author who declares nothing gets, and is used both
-// as the mutation-free control and to plant an impure manager in a subtree.
+// A counting layout manager. A manager is its owner's arrange producer, so "did the
+// producer run" can only be counted by a manager that counts itself. Its Arrange
+// stacks children vertically from layout-tracked state only -- measured sizes and
+// the child list -- so the ARRANGE_IF_CHANGED variant is valid.
 int gManagerArrangeCount = 0;
 
 class CountingLayoutManager : public LayoutManager
 {
 public:
-  explicit CountingLayoutManager(bool declarePure)
+  CountingLayoutManager() = default;
+
+  explicit CountingLayoutManager(ArrangePolicy policy)
   : LayoutManager()
   {
-    if(declarePure)
-    {
-      GetImplAs<LayoutManager::Impl>()->DeclareArrangePurity(ArrangePurity::PURE, typeid(CountingLayoutManager));
-    }
-    // else: nothing. ArrangePurity::IMPURE is the default.
+    SetArrangePolicy(policy);
+  }
+
+  void SetPolicy(ArrangePolicy policy)
+  {
+    SetArrangePolicy(policy);
   }
 
   MeasuredSize Measure(ViewImpl* view, float widthConstraint, float heightConstraint) override
@@ -350,8 +316,8 @@ public:
   }
 };
 
-// A third-party subclass of an in-library manager that DECLARED PURE. It declares
-// nothing of its own, which is what an author who never read the documentation writes.
+// A third-party subclass used to verify that the default manager policy remains
+// ARRANGE_IF_CHANGED through normal inheritance.
 class SubclassedStackLayoutManager : public StackLayoutManager
 {
 public:
@@ -359,6 +325,10 @@ public:
   : StackLayoutManager(StackOrientation::VERTICAL, 0.0f)
   {
   }
+};
+
+class SubclassedScrollViewLayoutManager : public ScrollViewLayoutManager
+{
 };
 
 } // namespace
@@ -522,51 +492,25 @@ int UtcDaliArrangeCacheHitEmitsLayoutFinishedP(void)
   END_TEST;
 }
 
-// The arrange cache-HIT serves a stored rect INSTEAD of running the producer, which
-// is result-identical only if the producer is a pure function of the cache key. The
-// framework never assumes that: ArrangePurity::IMPURE is the DEFAULT, and a producer
-// is skipped only after whoever wrote it declared it PURE. So the property this test
-// pins is audit-independent -- a first-party view nobody looked at simply does not get
-// the optimisation, rather than silently desyncing. (The matching statement about
-// third-party SUBCLASSES of a declared view is a different claim, and is pinned
-// separately in UtcDaliArrangeCacheHitThirdPartySubclassDoesNotInheritPurityP.)
+// ARRANGE_IF_CHANGED is the default. VideoView and WebView explicitly select
+// ARRANGE_ALWAYS because their OnArrange implementations read SCREEN_POSITION and push
+// it to a native surface outside the actor tree. Neither operation is represented by
+// the arrange cache key, so these producers must execute on every pass.
 //
-// VideoViewImpl::OnArrange and WebViewImpl::OnArrange are the two first-party
-// producers that MUST stay undeclared: both read Actor::Property::SCREEN_POSITION (a
-// function of the whole ancestor chain, in no cache key, invalidating nothing here)
-// and push it to a surface outside the actor tree, so serving either from cache would
-// strand that native surface at a stale offset.
+// The second half compares otherwise identical callbacks with explicit
+// ARRANGE_IF_CHANGED and ARRANGE_ALWAYS policies, proving that the derived producer
+// policy is honored by the cache-hit predicate.
 //
-// This pins BOTH halves: the declarations are where §5 of the design says they are
-// (and, for Video/Web, absent), and the derived bit is actually honoured by the hit
-// predicate.
-//
-// The second half instruments the two leaves with counting ArrangeCallbacks rather
-// than their own OnArrange, deliberately: an identical producer on both leaves
-// isolates the declaration as the only difference between them. It also keeps the
-// observation headless-safe -- the native display-area push has nothing to observe
-// with no platform plugin loaded. Note the callbacks carry their OWN purity, which is
-// why the pure leaf's is installed through the two-argument overload.
-//
-// Non-vacuity (verified by mutation): dropping `mArrangeProducerPure &&` from the hit
-// predicate in ViewDataImpl::Arrange lets the undeclared leaf hit, and its
-// `undeclaredBase + PASSES` producer-count assertion fails; adding
-// SetArrangePurity(PURE) to VideoViewImpl fails the first half.
-int UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP(void)
+// Non-vacuity (verified by mutation): dropping the mArrangeProducerAlways term from
+// the hit predicate lets the ARRANGE_ALWAYS leaf hit; changing VideoViewImpl to
+// ARRANGE_IF_CHANGED fails the first half.
+int UtcDaliArrangeCacheHitAlwaysFirstPartyLeavesNeverCacheP(void)
 {
   UiTestApplication application;
-  tet_infoline("VideoView and WebView leave their arrange producer undeclared and never take the cache hit");
+  tet_infoline("VideoView and WebView explicitly use ARRANGE_ALWAYS and never take the cache hit");
 
-  // --- Part 1: the declarations ---------------------------------------------
-  //
-  // Every one of these is declared pure by its OWN New() factory -- ViewImpl::New()
-  // for the plain View, where the producer is provably ViewImpl::OnArrange ->
-  // ArrangeDefault, and LabelImpl::New(), ImageViewImpl::New(), ... for the rest. The
-  // factory is the one place where the most-derived type is fixed, which is why the
-  // declaration is NOT made in a constructor (that would leak it to subclasses; see
-  // UtcDaliArrangeCacheHitThirdPartySubclassDoesNotInheritPurityP). A dropped
-  // declaration costs performance, never correctness, which makes it invisible in
-  // behaviour -- these assertions are what make that loss visible instead.
+  // --- Part 1: defaults and explicit opt-outs -------------------------------
+  // These ordinary views use the framework default ARRANGE_IF_CHANGED policy.
   View                plain    = View::New();
   Label               label    = Label::New();
   ImageView           image    = ImageView::New();
@@ -576,22 +520,21 @@ int UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP(void)
   InputField          field    = InputField::New();
   InputEditor         editor   = InputEditor::New();
 
-  DALI_TEST_CHECK(DataOf(plain).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(label).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(image).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(animated).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(lottie).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(canvas).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(field).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(editor).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(plain).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(label).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(image).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(animated).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(lottie).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(canvas).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(field).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(editor).ArrangesIfChanged());
 
-  // The two that must never declare themselves pure. Their impurity is the DEFAULT,
-  // so this also states that nothing in their construction path accidentally opts in.
+  // These two producers explicitly opt out because they update external surfaces.
   VideoView video = VideoView::New(CreateTestVideoSource());
   WebView   web   = WebView::New();
 
-  DALI_TEST_CHECK(!DataOf(video).IsArrangeProducerPure());
-  DALI_TEST_CHECK(!DataOf(web).IsArrangeProducerPure());
+  DALI_TEST_CHECK(!DataOf(video).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(web).ArrangesIfChanged());
 
   // --- Part 2: the bit is honoured by the hit predicate ----------------------
   View root = View::New();
@@ -599,359 +542,185 @@ int UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP(void)
   root.SetRequestedHeight(200.0f);
   application.GetScene().Add(root);
 
-  // Two THIRD-PARTY-shaped subclasses with a byte-identical OnArrange override,
-  // differing only in whether their factory declared it pure. The undeclared one
-  // is what an author who never read the documentation writes.
-  View declaredLeaf   = CreatePurityCounterView(true);
-  View undeclaredLeaf = CreatePurityCounterView(false);
+  // Two third-party-shaped subclasses with byte-identical OnArrange overrides and
+  // explicitly different policies.
+  View ifChangedLeaf = CreatePolicyCounterView(true);
+  View alwaysLeaf    = CreatePolicyCounterView(false);
 
-  DALI_TEST_CHECK(DataOf(declaredLeaf).IsArrangeProducerPure());
-  DALI_TEST_CHECK(!DataOf(undeclaredLeaf).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(ifChangedLeaf).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(alwaysLeaf).ArrangesIfChanged());
 
-  declaredLeaf.SetRequestedWidth(50.0f);
-  declaredLeaf.SetRequestedHeight(40.0f);
-  root.Add(declaredLeaf);
+  ifChangedLeaf.SetRequestedWidth(50.0f);
+  ifChangedLeaf.SetRequestedHeight(40.0f);
+  root.Add(ifChangedLeaf);
 
-  undeclaredLeaf.SetRequestedWidth(50.0f);
-  undeclaredLeaf.SetRequestedHeight(40.0f);
-  root.Add(undeclaredLeaf);
+  alwaysLeaf.SetRequestedWidth(50.0f);
+  alwaysLeaf.SetRequestedHeight(40.0f);
+  root.Add(alwaysLeaf);
 
   Settle(application);
 
   // ViewImpl::OnArrange echoes its input for a childless view, so the settled actor
   // geometry IS the slot each cache was keyed on.
-  const LayoutRect declaredSlot   = SettledSlotOf(declaredLeaf);
-  const LayoutRect undeclaredSlot = SettledSlotOf(undeclaredLeaf);
+  const LayoutRect ifChangedSlot = SettledSlotOf(ifChangedLeaf);
+  const LayoutRect alwaysSlot    = SettledSlotOf(alwaysLeaf);
 
-  // BOTH leaves settled with a live cache entry: being undeclared declines the HIT,
+  // BOTH leaves settled with a live cache entry: using ARRANGE_ALWAYS declines the HIT,
   // not the publish, so this is a genuine "entry exists but is refused" comparison
-  // and not merely "the impure leaf never cached".
-  DALI_TEST_CHECK(DataOf(declaredLeaf).IsArrangeCacheValid());
-  DALI_TEST_CHECK(DataOf(undeclaredLeaf).IsArrangeCacheValid());
+  // and not merely "the ARRANGE_ALWAYS leaf never cached".
+  DALI_TEST_CHECK(DataOf(ifChangedLeaf).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(alwaysLeaf).IsArrangeCacheValid());
 
-  const int declaredBase   = PurityCounterImplOf(declaredLeaf).GetArrangeCallCount();
-  const int undeclaredBase = PurityCounterImplOf(undeclaredLeaf).GetArrangeCallCount();
-  DALI_TEST_CHECK(declaredBase > 0);
-  DALI_TEST_CHECK(undeclaredBase > 0);
+  const int ifChangedBase = PolicyCounterImplOf(ifChangedLeaf).GetArrangeCallCount();
+  const int alwaysBase    = PolicyCounterImplOf(alwaysLeaf).GetArrangeCallCount();
+  DALI_TEST_CHECK(ifChangedBase > 0);
+  DALI_TEST_CHECK(alwaysBase > 0);
 
   const int PASSES = 3;
   for(int pass = 0; pass < PASSES; ++pass)
   {
-    declaredLeaf.Arrange(declaredSlot);
-    undeclaredLeaf.Arrange(undeclaredSlot);
+    ifChangedLeaf.Arrange(ifChangedSlot);
+    alwaysLeaf.Arrange(alwaysSlot);
   }
 
-  // The declared-pure leaf is served from cache on every one of those passes.
-  DALI_TEST_EQUALS(PurityCounterImplOf(declaredLeaf).GetArrangeCallCount(), declaredBase, TEST_LOCATION);
+  // The ARRANGE_IF_CHANGED leaf is served from cache on every one of those passes.
+  DALI_TEST_EQUALS(PolicyCounterImplOf(ifChangedLeaf).GetArrangeCallCount(), ifChangedBase, TEST_LOCATION);
 
-  // The undeclared leaf re-runs its producer on every single pass, with the same
+  // The ARRANGE_ALWAYS leaf re-runs its producer on every single pass, with the same
   // slot, the same direction, the same scale and no dirty bit -- the ONLY term
-  // rejecting it is mArrangeProducerPure.
-  DALI_TEST_EQUALS(PurityCounterImplOf(undeclaredLeaf).GetArrangeCallCount(), undeclaredBase + PASSES, TEST_LOCATION);
+  // rejecting it is mArrangeProducerAlways.
+  DALI_TEST_EQUALS(PolicyCounterImplOf(alwaysLeaf).GetArrangeCallCount(), alwaysBase + PASSES, TEST_LOCATION);
 
   // Always-miss must still be result-identical: refusing the hit costs work, never
   // correctness.
-  DALI_TEST_EQUALS(undeclaredLeaf.GetProperty<float>(Actor::Property::POSITION_X), undeclaredSlot.x, TEST_LOCATION);
-  DALI_TEST_EQUALS(undeclaredLeaf.GetProperty<float>(Actor::Property::POSITION_Y), undeclaredSlot.y, TEST_LOCATION);
-  DALI_TEST_EQUALS(undeclaredLeaf.GetProperty<float>(Actor::Property::SIZE_WIDTH), undeclaredSlot.width, TEST_LOCATION);
-  DALI_TEST_EQUALS(undeclaredLeaf.GetProperty<float>(Actor::Property::SIZE_HEIGHT), undeclaredSlot.height, TEST_LOCATION);
+  DALI_TEST_EQUALS(alwaysLeaf.GetProperty<float>(Actor::Property::POSITION_X), alwaysSlot.x, TEST_LOCATION);
+  DALI_TEST_EQUALS(alwaysLeaf.GetProperty<float>(Actor::Property::POSITION_Y), alwaysSlot.y, TEST_LOCATION);
+  DALI_TEST_EQUALS(alwaysLeaf.GetProperty<float>(Actor::Property::SIZE_WIDTH), alwaysSlot.width, TEST_LOCATION);
+  DALI_TEST_EQUALS(alwaysLeaf.GetProperty<float>(Actor::Property::SIZE_HEIGHT), alwaysSlot.height, TEST_LOCATION);
 
-  // Nothing above re-declared anything, so the two states are stable -- including
+  // Nothing above changed any policy, so the two states are stable -- including
   // Video/Web, which nothing in a layout pass can flip.
-  DALI_TEST_CHECK(!DataOf(video).IsArrangeProducerPure());
-  DALI_TEST_CHECK(!DataOf(web).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(plain).IsArrangeProducerPure());
+  DALI_TEST_CHECK(!DataOf(video).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(web).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(plain).ArrangesIfChanged());
 
   END_TEST;
 }
 
-// mArrangeProducerPure is DERIVED, not stored: it answers "is the producer that
-// would actually run declared pure?", so it has to be recomputed whenever the ACTIVE
-// producer changes. RefreshArrangeProducerPurity() mirrors the dispatch order in
-// ViewDataImpl::Arrange -- ArrangeCallback > LayoutManager > OnArrange -- and this
-// test walks every transition in that order, in both directions where one exists.
-//
-// The interesting case is the last pair: a view whose OnArrange was declared PURE
-// must go IMPURE the moment an undeclared callback takes over as its producer, and
-// come back when the callback is removed. Getting that wrong is not a missed
-// optimisation; it is a third-party callback being served from cache on the strength
-// of a declaration that was made about a different function.
-//
-// Non-vacuity (verified by mutation): dropping the RefreshArrangeProducerPurity()
-// call from any one mutation point leaves that transition's assertion reading the
-// previous producer's purity and the corresponding check fails.
-int UtcDaliArrangeCacheProducerPurityFollowsActiveProducerP(void)
+// The derived policy follows the active producer in callback > manager > OnArrange
+// dispatch order. Each producer carries its own policy.
+int UtcDaliArrangeCacheProducerPolicyFollowsActiveProducerP(void)
 {
   UiTestApplication application;
-  tet_infoline("The derived purity bit tracks whichever arrange producer is currently active");
+  tet_infoline("The derived policy tracks the active arrange producer");
 
-  gCallbackArrangeCount = 0;
-
-  // A plain View: no callback, no manager, so the producer is ViewImpl::OnArrange,
-  // declared PURE in ViewImpl::New().
   View view = View::New();
-  DALI_TEST_CHECK(DataOf(view).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(view).ArrangesIfChanged());
 
-  // An undeclared callback outranks OnArrange and drags the view impure, even though
-  // the OnArrange declaration is untouched underneath.
   view.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange));
-  DALI_TEST_CHECK(!DataOf(view).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(view).ArrangesIfChanged());
 
-  // A callback declared PURE is served.
-  view.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePurity::PURE);
-  DALI_TEST_CHECK(DataOf(view).IsArrangeProducerPure());
+  view.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePolicy::ARRANGE_ALWAYS);
+  DALI_TEST_CHECK(!DataOf(view).ArrangesIfChanged());
 
-  // Re-installing through the one-argument overload CLEARS the declared purity: the
-  // declaration belongs to the callback that was installed with it, not to the view.
   view.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange));
-  DALI_TEST_CHECK(!DataOf(view).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(view).ArrangesIfChanged());
 
-  // Removing the callback hands the producer role back to OnArrange, whose own
-  // declaration (PURE, from ViewImpl::New) applies again.
   view.SetArrangeCallback({});
-  DALI_TEST_CHECK(DataOf(view).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(view).ArrangesIfChanged());
 
-  // An explicit re-declaration of the OnArrange purity is honoured immediately. This
-  // goes through a subclass because SetArrangePurity is protected: it is a statement
-  // a view makes about its own override, which is what keeps a caller from declaring
-  // someone else's producer pure.
-  View redeclarable = CreatePurityCounterView(true);
-  DALI_TEST_CHECK(DataOf(redeclarable).IsArrangeProducerPure());
+  View configurable = CreatePolicyCounterView(true);
+  DALI_TEST_CHECK(DataOf(configurable).ArrangesIfChanged());
+  PolicyCounterImplOf(configurable).SetPolicy(ArrangePolicy::ARRANGE_ALWAYS);
+  DALI_TEST_CHECK(!DataOf(configurable).ArrangesIfChanged());
+  PolicyCounterImplOf(configurable).SetPolicy(ArrangePolicy::ARRANGE_IF_CHANGED);
+  DALI_TEST_CHECK(DataOf(configurable).ArrangesIfChanged());
 
-  PurityCounterImplOf(redeclarable).Declare(ArrangePurity::IMPURE);
-  DALI_TEST_CHECK(!DataOf(redeclarable).IsArrangeProducerPure());
-
-  // ...and is not a one-way latch, which is what lets a view that learns it is impure
-  // only after construction (WebView acquiring its engine, say) correct itself.
-  PurityCounterImplOf(redeclarable).Declare(ArrangePurity::PURE);
-  DALI_TEST_CHECK(DataOf(redeclarable).IsArrangeProducerPure());
-
-  // An installed callback still outranks the OnArrange declaration underneath it.
-  redeclarable.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange));
-  DALI_TEST_CHECK(!DataOf(redeclarable).IsArrangeProducerPure());
-  redeclarable.SetArrangeCallback({});
-  DALI_TEST_CHECK(DataOf(redeclarable).IsArrangeProducerPure());
-
-  // A LayoutManager outranks OnArrange, and the declaration that counts is then the
-  // MANAGER's own: StackLayoutManager declares its Arrange PURE, so attaching it does
-  // not drag the view impure.
   View managed = View::New();
-  DALI_TEST_CHECK(DataOf(managed).IsArrangeProducerPure());
   managed.AttachLayoutManager(Dali::MakeUnique<StackLayoutManager>(StackOrientation::VERTICAL, 0.0f));
-  DALI_TEST_CHECK(DataOf(managed).IsArrangeProducerPure());
-
-  // A callback outranks the manager, so an UNDECLARED callback on a managed view drags
-  // it impure -- the bit follows DISPATCH order, not "most optimistic wins".
+  DALI_TEST_CHECK(DataOf(managed).ArrangesIfChanged());
+  managed.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePolicy::ARRANGE_ALWAYS);
+  DALI_TEST_CHECK(!DataOf(managed).ArrangesIfChanged());
   managed.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange));
-  DALI_TEST_CHECK(!DataOf(managed).IsArrangeProducerPure());
-
-  // A PURE callback is pure again...
-  managed.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePurity::PURE);
-  DALI_TEST_CHECK(DataOf(managed).IsArrangeProducerPure());
-
-  // ...and removing it falls back to the manager's own declaration.
+  DALI_TEST_CHECK(DataOf(managed).ArrangesIfChanged());
   managed.SetArrangeCallback({});
-  DALI_TEST_CHECK(DataOf(managed).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(managed).ArrangesIfChanged());
 
-  // The same walk with a manager that declares NOTHING: ScrollViewLayoutManager reads
-  // the scrolled child's live actor position, so it must never be skipped, and it is
-  // the manager -- not the view -- that says so.
   View scrollManaged = View::New();
-  DALI_TEST_CHECK(DataOf(scrollManaged).IsArrangeProducerPure());
   scrollManaged.AttachLayoutManager(Dali::MakeUnique<ScrollViewLayoutManager>());
-  DALI_TEST_CHECK(!DataOf(scrollManaged).IsArrangeProducerPure());
-
-  // A PURE callback outranks even an impure manager, for the same dispatch-order reason.
-  scrollManaged.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePurity::PURE);
-  DALI_TEST_CHECK(DataOf(scrollManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(!DataOf(scrollManaged).ArrangesIfChanged());
+  scrollManaged.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange));
+  DALI_TEST_CHECK(DataOf(scrollManaged).ArrangesIfChanged());
   scrollManaged.SetArrangeCallback({});
-  DALI_TEST_CHECK(!DataOf(scrollManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(!DataOf(scrollManaged).ArrangesIfChanged());
 
   END_TEST;
 }
 
-// THE third-party inheritance guarantee: purity is per EXACT TYPE, never inherited.
-//
-// A first-party view that declares its OnArrange PURE is, by construction, also a
-// public non-final base -- LabelImpl, ImageViewImpl and the rest are all DALI_UI_API
-// and subclassable. So the declaration has to be made somewhere a subclass cannot pick
-// it up, and the only such place is the type's own New() factory: a subclass builds
-// itself through ITS factory and never runs the base's.
-//
-// A constructor is NOT such a place, and that is exactly what this test forbids. A base
-// constructor runs for every subclass, so a declaration made there would hand every
-// third-party subclass mArrangeOverridePure == true without its author writing a single
-// line -- and an impure override (world geometry, a native sink) would then be silently
-// replaced by a stale cached rect. Default-IMPURE for third parties is the guarantee;
-// this is its regression test.
-//
-// Non-vacuity: the `declarePure == true` half proves this exact class SHAPE is
-// cacheable, so the undeclared half's always-miss is attributable to the declaration
-// and to nothing else.
-//
-// This case FAILS on the pre-fix code (verified by moving the declaration back into
-// LabelImpl's constructor and rebuilding): the undeclared probe reports
-// IsArrangeProducerPure() == true and its producer stops running.
-int UtcDaliArrangeCacheHitThirdPartySubclassDoesNotInheritPurityP(void)
+// ARRANGE_IF_CHANGED is the default for a custom OnArrange override. A producer
+// that requires every pass explicitly opts out with ARRANGE_ALWAYS.
+int UtcDaliArrangeCacheDefaultViewPolicyAndOptOutP(void)
 {
   UiTestApplication application;
-  tet_infoline("A third-party subclass of a PURE first-party view does not inherit the declaration");
+  tet_infoline("Custom OnArrange defaults to ARRANGE_IF_CHANGED and can opt out");
 
-  // --- Part 1: the base IS pure, the undeclared subclass is NOT -----------------
-  Label base = Label::New();
-  DALI_TEST_CHECK(DataOf(base).IsArrangeProducerPure());
-
-  View undeclared = CreateProbeLabel(false);
-  View declared   = CreateProbeLabel(true);
-
-  // The whole point: same base class, same base declaration, and the subclass that
-  // said nothing is IMPURE.
-  DALI_TEST_CHECK(!DataOf(undeclared).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(declared).IsArrangeProducerPure());
-
-  // The base's own declaration is untouched by any of this.
-  DALI_TEST_CHECK(DataOf(base).IsArrangeProducerPure());
-
-  // --- Part 2: the undeclared subclass really does re-run its producer ----------
   View root = View::New();
   root.SetRequestedWidth(200.0f);
   root.SetRequestedHeight(200.0f);
   application.GetScene().Add(root);
 
-  undeclared.SetRequestedWidth(50.0f);
-  undeclared.SetRequestedHeight(40.0f);
-  root.Add(undeclared);
+  View defaultView = CreateProbeLabel();
+  View alwaysView  = CreateProbeLabel();
+  ProbeLabelImplOf(alwaysView).SetPolicy(ArrangePolicy::ARRANGE_ALWAYS);
+  DALI_TEST_CHECK(DataOf(defaultView).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(alwaysView).ArrangesIfChanged());
 
-  declared.SetRequestedWidth(50.0f);
-  declared.SetRequestedHeight(40.0f);
-  root.Add(declared);
-
+  defaultView.SetRequestedWidth(50.0f);
+  defaultView.SetRequestedHeight(40.0f);
+  root.Add(defaultView);
+  alwaysView.SetRequestedWidth(50.0f);
+  alwaysView.SetRequestedHeight(40.0f);
+  root.Add(alwaysView);
   Settle(application);
 
-  DALI_TEST_CHECK(!DataOf(undeclared).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(declared).IsArrangeProducerPure());
+  const LayoutRect defaultSlot = SettledSlotOf(defaultView);
+  const LayoutRect alwaysSlot  = SettledSlotOf(alwaysView);
+  const int        defaultBase = ProbeLabelImplOf(defaultView).GetArrangeCallCount();
+  const int        alwaysBase  = ProbeLabelImplOf(alwaysView).GetArrangeCallCount();
+  const int        PASSES      = 3;
 
-  // Both published an entry, so this is "the entry exists and is REFUSED", not "the
-  // impure one never cached".
-  DALI_TEST_CHECK(DataOf(undeclared).IsArrangeCacheValid());
-  DALI_TEST_CHECK(DataOf(declared).IsArrangeCacheValid());
-
-  const LayoutRect undeclaredSlot = SettledSlotOf(undeclared);
-  const LayoutRect declaredSlot   = SettledSlotOf(declared);
-
-  const int undeclaredBase = ProbeLabelImplOf(undeclared).GetArrangeCallCount();
-  const int declaredBase   = ProbeLabelImplOf(declared).GetArrangeCallCount();
-  DALI_TEST_CHECK(undeclaredBase > 0);
-  DALI_TEST_CHECK(declaredBase > 0);
-
-  const int PASSES = 3;
   for(int pass = 0; pass < PASSES; ++pass)
   {
-    undeclared.Arrange(undeclaredSlot);
-    declared.Arrange(declaredSlot);
+    defaultView.Arrange(defaultSlot);
+    alwaysView.Arrange(alwaysSlot);
   }
 
-  // Every settled pass re-runs the undeclared override -- it is never served.
-  DALI_TEST_EQUALS(ProbeLabelImplOf(undeclared).GetArrangeCallCount(), undeclaredBase + PASSES, TEST_LOCATION);
-
-  // ...while the opted-in sibling, identical in every other respect, is.
-  DALI_TEST_EQUALS(ProbeLabelImplOf(declared).GetArrangeCallCount(), declaredBase, TEST_LOCATION);
-
-  // Always-miss stays result-identical: refusing the hit costs work, never geometry.
-  DALI_TEST_EQUALS(undeclared.GetProperty<float>(Actor::Property::POSITION_X), undeclaredSlot.x, TEST_LOCATION);
-  DALI_TEST_EQUALS(undeclared.GetProperty<float>(Actor::Property::POSITION_Y), undeclaredSlot.y, TEST_LOCATION);
-  DALI_TEST_EQUALS(undeclared.GetProperty<float>(Actor::Property::SIZE_WIDTH), undeclaredSlot.width, TEST_LOCATION);
-  DALI_TEST_EQUALS(undeclared.GetProperty<float>(Actor::Property::SIZE_HEIGHT), undeclaredSlot.height, TEST_LOCATION);
+  DALI_TEST_EQUALS(ProbeLabelImplOf(defaultView).GetArrangeCallCount(), defaultBase, TEST_LOCATION);
+  DALI_TEST_EQUALS(ProbeLabelImplOf(alwaysView).GetArrangeCallCount(), alwaysBase + PASSES, TEST_LOCATION);
 
   END_TEST;
 }
 
-// Adding a STANDALONE child must retract the parent's arrange cache entry.
-//
-// The entry was published for a child set that did not include this child, and the
-// only place the new child gets placed is ArrangeStandaloneChildren -- which lives on
-// the arrange path, below the cache-HIT return. So a live entry across the add is an
-// entry that can be served instead of placing the child.
-//
-// The predicate's !HasUnconsumedStandaloneChild() term does NOT cover this:
-// mMeasuredSlotUnconsumed is initialised false and raised only at a measure publish,
-// so a freshly added, never-measured standalone child leaves the term FALSE and the
-// hit is not declined. ViewDataImpl::OnChildAdded's InvalidateArrange() on the
-// standalone path is the guard, and this is its direct statement.
-//
-// WHITE-BOX on purpose: while the hit is childless-only, the parent stops being
-// childless the moment the child is added, so it misses for that reason alone and the
-// gap has no black-box symptom. The bookkeeping is the only place the fix is visible.
-//
-// Non-vacuity (verified by mutation): removing the InvalidateArrange() from
-// OnChildAdded's standalone branch leaves the entry valid and both post-add
-// assertions fail.
-int UtcDaliArrangeCacheStandaloneChildAddInvalidatesParentArrangeP(void)
-{
-  UiTestApplication application;
-  tet_infoline("Adding a standalone child drops the parent's published arrange entry");
-
-  View parent = View::New();
-  parent.SetRequestedWidth(200.0f);
-  parent.SetRequestedHeight(100.0f);
-  application.GetScene().Add(parent);
-
-  View regular = View::New();
-  regular.SetRequestedWidth(50.0f);
-  regular.SetRequestedHeight(40.0f);
-  parent.Add(regular);
-
-  Settle(application);
-
-  // The state the gap needs: a live entry, nothing dirty.
-  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
-  DALI_TEST_CHECK(!DataOf(parent).IsArrangeDirty());
-
-  // A never-measured standalone child, so mMeasuredSlotUnconsumed is still false and
-  // !HasUnconsumedStandaloneChild() would NOT reject the hit.
-  View standalone = View::New();
-  standalone.SetLayoutMode(LayoutMode::STANDALONE);
-  standalone.SetRequestedX(10.0f);
-  standalone.SetRequestedY(20.0f);
-  standalone.SetRequestedWidth(30.0f);
-  standalone.SetRequestedHeight(25.0f);
-  parent.Add(standalone);
-
-  // The add itself is the whole event: no pass has run yet.
-  DALI_TEST_CHECK(!DataOf(parent).IsArrangeCacheValid());
-  DALI_TEST_CHECK(DataOf(parent).IsArrangeDirty());
-
-  // ...and it recovers: the next pass places the child and republishes.
-  Settle(application);
-  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
-  DALI_TEST_CHECK(!DataOf(parent).IsArrangeDirty());
-
-  END_TEST;
-}
-
-// The `if(mArrangeCacheValid)` TRUE branch of ViewDataImpl::SetArrangePurity, which no
-// other case reaches: every first-party declaration is made from a New() factory, where
-// the bit is false by construction, so only a RE-declaration on an already settled view
-// runs the invalidation.
-//
-// It has to: the entry on a settled view was published while the OLD declaration was in
-// force. Leaving it live across a PURE -> IMPURE re-declaration would let the very next
-// identical pass serve a rect the view has just said may not be reused.
+// The `if(mArrangeCacheValid)` true branch of ViewDataImpl::SetArrangePolicy cannot
+// be reached by constructor-time selection: the cache bit is false before the View
+// handle exists. A policy change on an already settled view must invalidate the
+// entry published under the old policy; otherwise an ARRANGE_IF_CHANGED ->
+// ARRANGE_ALWAYS change could still serve that entry on the next identical pass.
 //
 // Non-vacuity (verified by mutation): removing the `if(mArrangeCacheValid)
 // InvalidateArrange();` block leaves the entry valid and both post-declaration
 // assertions fail.
-int UtcDaliArrangeCachePurityRedeclarationInvalidatesSettledEntryP(void)
+int UtcDaliArrangeCachePolicyChangeInvalidatesSettledEntryP(void)
 {
   UiTestApplication application;
-  tet_infoline("Re-declaring purity on a settled view drops its published arrange entry");
+  tet_infoline("Changing policy on a settled view drops its published arrange entry");
 
   View root = View::New();
   root.SetRequestedWidth(200.0f);
   root.SetRequestedHeight(100.0f);
   application.GetScene().Add(root);
 
-  View leaf = CreatePurityCounterView(true);
+  View leaf = CreatePolicyCounterView(true);
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
   root.Add(leaf);
@@ -960,51 +729,50 @@ int UtcDaliArrangeCachePurityRedeclarationInvalidatesSettledEntryP(void)
 
   DALI_TEST_CHECK(DataOf(leaf).IsArrangeCacheValid());
   DALI_TEST_CHECK(!DataOf(leaf).IsArrangeDirty());
-  DALI_TEST_CHECK(DataOf(leaf).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(leaf).ArrangesIfChanged());
 
-  // PURE -> IMPURE on a live entry: the entry must go, and the view must be scheduled.
-  PurityCounterImplOf(leaf).Declare(ArrangePurity::IMPURE);
-  DALI_TEST_CHECK(!DataOf(leaf).IsArrangeProducerPure());
+  // ARRANGE_IF_CHANGED -> ARRANGE_ALWAYS on a live entry: the entry must go, and the view must be scheduled.
+  PolicyCounterImplOf(leaf).SetPolicy(ArrangePolicy::ARRANGE_ALWAYS);
+  DALI_TEST_CHECK(!DataOf(leaf).ArrangesIfChanged());
   DALI_TEST_CHECK(!DataOf(leaf).IsArrangeCacheValid());
   DALI_TEST_CHECK(DataOf(leaf).IsArrangeDirty());
 
   // The reverse direction, from a freshly settled state, takes the same branch: the
-  // entry published while IMPURE was never a hit candidate, but the guard does not
+  // entry published while ARRANGE_ALWAYS was never a hit candidate, but the guard does not
   // reason about that and drops it anyway.
   Settle(application);
   DALI_TEST_CHECK(DataOf(leaf).IsArrangeCacheValid());
 
-  PurityCounterImplOf(leaf).Declare(ArrangePurity::PURE);
-  DALI_TEST_CHECK(DataOf(leaf).IsArrangeProducerPure());
+  PolicyCounterImplOf(leaf).SetPolicy(ArrangePolicy::ARRANGE_IF_CHANGED);
+  DALI_TEST_CHECK(DataOf(leaf).ArrangesIfChanged());
   DALI_TEST_CHECK(!DataOf(leaf).IsArrangeCacheValid());
 
-  // ...and it recovers: a re-settle republishes under the new declaration.
+  // ...and it recovers: a re-settle republishes under the new policy.
   Settle(application);
   DALI_TEST_CHECK(DataOf(leaf).IsArrangeCacheValid());
 
   END_TEST;
 }
 
-// The derived purity bit must not survive an EXTERNAL swap of the traits that carry the
+// The derived policy bit must not survive an EXTERNAL swap of the traits that carry the
 // producer. ArrangeCallback (ReservedTraitId::LAYOUT_SIGNALS) and LayoutManager
 // (ReservedTraitId::LAYOUT_MANAGER) both outrank OnArrange in Arrange()'s dispatch
 // order, and both are reachable through the public Integration::View::SetTrait /
 // RemoveTrait surface, which does not go through SetArrangeCallback() /
-// AttachLayoutManager() and so does no purity bookkeeping of its own.
+// AttachLayoutManager() and so does no policy bookkeeping of its own.
 //
-// The case below is the one that actually desyncs: a view whose OWN OnArrange is
-// undeclared (IMPURE) is made pure only by a PURE ArrangeCallback sitting on top of it.
-// Rip that callback out through the trait API and the producer falls back to the
-// undeclared OnArrange -- if the derived bit were left stale-TRUE, that impure override
-// would be served from the entry the callback published.
+// The desynchronizing case uses an OnArrange producer explicitly set to ARRANGE_ALWAYS
+// under an ARRANGE_IF_CHANGED callback. Removing that callback through the trait API
+// exposes OnArrange again; a stale derived bit would incorrectly reuse the callback's
+// published entry.
 //
 // Non-vacuity (verified by mutation): removing the OnArrangeProducerTraitChanged() call
 // from ViewDataImpl::RemoveTrait leaves the bit TRUE and the entry live, and both
 // post-removal assertions fail.
-int UtcDaliArrangeCacheProducerPurityClearedByExternalTraitRemovalP(void)
+int UtcDaliArrangeCacheProducerPolicyClearedByExternalTraitRemovalP(void)
 {
   UiTestApplication application;
-  tet_infoline("An external reserved-trait removal re-derives the arrange producer purity");
+  tet_infoline("An external reserved-trait removal re-derives the arrange producer policy");
 
   gCallbackArrangeCount = 0;
 
@@ -1013,13 +781,13 @@ int UtcDaliArrangeCacheProducerPurityClearedByExternalTraitRemovalP(void)
   root.SetRequestedHeight(100.0f);
   application.GetScene().Add(root);
 
-  // OnArrange undeclared: this view is IMPURE on its own.
-  View leaf = CreatePurityCounterView(false);
-  DALI_TEST_CHECK(!DataOf(leaf).IsArrangeProducerPure());
+  // OnArrange explicitly uses ARRANGE_ALWAYS.
+  View leaf = CreatePolicyCounterView(false);
+  DALI_TEST_CHECK(!DataOf(leaf).ArrangesIfChanged());
 
-  // A PURE callback outranks it and is the ONLY reason the view is pure at all.
-  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePurity::PURE);
-  DALI_TEST_CHECK(DataOf(leaf).IsArrangeProducerPure());
+  // An ARRANGE_IF_CHANGED callback outranks it.
+  leaf.SetArrangeCallback(ArrangeCallback::New(&CountingCallbackArrange), ArrangePolicy::ARRANGE_IF_CHANGED);
+  DALI_TEST_CHECK(DataOf(leaf).ArrangesIfChanged());
 
   leaf.SetRequestedWidth(50.0f);
   leaf.SetRequestedHeight(40.0f);
@@ -1028,13 +796,13 @@ int UtcDaliArrangeCacheProducerPurityClearedByExternalTraitRemovalP(void)
   Settle(application);
 
   DALI_TEST_CHECK(DataOf(leaf).IsArrangeCacheValid());
-  DALI_TEST_CHECK(DataOf(leaf).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(leaf).ArrangesIfChanged());
 
   // The external swap. Nothing else in the library takes this path.
   DALI_TEST_CHECK(IntegrationView::RemoveTrait(GetImpl(leaf), ReservedTraitId::LAYOUT_SIGNALS));
 
-  // The producer is the undeclared OnArrange again, so the bit must be FALSE...
-  DALI_TEST_CHECK(!DataOf(leaf).IsArrangeProducerPure());
+  // The active producer is the ARRANGE_ALWAYS OnArrange again, so the bit must be false...
+  DALI_TEST_CHECK(!DataOf(leaf).ArrangesIfChanged());
   // ...and the entry the callback published must not outlive it.
   DALI_TEST_CHECK(!DataOf(leaf).IsArrangeCacheValid());
 
@@ -1042,14 +810,14 @@ int UtcDaliArrangeCacheProducerPurityClearedByExternalTraitRemovalP(void)
   Settle(application);
 
   const LayoutRect leafSlot = SettledSlotOf(leaf);
-  const int        callBase = PurityCounterImplOf(leaf).GetArrangeCallCount();
+  const int        callBase = PolicyCounterImplOf(leaf).GetArrangeCallCount();
 
   const int PASSES = 3;
   for(int pass = 0; pass < PASSES; ++pass)
   {
     leaf.Arrange(leafSlot);
   }
-  DALI_TEST_EQUALS(PurityCounterImplOf(leaf).GetArrangeCallCount(), callBase + PASSES, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(leaf).GetArrangeCallCount(), callBase + PASSES, TEST_LOCATION);
 
   END_TEST;
 }
@@ -1141,7 +909,7 @@ int UtcDaliArrangeCacheSubtreeHitEmitsLayoutFinishedForDescendantsP(void)
   application.GetScene().Add(root);
 
   // A counting container so the pass can be proven to be a hit.
-  View mid = CreatePurityCounterView(true);
+  View mid = CreatePolicyCounterView(true);
   mid.SetRequestedWidth(120.0f);
   mid.SetRequestedHeight(60.0f);
   root.Add(mid);
@@ -1162,7 +930,7 @@ int UtcDaliArrangeCacheSubtreeHitEmitsLayoutFinishedForDescendantsP(void)
   Settle(application);
 
   const int settledEmits = gLayoutFinishedCount;
-  const int midBase      = PurityCounterImplOf(mid).GetArrangeCallCount();
+  const int midBase      = PolicyCounterImplOf(mid).GetArrangeCallCount();
   DALI_TEST_CHECK(settledEmits > 0);
   DALI_TEST_CHECK(midBase > 0);
   DALI_TEST_CHECK(DataOf(mid).IsArrangeCacheValid());
@@ -1171,7 +939,7 @@ int UtcDaliArrangeCacheSubtreeHitEmitsLayoutFinishedForDescendantsP(void)
   Settle(application);
 
   // The mid/grandchild subtree was served from cache...
-  DALI_TEST_EQUALS(PurityCounterImplOf(mid).GetArrangeCallCount(), midBase, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(mid).GetArrangeCallCount(), midBase, TEST_LOCATION);
   DALI_TEST_CHECK(DataOf(mid).IsArrangeCacheValid());
   DALI_TEST_CHECK(DataOf(grandchild).IsArrangeCacheValid());
 
@@ -1280,7 +1048,7 @@ int UtcDaliArrangeCacheSubtreeGateRejectsUnconsumedStandaloneDescendantP(void)
   root.SetRequestedHeight(100.0f);
   application.GetScene().Add(root);
 
-  View mid = CreatePurityCounterView(true);
+  View mid = CreatePolicyCounterView(true);
   mid.SetRequestedWidth(120.0f);
   mid.SetRequestedHeight(60.0f);
   root.Add(mid);
@@ -1294,7 +1062,7 @@ int UtcDaliArrangeCacheSubtreeGateRejectsUnconsumedStandaloneDescendantP(void)
   Settle(application);
 
   const LayoutRect rootSlot = SettledSlotOf(root);
-  const int        midBase  = PurityCounterImplOf(mid).GetArrangeCallCount();
+  const int        midBase  = PolicyCounterImplOf(mid).GetArrangeCallCount();
   DALI_TEST_CHECK(midBase > 0);
 
   // The precondition, stated explicitly: EVERY other term the gate could reject on is
@@ -1309,15 +1077,15 @@ int UtcDaliArrangeCacheSubtreeGateRejectsUnconsumedStandaloneDescendantP(void)
 
   // The gate must refuse, so mid is arranged and ArrangeStandaloneChildren is reached.
   root.Arrange(rootSlot);
-  DALI_TEST_EQUALS(PurityCounterImplOf(mid).GetArrangeCallCount(), midBase + 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(mid).GetArrangeCallCount(), midBase + 1, TEST_LOCATION);
 
   // That pass consumed the slot, so the refusal costs exactly one pass -- and this is
   // also the control that makes the miss above non-vacuous: everything else about this
   // subtree is cacheable.
   root.Arrange(rootSlot);
-  DALI_TEST_EQUALS(PurityCounterImplOf(mid).GetArrangeCallCount(), midBase + 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(mid).GetArrangeCallCount(), midBase + 1, TEST_LOCATION);
   root.Arrange(rootSlot);
-  DALI_TEST_EQUALS(PurityCounterImplOf(mid).GetArrangeCallCount(), midBase + 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(mid).GetArrangeCallCount(), midBase + 1, TEST_LOCATION);
 
   // ...and the correction landed: the standalone child sits at the size its parent's
   // extent gives it.
@@ -1328,24 +1096,24 @@ int UtcDaliArrangeCacheSubtreeGateRejectsUnconsumedStandaloneDescendantP(void)
 }
 
 // ---------------------------------------------------------------------------
-// Phase 5c: the LayoutManager purity declaration.
+// Phase 5c: the LayoutManager execution policy.
 // ---------------------------------------------------------------------------
 
-// THE WIN, counted. A settled container whose producer is a declared-PURE LayoutManager
+// THE WIN, counted. A settled container whose producer uses ARRANGE_IF_CHANGED
+// through its LayoutManager
 // runs NO manager Arrange when a layout pass sweeps past it for an unrelated reason,
 // and the geometry it leaves behind is byte-identical. The same container with an
-// UNDECLARED manager re-runs on every pass, which is what the whole in-library
-// container population did before this increment.
+// ARRANGE_ALWAYS manager re-runs on every pass.
 //
-// Non-vacuity (verified by mutation): dropping the DeclareArrangePurity call from
-// CountingLayoutManager's constructor makes the pure half behave like the impure half
+// Non-vacuity (verified by mutation): changing the SetArrangePolicy call in
+// CountingLayoutManager's constructor makes the IF_CHANGED half behave like the ALWAYS half
 // and the flat-count assertion fails.
-int UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP(void)
+int UtcDaliArrangeCacheIfChangedLayoutManagerContainerSkipsProducerP(void)
 {
   UiTestApplication application;
-  tet_infoline("A declared-PURE LayoutManager is not re-run for a settled container");
+  tet_infoline("An ARRANGE_IF_CHANGED LayoutManager is not re-run for a settled container");
 
-  for(int declarePure = 1; declarePure >= 0; --declarePure)
+  for(int arrangeIfChanged = 1; arrangeIfChanged >= 0; --arrangeIfChanged)
   {
     gManagerArrangeCount = 0;
 
@@ -1357,7 +1125,7 @@ int UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP(void)
     View container = View::New();
     container.SetRequestedWidth(120.0f);
     container.SetRequestedHeight(120.0f);
-    container.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager(declarePure != 0)));
+    container.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager(arrangeIfChanged != 0 ? ArrangePolicy::ARRANGE_IF_CHANGED : ArrangePolicy::ARRANGE_ALWAYS)));
     root.Add(container);
 
     View first = View::New();
@@ -1377,8 +1145,8 @@ int UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP(void)
 
     Settle(application);
 
-    // The declaration reached the derived bit.
-    DALI_TEST_CHECK(DataOf(container).IsArrangeProducerPure() == (declarePure != 0));
+    // The selected policy reached the derived bit.
+    DALI_TEST_CHECK(DataOf(container).ArrangesIfChanged() == (arrangeIfChanged != 0));
 
     const int settledCount = gManagerArrangeCount;
     DALI_TEST_CHECK(settledCount > 0);
@@ -1398,7 +1166,7 @@ int UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP(void)
     Settle(application);
     DALI_TEST_EQUALS(sibling.GetProperty<float>(Actor::Property::POSITION_X), 11.0f, TEST_LOCATION);
 
-    if(declarePure != 0)
+    if(arrangeIfChanged != 0)
     {
       DALI_TEST_EQUALS(gManagerArrangeCount, settledCount, TEST_LOCATION);
     }
@@ -1419,96 +1187,107 @@ int UtcDaliArrangeCachePureLayoutManagerContainerSkipsProducerP(void)
   END_TEST;
 }
 
-// THE third-party inheritance guarantee, for managers. Concrete managers are public,
-// non-final classes with public constructors and no factory, so the declaration cannot
-// be a plain constructor side effect: it is recorded WITH the declaring type and
-// matched against the manager's most-derived type at read time.
-//
-// A subclass that overrides Arrange with an impure body would otherwise be silently
-// skipped in favour of a stale cached rect -- the exact regression that made
-// ViewImpl's declarations live in New() rather than in a constructor.
-//
-// Non-vacuity (verified by mutation): making IsArrangeProducerPure() return the stored
-// flag without the type comparison reports the subclassed manager as pure and the
-// second half of this test fails.
-int UtcDaliArrangeCacheLayoutManagerPurityIsPerExactTypeP(void)
+// Manager policy is stored on the manager instance. Conservative ARRANGE_ALWAYS
+// opt-outs are inherited by subclasses, which may explicitly select another policy.
+int UtcDaliArrangeCacheLayoutManagerPolicyInheritanceP(void)
 {
   UiTestApplication application;
-  tet_infoline("A LayoutManager purity declaration is per exact type and is never inherited");
+  tet_infoline("LayoutManager policy defaults and opt-outs are inherited safely");
 
-  // The declaring type itself is pure.
-  View exact = View::New();
-  exact.AttachLayoutManager(Dali::MakeUnique<StackLayoutManager>(StackOrientation::VERTICAL, 0.0f));
-  DALI_TEST_CHECK(DataOf(exact).IsArrangeProducerPure());
+  View stack = View::New();
+  stack.AttachLayoutManager(Dali::MakeUnique<StackLayoutManager>(StackOrientation::VERTICAL, 0.0f));
+  DALI_TEST_CHECK(DataOf(stack).ArrangesIfChanged());
 
-  // A subclass of it, declaring nothing, is NOT.
-  View subclassed = View::New();
-  subclassed.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new SubclassedStackLayoutManager()));
-  DALI_TEST_CHECK(!DataOf(subclassed).IsArrangeProducerPure());
+  View stackSubclass = View::New();
+  stackSubclass.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new SubclassedStackLayoutManager()));
+  DALI_TEST_CHECK(DataOf(stackSubclass).ArrangesIfChanged());
 
-  // ...and the base's own declaration is untouched by any of this.
-  View exactAgain = View::New();
-  exactAgain.AttachLayoutManager(Dali::MakeUnique<StackLayoutManager>(StackOrientation::HORIZONTAL, 4.0f));
-  DALI_TEST_CHECK(DataOf(exactAgain).IsArrangeProducerPure());
+  View scroll = View::New();
+  scroll.AttachLayoutManager(Dali::MakeUnique<ScrollViewLayoutManager>());
+  DALI_TEST_CHECK(!DataOf(scroll).ArrangesIfChanged());
 
-  // The same statement through the test manager, whose two variants differ in the
-  // declaration and in nothing else.
-  View declared = View::New();
-  declared.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager(true)));
-  DALI_TEST_CHECK(DataOf(declared).IsArrangeProducerPure());
+  View scrollSubclass = View::New();
+  scrollSubclass.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new SubclassedScrollViewLayoutManager()));
+  DALI_TEST_CHECK(!DataOf(scrollSubclass).ArrangesIfChanged());
 
-  View undeclared = View::New();
-  undeclared.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager(false)));
-  DALI_TEST_CHECK(!DataOf(undeclared).IsArrangeProducerPure());
+  View explicitDefault = View::New();
+  explicitDefault.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager()));
+  DALI_TEST_CHECK(DataOf(explicitDefault).ArrangesIfChanged());
+
+  View explicitAlways = View::New();
+  explicitAlways.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager(ArrangePolicy::ARRANGE_ALWAYS)));
+  DALI_TEST_CHECK(!DataOf(explicitAlways).ArrangesIfChanged());
+
+  View  runtimeChange  = View::New();
+  auto  runtimeManager = Dali::UniquePtr<CountingLayoutManager>(new CountingLayoutManager());
+  auto* manager        = runtimeManager.Get();
+  runtimeChange.AttachLayoutManager(std::move(runtimeManager));
+  runtimeChange.SetRequestedWidth(50.0f);
+  runtimeChange.SetRequestedHeight(40.0f);
+  application.GetScene().Add(runtimeChange);
+  Settle(application);
+  DALI_TEST_CHECK(DataOf(runtimeChange).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(runtimeChange).IsArrangeCacheValid());
+
+  manager->SetPolicy(ArrangePolicy::ARRANGE_ALWAYS);
+  DALI_TEST_CHECK(!DataOf(runtimeChange).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(runtimeChange).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(runtimeChange).IsArrangeDirty());
+
+  Settle(application);
+  DALI_TEST_CHECK(DataOf(runtimeChange).IsArrangeCacheValid());
+  manager->SetPolicy(ArrangePolicy::ARRANGE_IF_CHANGED);
+  DALI_TEST_CHECK(DataOf(runtimeChange).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(runtimeChange).IsArrangeCacheValid());
 
   END_TEST;
 }
 
-// The declaration, per in-library manager and per in-library container type. This is
-// the table the increment is really about: four geometry-free managers declare PURE and
-// ScrollView's does not, so a StackLayout / GridLayout / FlexLayout / AbsoluteLayout
+// The in-library manager policy table: four geometry-only managers use the default
+// ARRANGE_IF_CHANGED policy, while ScrollView explicitly selects ARRANGE_ALWAYS. Thus
+// a StackLayout / GridLayout / FlexLayout / AbsoluteLayout
 // container is cacheable and a ScrollView never is.
 //
-// Non-vacuity (verified by mutation): removing the DeclareArrangePurity call from any
+// Non-vacuity (verified by mutation): changing the default policy of any
 // one of the four managers flips that manager's row; adding one to
 // ScrollViewLayoutManager flips the ScrollView row.
-int UtcDaliArrangeCacheInLibraryLayoutManagerPurityP(void)
+int UtcDaliArrangeCacheInLibraryLayoutManagerPolicyP(void)
 {
   UiTestApplication application;
-  tet_infoline("The four geometry-free layout managers declare PURE; ScrollView's does not");
+  tet_infoline("Four geometry-free layout managers use ARRANGE_IF_CHANGED; ScrollView uses ARRANGE_ALWAYS");
 
   // --- the managers, attached to a bare View -----------------------------------
   View stackManaged = View::New();
   stackManaged.AttachLayoutManager(Dali::MakeUnique<StackLayoutManager>(StackOrientation::VERTICAL, 0.0f));
-  DALI_TEST_CHECK(DataOf(stackManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(stackManaged).ArrangesIfChanged());
 
   View absoluteManaged = View::New();
   absoluteManaged.AttachLayoutManager(Dali::MakeUnique<AbsoluteLayoutManager>());
-  DALI_TEST_CHECK(DataOf(absoluteManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(absoluteManaged).ArrangesIfChanged());
 
   Dali::Vector<GridLength> rows;
   Dali::Vector<GridLength> columns;
   View                     gridManaged = View::New();
   gridManaged.AttachLayoutManager(Dali::MakeUnique<GridLayoutManager>(rows, columns, 0.0f, 0.0f));
-  DALI_TEST_CHECK(DataOf(gridManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(gridManaged).ArrangesIfChanged());
 
   View flexManaged = View::New();
   flexManaged.AttachLayoutManager(Dali::MakeUnique<FlexLayoutManager>(
     FlexDirection::ROW, FlexWrap::NO_WRAP, FlexJustify::FLEX_START, FlexAlign::FLEX_START, FlexAlign::FLEX_START));
-  DALI_TEST_CHECK(DataOf(flexManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(flexManaged).ArrangesIfChanged());
 
   // The one exclusion, and the reason 5c is safe: it reads the scrolled child's live
   // actor position (scroll-view-layout-manager.cpp, childBounds.x = child.GetPositionX()).
   View scrollManaged = View::New();
   scrollManaged.AttachLayoutManager(Dali::MakeUnique<ScrollViewLayoutManager>());
-  DALI_TEST_CHECK(!DataOf(scrollManaged).IsArrangeProducerPure());
+  DALI_TEST_CHECK(!DataOf(scrollManaged).ArrangesIfChanged());
 
   // --- and through the container types an application actually writes -----------
-  DALI_TEST_CHECK(DataOf(StackLayout::New()).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(AbsoluteLayout::New()).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(GridLayout::New()).IsArrangeProducerPure());
-  DALI_TEST_CHECK(DataOf(FlexLayout::New()).IsArrangeProducerPure());
-  DALI_TEST_CHECK(!DataOf(ScrollView::New()).IsArrangeProducerPure());
+  DALI_TEST_CHECK(DataOf(StackLayout::New()).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(AbsoluteLayout::New()).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(GridLayout::New()).ArrangesIfChanged());
+  DALI_TEST_CHECK(DataOf(FlexLayout::New()).ArrangesIfChanged());
+  DALI_TEST_CHECK(!DataOf(ScrollView::New()).ArrangesIfChanged());
 
   END_TEST;
 }

@@ -330,17 +330,16 @@ using MeasureCallback = Callback<MeasuredSize(View, float, float)>;
  *
  * @note Signature: LayoutRect(View view, const LayoutRect& bounds)
  *
- * @note A callback installed through the one-argument SetArrangeCallback() is
- *       treated as ArrangePurity::IMPURE and therefore runs on every arrange
- *       pass. Use the two-argument overload with ArrangePurity::PURE only when
- *       the callback is a pure function of its bounds argument, the view's
- *       effective layout direction, its effective scale, and state tracked by
- *       the layout invalidation system.
+ * @note A callback installed through the one-argument SetArrangeCallback() uses
+ *       ArrangePolicy::ARRANGE_IF_CHANGED. Use the two-argument overload with
+ *       ArrangePolicy::ARRANGE_ALWAYS when the callback reads state that is not
+ *       tracked by layout invalidation or performs externally visible work on
+ *       every arrange pass.
  */
 using ArrangeCallback = Callback<LayoutRect(View, const LayoutRect&)>;
 
 /**
- * @brief Whether an arrange producer may be replaced by a cached result.
+ * @brief Controls when an arrange producer executes.
  *
  * The framework caches arrange results. When a view is re-arranged with the same
  * bounds, the same effective layout direction and the same effective scale, and
@@ -348,27 +347,24 @@ using ArrangeCallback = Callback<LayoutRect(View, const LayoutRect&)>;
  * running the view's arrange producer -- its OnArrange() override, or an
  * ArrangeCallback set through SetArrangeCallback() -- at all.
  *
- * That is only sound when the producer is a pure function of those inputs, so
- * the framework never assumes it: the default is IMPURE, and a producer is
- * skipped only after whoever wrote it has declared it PURE.
+ * ARRANGE_IF_CHANGED is the default. A producer must use ARRANGE_ALWAYS when it
+ * reads state outside the layout invalidation system or performs work that must
+ * happen on every arrange pass.
  *
- * @see Ui::ViewImpl::SetArrangePurity()
- * @see Ui::View::SetArrangeCallback(ArrangeCallback, ArrangePurity)
+ * @see Ui::ViewImpl::SetArrangePolicy()
+ * @see Ui::View::SetArrangeCallback(ArrangeCallback, ArrangePolicy)
  */
-enum class ArrangePurity : uint8_t
+enum class ArrangePolicy : uint8_t
 {
   /**
-   * @brief Default. The producer runs on EVERY arrange pass; it is never skipped.
+   * @brief Default. Executes the producer when no reusable unchanged result exists.
    */
-  IMPURE = 0,
+  ARRANGE_IF_CHANGED = 0,
 
   /**
-   * @brief The producer is a pure function of the input bounds, this view's
-   * effective layout direction, its effective scale, and state tracked by the
-   * layout invalidation system. The framework MAY skip it and serve a cached
-   * result.
+   * @brief Executes the producer on every arrange pass that reaches this view.
    */
-  PURE = 1
+  ARRANGE_ALWAYS = 1
 };
 
 /**

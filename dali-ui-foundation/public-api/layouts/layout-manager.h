@@ -66,7 +66,7 @@ public:
    *
    * @note The owning View caches the result and does NOT call this again while the
    * normalised constraint is unchanged and nothing has invalidated the owner's
-   * layout. There is no measure counterpart to IsArrangeProducerPure(): measure
+   * layout. There is no measure counterpart to GetArrangePolicy(): measure
    * caching is unconditional, so this applies to every manager, including one
    * written outside this library. The override must therefore be a pure function of
    * the constraints, the owner's effective scale, the owner's effective layout
@@ -109,27 +109,15 @@ public:
   // ============================================================
 
   /**
-   * @brief Returns whether this manager declared its Arrange() PURE.
+   * @brief Returns this manager's arrange execution policy.
    *
-   * A PURE Arrange is a pure function of the bounds it is handed, the owner's
-   * effective layout direction and effective scale, and layout-tracked state; the
-   * owning View's arrange cache may therefore serve a settled result instead of
-   * calling it again. The default is IMPURE: a manager that declares nothing -- in
-   * particular any manager written outside this library -- is never skipped.
+   * The default is ArrangePolicy::ARRANGE_IF_CHANGED. A subclass can select
+   * ArrangePolicy::ARRANGE_ALWAYS through the protected SetArrangePolicy() method.
    *
-   * The declaration is per EXACT TYPE: a subclass of a manager that declared PURE
-   * reports false, because its Arrange() override is its own and has not been vetted.
-   *
-   * @return True if this manager's Arrange() may be skipped when its inputs are unchanged
+   * @return The active arrange execution policy
    * @note Internal: for use by this library only, and reserved for future change.
-   *       Declared through LayoutManager::Impl::DeclareArrangePurity(), which lives in
-   *       a header this library does not install -- so a manager written outside the
-   *       library cannot declare itself pure and is always re-run. If you need a
-   *       cacheable custom layout, prefer a View subclass with
-   *       ViewImpl::SetArrangePurity(), or View::SetArrangeCallback(callback,
-   *       ArrangePurity::PURE).
    */
-  DALI_INTERNAL bool IsArrangeProducerPure() const;
+  DALI_INTERNAL ArrangePolicy GetArrangePolicy() const;
 
   /**
    * @brief Records the View this manager has been attached to.
@@ -146,6 +134,18 @@ protected:
   class Impl;
 
   /**
+   * @brief Sets when this manager's Arrange() producer must execute.
+   *
+   * The default is ArrangePolicy::ARRANGE_IF_CHANGED. Use
+   * ArrangePolicy::ARRANGE_ALWAYS when Arrange() reads state that is not tracked by
+   * layout invalidation or performs work that must happen on every arrange pass.
+   * The policy is inherited by subclasses and may be changed again by a subclass.
+   *
+   * @param[in] policy The arrange execution policy
+   */
+  void SetArrangePolicy(ArrangePolicy policy);
+
+  /**
    * @brief Invalidates the owning View's MEASURE (and, with it, its arrange).
    *
    * Call this from any setter that changes state this manager's Measure() or
@@ -156,7 +156,7 @@ protected:
    *
    * The in-library managers all do this, which is what makes their state -- a stack
    * orientation, a grid's row definitions, a flex justification -- part of the
-   * layout-tracked envelope their Arrange() is declared pure over.
+   * layout-tracked inputs used by their Arrange() implementations.
    *
    * Safe before attach and after the owner is gone: a null owner makes it a no-op.
    */

@@ -106,20 +106,6 @@ ViewImplPtr ViewImpl::New()
 {
   IntrusivePtr<ViewImpl> viewImpl = new ViewImpl();
 
-  // A plain View is the one case the framework can declare pure ON BEHALF of the
-  // author, soundly: the object constructed HERE has `ViewImpl` as its most-derived
-  // type, so its arrange producer is provably ViewImpl::OnArrange -> ArrangeDefault,
-  // which reads only bounds / padding / margins / requested positions / measured
-  // sizes / effective scale -- all cache KEY terms or invalidation-tracked state --
-  // and arranges the same child set (every non-standalone child) for the same inputs.
-  // That is what makes it skippable for a view WITH children too, where the hit
-  // replays the settled subtree instead of running it. Every subclass
-  // builds its own impl (LabelImpl::New() -> new LabelImpl(), and likewise for
-  // third-party subclasses), so no subclass can inherit this declaration by accident
-  // -- which is what keeps ArrangePurity::IMPURE the effective default for everyone
-  // who has not opted in.
-  viewImpl->SetArrangePurity(ArrangePurity::PURE);
-
   return ViewImplPtr(viewImpl);
 }
 
@@ -611,9 +597,9 @@ void ViewImpl::SetArrangeCallback(ArrangeCallback callback)
   mImpl->SetArrangeCallback(std::move(callback));
 }
 
-void ViewImpl::SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity)
+void ViewImpl::SetArrangeCallback(ArrangeCallback callback, ArrangePolicy policy)
 {
-  mImpl->SetArrangeCallback(std::move(callback), purity);
+  mImpl->SetArrangeCallback(std::move(callback), policy);
 }
 
 void ViewImpl::AttachLayoutManager(Dali::UniquePtr<LayoutManager> manager)
@@ -626,9 +612,9 @@ LayoutManager* ViewImpl::GetLayoutManager() const
   return mImpl->GetLayoutManager();
 }
 
-void ViewImpl::SetArrangePurity(ArrangePurity purity)
+void ViewImpl::SetArrangePolicy(ArrangePolicy policy)
 {
-  mImpl->SetArrangePurity(purity);
+  mImpl->SetArrangePolicy(policy);
 }
 
 void ViewImpl::SetLayoutTransition(LayoutTransition transition)
