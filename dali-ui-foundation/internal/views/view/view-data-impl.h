@@ -139,6 +139,19 @@ public:
   MeasuredSize Measure(float visualWidth, float visualHeight);
   LayoutRect   Arrange(const LayoutRect& bounds);
 
+  /**
+   * @brief Arranges this view as a root driven by LayoutController.
+   *
+   * Kept separate from Arrange() so the arrange cache can distinguish the
+   * framework-owned self pass of a STANDALONE boundary from an application calling
+   * the public View::Arrange() with arbitrary bounds. The two calls share the same
+   * implementation; only the direct-parent cache ownership decision differs.
+   *
+   * @param[in] bounds The bounds derived by LayoutController::ProcessLayoutRoot
+   * @return The final arranged bounds
+   */
+  LayoutRect ArrangeAsLayoutRoot(const LayoutRect& bounds);
+
   const ViewState&                            GetState() const;
   bool                                        IsEffectivelyFocused() const;
   View::LayoutFinishedSignalType&             LayoutFinishedSignal();
@@ -226,6 +239,7 @@ public:
   void                      SetLayoutTransition(LayoutTransition transition);
   LayoutTransition          GetLayoutTransition() const;
   LayoutRect                GetArrangedBounds() const;
+  bool                      HasArrangeResult() const;
   bool                      IsInitialLayoutDone() const;
   uint32_t                  GetChildViewCount() const;
   View                      GetChildViewAt(uint32_t index) const;
@@ -961,6 +975,52 @@ private:
    * an unconsumed standalone child cannot hit.
    */
   void InvalidateAncestorLayoutCachesForMeasureMiss();
+
+  /**
+   * @brief Drops the DIRECT PARENT's arrange cache entry when this view is about to
+   * take an arrange pass that no producer above it owns.
+   *
+   * The arrange-side counterpart of InvalidateAncestorLayoutCachesForMeasureMiss(),
+   * closing the symmetric hole: a completed Arrange() rewrites this view's
+   * mArrangedBounds and mLastArrangeInput unconditionally, and an ancestor's cache
+   * HIT replays descendants FROM those records on the premise that they were written
+   * by that ancestor's own producer chain (see CanReplayArrangeSubtreeFromCache,
+   * which skips the cache-KEY comparison for descendants on exactly that premise).
+   * An out-of-band public Arrange() breaks the premise: the parent's cached entry
+   * would replay the foreign bounds, while a forced miss would re-run the producer
+   * and hand back the parent-derived slot -- a hit/miss divergence that violates the
+   * contract documented on View::Arrange().
+   *
+   * ONE node is enough, unlike the measure walk's chain: the measure hit predicate
+   * is node-local, but the arrange hit gate is RECURSIVE -- every ancestor re-tests
+   * mArrangeCacheValid at every descendant it would elide, so a single cleared
+   * parent refuses every ancestor's hit above it, and the misses that follow
+   * re-publish level by level (self-healing).
+   *
+   * Cache-only, exactly like the measure walk: no dirty bit, no registration, so it
+   * can never schedule (or spin) a layout pass.
+   *
+   * OWNED arranges are excluded, because whatever a producer does inside its own
+   * pass IS that producer's output and a re-run would reproduce it:
+   *  - the direct parent is arrange-in-progress (the normal recursion, every layout
+   *    manager, and any third-party producer arranging its own child);
+   *  - a RecyclerLayoutOwnerScope is open (the RecyclerView/ItemsLayouter cycle,
+   *    whose item geometry the recycler owns under its own invalidation contract);
+   *  - this is the framework-owned layout-root pass of a STANDALONE view:
+   *    ProcessLayoutRoot derives the same requested-position / measured-extent bounds
+   *    as ArrangeStandaloneChild, so the parent's replay premise survives. A public
+   *    Arrange() on that same standalone view is NOT excluded -- arbitrary bounds
+   *    break the premise exactly as they do for a normal child.
+   *
+   * @param[in] frameworkLayoutRootPass True only for ArrangeAsLayoutRoot()
+   */
+  void InvalidateParentArrangeCacheForOutOfBandArrange(bool frameworkLayoutRootPass);
+
+  /**
+   * @brief Shared implementation for public/parent Arrange and LayoutController's
+   * root Arrange entry point.
+   */
+  LayoutRect ArrangeImpl(const LayoutRect& bounds, bool frameworkLayoutRootPass);
 
   /**
    * @brief Declines this view's arrange cache publish for the CURRENT pass because a

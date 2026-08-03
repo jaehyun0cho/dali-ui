@@ -24,24 +24,25 @@
 #include <dali-ui-foundation/integration-api/label-impl.h>
 #include <dali-ui-foundation/integration-api/reserved-trait-id.h>
 #include <dali-ui-foundation/integration-api/view-integ.h>
+#include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
-#include <dali-ui-foundation/public-api/layouts/absolute-layout.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout-manager.h>
-#include <dali-ui-foundation/public-api/layouts/flex-layout.h>
+#include <dali-ui-foundation/public-api/layouts/absolute-layout.h>
 #include <dali-ui-foundation/public-api/layouts/flex-layout-manager.h>
-#include <dali-ui-foundation/public-api/layouts/grid-layout.h>
+#include <dali-ui-foundation/public-api/layouts/flex-layout.h>
 #include <dali-ui-foundation/public-api/layouts/grid-layout-manager.h>
+#include <dali-ui-foundation/public-api/layouts/grid-layout.h>
 #include <dali-ui-foundation/public-api/layouts/scroll-view-layout-manager.h>
-#include <dali-ui-foundation/public-api/layouts/stack-layout.h>
 #include <dali-ui-foundation/public-api/layouts/stack-layout-manager.h>
-#include <dali-ui-foundation/public-api/views/scroll/scroll-view.h>
+#include <dali-ui-foundation/public-api/layouts/stack-layout.h>
 #include <dali-ui-foundation/public-api/video/video-source.h>
 #include <dali-ui-foundation/public-api/video/video-view.h>
 #include <dali-ui-foundation/public-api/views/canvas/canvas-view.h>
 #include <dali-ui-foundation/public-api/views/image/animated-image-view.h>
 #include <dali-ui-foundation/public-api/views/image/image-view.h>
 #include <dali-ui-foundation/public-api/views/image/lottie-animation-view.h>
+#include <dali-ui-foundation/public-api/views/scroll/scroll-view.h>
 #include <dali-ui-foundation/public-api/views/text-controls/input-editor.h>
 #include <dali-ui-foundation/public-api/views/text-controls/input-field.h>
 #include <dali-ui-foundation/public-api/views/text-controls/label.h>
@@ -51,8 +52,8 @@
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
 
-namespace IntegrationView   = Dali::Ui::Integration::View;
-namespace ReservedTraitId   = Dali::Ui::Integration::ReservedTraitId;
+namespace IntegrationView = Dali::Ui::Integration::View;
+namespace ReservedTraitId = Dali::Ui::Integration::ReservedTraitId;
 
 using namespace Dali;
 using namespace Dali::Ui;
@@ -566,14 +567,14 @@ int UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP(void)
   // UtcDaliArrangeCacheHitThirdPartySubclassDoesNotInheritPurityP). A dropped
   // declaration costs performance, never correctness, which makes it invisible in
   // behaviour -- these assertions are what make that loss visible instead.
-  View              plain    = View::New();
-  Label             label    = Label::New();
-  ImageView         image    = ImageView::New();
-  AnimatedImageView animated = AnimatedImageView::New();
-  LottieAnimationView lottie = LottieAnimationView::New();
-  CanvasView        canvas   = CanvasView::New(Vector2(100.0f, 100.0f));
-  InputField        field    = InputField::New();
-  InputEditor       editor   = InputEditor::New();
+  View                plain    = View::New();
+  Label               label    = Label::New();
+  ImageView           image    = ImageView::New();
+  AnimatedImageView   animated = AnimatedImageView::New();
+  LottieAnimationView lottie   = LottieAnimationView::New();
+  CanvasView          canvas   = CanvasView::New(Vector2(100.0f, 100.0f));
+  InputField          field    = InputField::New();
+  InputEditor         editor   = InputEditor::New();
 
   DALI_TEST_CHECK(DataOf(plain).IsArrangeProducerPure());
   DALI_TEST_CHECK(DataOf(label).IsArrangeProducerPure());
@@ -1508,6 +1509,176 @@ int UtcDaliArrangeCacheInLibraryLayoutManagerPurityP(void)
   DALI_TEST_CHECK(DataOf(GridLayout::New()).IsArrangeProducerPure());
   DALI_TEST_CHECK(DataOf(FlexLayout::New()).IsArrangeProducerPure());
   DALI_TEST_CHECK(!DataOf(ScrollView::New()).IsArrangeProducerPure());
+
+  END_TEST;
+}
+
+// An out-of-band public Arrange() on a child retracts the DIRECT parent's entry
+// only -- cache-only, one node deep. Ancestors above keep their entries and are
+// still forced to miss through the recursive hit gate, which re-tests every
+// descendant's cache validity; the miss chain then re-publishes level by level.
+int UtcDaliArrangeCacheOutOfBandChildArrangeRetractsParentEntryP(void)
+{
+  UiTestApplication application;
+  tet_infoline("An out-of-band child.Arrange() retracts exactly the parent's entry; the gate refuses ancestors");
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(120.0f);
+  root.Add(parent);
+
+  View child = View::New();
+  child.SetRequestedX(20.0f);
+  child.SetRequestedWidth(50.0f);
+  child.SetRequestedHeight(10.0f);
+  parent.Add(child);
+
+  Settle(application);
+
+  const LayoutRect rootSlot = LayoutRect(root.GetProperty<float>(Actor::Property::POSITION_X),
+                                         root.GetProperty<float>(Actor::Property::POSITION_Y),
+                                         root.GetProperty<float>(Actor::Property::SIZE_WIDTH),
+                                         root.GetProperty<float>(Actor::Property::SIZE_HEIGHT));
+  DALI_TEST_CHECK(DataOf(root).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+
+  // The out-of-band write. The child's own pass publishes ITS entry; the direct
+  // parent's entry is retracted; the grandparent's survives (one node deep).
+  child.Arrange(LayoutRect(77.0f, 0.0f, 30.0f, 10.0f));
+  DALI_TEST_CHECK(DataOf(child).IsArrangeCacheValid());
+  DALI_TEST_CHECK(!DataOf(parent).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(root).IsArrangeCacheValid());
+
+  // The grandparent cannot serve its surviving entry over the hole: its gate
+  // re-tests the parent's validity, refuses, and the miss chain corrects the
+  // child back to the parent-derived slot and re-publishes every level.
+  root.Arrange(rootSlot);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::SIZE_WIDTH), 50.0f, TEST_LOCATION);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(root).IsArrangeCacheValid());
+
+  // Settled again: the next same-bounds arrange is a whole-tree hit and serves
+  // the corrected geometry.
+  root.Arrange(rootSlot);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// ArrangeOwnedMeasureScope owns only the nested Measure calls it surrounds. Its
+// presence must not classify an unrelated public Arrange as owned; otherwise the
+// target's direct parent retains an entry that replays foreign child bounds.
+int UtcDaliArrangeCacheMeasureOwnerScopeDoesNotOwnArrangeP(void)
+{
+  UiTestApplication application;
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(80.0f);
+  application.GetScene().Add(parent);
+
+  View child = View::New();
+  child.SetRequestedX(20.0f);
+  child.SetRequestedWidth(40.0f);
+  child.SetRequestedHeight(10.0f);
+  parent.Add(child);
+
+  View unrelatedMeasureOwner = View::New();
+
+  Settle(application);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+
+  {
+    Dali::Ui::Internal::LayoutDependency::ArrangeOwnedMeasureScope measureScope(&GetImpl(unrelatedMeasureOwner));
+    child.Arrange(LayoutRect(77.0f, 0.0f, 30.0f, 10.0f));
+  }
+
+  DALI_TEST_CHECK(!DataOf(parent).IsArrangeCacheValid());
+
+  END_TEST;
+}
+
+// A public Arrange on a STANDALONE child is not the framework-owned self pass. The
+// parent still owns its requested-position / measured-extent slot on every miss, so
+// arbitrary public bounds retract the parent's cache exactly as for a normal child.
+int UtcDaliArrangeCacheOutOfBandStandaloneArrangeRetractsParentEntryP(void)
+{
+  UiTestApplication application;
+
+  View root = View::New();
+  root.SetRequestedWidth(300.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(80.0f);
+  root.Add(parent);
+
+  View standalone = View::New();
+  standalone.SetLayoutMode(LayoutMode::STANDALONE);
+  standalone.SetRequestedX(20.0f);
+  standalone.SetRequestedWidth(40.0f);
+  standalone.SetRequestedHeight(10.0f);
+  parent.Add(standalone);
+
+  Settle(application);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(standalone).IsArrangeCacheValid());
+
+  standalone.Arrange(LayoutRect(77.0f, 0.0f, 30.0f, 10.0f));
+  DALI_TEST_CHECK(DataOf(standalone).IsArrangeCacheValid());
+  DALI_TEST_CHECK(!DataOf(parent).IsArrangeCacheValid());
+
+  END_TEST;
+}
+
+// A STANDALONE view's self-pass is out-of-band by design -- ProcessLayoutRoot
+// drives it with no parent pass on the stack -- and must NOT retract the
+// parent's entry: the parent-driven derivation converges on the same bounds, so
+// the replay premise survives, and retracting would cost the parent a miss for
+// every standalone self-layout.
+int UtcDaliArrangeCacheStandaloneSelfPassKeepsParentEntryP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A standalone child's self-pass leaves the parent's arrange entry standing");
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(120.0f);
+  root.Add(parent);
+
+  View standalone = View::New();
+  standalone.SetLayoutMode(LayoutMode::STANDALONE);
+  standalone.SetRequestedWidth(30.0f);
+  standalone.SetRequestedHeight(30.0f);
+  parent.Add(standalone);
+
+  Settle(application);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+
+  // Re-layout the standalone view through its own boundary: the invalidation
+  // stops at the standalone view, which self-registers, and the next pass runs
+  // it as its own layout root -- Measure and Arrange both out-of-band relative
+  // to the parent.
+  standalone.SetRequestedWidth(40.0f);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+  Settle(application);
+
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 40.0f, TEST_LOCATION);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
 
   END_TEST;
 }
