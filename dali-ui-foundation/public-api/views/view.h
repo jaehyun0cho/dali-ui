@@ -175,8 +175,8 @@ public: // Measure / Arrange API
    * normalised constraint and nothing has invalidated its layout, the cached result is
    * served and the producer is NOT called.
    *
-   * Unlike the arrange side, this is not opt-in: there is no measure purity
-   * declaration, so measure caching applies to every producer including one written
+   * Unlike arrange, measure has no ARRANGE_ALWAYS opt-out: measure caching
+   * applies to every producer including one written
    * outside this library. A measure producer is REQUIRED to be a pure function of its
    * constraints, the view's effective scale, the view's own layout-tracked state, the
    * effective layout direction and its children's measured sizes. A producer that
@@ -208,23 +208,17 @@ public: // Measure / Arrange API
    * subscribed to LayoutFinishedSignal() is still notified. Serving the cache is an
    * optimisation of the WORK, never of the RESULT.
    *
-   * The producer is only skipped when it has been declared pure -- see
-   * ViewImpl::SetArrangePurity() and the two-argument SetArrangeCallback(). A
-   * LayoutManager makes the same declaration about its own Arrange(), per exact
-   * manager type; the in-library layout managers that read no actor geometry declare
-   * it, so StackLayout / GridLayout / FlexLayout / AbsoluteLayout containers are
-   * cacheable, while ScrollView's manager does not and its content is re-placed on
-   * every pass.
-   * Producers that have not been declared pure, which is the DEFAULT, run on every
-   * arrange pass. A producer that reads ancestor or world geometry, or pushes state
-   * to a surface outside the actor tree, must never be declared pure (VideoView and
-   * WebView are the first-party examples). For a view with children the declaration
-   * is read at every level: a single undeclared producer anywhere in the subtree
-   * makes the whole subtree re-run.
+   * ArrangePolicy::ARRANGE_IF_CHANGED is the default for OnArrange(),
+   * one-argument ArrangeCallback registration, and LayoutManager::Arrange(). Use
+   * ArrangePolicy::ARRANGE_ALWAYS when a producer reads ancestor or world geometry,
+   * depends on mutable state that does not invalidate arrange, or performs work that
+   * must happen on every arrange pass. VideoView and WebView are first-party examples.
+   * For a view with children, an ARRANGE_ALWAYS producer anywhere in the replayed
+   * subtree makes that subtree re-run.
    *
-   * @note A pure producer must arrange the SAME set of children for the same inputs.
-   * Conditionally arranging a child is a function of state outside the declared
-   * envelope, so such a producer must not be declared pure.
+   * @note An ARRANGE_IF_CHANGED producer must arrange the same set of children for
+   * the same tracked inputs. If that set depends on untracked state, use
+   * ARRANGE_ALWAYS or invalidate arrange whenever the state changes.
    *
    * @param[in] bounds The bounds to arrange the view in
    * @return The final arranged bounds (parent-local, pre-RTL logical)
@@ -261,7 +255,7 @@ public: // Measure / Arrange API
    * documented on Measure() applies to it unchanged: it must be a pure function of
    * its constraints, the view's effective scale, the view's own layout-tracked state,
    * the effective layout direction and its children's measured sizes, and it is NOT
-   * called on a measure-cache hit. There is no purity opt-in to decline this with --
+   * called on a measure-cache hit. There is no ARRANGE_ALWAYS-style opt-out --
    * caching is always on -- so a callback that depends on anything else must call
    * View::InvalidateMeasure() itself when that state changes.
    *
@@ -293,15 +287,12 @@ public: // Measure / Arrange API
    * resolves to RIGHT_TO_LEFT, so callbacks must not apply RTL mirroring
    * themselves.
    *
-   * @note The callback replaces OnArrange() as this view's arrange producer, so the
-   * view's declared OnArrange purity no longer applies. A callback installed through
-   * this one-argument overload is treated as IMPURE and is therefore run on every
-   * arrange pass. Use the two-argument overload with ArrangePurity::PURE only when
-   * the callback is a pure function of its bounds argument, the view's effective
-   * layout direction, its effective scale, and state tracked by the layout
-   * invalidation system -- in particular, it must not read ancestor or world
-   * geometry (SCREEN_POSITION, WORLD_POSITION, ...) and must not push state to a
-   * surface outside the actor tree.
+   * @note The callback replaces OnArrange() as this view's arrange producer. This
+   * one-argument overload uses ArrangePolicy::ARRANGE_IF_CHANGED, so the framework
+   * may reuse an unchanged result without invoking the callback. Use the two-argument
+   * overload with ArrangePolicy::ARRANGE_ALWAYS when the callback reads state that is
+   * not tracked by layout invalidation or performs externally visible work on every
+   * arrange pass.
    *
    * @param[in] callback The arrange callback (ownership transferred)
    *
@@ -319,32 +310,25 @@ public: // Measure / Arrange API
   void SetArrangeCallback(ArrangeCallback callback);
 
   /**
-   * @brief Sets a custom arrange callback for this View, declaring its purity.
+   * @brief Sets a custom arrange callback and its execution policy.
    *
-   * Identical to the one-argument SetArrangeCallback() except that the caller
-   * states whether the callback may be replaced by a cached arrange result.
+   * The default policy used by the one-argument overload is
+   * ArrangePolicy::ARRANGE_IF_CHANGED. Pass ArrangePolicy::ARRANGE_ALWAYS when the
+   * callback reads ancestor or world geometry, depends on mutable state that is not
+   * accompanied by InvalidateArrange(), or pushes state to a surface outside the
+   * actor tree.
    *
-   * Pass ArrangePurity::PURE only when the callback is a pure function of its
-   * bounds argument, the view's effective layout direction, its effective scale,
-   * and state tracked by the layout invalidation system. Do NOT pass it when the
-   * callback (or anything it calls):
-   *  - reads ancestor or world geometry (SCREEN_POSITION, WORLD_POSITION,
-   *    WORLD_SCALE, WORLD_MATRIX, window or scene coordinates) -- those change
-   *    without invalidating this view's layout;
-   *  - pushes state to a surface outside the actor tree (a native video player, a
-   *    web engine), which a skipped call would strand at a stale offset.
-   *
-   * Installing a callback always REPLACES any previously declared purity, so the
-   * one-argument overload is exactly this one with ArrangePurity::IMPURE.
+   * Installing a callback replaces the policy of the previously installed callback.
    *
    * @param[in] callback The arrange callback (ownership transferred)
-   * @param[in] purity   Whether the callback may be served from the arrange cache
+   * @param[in] policy   When the callback producer must execute
    *
    * @code
-   * view.SetArrangeCallback(ArrangeCallback::New(&MyArrange), ArrangePurity::PURE);
+   * view.SetArrangeCallback(ArrangeCallback::New(&MyArrange),
+   *                         ArrangePolicy::ARRANGE_ALWAYS);
    * @endcode
    */
-  void SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity);
+  void SetArrangeCallback(ArrangeCallback callback, ArrangePolicy policy);
 
   /**
    * @brief Attaches a LayoutTransition to this view.

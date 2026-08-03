@@ -317,7 +317,7 @@ int UtcDaliTextButtonStyleDefaultKeyP(void)
 // ---------------------------------------------------------------------------
 // A settled TextButton serves its whole subtree from the arrange cache.
 //
-// TextButtonImpl::New declares ArrangePurity::PURE, so re-arranging a settled TextButton
+// TextButton uses the default ArrangePolicy::ARRANGE_IF_CHANGED, so re-arranging a settled TextButton
 // into the SAME slot elides its producer and replays the cached subtree instead
 // (ViewDataImpl::ReplayArrangeSubtreeFromCache): each node is reconciled against its OWN
 // cached bounds rather than against bounds the producer recomputes.
@@ -330,10 +330,9 @@ int UtcDaliTextButtonStyleDefaultKeyP(void)
 // entry. A MISS would instead re-run TextButtonImpl::OnArrange, which hands the label the
 // content slot it computes and snaps it back.
 //
-// Non-vacuity (verified by mutation): deleting the
-// `impl->SetArrangePurity(ArrangePurity::PURE);` line from TextButtonImpl::New leaves the
-// producer IMPURE (the framework default), the second Arrange MISSES, and the label is
-// pulled back to the padding start -- the final assertion fails.
+// Non-vacuity (verified by mutation): selecting ARRANGE_ALWAYS in the implementation
+// constructor makes the second Arrange miss and pulls the label back to the
+// padding start -- the final assertion fails.
 int UtcDaliTextButtonSettledArrangeIsServedFromCacheP(void)
 {
   UiTestApplication application(Components::UiConfig::New());

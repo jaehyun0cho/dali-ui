@@ -563,7 +563,7 @@ int UtcDaliCheckBoxArrangeMirrorsChildrenExactlyOnceUnderRtlP(void)
 // ---------------------------------------------------------------------------
 // A settled CheckBox serves its whole subtree from the arrange cache.
 //
-// CheckBoxImpl::New declares ArrangePurity::PURE, so re-arranging a settled CheckBox
+// CheckBox uses the default ArrangePolicy::ARRANGE_IF_CHANGED, so re-arranging a settled CheckBox
 // into the SAME slot elides its producer and replays the cached subtree instead
 // (ViewDataImpl::ReplayArrangeSubtreeFromCache): each node is reconciled against its
 // OWN cached bounds rather than against bounds the producer recomputes.
@@ -576,10 +576,9 @@ int UtcDaliCheckBoxArrangeMirrorsChildrenExactlyOnceUnderRtlP(void)
 // entry. A MISS would instead re-run CheckBoxImpl::OnArrange, which hands the label the
 // slot it computes and snaps it back.
 //
-// Non-vacuity (verified by mutation): deleting the
-// `impl->SetArrangePurity(ArrangePurity::PURE);` line from CheckBoxImpl::New leaves the
-// producer IMPURE (the framework default), the second Arrange MISSES, and the label is
-// pulled back to FIXTURE_LOGICAL_LABEL_X -- the final assertion fails.
+// Non-vacuity (verified by mutation): selecting ARRANGE_ALWAYS in the implementation
+// constructor makes the second Arrange miss and pulls the label back to
+// FIXTURE_LOGICAL_LABEL_X -- the final assertion fails.
 int UtcDaliCheckBoxSettledArrangeIsServedFromCacheP(void)
 {
   UiTestApplication application(Components::UiConfig::New());

@@ -48,14 +48,11 @@ public:
   // and of the children's layout-tracked state -- no actor geometry is read, and no
   // state is kept on the manager. That is what a layout manager should aim for.
   //
-  // Note what it does and does not buy. The MEASURE cache applies unconditionally, so
-  // Measure() below is already skipped whenever the owner is re-measured with an
-  // unchanged constraint; being a pure function of its inputs is a REQUIREMENT, not an
-  // option. The ARRANGE cache is opt-in and its declaration is library-internal, so a
-  // manager defined outside the library -- this one -- is always treated as impure and
-  // its Arrange() runs on every pass. If you want a cacheable custom layout, express it
-  // as a View subclass that declares ViewImpl::SetArrangePurity(ArrangePurity::PURE)
-  // from its own New(), or as View::SetArrangeCallback(callback, ArrangePurity::PURE).
+  // The MEASURE cache applies unconditionally, so Measure() is skipped for an
+  // unchanged constraint and must always satisfy that contract. ARRANGE_IF_CHANGED is
+  // also the default for a custom LayoutManager, so Arrange() may be skipped when its
+  // tracked inputs are unchanged. Select ARRANGE_ALWAYS in the constructor if Arrange()
+  // reads untracked state or must perform externally visible work on every pass.
   //
   // If this manager ever grows state of its own -- a spacing, a step angle -- its
   // setter must call InvalidateOwnerMeasure(), because no cache key can see it. See

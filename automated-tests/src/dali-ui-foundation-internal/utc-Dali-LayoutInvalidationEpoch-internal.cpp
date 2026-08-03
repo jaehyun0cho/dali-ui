@@ -258,10 +258,9 @@ int UtcDaliLayoutInvalidationNotCoalescedDuringLayoutPassP(void)
   gStagedLeaf = leaf;
   gStagedRuns = 0;
 
-  // An ArrangeCallback replaces the default child arrangement, so the staged sequence
-  // below owns exactly when mid runs its pass. Installed through the one-argument
-  // overload, so it is IMPURE and root never serves a cache hit.
-  root.SetArrangeCallback(ArrangeCallback::New(&StagedRootArrange));
+  // This staged sequence needs the producer on every pass, so it explicitly opts
+  // out of unchanged-result reuse.
+  root.SetArrangeCallback(ArrangeCallback::New(&StagedRootArrange), ArrangePolicy::ARRANGE_ALWAYS);
 
   Settle(application);
 
@@ -418,7 +417,7 @@ int UtcDaliLayoutManagerSetterInvalidatesOwnerStackP(void)
   DALI_TEST_CHECK(DataOf(owner).IsMeasureCacheValid());
 
   // Reaching the manager directly used to leave the change unscheduled: nothing
-  // retracted the owner's cached result, and with the manager declared PURE the
+  // retracted the owner's cached result, and with the manager declared ARRANGE_IF_CHANGED the
   // arrange cache would have kept serving the pre-change placement indefinitely.
   manager->SetSpacing(20.0f);
   DALI_TEST_CHECK(!DataOf(owner).IsMeasureCacheValid());

@@ -124,20 +124,6 @@ LottieAnimationViewImplPtr LottieAnimationViewImpl::New()
 {
   LottieAnimationViewImplPtr impl(new LottieAnimationViewImpl());
 
-  // PURE producer: OnArrange delegates to ViewImpl::OnArrange (ArrangeDefault, itself
-  // a pure function of the cache key -- see ViewImpl::New()) and then runs
-  // ApplyLayout(Vector2(bounds.width, bounds.height)) ->
-  // ApplyFittingMode(size, GetPadding(), GetEffectiveScale()). Every input is a cache
-  // key term or invalidation-tracked state; no ancestor or world geometry is read on
-  // this path.
-  //
-  // Declared HERE and not in the constructor, deliberately: the object built here has
-  // LottieAnimationViewImpl as its most-derived type, so the producer this declares is
-  // provably LottieAnimationViewImpl::OnArrange. A subclass runs its OWN New() and
-  // never this one, so it cannot inherit the declaration and stays IMPURE by default
-  // -- see ViewImpl::New().
-  impl->SetArrangePurity(ArrangePurity::PURE);
-
   return impl;
 }
 

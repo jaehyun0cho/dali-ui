@@ -175,23 +175,6 @@ public:
 StackLayoutManager::StackLayoutManager(StackOrientation orientation, float spacing)
 : LayoutManager(new Impl(orientation, spacing))
 {
-  // PURE ARRANGE. Arrange() below derives every child slot from the bounds it is
-  // handed, the owner's effective scale, and layout-tracked state only -- padding,
-  // margins, requested sizes, measured sizes, StackLayoutParams weight/alignment, and
-  // this manager's own orientation/spacing. It reads no actor geometry (no
-  // GetPositionX/Y, no current size, no world or screen position), so re-running it on
-  // unchanged inputs cannot produce a different answer.
-  //
-  // Declared for the EXACT type: DeclareArrangePurity records StackLayoutManager and
-  // IsArrangeProducerPure() compares it against the manager's most-derived type, so a
-  // third-party subclass that overrides Arrange() inherits nothing and stays IMPURE.
-  //
-  // This manager's own orientation/spacing count as layout-tracked because the
-  // supported way to change them is StackLayout::SetOrientation/SetSpacing, which pairs
-  // the write with an InvalidateMeasure on the owning view (stack-layout-impl.cpp).
-  // Mutating an attached manager directly, without invalidating its owner, was already
-  // unspecified -- nothing schedules a pass for it -- and stays so.
-  GetImplAs<Impl>()->DeclareArrangePurity(ArrangePurity::PURE, typeid(StackLayoutManager));
 }
 
 StackLayoutManager::~StackLayoutManager()
@@ -211,8 +194,8 @@ void StackLayoutManager::SetOrientation(StackOrientation orientation)
   // key nor the arrange cache key can see it, so the owner has to be told. Reaching
   // this manager directly (through the protected View::GetLayoutManager()) used to
   // leave the change unscheduled; now it invalidates exactly as StackLayout's own
-  // setter does, which is also what keeps this manager's PURE arrange declaration
-  // honest -- the orientation is layout-tracked precisely because of this call.
+  // setter does. This also keeps ARRANGE_IF_CHANGED valid: the orientation is
+  // layout-tracked precisely because of this call.
   InvalidateOwnerMeasure();
 }
 

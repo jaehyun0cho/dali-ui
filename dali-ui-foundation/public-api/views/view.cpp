@@ -113,9 +113,9 @@ void View::SetArrangeCallback(ArrangeCallback callback)
   GetImpl(*this).SetArrangeCallback(std::move(callback));
 }
 
-void View::SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity)
+void View::SetArrangeCallback(ArrangeCallback callback, ArrangePolicy policy)
 {
-  GetImpl(*this).SetArrangeCallback(std::move(callback), purity);
+  GetImpl(*this).SetArrangeCallback(std::move(callback), policy);
 }
 
 void View::SetLayoutTransition(LayoutTransition transition)

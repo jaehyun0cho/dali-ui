@@ -43,8 +43,9 @@ class ScrollViewLayoutManager::Impl : public LayoutManager::Impl
 ScrollViewLayoutManager::ScrollViewLayoutManager()
 : LayoutManager(new Impl())
 {
-  // IMPURE PRODUCER -- deliberately does NOT call DeclareArrangePurity, and IMPURE is
-  // the default so the omission is the whole declaration.
+  SetArrangePolicy(ArrangePolicy::ARRANGE_ALWAYS);
+
+  // This producer must execute on every arrange pass.
   //
   // Arrange() below takes the scrolled child's CURRENT ACTOR POSITION as that child's
   // arrange input (childBounds.x = child.GetPositionX() * s, and the same for y). That
@@ -53,7 +54,7 @@ ScrollViewLayoutManager::ScrollViewLayoutManager()
   // (ScrollViewImpl::ApplyScrollPosition), which writes the actor property WITHOUT
   // invalidating layout, and this manager reads it back on the next pass.
   //
-  // Declaring PURE here would let a settled ScrollView serve its children from the
+  // ARRANGE_IF_CHANGED would let a settled ScrollView serve its children from the
   // arrange cache and re-apply the bounds published BEFORE the scroll, so the content
   // would snap back and scrolling would visibly freeze.
   // UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassP pins this.

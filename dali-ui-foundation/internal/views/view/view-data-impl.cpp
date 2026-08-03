@@ -939,15 +939,12 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   mArrangePassPoisoned(false),
   mArrangeCacheBlockedDuringPass(false),
   mArrangeResultAvailable(false),
-  // Default IMPURE, all three. The arrange cache-HIT serves a stored rect INSTEAD of
-  // running the producer, which is result-identical only if the producer is a pure
-  // function of the cache key -- so the framework never assumes it. A producer is
-  // skipped only after whoever wrote it declared it pure (ViewImpl::SetArrangePurity
-  // for OnArrange, the two-argument SetArrangeCallback for a callback). An undeclared
-  // third-party producer therefore cannot desync: it simply always misses.
-  mArrangeOverridePure(false),
-  mArrangeCallbackPure(false),
-  mArrangeProducerPure(false),
+  // ARRANGE_IF_CHANGED is the default for OnArrange, callbacks and managers.
+  // These bits record only the ARRANGE_ALWAYS opt-out; the active producer's bit is
+  // derived whenever producer selection or policy changes.
+  mArrangeOverrideAlways(false),
+  mArrangeCallbackAlways(false),
+  mArrangeProducerAlways(false),
   mLogicalContextValid(false),
   mEffectiveScaleActorSynced(false),
   mLogicalContextPoisonedDuringPass(false),
@@ -3148,39 +3145,34 @@ void ViewDataImpl::SetMeasureCallback(MeasureCallback callback)
 
 void ViewDataImpl::SetArrangeCallback(ArrangeCallback callback)
 {
-  // Specified as exactly the two-argument form with IMPURE: installing a callback
-  // always CLEARS any previously declared callback purity, so an author who reaches
-  // for the short overload -- or who replaces a pure callback without thinking about
-  // it -- gets the safe answer.
-  SetArrangeCallback(std::move(callback), ArrangePurity::IMPURE);
+  // The one-argument API uses the framework default policy.
+  SetArrangeCallback(std::move(callback), ArrangePolicy::ARRANGE_IF_CHANGED);
 }
 
-void ViewDataImpl::SetArrangeCallback(ArrangeCallback callback, ArrangePurity purity)
+void ViewDataImpl::SetArrangeCallback(ArrangeCallback callback, ArrangePolicy policy)
 {
   EnsureLayoutCallbacksObject(*this)->SetArrangeCallback(std::move(callback));
 
-  mArrangeCallbackPure = (purity == ArrangePurity::PURE);
-  RefreshArrangeProducerPurity();
+  mArrangeCallbackAlways = (policy == ArrangePolicy::ARRANGE_ALWAYS);
+  RefreshArrangeProducerPolicy();
 
-  // Pairs the purity change with an invalidation, so a view that has already
-  // published a cache entry cannot be served from it under the new declaration.
+  // Pair the policy change with invalidation so a view that has already
+  // published a cache entry cannot be served from it under the new policy.
   InvalidateArrange();
 }
 
-void ViewDataImpl::SetArrangePurity(ArrangePurity purity)
+void ViewDataImpl::SetArrangePolicy(ArrangePolicy policy)
 {
-  mArrangeOverridePure = (purity == ArrangePurity::PURE);
+  mArrangeOverrideAlways = (policy == ArrangePolicy::ARRANGE_ALWAYS);
 
   // Safe with no handle: both lookups it performs are plain trait-table reads
-  // (ViewDataImpl::GetTrait walks mTraits), which is what lets the declaration be
-  // made before the CustomActor handle exists -- see below.
-  RefreshArrangeProducerPurity();
+  // (ViewDataImpl::GetTrait walks mTraits), so a derived implementation may select
+  // its policy from its constructor.
+  RefreshArrangeProducerPolicy();
 
-  // Invalidate ONLY when there is a published entry that the new declaration could
-  // make unsafe to serve. This guard is not an optimisation, it is what makes the
-  // documented "declare from your New() factory" usage legal at all: every such call
-  // site (ViewImpl::New, LabelImpl::New, ...) runs between `new XImpl()` and the
-  // handle that adopts it, so the CustomActor handle does not exist YET.
+  // Invalidate only when there is a published entry that the new policy could make
+  // unsafe to serve. Before the CustomActor handle exists, InvalidateArrange() cannot
+  // walk to a layout root; at that point mArrangeCacheValid is necessarily false.
   // InvalidateArrange() walks to the layout root, and the FIRST thing that walk does
   // on a handle-less view is GetParentLayout() -> mViewImpl.Self().GetParent(), where
   // Self() hands back an empty Actor and dali-core's GetImplementation(Actor&) aborts
@@ -3190,7 +3182,7 @@ void ViewDataImpl::SetArrangePurity(ArrangePurity purity)
   //
   // Skipping it there is sound, not merely convenient: mArrangeCacheValid is false
   // until a pass publishes, so at construction there is provably nothing to serve.
-  // A later re-declaration on a settled view still invalidates, which is the case
+  // A later policy change on a settled view still invalidates, which is the case
   // the guard exists to keep.
   if(mArrangeCacheValid)
   {
@@ -3198,7 +3190,24 @@ void ViewDataImpl::SetArrangePurity(ArrangePurity purity)
   }
 }
 
-void ViewDataImpl::RefreshArrangeProducerPurity()
+void ViewDataImpl::OnLayoutManagerArrangePolicyChanged()
+{
+  // The manager owns the policy, while the hot cache predicate keeps a derived bit
+  // on its View. Keep those two pieces of state synchronized for policy changes made
+  // after the manager has been attached.
+  RefreshArrangeProducerPolicy();
+
+  // Gated exactly as in SetArrangePolicy(), and for the same two reasons: with no
+  // published entry there is provably nothing the new policy could make unsafe to
+  // serve, and a manager attached before the CustomActor handle exists must be able
+  // to change its policy without InvalidateArrange() walking off an empty Self().
+  if(mArrangeCacheValid)
+  {
+    InvalidateArrange();
+  }
+}
+
+void ViewDataImpl::RefreshArrangeProducerPolicy()
 {
   // Mirrors the producer dispatch order in Arrange(): callback > LayoutManager >
   // OnArrange. The trait lookups below (GetArrangeCallback / GetLayoutManager) are
@@ -3206,31 +3215,17 @@ void ViewDataImpl::RefreshArrangeProducerPurity()
   // per-pass hit predicate.
   if(GetArrangeCallback() != nullptr)
   {
-    mArrangeProducerPure = mArrangeCallbackPure;
+    mArrangeProducerAlways = mArrangeCallbackAlways;
   }
   else if(LayoutManager* manager = mViewImpl.GetLayoutManager())
   {
-    // The manager IS the producer here, so the declaration that matters is its own,
-    // not this view's. LayoutManager's virtual API is ABI-frozen, so the declaration
-    // is a non-virtual reader over LayoutManager::Impl storage, made per EXACT manager
-    // type (see LayoutManager::Impl::DeclareArrangePurity): the four geometry-free
-    // in-library managers declare PURE, ScrollViewLayoutManager declares nothing
-    // because it reads the scrolled child's live actor position, and an undeclared
-    // third-party manager gets the safe answer by default.
-    //
-    // This is what lets the subtree hit reach real screens: every in-library container
-    // (StackLayout, GridLayout, FlexLayout, AbsoluteLayout, and anything built on them)
-    // attaches a manager, so before the declaration existed this branch kept all of
-    // them -- and, through the subtree gate, every ancestor of one -- out of the hit.
-    //
-    // A manager declares at its own construction, which is strictly before
-    // AttachLayoutManager() runs this refresh, and a manager can never be replaced or
-    // detached, so the bit is settled by the one refresh at attach.
-    mArrangeProducerPure = manager->IsArrangeProducerPure();
+    // The manager is the active producer, so its own policy replaces the view's
+    // OnArrange policy. Manager policy is stored outside the frozen virtual API.
+    mArrangeProducerAlways = (manager->GetArrangePolicy() == ArrangePolicy::ARRANGE_ALWAYS);
   }
   else
   {
-    mArrangeProducerPure = mArrangeOverridePure;
+    mArrangeProducerAlways = mArrangeOverrideAlways;
   }
 }
 
@@ -3274,7 +3269,7 @@ void ViewDataImpl::AttachLayoutManager(Dali::UniquePtr<LayoutManager> manager)
   // an ArrangeCallback outranks both), so the derived bit has to follow. The assert
   // above makes this a one-shot transition: a manager can never be replaced or
   // detached, so there is no reverse edge to mirror.
-  RefreshArrangeProducerPurity();
+  RefreshArrangeProducerPolicy();
 
   InvalidateMeasure();
 }
@@ -3880,7 +3875,7 @@ bool ViewDataImpl::CanServeArrangeFromCache(const LayoutRect& bounds) const
   // compare or a single cached-member read on the actor. Every cheaper term therefore
   // gets its chance to reject before the scan runs.
   return mArrangeCacheValid &&
-         mArrangeProducerPure &&
+         !mArrangeProducerAlways &&
          !mArrangeDirty &&
          !mArrangePassPoisoned &&
          !mArrangeCacheBlockedDuringPass &&
@@ -3917,10 +3912,10 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
     //
     //  - the cache KEY (SameLayoutRect). A descendant has no candidate `bounds` to
     //    key against, and it does not need one: with this view's own key matched and
-    //    its producer PURE, the producer would hand each child the same slot it
+    //    its producer ARRANGE_IF_CHANGED, the producer would hand each child the same slot it
     //    handed it last time -- the slot that child recorded as mLastArrangeInput and
     //    resolved into the mArrangedBounds the replay is about to apply. The key
-    //    match is implied by the parent's key match plus purity, which is why purity
+    //    match is implied by the parent's key match plus policy, which is why policy
     //    is required at every node and not only at the top.
     //
     //    That "recorded by THIS chain's producers" premise is ENFORCED, not
@@ -3931,7 +3926,7 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
     //    So a hit can never replay a record this chain did not write.
     //  - mChildren.Empty(), which is what this increment removes.
     //
-    // mArrangeProducerPure is the term that carries the implication above.
+    // !mArrangeProducerAlways is the term that carries the implication above.
     // mArrangeCacheValid is what catches a STANDALONE descendant whose invalidation
     // stopped at its own boundary and never reached this view; the dirty / poison /
     // blocked bits beside it are defence in depth in exactly the sense the node-local
@@ -3949,7 +3944,7 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
     // Ordered as in CanServeArrangeFromCache, and for the same reason: the
     // O(direct children) scan goes last so every bit test gets to reject first.
     if(!(childData.mArrangeCacheValid &&
-         childData.mArrangeProducerPure &&
+         !childData.mArrangeProducerAlways &&
          !childData.mArrangeDirty &&
          !childData.mArrangePassPoisoned &&
          !childData.mArrangeCacheBlockedDuringPass &&
@@ -4145,15 +4140,13 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   // gate). What is skipped is recomputation; what is kept is every write and every
   // notification.
   //
-  // The soundness of eliding a producer is NOT assumed: a hit is result-identical to
-  // the miss it replaces ONLY IF the producer is a pure function of (the input
-  // bounds, this view's effective layout direction, its effective scale, and state
-  // tracked by the layout invalidation system). The first two are cache KEY terms
-  // below, the third is carried by Corollary C, the fourth by mArrangeCacheValid
-  // itself. A producer OUTSIDE that envelope -- one that reads ancestor/world
-  // geometry, or pushes state to a sink outside the actor tree -- must never be
-  // served, and the framework does not try to recognise one: purity is DECLARED, and
-  // the default is IMPURE. See the term list.
+  // Eliding a producer is result-identical to the miss it replaces only when its
+  // result depends on the input bounds, effective layout direction, effective scale,
+  // and state tracked by layout invalidation. The first two are cache-key terms, the
+  // third is carried by Corollary C, and the fourth by mArrangeCacheValid.
+  // ARRANGE_IF_CHANGED assumes that contract by default. A producer outside the
+  // envelope -- one that reads ancestor/world geometry or pushes state outside the
+  // actor tree -- must explicitly select ARRANGE_ALWAYS. See the term list.
   //
   // TWO GATES, in this order:
   //  1. CanServeArrangeFromCache(bounds) -- the NODE-LOCAL predicate below: may THIS
@@ -4161,7 +4154,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   //  2. CanReplayArrangeSubtreeFromCache() -- the recursive SUBTREE gate: may every
   //     descendant the replay would touch have ITS producer elided too? It re-tests
   //     the same node-local terms (minus the key, which is implied -- see the
-  //     function) at every node, so purity, dirtiness and the unconsumed-standalone
+  //     function) at every node, so policy, dirtiness and the unconsumed-standalone
   //     correction are checked per node rather than only at the top. Skipped
   //     entirely for a childless view, which keeps a leaf's hit exactly as cheap as
   //     it was when the hit was childless-only.
@@ -4176,27 +4169,9 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   //  - mArrangeCacheValid: the entry exists. Cleared by every layout invalidation
   //    and by a full Measure pass on this view, so it carries all the freshness the
   //    hit relies on for its own inputs.
-  //  - mArrangeProducerPure: precondition O2, made explicit. Serving a stored rect
-  //    in place of running the producer is result-identical ONLY IF the producer is
-  //    a pure function of the envelope stated above. A producer outside it -- one
-  //    reading ancestor/world geometry, or pushing to a surface outside the actor
-  //    tree -- opts out by simply not declaring itself pure, and then ALWAYS misses.
-  //    IMPURE is the DEFAULT precisely so an undeclared third-party producer cannot
-  //    desync: the soundness of this hit does not depend on anyone having audited
-  //    it, and a missed first-party declaration costs performance, never
-  //    correctness. Declared by ViewImpl::SetArrangePurity() (OnArrange) and by the
-  //    two-argument SetArrangeCallback() (app callback). Every first-party OnArrange
-  //    declaration is made from that type's own New() factory -- ViewImpl::New() for a
-  //    plain View, whose producer is provably ViewImpl::OnArrange -> ArrangeDefault,
-  //    and likewise LabelImpl::New(), ImageViewImpl::New() and the rest -- never from
-  //    a constructor, which would leak the declaration to every subclass.
-  //    First-party impure producers: VideoViewImpl::OnArrange
-  //    (video-view-impl.cpp) and WebViewImpl::OnArrange (web-view-impl.cpp), both of
-  //    which read SCREEN_POSITION and push it to a native surface. A single bit, so
-  //    it is as cheap as mArrangeCacheValid, and permanently false for an impure
-  //    view, which makes it the most selective term available for exactly the
-  //    population it exists to protect. It is re-tested at every node the subtree
-  //    gate would elide, so an impure view anywhere below refuses the whole hit.
+  //  - !mArrangeProducerAlways: the active producer permits unchanged-result reuse.
+  //    Producers that read untracked geometry or update an external surface use
+  //    ARRANGE_ALWAYS and therefore reject this cache hit at every subtree level.
   //  - !mArrangeDirty / !mArrangePassPoisoned / !mArrangeCacheBlockedDuringPass:
   //    defence in depth. Each of these is raised by a writer that also clears
   //    mArrangeCacheValid in the same breath, so they are implied today; testing
@@ -5089,35 +5064,32 @@ void ViewDataImpl::OnArrangeProducerTraitChanged(TraitId id)
   // Two reserved traits carry a view's arrange producer: LAYOUT_SIGNALS holds the
   // ArrangeCallback and LAYOUT_MANAGER the LayoutManager, the first two rungs of the
   // dispatch order in Arrange() (ArrangeCallback > LayoutManager > OnArrange).
-  // Swapping either changes WHICH producer runs, so the derived purity bit must not
+  // Swapping either changes WHICH producer runs, so the derived policy bit must not
   // be left describing the one that just went away.
   //
   // The in-library mutators (SetArrangeCallback / AttachLayoutManager) already do this
   // for themselves; this covers the public Integration::View::SetTrait/RemoveTrait
   // surface, which can reach the same trait ids with no other bookkeeping. Nothing in
-  // the library relies on it today -- it is here so the derived bit cannot be
-  // stale-TRUE for a producer nobody declared.
+  // the library relies on it today -- it is here so the derived bit cannot describe
+  // a producer that has just been replaced.
   if(id != Integration::ReservedTraitId::LAYOUT_SIGNALS &&
      id != Integration::ReservedTraitId::LAYOUT_MANAGER)
   {
     return;
   }
 
-  // A LAYOUT_SIGNALS swap replaces the callbacks object wholesale, so any purity
-  // declared through the two-argument SetArrangeCallback() described the callback that
-  // just went away. Drop it -- undeclared is IMPURE. This never demotes the in-library
-  // path: SetArrangeCallback() assigns mArrangeCallbackPure AFTER
-  // EnsureLayoutCallbacksObject() has created the trait.
+  // A LAYOUT_SIGNALS swap replaces the callback and its policy. Reset the policy
+  // to ARRANGE_IF_CHANGED before deriving the active producer again.
   if(id == Integration::ReservedTraitId::LAYOUT_SIGNALS)
   {
-    mArrangeCallbackPure = false;
+    mArrangeCallbackAlways = false;
   }
 
-  RefreshArrangeProducerPurity();
+  RefreshArrangeProducerPolicy();
 
   // Pair the change with an invalidation so a view that has already published an entry
   // cannot be served from it under the new producer. Gated exactly as in
-  // SetArrangePurity(), and for the same reason: this can run before the CustomActor
+  // SetArrangePolicy(), and for the same reason: this can run before the CustomActor
   // handle exists (the first SetMeasureCallback/SetArrangeCallback creates the
   // LAYOUT_SIGNALS trait), and mArrangeCacheValid is false until a pass publishes, so
   // there is provably nothing to serve then.

@@ -90,6 +90,7 @@ VideoViewImpl::VideoViewImpl()
   mSyncMode(Dali::VideoSyncMode::DISABLED),
   mAttachedToScene(false)
 {
+  SetArrangePolicy(ArrangePolicy::ARRANGE_ALWAYS);
 }
 
 VideoViewImpl::~VideoViewImpl()
@@ -191,8 +192,7 @@ void VideoViewImpl::OnInitialize()
   ViewImpl::OnInitialize();
 }
 
-// IMPURE PRODUCER -- deliberately does NOT call SetArrangePurity(ArrangePurity::PURE),
-// and must never be "optimised" into doing so. UpdateDisplayArea() reads
+// ARRANGE_ALWAYS is required here and is set in the constructor. UpdateDisplayArea() reads
 // Actor::Property::SCREEN_POSITION, a function of the whole ancestor chain, and pushes
 // it to a surface outside the actor tree (mVideoPlayer.SetDisplayArea). Neither input
 // is in the arrange cache key, and an ancestor move invalidates nothing here, so
@@ -200,7 +200,7 @@ void VideoViewImpl::OnInitialize()
 // offset. The WORLD_POSITION StepCondition(1.0f, 1.0f) notification set up in
 // AttachToScene is a coarse backstop, not an equivalent: it cannot see
 // sub-pixel-per-frame drift.
-// Pinned by UtcDaliArrangeCacheHitImpureFirstPartyLeavesNeverCacheP.
+// Pinned by UtcDaliArrangeCacheHitAlwaysFirstPartyLeavesNeverCacheP.
 LayoutRect VideoViewImpl::OnArrange(const LayoutRect& bounds)
 {
   LayoutRect result = ViewImpl::OnArrange(bounds);

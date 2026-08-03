@@ -36,44 +36,53 @@ protected 멤버로 새로 추가되었다. attach 전에 호출해도 안전하
 - **Measure가 읽는 상태**: measure 캐시는 무조건 동작하므로, 무효화 없는 변경은
   다음 무관한 pass가 돌아도 반영되지 않는다(캐시가 이전 결과를 계속 서빙).
   이 위험은 이전부터 있었고 이제 계약으로 명문화되었다.
-- **Arrange만 읽는 상태**: 라이브러리 밖 manager는 IMPURE라 매 pass 재실행되므로
-  "다음 무관한 pass"에 우연히 반영되지만, 그것은 보장이 아니라 우연이다. pass를
-  예약하는 것은 어디에도 없으므로 앱이 idle이면 영영 반영되지 않는다.
+- **Arrange만 읽는 상태**: 기본 정책인 `ARRANGE_IF_CHANGED`에서는 이전 결과가
+  재사용될 수 있으므로 무효화 없는 변경이 반영되지 않을 수 있다. `ARRANGE_ALWAYS`도
+  pass 자체를 예약하지는 않으므로 setter의 무효화 호출은 어느 정책에서나 필요하다.
 
 라이브러리 내장 manager(Stack/Grid/Flex)는 이번 변경으로 모두 배선되어, **직접
 setter 호출만으로** 재배치가 예약되고 반영된다. 이전에는 이 직접 호출이
 unspecified였다(아무것도 pass를 예약하지 않음).
 
-### 1.2 커스텀 `OnArrange` / `ArrangeCallback`이 캐시 대상인지 결정한다
+### 1.2 커스텀 arrange producer의 실행 정책을 확인한다
 
-arrange 캐시는 **opt-in**이고 기본값은 `ArrangePurity::IMPURE`다. 아무것도 선언하지
-않으면 producer는 이전과 똑같이 매 pass 실행된다 — **정확하지만 느리다**.
+arrange producer의 기본값은 `ArrangePolicy::ARRANGE_IF_CHANGED`다. 이전 결과를
+재사용할 수 있으면 `OnArrange()`, 1인자 `SetArrangeCallback(callback)`, 그리고
+`LayoutManager::Arrange()`가 호출되지 않을 수 있다.
+
+다음과 같이 layout invalidation이 추적하지 않는 상태를 읽거나 매 pass 외부 작업을
+수행해야 하는 producer만 명시적으로 opt-out한다.
 
 ```cpp
-// View 파생 클래스: 그 타입의 New()에서 선언한다 (생성자 금지 — 파생으로 새어 나간다)
-MyViewImplPtr MyViewImpl::New()
+// ViewImpl 파생 클래스
+MyViewImpl::MyViewImpl()
 {
-  MyViewImplPtr impl(new MyViewImpl());
-  impl->SetArrangePurity(ArrangePurity::PURE);
-  return impl;
+  SetArrangePolicy(ArrangePolicy::ARRANGE_ALWAYS);
 }
 
-// 콜백: 2-인자 오버로드
-view.SetArrangeCallback(ArrangeCallback::New(&MyArrange), ArrangePurity::PURE);
+// 콜백
+view.SetArrangeCallback(ArrangeCallback::New(&MyArrange),
+                        ArrangePolicy::ARRANGE_ALWAYS);
+
+// LayoutManager 파생 클래스
+MyManager::MyManager()
+{
+  SetArrangePolicy(ArrangePolicy::ARRANGE_ALWAYS);
+}
 ```
 
-다음 중 하나라도 해당하면 **선언하지 말 것**:
+`ARRANGE_ALWAYS`가 필요한 경우:
 
 - 조상/월드 좌표(`SCREEN_POSITION`, `WORLD_POSITION`, `WORLD_SCALE`, 윈도우 좌표)를
   읽는다
 - actor 트리 밖의 표면(네이티브 플레이어, 웹 엔진 등)에 상태를 밀어 넣는다
-- 입력이 같아도 배치하는 자식 집합이 달라진다
+- 입력이 같아도 배치하는 자식 집합이나 외부 작업이 달라진다
 - `InvalidateArrange()`가 따라붙지 않는 상태에 의존한다
 
-purity는 **정확한 타입 단위**이며 상속되지 않는다. 라이브러리 밖에서 정의한
-`LayoutManager` 파생은 purity를 선언할 수 없어 항상 재실행된다. 캐시 가능한 커스텀
-레이아웃이 필요하면 `LayoutManager` 대신 View 파생 + `SetArrangePurity` 또는
-`SetArrangeCallback(cb, PURE)`를 쓴다.
+정책은 구현 인스턴스에 저장되고 파생 클래스에도 상속된다. 파생 클래스는 생성자에서
+다시 정책을 설정할 수 있다. 기존 1인자 `SetArrangeCallback(callback)`은 이제
+`ARRANGE_IF_CHANGED`를 사용하므로, callback 호출 횟수나 외부 부수 효과에 의존하던
+코드는 2인자 overload로 `ARRANGE_ALWAYS`를 지정해야 한다.
 
 ### 1.3 measure producer가 매 프레임 호출된다고 가정하고 있지 않은가
 
@@ -134,9 +143,10 @@ producer 자신이 방향을 처리해야 한다.
 
 | API | 위치 | 용도 |
 |---|---|---|
-| `ArrangePurity` | `layout-types.h` | arrange producer의 순수성 선언값 |
-| `View::SetArrangeCallback(cb, purity)` | `view.h` | 콜백 purity 선언 |
-| `ViewImpl::SetArrangePurity(purity)` | `view-impl.h` (protected) | `OnArrange` purity 선언 |
+| `ArrangePolicy` | `layout-types.h` | arrange producer의 실행 정책 |
+| `View::SetArrangeCallback(cb, policy)` | `view.h` | callback 실행 정책 지정 |
+| `ViewImpl::SetArrangePolicy(policy)` | `view-impl.h` (protected) | `OnArrange` 실행 정책 지정 |
+| `LayoutManager::SetArrangePolicy(policy)` | `layout-manager.h` (protected) | manager arrange 실행 정책 지정 |
 | `LayoutManager::InvalidateOwnerMeasure()` | `layout-manager.h` (protected) | manager 자기 상태 변경 시 owner 무효화 |
 | `LayoutManager::InvalidateOwnerArrange()` | `layout-manager.h` (protected) | 위와 같되 배치 축만 |
 

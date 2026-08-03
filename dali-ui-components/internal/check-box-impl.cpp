@@ -58,24 +58,8 @@ Ui::CheckBox CheckBoxImpl::New(CheckBoxStyle style)
   IntrusivePtr<CheckBoxImpl> impl(new CheckBoxImpl());
   Ui::CheckBox               handle(*impl);
 
-  // PURE producer: OnArrange places the icon and the trailing label from the arrange
-  // bounds, the effective scale and the padding/icon-size/label-presence fields, and
-  // nothing else. Every one of those is either a cache KEY term (the bounds, the scale
-  // via Corollary C) or layout-tracked state -- SetPadding writes View::Property::PADDING
-  // and SetIconWidth/SetIconHeight/SetText all call InvalidateMeasure, and the label gap
-  // is fixed by the style at construction. It reads no ancestor or world geometry
-  // (no SCREEN_POSITION / WORLD_*) and pushes to no sink outside the actor tree: the only
-  // writes are Measure()/Arrange() on its own two children, which the subtree replay
-  // reproduces from their own cache entries.
-  //
-  // It does not read the layout direction either -- mirroring is the framework's job in
-  // ViewDataImpl::ApplyLayoutDirection, which the cache HIT performs itself.
-  //
-  // Declared HERE and not in the constructor, deliberately: the object built here has
-  // CheckBoxImpl as its most-derived type, so the producer this declares is provably
-  // CheckBoxImpl::OnArrange. A subclass runs its OWN New() and never this one, so it
-  // cannot inherit the declaration and stays IMPURE by default -- see ViewImpl::New().
-  impl->SetArrangePurity(ArrangePurity::PURE);
+  // The default ARRANGE_IF_CHANGED policy is valid here: OnArrange derives
+  // the icon and label bounds entirely from layout-tracked inputs.
 
   impl->Initialize();
   impl->ApplyInitialStyle(style);
