@@ -356,9 +356,10 @@ where `logicalX` and `childW` are the child's **logical** arranged bounds
 (`GetArrangedBounds().x` / `.width`), not its actor `POSITION_X`. Mirroring
 from the logical bounds makes the flip a pure function of arranged geometry --
 idempotent and immune to an external `POSITION_X` write -- rather than an
-involution over the actor's persistent position. A child that a producer
-placed but never arranged has no logical bounds yet and falls back to the
-historical actor read-back.
+involution over the actor's persistent position. A child that a producer has
+not arranged has no parent-owned logical bounds and is left untouched. Reading
+its current physical actor position as logical input would make repeated
+identical passes alternate between mirrored and unmirrored coordinates.
 
 - The mirror is **generic**: it applies uniformly to every direct child of
   every View. `AbsoluteLayout` is just one case — a child arranged at some X

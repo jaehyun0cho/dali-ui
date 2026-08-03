@@ -6915,6 +6915,51 @@ int UtcDaliViewArrangeCacheHitSkipsUnarrangedChildrenP(void)
   END_TEST;
 }
 
+// A non-standalone child with no arrange result has no parent-owned logical X to
+// mirror. Treating its current actor X as logical input makes the transform an
+// involution (x -> mirrored x -> x), so repeated identical passes oscillate. Both a
+// miss and every cache hit must leave a child ignored by the producer untouched.
+int UtcDaliViewRtlLeavesUnarrangedChildUntouchedP(void)
+{
+  UiTestApplication application;
+
+  Label parent = Label::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(60.0f);
+  parent.SetLayoutDirection(LayoutDirection::RIGHT_TO_LEFT);
+  application.GetScene().Add(parent);
+
+  // Label's pure OnArrange echoes its own bounds and never arranges children.
+  View ignored = View::New();
+  ignored.SetRequestedWidth(40.0f);
+  ignored.SetRequestedHeight(30.0f);
+  parent.Add(ignored);
+
+  const LayoutRect slot(0.0f, 0.0f, 120.0f, 60.0f);
+  parent.Measure(slot.width, slot.height);
+  parent.Arrange(slot);
+
+  Dali::Ui::Extension::View::SetPositionX(ignored, 42.0f);
+  Dali::Ui::Extension::View::SetSizeWidth(ignored, 7.0f);
+
+  // Forced miss: the producer ignores the child, and so must the RTL resolver.
+  parent.InvalidateArrange();
+  parent.Arrange(slot);
+  DALI_TEST_EQUALS(ignored.GetProperty<float>(Actor::Property::POSITION_X), 42.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ignored.GetProperty<float>(Actor::Property::SIZE_WIDTH), 7.0f, TEST_LOCATION);
+
+  // Settled hits are identical and idempotent. The old actor read-back alternated
+  // 42 -> 71 -> 42 for parentWidth=120 and childWidth=7.
+  for(int pass = 0; pass < 3; ++pass)
+  {
+    parent.Arrange(slot);
+    DALI_TEST_EQUALS(ignored.GetProperty<float>(Actor::Property::POSITION_X), 42.0f, TEST_LOCATION);
+    DALI_TEST_EQUALS(ignored.GetProperty<float>(Actor::Property::SIZE_WIDTH), 7.0f, TEST_LOCATION);
+  }
+
+  END_TEST;
+}
+
 // Anti-spin at depth. The replay writes only actor geometry and mInitialLayoutDone; it
 // calls no Invalidate* and registers nothing with the LayoutController, so an idle
 // application over a settled subtree reaches a fixed point and stays there.
@@ -7124,6 +7169,222 @@ int UtcDaliViewFlexLayoutManagerSetterInvalidatesOwnerP(void)
   CheckActorRect(flex, flexRect, TEST_LOCATION);
   CheckActorRect(first, firstRect, TEST_LOCATION);
   CheckActorRect(second, secondRect, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// ---------------------------------------------------------------------------
+// Out-of-band Arrange: the hit/miss equivalence survives a DIRECT public
+// Arrange() on a descendant.
+//
+// An out-of-band child.Arrange() rewrites the very records a parent's cache HIT
+// replays the child from, so the parent's entry is retracted at that moment
+// (cache-only) and the next parent Arrange MISSES and re-hands the
+// parent-derived slot -- after which the hit is live again and byte-identical
+// to a forced miss. Without the retraction the hit would keep serving the
+// foreign geometry that a forced miss corrects.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+int  gOutOfBandParentArrangeCount = 0;
+View gOutOfBandChild;
+
+// A PURE producer: arranges its one child at a fixed logical slot derived from
+// nothing but constants, then echoes its bounds.
+LayoutRect OutOfBandParentArrange(View, const LayoutRect& bounds)
+{
+  ++gOutOfBandParentArrangeCount;
+  if(gOutOfBandChild)
+  {
+    gOutOfBandChild.Arrange(LayoutRect(20.0f, 0.0f, 50.0f, 10.0f));
+  }
+  return bounds;
+}
+
+} // namespace
+
+int UtcDaliViewOutOfBandChildArrangeMatchesForcedMissP(void)
+{
+  UiTestApplication application;
+  tet_infoline("An out-of-band child.Arrange() retracts the parent entry, so the next hit equals a forced miss");
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(120.0f);
+  root.Add(parent);
+
+  View child = View::New();
+  child.SetRequestedWidth(50.0f);
+  child.SetRequestedHeight(10.0f);
+  parent.Add(child);
+
+  gOutOfBandChild              = child;
+  gOutOfBandParentArrangeCount = 0;
+  parent.SetArrangeCallback(ArrangeCallback::New(&OutOfBandParentArrange), ArrangePurity::PURE);
+
+  SettleLayout(application);
+
+  const LayoutRect pSlot = ActorRectOf(parent);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::SIZE_WIDTH), 50.0f, TEST_LOCATION);
+  const int settledCount = gOutOfBandParentArrangeCount;
+  DALI_TEST_CHECK(settledCount > 0);
+
+  // The out-of-band write: a public Arrange straight onto the child.
+  child.Arrange(LayoutRect(77.0f, 0.0f, 30.0f, 10.0f));
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 77.0f, TEST_LOCATION);
+
+  // The parent's next same-bounds Arrange must NOT serve the retracted entry: the
+  // producer re-runs and restores the parent-derived slot.
+  parent.Arrange(pSlot);
+  DALI_TEST_EQUALS(gOutOfBandParentArrangeCount, settledCount + 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::SIZE_WIDTH), 50.0f, TEST_LOCATION);
+
+  // The retraction is one miss deep, not a permanent demotion: the entry is live
+  // again and the hit reproduces the producer's geometry.
+  parent.Arrange(pSlot);
+  DALI_TEST_EQUALS(gOutOfBandParentArrangeCount, settledCount + 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+
+  // And the equivalence the retraction exists to keep: a forced miss lands on
+  // exactly the geometry the hit just served.
+  parent.InvalidateArrange();
+  parent.Arrange(pSlot);
+  DALI_TEST_EQUALS(gOutOfBandParentArrangeCount, settledCount + 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::SIZE_WIDTH), 50.0f, TEST_LOCATION);
+
+  gOutOfBandChild.Reset();
+
+  END_TEST;
+}
+
+// STANDALONE is an accumulation/placement-algorithm boundary, not a promise that a
+// parent never places the child. A parent miss still derives the child's slot from
+// SetRequestedX/Y and its measured/available extent in ArrangeStandaloneChildren.
+// Therefore an arbitrary public child.Arrange() must retract the parent entry just
+// like it does for a normal child, or a hit replays the foreign slot while a miss
+// restores the requested slot.
+int UtcDaliViewOutOfBandStandaloneArrangeMatchesForcedMissP(void)
+{
+  UiTestApplication application;
+
+  View root = View::New();
+  root.SetRequestedWidth(300.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(80.0f);
+  root.Add(parent);
+
+  View standalone = View::New();
+  standalone.SetLayoutMode(LayoutMode::STANDALONE);
+  standalone.SetRequestedX(20.0f);
+  standalone.SetRequestedY(5.0f);
+  standalone.SetRequestedWidth(40.0f);
+  standalone.SetRequestedHeight(10.0f);
+  parent.Add(standalone);
+
+  SettleLayout(application);
+
+  const LayoutRect parentSlot = ActorRectOf(parent);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 40.0f, TEST_LOCATION);
+
+  // Public, arbitrary bounds: this is not LayoutController's framework-owned
+  // standalone self pass.
+  standalone.Arrange(LayoutRect(77.0f, 9.0f, 30.0f, 12.0f));
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::POSITION_X), 77.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 30.0f, TEST_LOCATION);
+
+  // The retracted parent entry forces one miss, restoring the requested standalone
+  // slot that ArrangeStandaloneChildren would always produce on a forced miss.
+  parent.Arrange(parentSlot);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::POSITION_X), 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::POSITION_Y), 5.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 40.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 10.0f, TEST_LOCATION);
+
+  // Settled hit and explicit miss agree.
+  parent.Arrange(parentSlot);
+  const LayoutRect hitRect = ActorRectOf(standalone);
+  parent.InvalidateArrange();
+  parent.Arrange(parentSlot);
+  CheckActorRect(standalone, hitRect, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// A child that was arranged under one parent and then reparented under a
+// producer that never arranges its children must not hold that producer's
+// cache hostage. The move retracts the child's arrange RESULT record, so the
+// hit gate treats it as never-arranged -- skipped, exactly as the replay and a
+// forced miss would leave it -- instead of demanding a cache validity it can
+// never regain.
+int UtcDaliViewReparentedChildDoesNotBlockIgnoringPureParentCacheP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A reparented child under an ignoring PURE producer leaves the parent's cache reachable");
+
+  View root = View::New();
+  root.SetRequestedWidth(300.0f);
+  root.SetRequestedHeight(300.0f);
+  application.GetScene().Add(root);
+
+  View oldParent = View::New();
+  oldParent.SetRequestedWidth(120.0f);
+  oldParent.SetRequestedHeight(120.0f);
+  root.Add(oldParent);
+
+  View child = View::New();
+  child.SetRequestedWidth(20.0f);
+  child.SetRequestedHeight(10.0f);
+  oldParent.Add(child);
+
+  gCountingArrangeProducerCount = 0;
+
+  View pureParent = View::New();
+  pureParent.SetRequestedWidth(100.0f);
+  pureParent.SetRequestedHeight(50.0f);
+  pureParent.SetArrangeCallback(ArrangeCallback::New(&CountingLeafArrange), ArrangePurity::PURE);
+  root.Add(pureParent);
+
+  SettleLayout(application);
+  const LayoutRect bSlot = ActorRectOf(pureParent);
+
+  // Control: settled and childless, the pure producer is served from cache.
+  const int c0 = gCountingArrangeProducerCount;
+  DALI_TEST_CHECK(c0 > 0);
+  pureParent.Arrange(bSlot);
+  DALI_TEST_EQUALS(gCountingArrangeProducerCount, c0, TEST_LOCATION);
+
+  // Move the once-arranged child under the ignoring producer and settle the
+  // add-invalidation away.
+  pureParent.Add(child);
+  SettleLayout(application);
+  const int c1 = gCountingArrangeProducerCount;
+
+  const LayoutRect childRect = ActorRectOf(child);
+
+  // Three same-bounds arranges: every one must be a HIT. Before the result
+  // record was retracted on reparent, the gate saw a result-holding child whose
+  // cache could never revalidate and refused the hit forever.
+  pureParent.Arrange(bSlot);
+  pureParent.Arrange(bSlot);
+  pureParent.Arrange(bSlot);
+  DALI_TEST_EQUALS(gCountingArrangeProducerCount, c1, TEST_LOCATION);
+
+  // The hits leave the ignored child exactly where a miss would: untouched.
+  CheckActorRect(child, childRect, TEST_LOCATION);
 
   END_TEST;
 }

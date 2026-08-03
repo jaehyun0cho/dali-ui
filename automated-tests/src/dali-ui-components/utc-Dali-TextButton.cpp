@@ -15,9 +15,9 @@
  *
  */
 
-#include <dali-ui-test-suite-utils.h>
 #include <dali-ui-components/dali-ui-components.h>
 #include <dali-ui-foundation/public-api/views/text-controls/label.h>
+#include <dali-ui-test-suite-utils.h>
 
 using namespace Dali;
 using namespace Dali::Ui;
@@ -220,8 +220,8 @@ int UtcDaliTextButtonStylePaddingHelpersP(void)
   DALI_TEST_EQUALS(horizontalVertical.GetPadding(), Insets(4.0f, 4.0f, 6.0f, 6.0f), TEST_LOCATION);
 
   TextButtonStyle horizontalVerticalRvalue = TextButtonStyle::Builder()
-                                              .SetPadding(5, 7)
-                                              .Build();
+                                               .SetPadding(5, 7)
+                                               .Build();
   DALI_TEST_EQUALS(horizontalVerticalRvalue.GetPadding(), Insets(5.0f, 5.0f, 7.0f, 7.0f), TEST_LOCATION);
 
   TextButtonStyle::Builder builder;
@@ -370,22 +370,31 @@ int UtcDaliTextButtonSettledArrangeIsServedFromCacheP(void)
   DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_Y), padTop, TEST_LOCATION);
   DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::SIZE_WIDTH), contentW, TEST_LOCATION);
 
-  // Republish the label's OWN arrange entry at a shifted x. Same size, so this touches
-  // POSITION_X only and invalidates nothing above it.
+  // An out-of-band public Arrange on the label rewrites the very records a
+  // container hit would replay it from, so it retracts the button's entry: the
+  // next same-slot Arrange must RE-RUN the producer and restore the content
+  // slot, exactly as a forced miss would.
   const float shiftedLabelX = padStart + 33.0f;
   label.Arrange(LayoutRect(shiftedLabelX, padTop, contentW, contentH));
   DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), shiftedLabelX, TEST_LOCATION);
 
-  // Re-arrange the settled TextButton into the SAME slot.
   button.Arrange(LayoutRect(0.0f, 0.0f, width, height));
 
   // The container's own geometry is reconciled either way -- a hit is not a no-op.
   DALI_TEST_EQUALS(button.GetProperty<float>(Dali::Actor::Property::POSITION_X), 0.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(button.GetProperty<float>(Dali::Actor::Property::SIZE_WIDTH), width, TEST_LOCATION);
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), padStart, TEST_LOCATION);
 
-  // The producer was elided: the label kept its own cached bounds instead of being handed
-  // a freshly computed content slot.
-  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), shiftedLabelX, TEST_LOCATION);
+  // Settled again, the entry is live: a bare ACTOR write does not retract it, and
+  // the served hit reconciles the label back onto its cached content slot.
+  label.SetProperty(Dali::Actor::Property::POSITION_X, shiftedLabelX);
+  button.Arrange(LayoutRect(0.0f, 0.0f, width, height));
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), padStart, TEST_LOCATION);
+
+  // Hit and forced miss agree.
+  button.InvalidateArrange();
+  button.Arrange(LayoutRect(0.0f, 0.0f, width, height));
+  DALI_TEST_EQUALS(label.GetProperty<float>(Dali::Actor::Property::POSITION_X), padStart, TEST_LOCATION);
 
   END_TEST;
 }

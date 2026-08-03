@@ -459,14 +459,27 @@ int UtcDaliLayoutManagerSetterInvalidatesOwnerFlexP(void)
 
   Settle(application);
   DALI_TEST_CHECK(DataOf(owner).IsMeasureCacheValid());
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 0.0f, TEST_LOCATION);
 
+  // PLACEMENT-only state invalidates the ARRANGE axis alone: no measured size
+  // can change (Measure() never reads the justification), so every measure
+  // cache in the subtree stays warm while the re-arrange is scheduled.
   manager->SetJustifyContent(FlexJustify::CENTER);
-  DALI_TEST_CHECK(!DataOf(owner).IsMeasureCacheValid());
+  DALI_TEST_CHECK(DataOf(owner).IsMeasureCacheValid());
+  DALI_TEST_CHECK(!DataOf(owner).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(owner).IsArrangeDirty());
 
+  // ...and the narrower invalidation still reaches the screen: the scheduled
+  // pass re-runs Arrange and the new justification lands.
   Settle(application);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 75.0f, TEST_LOCATION);
+
   manager->SetJustifyContent(FlexJustify::CENTER); // same value
   DALI_TEST_CHECK(DataOf(owner).IsMeasureCacheValid());
+  DALI_TEST_CHECK(!DataOf(owner).IsArrangeDirty());
 
+  // A MEASURE input keeps the full invalidation: the direction remaps the axes,
+  // so line breaking and the measured extents both change with it.
   manager->SetDirection(FlexDirection::COLUMN);
   DALI_TEST_CHECK(!DataOf(owner).IsMeasureCacheValid());
 

@@ -1703,6 +1703,88 @@ void ResetChangeCauseCaptures()
 }
 } // namespace
 
+namespace
+{
+uint32_t   gReparentBoundsFireCount = 0u;
+LayoutRect gReparentFromBounds;
+LayoutRect gReparentToBounds;
+
+void CaptureReparentBoundsAnimator(const LayoutAnimatorContext& ctx)
+{
+  if(ctx.slot == LayoutTransitionSlot::CHANGE && gReparentBoundsFireCount++ == 0u)
+  {
+    gReparentFromBounds = ctx.fromBounds;
+    gReparentToBounds   = ctx.toBounds;
+  }
+}
+
+void ResetReparentBoundsCaptures()
+{
+  gReparentBoundsFireCount = 0u;
+  gReparentFromBounds      = {};
+  gReparentToBounds        = {};
+}
+} // namespace
+
+// A child reparented from RTL to LTR has no valid arranged result until the new
+// parent places it: the old logical rect belongs to the old parent's coordinate
+// space. CHANGE must start at the actor's current physical geometry, not reinterpret
+// that stale logical rect against the new parent.
+int UtcDaliLayoutTransitionReparentUsesCurrentActorBoundsP(void)
+{
+  UiTestApplication application;
+  ResetReparentBoundsCaptures();
+
+  View oldParent = View::New();
+  oldParent.SetRequestedWidth(200.0f);
+  oldParent.SetRequestedHeight(100.0f);
+  oldParent.SetLayoutDirection(LayoutDirection::RIGHT_TO_LEFT);
+  application.GetWindow().Add(oldParent);
+
+  View newParent = View::New();
+  newParent.SetRequestedWidth(200.0f);
+  newParent.SetRequestedHeight(100.0f);
+  newParent.SetLayoutDirection(LayoutDirection::LEFT_TO_RIGHT);
+  application.GetWindow().Add(newParent);
+
+  View child = View::New();
+  child.SetRequestedX(20.0f);
+  child.SetRequestedWidth(50.0f);
+  child.SetRequestedHeight(20.0f);
+  oldParent.Add(child);
+
+  application.SendNotification();
+  application.Render(0);
+
+  // Old RTL physical x = 200 - logicalX(20) - width(50) = 130.
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 130.0f, 0.5f, TEST_LOCATION);
+
+  // Add first, then attach the transition. The already-laid-out new parent does
+  // not classify the moved, previously-arranged child as ENTER; its next pass is
+  // therefore a CHANGE from the still-visible old physical geometry.
+  newParent.Add(child);
+  DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::POSITION_X), 130.0f, 0.5f, TEST_LOCATION);
+
+  LayoutAnimatorTiming timing{Duration(0.2f), AlphaFunction(AlphaFunction::LINEAR), Duration()};
+  LayoutTransition     transition = LayoutTransition::New();
+  transition.SetChangeAnimator(LayoutAnimatorCallback::New(&CaptureReparentBoundsAnimator), timing);
+  newParent.SetLayoutTransition(transition);
+
+  for(int i = 0; i < 3; ++i)
+  {
+    application.SendNotification();
+    application.Render(16);
+  }
+
+  DALI_TEST_GREATER(gReparentBoundsFireCount, 0u, TEST_LOCATION);
+  DALI_TEST_EQUALS(gReparentFromBounds.x, 130.0f, 0.5f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gReparentFromBounds.width, 50.0f, 0.5f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gReparentToBounds.x, 20.0f, 0.5f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gReparentToBounds.width, 50.0f, 0.5f, TEST_LOCATION);
+
+  END_TEST;
+}
+
 int UtcDaliLayoutTransitionChangeCauseSiblingAddedP(void)
 {
   // Adding a sibling triggers CHANGE on existing children that shifted to
@@ -3673,6 +3755,49 @@ int UtcDaliLayoutTransitionFreshDirectChildAddThenAttachP(void)
   }
 
   DALI_TEST_EQUALS(gOnStartInvokes, 0u, TEST_LOCATION); // no spurious zero-from CHANGE
+  DALI_TEST_EQUALS(c.GetCurrentProperty<float>(Actor::Property::OPACITY), 1.0f, 0.001f, TEST_LOCATION);
+  END_TEST;
+}
+
+// The fresh-child ENTER-spec settle must not depend on geometry. A WRAP_CONTENT
+// child with no content arranges to a zero-size rect at the origin -- exactly the
+// pre-arrange zero sentinel its capture recorded -- so an equal-bounds skip that ran
+// before the fresh-child branch would strand the declarative fade-in start (opacity
+// 0) forever. The settle runs regardless; only the geometry snap is skipped when
+// nothing moved.
+int UtcDaliLayoutTransitionFreshZeroSizeChildSettlesEnterSpecP(void)
+{
+  UiTestApplication application;
+  ResetCaptures();
+
+  StackLayout p = StackLayout::New(StackOrientation::VERTICAL);
+  p.SetRequestedWidth(MATCH_PARENT);
+  p.SetRequestedHeight(MATCH_PARENT);
+  application.GetWindow().Add(p);
+  application.SendNotification();
+  application.Render(0); // p laid out, NO transition yet
+
+  View c = View::New(); // WRAP_CONTENT both axes, no content: arranges to (0,0,0,0)
+  c.SetProperty(Actor::Property::OPACITY, 0.0f);
+  p.Add(c); // fresh, never arranged, added while p has no transition
+
+  LayoutTransition  t         = LayoutTransition::New();
+  ViewAnimationSpec enterSpec = ViewAnimationSpec::New();
+  enterSpec.Opacity(1.0f, Duration(0.2f));
+  t.SetEnterVisualSpec(enterSpec)
+    .SetReflowScope(LayoutReflowScope::DIRECT_CHILDREN)
+    .SetOnStart(LayoutLifecycleCallback::New(&CaptureOnStart));
+  p.SetLayoutTransition(t);
+
+  for(int i = 0; i < 10; ++i)
+  {
+    application.SendNotification();
+    application.Render(50);
+  }
+
+  // Zero-size arranged rect == zero capture sentinel, and the spec still settled.
+  DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::SIZE_WIDTH), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gOnStartInvokes, 0u, TEST_LOCATION); // settle, not a CHANGE
   DALI_TEST_EQUALS(c.GetCurrentProperty<float>(Actor::Property::OPACITY), 1.0f, 0.001f, TEST_LOCATION);
   END_TEST;
 }

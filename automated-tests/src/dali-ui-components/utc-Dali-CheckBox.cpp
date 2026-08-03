@@ -15,13 +15,13 @@
  *
  */
 
-#include <dali-ui-test-suite-utils.h>
 #include <dali-ui-components/dali-ui-components.h>
 #include <dali-ui-foundation/public-api/types/selectable-lottie-image.h>
 #include <dali-ui-foundation/public-api/views/image/selectable-image-interface.h>
 #include <dali-ui-foundation/public-api/views/image/selectable-lottie-animation-view.h>
 #include <dali-ui-foundation/public-api/views/text-controls/label.h>
 #include <dali-ui-foundation/public-api/views/view.h>
+#include <dali-ui-test-suite-utils.h>
 
 #include <string>
 
@@ -43,7 +43,8 @@ namespace
 struct SelectionSpy
 {
   SelectionSpy(int& count, bool& last)
-  : mCount(count), mLast(last)
+  : mCount(count),
+    mLast(last)
   {
   }
   void operator()(View, bool selected, InputEvent)
@@ -582,7 +583,7 @@ int UtcDaliCheckBoxArrangeMirrorsChildrenExactlyOnceUnderRtlP(void)
 int UtcDaliCheckBoxSettledArrangeIsServedFromCacheP(void)
 {
   UiTestApplication application(Components::UiConfig::New());
-  tet_infoline("A settled CheckBox replays its subtree from the arrange cache instead of re-running OnArrange");
+  tet_infoline("A settled CheckBox's same-slot Arrange is result-identical to a forced miss, out-of-band writes included");
 
   CheckBox cb = CheckBox::New("Agree", MakeFixtureStyle());
   cb.SetRequestedWidth(FIXTURE_WIDTH);
@@ -597,24 +598,38 @@ int UtcDaliCheckBoxSettledArrangeIsServedFromCacheP(void)
   DALI_TEST_CHECK(icon);
   DALI_TEST_EQUALS(PositionX(label), FIXTURE_LOGICAL_LABEL_X, TEST_LOCATION);
 
-  // Republish the label's OWN arrange entry at a shifted x. Same size, so this touches
-  // POSITION_X only and invalidates nothing above it.
+  // An out-of-band public Arrange on the label rewrites the very records a
+  // container hit would replay it from, so it retracts the CheckBox's entry: the
+  // next same-slot Arrange must RE-RUN the producer and restore the producer's
+  // slot, exactly as a forced miss would. (Serving the old entry here would make
+  // hit and miss diverge, which View::Arrange's contract rules out.)
   const float shiftedLabelX = FIXTURE_LOGICAL_LABEL_X + 33.0f;
   label.Arrange(LayoutRect(shiftedLabelX, FIXTURE_PAD_TOP, FIXTURE_LABEL_W, FIXTURE_CONTENT_H));
   DALI_TEST_EQUALS(PositionX(label), shiftedLabelX, TEST_LOCATION);
 
-  // Re-arrange the settled CheckBox into the SAME slot.
   cb.Arrange(LayoutRect(0.0f, 0.0f, FIXTURE_WIDTH, FIXTURE_HEIGHT));
 
-  // The container's own geometry is reconciled either way -- a hit is not a no-op.
   DALI_TEST_EQUALS(PositionX(cb), 0.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(cb.GetProperty<float>(Dali::Actor::Property::SIZE_WIDTH), FIXTURE_WIDTH, TEST_LOCATION);
-  // The untouched sibling is replayed onto its own (unchanged) cached bounds.
+  DALI_TEST_EQUALS(PositionX(icon), FIXTURE_LOGICAL_ICON_X, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionX(label), FIXTURE_LOGICAL_LABEL_X, TEST_LOCATION);
+
+  // Settled again, the entry is live: a bare ACTOR write (no arrange records
+  // touched) does not retract it, and the served hit still reconciles the child
+  // back onto its cached bounds -- a hit is not a no-op.
+  label.SetProperty(Dali::Actor::Property::POSITION_X, shiftedLabelX);
+  DALI_TEST_EQUALS(PositionX(label), shiftedLabelX, TEST_LOCATION);
+
+  cb.Arrange(LayoutRect(0.0f, 0.0f, FIXTURE_WIDTH, FIXTURE_HEIGHT));
+  DALI_TEST_EQUALS(PositionX(label), FIXTURE_LOGICAL_LABEL_X, TEST_LOCATION);
   DALI_TEST_EQUALS(PositionX(icon), FIXTURE_LOGICAL_ICON_X, TEST_LOCATION);
 
-  // The producer was elided: the label kept its own cached bounds instead of being
-  // handed a freshly computed slot.
-  DALI_TEST_EQUALS(PositionX(label), shiftedLabelX, TEST_LOCATION);
+  // And the equivalence all of the above serves: a forced miss lands on exactly
+  // the same geometry.
+  cb.InvalidateArrange();
+  cb.Arrange(LayoutRect(0.0f, 0.0f, FIXTURE_WIDTH, FIXTURE_HEIGHT));
+  DALI_TEST_EQUALS(PositionX(label), FIXTURE_LOGICAL_LABEL_X, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionX(icon), FIXTURE_LOGICAL_ICON_X, TEST_LOCATION);
 
   END_TEST;
 }

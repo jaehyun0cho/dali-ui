@@ -887,7 +887,12 @@ private:
     bounds.width  = std::min(std::max(bounds.width, view->GetMinimumWidth() * s), view->GetMaximumWidth() * s);
     bounds.height = std::min(std::max(bounds.height, view->GetMinimumHeight() * s), view->GetMaximumHeight() * s);
 
-    view->Arrange(bounds);
+    // Use the internal root entry point rather than the public Arrange path. For a
+    // STANDALONE boundary this identifies the framework-owned self pass whose bounds
+    // converge with its parent's ArrangeStandaloneChild derivation; an application
+    // calling View::Arrange directly carries no such ownership and retracts the
+    // parent's arrange entry when it rewrites the child's records.
+    Internal::ViewDataImpl::Get(*view).ArrangeAsLayoutRoot(bounds);
   }
 
   /**

@@ -2257,6 +2257,11 @@ LayoutRect ViewDataImpl::GetArrangedBounds() const
   return mArrangedBounds;
 }
 
+bool ViewDataImpl::HasArrangeResult() const
+{
+  return mArrangeResultAvailable;
+}
+
 bool ViewDataImpl::IsInitialLayoutDone() const
 {
   return mInitialLayoutDone;
@@ -2741,6 +2746,27 @@ void ViewDataImpl::OnChildAdded(Actor& child, bool allowNonViewChild)
     // registers now (there is no dirty short-circuit), so this reaches the new
     // root regardless of the child's prior dirty state.
     ViewDataImpl::Get(childImpl).InvalidateLogicalContextRecursive();
+
+    // Retract the moved child's arrange RESULT record, not only its caches.
+    // mArrangedBounds is a parent-local rect, so under a NEW parent the record
+    // describes nothing; yet mArrangeResultAvailable would otherwise stay true
+    // forever, and it is the bit three consumers key on:
+    //  - the arrange cache-HIT gate treats any result-holding child as part of
+    //    the replay set and requires its cache to be valid -- a child this
+    //    parent's producer never arranges can never revalidate, so ONE
+    //    reparented-in child would keep a producer that ignores its children
+    //    (a Label, a leaf-style OnArrange) out of the hit PERMANENTLY;
+    //  - the replay itself would re-apply the OLD parent's rect;
+    //  - the RTL resolver would mirror the OLD parent's logical x against the
+    //    NEW parent's width.
+    // Clearing it makes the child "never arranged" again, which is exactly what
+    // it is in this parent's coordinate space: the gate and the replay skip it,
+    // and the first pass in which any producer arranges it re-establishes the
+    // record. Direct child only, NOT recursive -- descendants' rects are
+    // relative to the child and stay meaningful -- and deliberately NOT inside
+    // InvalidateLogicalContextRecursive(), whose other callers (scale changes,
+    // scene reconnection) move no view between parents.
+    ViewDataImpl::Get(childImpl).mArrangeResultAvailable = false;
 
     // Invalidate the child's measure cache -- its previous cache was computed
     // under a different parent's constraints and is no longer reliable.
@@ -3557,6 +3583,79 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
   }
 }
 
+/**
+ * Drop the DIRECT PARENT's arrange cache entry before an UNOWNED arrange pass
+ * rewrites this view's arrange records.
+ *
+ * Why it is needed: Arrange() publishes mArrangedBounds and (on a clean pass)
+ * mLastArrangeInput unconditionally, and an ancestor's cache HIT replays this
+ * view FROM those records -- CanReplayArrangeSubtreeFromCache deliberately skips
+ * the cache-KEY comparison for descendants on the premise that each descendant's
+ * recorded slot is the one the ancestor's own producer chain handed it. A public
+ * out-of-band Arrange() breaks that premise: after it, the parent's HIT would
+ * keep replaying the foreign bounds while a forced MISS would re-run the
+ * producer and restore the parent-derived slot -- the hit/miss divergence
+ * View::Arrange()'s contract rules out. This is the arrange-side twin of
+ * InvalidateAncestorLayoutCachesForMeasureMiss(), with two deliberate
+ * asymmetries:
+ *
+ *  - ARRANGE caches only. An arrange rewrites no measured slot, so every
+ *    ancestor's MEASURE entry stays exactly as reproducible as it was.
+ *  - ONE node, not a chain. The measure hit predicate is node-local, so the
+ *    measure walk must clear every level itself; the arrange hit gate is
+ *    RECURSIVE (it re-tests mArrangeCacheValid at every descendant it would
+ *    elide), so one cleared parent already refuses every ancestor's hit, and
+ *    the misses that follow re-publish level by level.
+ *
+ * Cache-only, like the measure walk: no dirty, no poison, no registration --
+ * this must never schedule (or spin) a layout pass. The next pass that reaches
+ * the parent simply misses once and re-hands every child its parent-derived
+ * slot, which is exactly the pre-cache behaviour.
+ */
+void ViewDataImpl::InvalidateParentArrangeCacheForOutOfBandArrange(bool frameworkLayoutRootPass)
+{
+  // A standalone view is its own layout root, but that alone does NOT make every
+  // Arrange() owned: an application can call the public View::Arrange() with
+  // arbitrary bounds, and the parent's next MISS would replace them with the
+  // requested-position / measured-extent slot from ArrangeStandaloneChild. Only
+  // LayoutController's root entry point proves that this pass used the framework
+  // derivation which converges with the parent's derivation.
+  if(frameworkLayoutRootPass && IntegrationView::IsLayoutModeStandalone(mViewImpl))
+  {
+    return;
+  }
+
+  // Only a RECYCLER frame owns Arrange calls. An ARRANGE frame is deliberately a
+  // Measure-only scope (ArrangeOwnedMeasureScope): treating its mere presence as
+  // arrange ownership would let a nested, unrelated public Arrange() retain a stale
+  // parent entry.
+  const LayoutDependency::Frame* const frame = LayoutDependency::Top();
+  if(frame != nullptr && frame->owner != nullptr && frame->kind == LayoutDependency::OwnerKind::RECYCLER)
+  {
+    return;
+  }
+
+  Ui::View parentView = GetParentView();
+  if(!parentView)
+  {
+    return; // A layout root: there is no parent entry to go stale.
+  }
+
+  ViewDataImpl& parentData = ViewDataImpl::Get(GetImpl(parentView));
+
+  // The direct parent is mid-arrange: this call came from its own producer
+  // chain (the normal recursion, every layout manager, or a third-party
+  // producer arranging its own child). Whatever a producer does inside its own
+  // pass IS its output -- a re-run would reproduce it -- so the parent's
+  // about-to-publish entry stays a faithful replay premise.
+  if(parentData.mArrangeInProgress)
+  {
+    return;
+  }
+
+  parentData.mArrangeCacheValid = false;
+}
+
 MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
 {
   // Same-view re-entrancy is guarded in RELEASE, not just DEBUG: Measure() is
@@ -3823,6 +3922,13 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
     //    resolved into the mArrangedBounds the replay is about to apply. The key
     //    match is implied by the parent's key match plus purity, which is why purity
     //    is required at every node and not only at the top.
+    //
+    //    That "recorded by THIS chain's producers" premise is ENFORCED, not
+    //    assumed: an unowned out-of-band Arrange() on any descendant rewrites
+    //    those records and, in the same breath, retracts its direct parent's
+    //    entry (InvalidateParentArrangeCacheForOutOfBandArrange) -- which this
+    //    recursive walk then sees as an invalid node and refuses the whole hit.
+    //    So a hit can never replay a record this chain did not write.
     //  - mChildren.Empty(), which is what this increment removes.
     //
     // mArrangeProducerPure is the term that carries the implication above.
@@ -3935,9 +4041,9 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache()
   // 3. Mirror direct children when the effective layout direction resolves to
   //    RIGHT_TO_LEFT, once per visited node, with the same argument the MISS path
   //    passes (its final bounds' width). Running it AFTER the children matches the
-  //    MISS ordering -- producer recursion first, mirror last -- which is what keeps
-  //    ApplyLayoutDirection's non-deterministic actor read-back branch toggling
-  //    exactly as often as it does today.
+  //    MISS ordering -- producer recursion first, mirror last. A child without an
+  //    arrange result is left untouched on both paths: there is no parent-owned
+  //    logical position to mirror.
   ApplyLayoutDirection(cached.width);
 
   // Already true on any path that could reach a hit (the cache was published by a
@@ -3956,6 +4062,16 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache()
 }
 
 LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
+{
+  return ArrangeImpl(bounds, false);
+}
+
+LayoutRect ViewDataImpl::ArrangeAsLayoutRoot(const LayoutRect& bounds)
+{
+  return ArrangeImpl(bounds, true);
+}
+
+LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLayoutRootPass)
 {
   // Validate first-party layout invariants in DEBUG only: this runs on the
   // per-frame, per-view layout hot path (including deep child recursion), so a
@@ -4135,6 +4251,15 @@ LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
   // for this scope.
   ArrangePassGuard pass(*this);
 
+  // This pass will rewrite the arrange records every ancestor's cache HIT
+  // replays this view from (mArrangedBounds is published unconditionally
+  // below). If no producer above owns this pass -- an out-of-band public
+  // Arrange() -- the direct parent's cache entry must stop being servable, or
+  // its next HIT would replay the foreign result where a MISS would restore the
+  // parent-derived slot. Owned passes (parent mid-arrange, recycler scope, and a
+  // framework-owned standalone root pass) return without touching anything.
+  InvalidateParentArrangeCacheForOutOfBandArrange(frameworkLayoutRootPass);
+
   // Establish this view's logical layout context for the pass, exactly as
   // Measure() does at its own entry. Every arrange producer that touches
   // children reads the effective scale anyway, but the DEFAULT arrange of a
@@ -4200,9 +4325,8 @@ LayoutRect ViewDataImpl::Arrange(const LayoutRect& bounds)
   // (LayoutManager / ArrangeCallback / default OnArrange), keeping layout managers
   // direction-agnostic. A cache HIT returns above, and ReplayArrangeSubtreeFromCache
   // performs this same call, once per node it visits, with that node's cached width
-  // -- the mirror is reproduced, not skipped. That matters beyond the geometry: the
-  // read-back branch of ApplyLayoutDirection is an involution over persistent actor
-  // state, so its toggle count has to match a MISS exactly.
+  // -- the mirror is reproduced, not skipped. Children that have no arranged result
+  // are ignored on both paths because no logical position belongs to this parent.
   ApplyLayoutDirection(finalBounds.width);
 
   // Conditional cache publish, mirroring Measure.
@@ -4378,36 +4502,21 @@ void ViewDataImpl::ApplyLayoutDirection(float parentWidth)
     Actor         child     = childImpl.Self();
     ViewDataImpl& childData = ViewDataImpl::Get(childImpl);
 
-    if(childData.mArrangeResultAvailable)
+    // A producer that does not arrange this child has supplied no logical bounds
+    // for the framework to mirror. Reading the actor's current (already physical)
+    // position as if it were logical makes repeated identical passes alternate
+    // between x and MirrorX(x). Leave the actor untouched until some producer
+    // actually arranges the child and publishes a parent-local logical result.
+    if(!childData.mArrangeResultAvailable)
     {
-      // Mirror from the child's LOGICAL arranged bounds, never from the actor.
-      //
-      // The actor read-back below computes the SAME number today only because the
-      // child's own Arrange() has just rewritten POSITION_X / SIZE_WIDTH to those
-      // very bounds (ApplySelfBoundsIfChanged), which makes the read-back form an
-      // involution over persistent actor state: run it twice without an
-      // intervening rewrite and the mirror cancels itself. That premise is not
-      // ours to keep -- a parent producer that never arranges its children leaves
-      // the actor untouched, and an external POSITION_X write (the sanctioned
-      // Extension::SetPositionX escape hatch) lands there too. Reading
-      // mArrangedBounds makes the mirror a pure function of the child's arranged
-      // geometry, so it is idempotent and immune to both.
-      const LayoutRect logical = childData.GetArrangedBounds();
-      child.SetPositionX(MirrorX(parentWidth, logical.x, logical.width));
+      continue;
     }
-    else
-    {
-      // No arrange result exists for this child yet, so there are no logical
-      // bounds to mirror. Reachable when a producer places a non-standalone child
-      // without arranging it (a leaf-style OnArrange that ignores its children,
-      // for instance), leaving the actor geometry as the only record of where the
-      // child is. Falling back to the historical read-back keeps that case byte
-      // for byte as it was; the first Arrange() of the child promotes it to the
-      // deterministic branch above and it never returns here.
-      const float oldX   = child.GetProperty<float>(Actor::Property::POSITION_X);
-      const float childW = child.GetProperty<float>(Actor::Property::SIZE_WIDTH);
-      child.SetPositionX(MirrorX(parentWidth, oldX, childW));
-    }
+
+    // Mirror from the child's LOGICAL arranged bounds, never from the actor. This
+    // is a pure function of the result the child published and is therefore
+    // idempotent and immune to external actor-position writes.
+    const LayoutRect logical = childData.GetArrangedBounds();
+    child.SetPositionX(MirrorX(parentWidth, logical.x, logical.width));
   }
 }
 
