@@ -3799,6 +3799,176 @@ int UtcDaliLayoutTransitionFreshZeroSizeChildSettlesEnterSpecP(void)
   DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::SIZE_WIDTH), 0.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(gOnStartInvokes, 0u, TEST_LOCATION); // settle, not a CHANGE
   DALI_TEST_EQUALS(c.GetCurrentProperty<float>(Actor::Property::OPACITY), 1.0f, 0.001f, TEST_LOCATION);
+
+  // ...and not settled again afterwards. The settle bakes the spec's target values with
+  // BAKE_FINAL, so repeating it would silently overwrite whatever the application has
+  // put on the same properties since; an application write between passes is the
+  // cheapest deterministic probe for that.
+  //
+  // Here the child IS arranged (the stack layout places it, at zero size), so its
+  // freshChild classification goes false after the first pass and the branch is not
+  // re-entered regardless of the latch -- this half is a regression guard, not a
+  // discriminator. The case where the branch IS re-entered on every pass, and where the
+  // latch is therefore load-bearing, is
+  // UtcDaliLayoutTransitionNeverArrangedChildSettlesEnterOnceP.
+  c.SetProperty(Actor::Property::OPACITY, 0.25f);
+  for(int i = 0; i < 5; ++i)
+  {
+    p.InvalidateArrange();
+    application.SendNotification();
+    application.Render(50);
+  }
+  DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::OPACITY), 0.25f, 0.001f, TEST_LOCATION);
+  END_TEST;
+}
+
+namespace
+{
+// An arrange producer that arranges NO child. Its children are therefore never
+// arranged, which is what keeps CapturedChild::freshChild (== !IsInitialLayoutDone())
+// true for them on every subsequent pass.
+LayoutRect ArrangeNoChildren(View, const LayoutRect& bounds)
+{
+  return bounds;
+}
+} // namespace
+
+// The fresh-child ENTER settle is a ONE-SHOT. `freshChild` is `!IsInitialLayoutDone()`,
+// so a child that no producer ever arranges keeps it true forever and the settle branch
+// is re-entered on every pass. Each entry allocates a 0-duration Animation and
+// BAKE_FINALs the ENTER spec, which overwrites whatever the application has since put
+// on those properties. The settle is needed exactly once; the latch is what makes it
+// exactly once.
+//
+// The probe is an application property write rather than an application Animation: the
+// clobber is the same one either way, and a direct write is deterministic against the
+// test suite's simulated clock (an in-flight animator keeps writing its own progress
+// value each frame, which would make the assertion timing-dependent).
+//
+// Non-vacuity (verified by mutation): removing the IsInitialEnterSettled() gate from
+// the direct-child freshChild branch makes every pass re-bake, and the final check
+// finds 1.0 instead of the application's 0.25.
+int UtcDaliLayoutTransitionNeverArrangedChildSettlesEnterOnceP(void)
+{
+  UiTestApplication application;
+  ResetCaptures();
+
+  View p = View::New();
+  p.SetRequestedWidth(200.0f);
+  p.SetRequestedHeight(200.0f);
+  p.SetArrangeCallback(ArrangeCallback::New(&ArrangeNoChildren));
+  application.GetWindow().Add(p);
+  application.SendNotification();
+  application.Render(0); // p laid out, NO transition yet
+
+  View c = View::New();
+  c.SetProperty(Actor::Property::OPACITY, 0.0f);
+  c.SetRequestedWidth(50.0f);
+  c.SetRequestedHeight(50.0f);
+  p.Add(c); // fresh, added while p has no transition, and never arranged by p
+
+  LayoutTransition  t         = LayoutTransition::New();
+  ViewAnimationSpec enterSpec = ViewAnimationSpec::New();
+  enterSpec.Opacity(1.0f, Duration(0.2f));
+  t.SetEnterVisualSpec(enterSpec)
+    .SetReflowScope(LayoutReflowScope::DIRECT_CHILDREN)
+    .SetOnStart(LayoutLifecycleCallback::New(&CaptureOnStart));
+  p.SetLayoutTransition(t);
+
+  for(int i = 0; i < 10; ++i)
+  {
+    application.SendNotification();
+    application.Render(50);
+  }
+
+  // The settle ran: the fade-in start value is not stranded.
+  DALI_TEST_EQUALS(gOnStartInvokes, 0u, TEST_LOCATION); // settle, not an ENTER
+  DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::OPACITY), 1.0f, 0.001f, TEST_LOCATION);
+
+  // It must not run again. The child is still never arranged, so every pass below
+  // re-enters the same branch.
+  c.SetProperty(Actor::Property::OPACITY, 0.25f);
+  for(int i = 0; i < 5; ++i)
+  {
+    p.InvalidateArrange();
+    application.SendNotification();
+    application.Render(50);
+  }
+
+  DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::OPACITY), 0.25f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(gOnStartInvokes, 0u, TEST_LOCATION);
+  END_TEST;
+}
+
+// The latch is per-view state and must NOT survive a reparent: a move is the only way
+// the transition that governs the child -- and therefore the ENTER spec that was baked
+// onto it -- can change, so the new owner's spec has to be settled in its turn.
+//
+// Non-vacuity (verified by mutation): removing the `mInitialEnterSettled = false` write
+// from ViewDataImpl::OnChildAdded leaves the latch set, the second owner's spec is never
+// baked, and the final check finds the first owner's 1.0 instead of 0.6.
+int UtcDaliLayoutTransitionNeverArrangedChildReparentSettlesEnterAgainP(void)
+{
+  UiTestApplication application;
+  ResetCaptures();
+
+  View first = View::New();
+  first.SetRequestedWidth(200.0f);
+  first.SetRequestedHeight(100.0f);
+  first.SetArrangeCallback(ArrangeCallback::New(&ArrangeNoChildren));
+  application.GetWindow().Add(first);
+
+  View second = View::New();
+  second.SetRequestedWidth(200.0f);
+  second.SetRequestedHeight(100.0f);
+  second.SetArrangeCallback(ArrangeCallback::New(&ArrangeNoChildren));
+  application.GetWindow().Add(second);
+
+  application.SendNotification();
+  application.Render(0); // both owners laid out, NEITHER has a transition yet
+
+  View c = View::New();
+  c.SetProperty(Actor::Property::OPACITY, 0.0f);
+  c.SetRequestedWidth(50.0f);
+  c.SetRequestedHeight(50.0f);
+  first.Add(c);
+
+  LayoutTransition  t1    = LayoutTransition::New();
+  ViewAnimationSpec spec1 = ViewAnimationSpec::New();
+  spec1.Opacity(1.0f, Duration(0.2f));
+  t1.SetEnterVisualSpec(spec1)
+    .SetReflowScope(LayoutReflowScope::DIRECT_CHILDREN)
+    .SetOnStart(LayoutLifecycleCallback::New(&CaptureOnStart));
+  first.SetLayoutTransition(t1);
+
+  for(int i = 0; i < 10; ++i)
+  {
+    application.SendNotification();
+    application.Render(50);
+  }
+
+  DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::OPACITY), 1.0f, 0.001f, TEST_LOCATION);
+
+  // Reparent, then attach the second owner's transition -- the same order as above, so
+  // the child reaches the fresh-child settle branch under the NEW owner rather than a
+  // recorded ENTER candidate.
+  second.Add(c);
+
+  LayoutTransition  t2    = LayoutTransition::New();
+  ViewAnimationSpec spec2 = ViewAnimationSpec::New();
+  spec2.Opacity(0.6f, Duration(0.2f));
+  t2.SetEnterVisualSpec(spec2)
+    .SetReflowScope(LayoutReflowScope::DIRECT_CHILDREN)
+    .SetOnStart(LayoutLifecycleCallback::New(&CaptureOnStart));
+  second.SetLayoutTransition(t2);
+
+  for(int i = 0; i < 10; ++i)
+  {
+    application.SendNotification();
+    application.Render(50);
+  }
+
+  DALI_TEST_EQUALS(c.GetProperty<float>(Actor::Property::OPACITY), 0.6f, 0.001f, TEST_LOCATION);
   END_TEST;
 }
 

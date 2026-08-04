@@ -767,7 +767,7 @@ int UtcDaliArrangeCachePolicyChangeInvalidatesSettledEntryP(void)
 // exposes OnArrange again; a stale derived bit would incorrectly reuse the callback's
 // published entry.
 //
-// Non-vacuity (verified by mutation): removing the OnArrangeProducerTraitChanged() call
+// Non-vacuity (verified by mutation): removing the OnLayoutProducerTraitChanged() call
 // from ViewDataImpl::RemoveTrait leaves the bit TRUE and the entry live, and both
 // post-removal assertions fail.
 int UtcDaliArrangeCacheProducerPolicyClearedByExternalTraitRemovalP(void)
@@ -806,6 +806,9 @@ int UtcDaliArrangeCacheProducerPolicyClearedByExternalTraitRemovalP(void)
   DALI_TEST_CHECK(!DataOf(leaf).ArrangesIfChanged());
   // ...and the entry the callback published must not outlive it.
   DALI_TEST_CHECK(!DataOf(leaf).IsArrangeCacheValid());
+  // The MEASURE entry goes with it: LAYOUT_SIGNALS holds the MeasureCallback in the same
+  // LayoutCallbacksObject, so removing the trait removes a measure producer too.
+  DALI_TEST_CHECK(!DataOf(leaf).IsMeasureCacheValid());
 
   // Behaviourally: the override now runs on every settled pass.
   Settle(application);
@@ -819,6 +822,136 @@ int UtcDaliArrangeCacheProducerPolicyClearedByExternalTraitRemovalP(void)
     leaf.Arrange(leafSlot);
   }
   DALI_TEST_EQUALS(PolicyCounterImplOf(leaf).GetArrangeCallCount(), callBase + PASSES, TEST_LOCATION);
+
+  END_TEST;
+}
+
+namespace
+{
+// A counting MEASURE producer. Its result is deliberately unlike anything the default
+// MeasureDefault() would return for the same view, so "the cached slot was retracted"
+// is visible as geometry and not only as a bit.
+int gTraitMeasureCount = 0;
+
+MeasuredSize CountingTraitMeasure(View, float, float)
+{
+  ++gTraitMeasureCount;
+  return MeasuredSize(70.0f, 45.0f);
+}
+} // namespace
+
+// The measure axis of the same external-swap story. LAYOUT_MANAGER supplies
+// LayoutManager::Measure(), so removing it removes a MEASURE producer -- and the slot
+// that producer published is what every ancestor arranges FROM. Retracting only the
+// arrange entry would leave the manager's measured height in force after the manager
+// itself was gone.
+//
+// Non-vacuity (verified by mutation): changing the tail of
+// ViewDataImpl::OnLayoutProducerTraitChanged back to `if(mArrangeCacheValid)
+// InvalidateArrange();` leaves the measure entry valid and un-dirty, so the two bit
+// checks fail and the container keeps the manager's stacked height.
+int UtcDaliMeasureCacheClearedByExternalLayoutManagerTraitRemovalP(void)
+{
+  UiTestApplication application;
+  tet_infoline("An external LAYOUT_MANAGER removal retracts the measured slot the manager published");
+
+  gManagerArrangeCount = 0;
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  // WRAP_CONTENT, so the measured size IS the manager's Measure() result.
+  View container = View::New();
+  container.AttachLayoutManager(Dali::UniquePtr<LayoutManager>(new CountingLayoutManager()));
+  root.Add(container);
+
+  View first = View::New();
+  first.SetRequestedWidth(50.0f);
+  first.SetRequestedHeight(30.0f);
+  container.Add(first);
+
+  View second = View::New();
+  second.SetRequestedWidth(50.0f);
+  second.SetRequestedHeight(30.0f);
+  container.Add(second);
+
+  Settle(application);
+
+  DALI_TEST_CHECK(DataOf(container).IsMeasureCacheValid());
+  DALI_TEST_CHECK(!DataOf(container).IsMeasureDirty());
+
+  const int   settledManagerCount = gManagerArrangeCount;
+  const float managedHeight       = container.GetProperty<float>(Actor::Property::SIZE_HEIGHT);
+  DALI_TEST_CHECK(settledManagerCount > 0);
+  // The manager stacks its two 30-high children: a height no default measure produces.
+  DALI_TEST_EQUALS(managedHeight, 60.0f, TEST_LOCATION);
+
+  // The external swap. Nothing in the library takes this path.
+  DALI_TEST_CHECK(IntegrationView::RemoveTrait(GetImpl(container), ReservedTraitId::LAYOUT_MANAGER));
+
+  DALI_TEST_CHECK(!DataOf(container).IsMeasureCacheValid());
+  DALI_TEST_CHECK(DataOf(container).IsMeasureDirty());
+  DALI_TEST_CHECK(!DataOf(container).IsArrangeCacheValid());
+
+  // The invalidation also propagated, so the batch that follows re-measures with the
+  // producer that is actually installed now (the default OnMeasure).
+  Settle(application);
+
+  DALI_TEST_EQUALS(gManagerArrangeCount, settledManagerCount, TEST_LOCATION);
+  DALI_TEST_CHECK(container.GetProperty<float>(Actor::Property::SIZE_HEIGHT) != managedHeight);
+  DALI_TEST_EQUALS(container.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 30.0f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The LAYOUT_SIGNALS half. One LayoutCallbacksObject holds BOTH the MeasureCallback and
+// the ArrangeCallback, so removing that trait removes the measure producer as well.
+//
+// Non-vacuity (verified by mutation): the same mutation as above leaves the callback's
+// measured slot cached, so the view keeps its 70 x 45 size after the callback is gone.
+int UtcDaliMeasureCacheClearedByExternalLayoutSignalsTraitRemovalP(void)
+{
+  UiTestApplication application;
+  tet_infoline("An external LAYOUT_SIGNALS removal retracts the measured slot the MeasureCallback published");
+
+  gTraitMeasureCount = 0;
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  // WRAP_CONTENT and childless: the callback's result is the only thing that can give
+  // this view a non-zero size.
+  View leaf = View::New();
+  leaf.SetMeasureCallback(MeasureCallback::New(&CountingTraitMeasure));
+  root.Add(leaf);
+
+  Settle(application);
+
+  DALI_TEST_CHECK(DataOf(leaf).IsMeasureCacheValid());
+  DALI_TEST_CHECK(!DataOf(leaf).IsMeasureDirty());
+
+  const int settledMeasureCount = gTraitMeasureCount;
+  DALI_TEST_CHECK(settledMeasureCount > 0);
+  DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::SIZE_WIDTH), 70.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 45.0f, TEST_LOCATION);
+
+  DALI_TEST_CHECK(IntegrationView::RemoveTrait(GetImpl(leaf), ReservedTraitId::LAYOUT_SIGNALS));
+
+  DALI_TEST_CHECK(!DataOf(leaf).IsMeasureCacheValid());
+  DALI_TEST_CHECK(DataOf(leaf).IsMeasureDirty());
+  DALI_TEST_CHECK(!DataOf(leaf).IsArrangeCacheValid());
+
+  Settle(application);
+
+  // The callback is gone, so it cannot have produced this: a childless WRAP_CONTENT view
+  // measures to nothing.
+  DALI_TEST_EQUALS(gTraitMeasureCount, settledMeasureCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::SIZE_WIDTH), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(leaf.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 0.0f, TEST_LOCATION);
 
   END_TEST;
 }

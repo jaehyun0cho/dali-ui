@@ -807,7 +807,18 @@ void LayoutTransitionDispatcher::StartTransitionsForView(ViewImpl* root)
         // opacity 0) would stay invisible forever. SettleInitialEnter skips
         // animator mode (the application owns those property writes) and
         // no-ops when the owner has no ENTER spec.
-        SettleInitialEnter(child, transition);
+        //
+        // ONE-SHOT. `cap.freshChild` is `!IsInitialLayoutDone()`, so a child that no
+        // producer ever arranges keeps it TRUE forever and VisualBoundsOf keeps
+        // returning the zero sentinel -- this branch is then re-entered on EVERY pass.
+        // Without the latch each of those passes would allocate a 0-duration Animation
+        // and BAKE_FINAL the ENTER spec again, clobbering any application animation on
+        // the same properties. The settle IS still required exactly once, which is why
+        // this branch continues to precede the equal-bounds skip.
+        if(!ViewDataImpl::Get(*child).IsInitialEnterSettled())
+        {
+          SettleInitialEnter(child, transition);
+        }
         continue;
       }
       if(BoundsApproxEqual(inheritedFrom, inheritedTo))
@@ -901,7 +912,15 @@ void LayoutTransitionDispatcher::StartTransitionsForView(ViewImpl* root)
       {
         SettleChangeWithoutAnimation(child, to);
       }
-      SettleInitialEnter(child, transition);
+      // ONE-SHOT, for the reason spelled out on the inherited branch above: a child no
+      // producer ever arranges keeps freshChild TRUE forever, so this branch is
+      // re-entered on every pass and each entry would otherwise allocate a 0-duration
+      // Animation and re-bake the ENTER spec. The settle is still required exactly
+      // once, which is why the branch still precedes the equal-bounds skip.
+      if(!ViewDataImpl::Get(*child).IsInitialEnterSettled())
+      {
+        SettleInitialEnter(child, transition);
+      }
       continue;
     }
 
@@ -1350,6 +1369,10 @@ void LayoutTransitionDispatcher::SettleInitialEnter(ViewImpl* child, Ui::LayoutT
   // so no lifecycle dispatch leaks for the suppressed initial mount.
   AbortIfSpecHasReverseAlpha(spec);
   AbortIfSpecHasLayoutBoundsProperty(spec);
+  // Latched here, after every early return: only a call that actually BAKES the spec
+  // has done the work the latch stands for. The animator-mode and no-spec exits keep
+  // re-entering on later passes, which then costs only CancelPendingExit.
+  ViewDataImpl::Get(*child).MarkInitialEnterSettled();
   Animation anim = Animation::New(0.0f);
   spec.ApplyTo(anim, childHandle);
   anim.SetEndAction(Animation::BAKE_FINAL);

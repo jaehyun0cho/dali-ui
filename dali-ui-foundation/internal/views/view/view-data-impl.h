@@ -210,39 +210,47 @@ public:
   View::FocusChangedSignalType& FocusChangedSignal();
   bool                          NotifyKeyEvent(const KeyEvent& event);
 
-  void                      SetRequestedX(float x);
-  void                      SetRequestedY(float y);
-  float                     GetRequestedX() const;
-  float                     GetRequestedY() const;
-  void                      SetUiScalePolicy(UiScalePolicy policy);
-  UiScalePolicy             GetUiScalePolicy() const;
-  float                     GetEffectiveScale() const;
-  void                      InvalidateMeasure();
-  void                      InvalidateArrange();
-  MeasuredSize              GetMeasuredSize() const;
-  void                      SetRequestedWidth(float width);
-  float                     GetRequestedWidth() const;
-  void                      SetRequestedHeight(float height);
-  float                     GetRequestedHeight() const;
-  void                      SetMinimumWidth(float width);
-  float                     GetMinimumWidth() const;
-  void                      SetMinimumHeight(float height);
-  float                     GetMinimumHeight() const;
-  void                      SetMaximumWidth(float width);
-  float                     GetMaximumWidth() const;
-  void                      SetMaximumHeight(float height);
-  float                     GetMaximumHeight() const;
-  void                      SetMargin(const Insets& margin);
-  Insets                    GetMargin() const;
-  void                      SetPadding(const Insets& padding);
-  Insets                    GetPadding() const;
-  void                      SetLayoutMode(LayoutMode mode);
-  LayoutMode                GetLayoutMode() const;
-  void                      SetLayoutTransition(LayoutTransition transition);
-  LayoutTransition          GetLayoutTransition() const;
-  LayoutRect                GetArrangedBounds() const;
-  bool                      HasArrangeResult() const;
-  bool                      IsInitialLayoutDone() const;
+  void             SetRequestedX(float x);
+  void             SetRequestedY(float y);
+  float            GetRequestedX() const;
+  float            GetRequestedY() const;
+  void             SetUiScalePolicy(UiScalePolicy policy);
+  UiScalePolicy    GetUiScalePolicy() const;
+  float            GetEffectiveScale() const;
+  void             InvalidateMeasure();
+  void             InvalidateArrange();
+  MeasuredSize     GetMeasuredSize() const;
+  void             SetRequestedWidth(float width);
+  float            GetRequestedWidth() const;
+  void             SetRequestedHeight(float height);
+  float            GetRequestedHeight() const;
+  void             SetMinimumWidth(float width);
+  float            GetMinimumWidth() const;
+  void             SetMinimumHeight(float height);
+  float            GetMinimumHeight() const;
+  void             SetMaximumWidth(float width);
+  float            GetMaximumWidth() const;
+  void             SetMaximumHeight(float height);
+  float            GetMaximumHeight() const;
+  void             SetMargin(const Insets& margin);
+  Insets           GetMargin() const;
+  void             SetPadding(const Insets& padding);
+  Insets           GetPadding() const;
+  void             SetLayoutMode(LayoutMode mode);
+  LayoutMode       GetLayoutMode() const;
+  void             SetLayoutTransition(LayoutTransition transition);
+  LayoutTransition GetLayoutTransition() const;
+  LayoutRect       GetArrangedBounds() const;
+  bool             HasArrangeResult() const;
+  bool             IsInitialLayoutDone() const;
+  /// One-shot latch for the layout transition dispatcher's fresh-child ENTER settle.
+  /// A child that no producer ever arranges keeps its "fresh" classification forever,
+  /// so the settle branch is re-entered on every pass; the settle itself is needed
+  /// exactly once, and this records that it has happened. Cleared on reparent
+  /// (OnChildAdded), because that is the only way the governing transition -- and
+  /// hence the ENTER spec that was baked -- can change.
+  bool                      IsInitialEnterSettled() const;
+  void                      MarkInitialEnterSettled();
   uint32_t                  GetChildViewCount() const;
   View                      GetChildViewAt(uint32_t index) const;
   Dali::Vector<View>&       GetChildren();
@@ -1063,20 +1071,26 @@ private:
   void RefreshArrangeProducerPolicy();
 
   /**
-   * @brief Re-derives the arrange producer policy after a reserved layout trait was
-   * added, replaced or removed.
+   * @brief Re-derives layout producer state after a reserved layout trait was added,
+   * replaced or removed.
    *
-   * A no-op unless @p id is ReservedTraitId::LAYOUT_SIGNALS (the ArrangeCallback) or
-   * ReservedTraitId::LAYOUT_MANAGER (the LayoutManager) -- the only two traits that
-   * change WHICH producer Arrange() dispatches to. For LAYOUT_SIGNALS it also clears
-   * the stored callback policy, since that policy belonged to the callback
-   * object being replaced. Defensive: it exists for the public
-   * Integration::View::SetTrait/RemoveTrait surface, which can reach those ids
-   * without going through SetArrangeCallback()/AttachLayoutManager().
+   * A no-op unless @p id is ReservedTraitId::LAYOUT_SIGNALS (the LayoutCallbacksObject,
+   * which holds BOTH the MeasureCallback and the ArrangeCallback) or
+   * ReservedTraitId::LAYOUT_MANAGER (the LayoutManager, which supplies both Measure()
+   * and Arrange()) -- the only two traits that change WHICH producer a layout pass
+   * dispatches to. Both therefore carry a producer on BOTH axes, which is why this
+   * covers measure as well as arrange: it re-derives the arrange execution policy, and
+   * it retracts the cached results the outgoing producer published. For LAYOUT_SIGNALS
+   * it also clears the stored callback policy, since that policy belonged to the
+   * callback object being replaced.
+   *
+   * Defensive: it exists for the public Integration::View::SetTrait/RemoveTrait surface,
+   * which can reach those ids without going through
+   * SetMeasureCallback()/SetArrangeCallback()/AttachLayoutManager().
    *
    * @param[in] id The trait that changed
    */
-  void OnArrangeProducerTraitChanged(TraitId id);
+  void OnLayoutProducerTraitChanged(TraitId id);
 
   /**
    * @brief Whether any DIRECT child is a standalone view whose freshly measured
@@ -1476,6 +1490,7 @@ private:
   bool         mEffectiveScaleActorSynced : 1;                    ///< THE sync bit for the ACTOR-side copy of the scale (the animatable VIEW_EFFECTIVE_SCALE property): true exactly when that property is known to hold mEffectiveScale. The second half of the pair whose first half is mLogicalContextValid -- that one says the CACHED scale is usable, this one says the ACTOR already has it. Set by Measure()'s push (after the write, which re-enters the clear below), cleared by DropCachedLogicalContext() (the value it names has been retracted) and by ViewDataImpl::SetProperty for that index, which is the single funnel every event-side write of the property passes through. Default false, so the first Measure() always pushes.
   bool         mLogicalContextPoisonedDuringPass : 1;             ///< True when the logical context was invalidated while an arrange pass was running.
   bool         mInitialLayoutDone : 1;                            ///< True after this view has completed at least one arrange pass; used by the dispatcher to suppress ENTER on initial mount
+  bool         mInitialEnterSettled : 1;                          ///< True once LayoutTransitionDispatcher::SettleInitialEnter has actually BAKED an ENTER spec onto this view. The fresh-child settle branch is re-entered on every pass for a child no producer ever arranges (freshChild stays true forever), and each entry would otherwise allocate a 0-duration Animation and re-bake. Cleared by OnChildAdded, the only path that can change which transition governs this view.
   bool         mIsFocusGroup : 1;                                 ///< Stores whether the view is a focus group.
   bool         mDispatchKeyEvents : 1;                            ///< Whether the actor emits key event signals
   bool         mAccessibleCreatable : 1;                          ///< Whether we can create new accessible or not.

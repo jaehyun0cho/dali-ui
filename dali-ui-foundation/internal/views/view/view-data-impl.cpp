@@ -964,6 +964,7 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   mEffectiveScaleActorSynced(false),
   mLogicalContextPoisonedDuringPass(false),
   mInitialLayoutDone(false),
+  mInitialEnterSettled(false),
   mIsFocusGroup(false),
   mDispatchKeyEvents(true),
   mAccessibleCreatable(true),
@@ -2279,6 +2280,16 @@ bool ViewDataImpl::IsInitialLayoutDone() const
   return mInitialLayoutDone;
 }
 
+bool ViewDataImpl::IsInitialEnterSettled() const
+{
+  return mInitialEnterSettled;
+}
+
+void ViewDataImpl::MarkInitialEnterSettled()
+{
+  mInitialEnterSettled = true;
+}
+
 uint32_t ViewDataImpl::GetChildViewCount() const
 {
   return static_cast<uint32_t>(mChildren.Count());
@@ -2779,6 +2790,14 @@ void ViewDataImpl::OnChildAdded(Actor& child, bool allowNonViewChild)
     // InvalidateLogicalContextRecursive(), whose other callers (scale changes,
     // scene reconnection) move no view between parents.
     ViewDataImpl::Get(childImpl).mArrangeResultAvailable = false;
+
+    // And retract the one-shot ENTER settle latch, for the same reason and in the same
+    // breath. A reparent is the ONLY way the transition that governs this child -- and
+    // therefore the ENTER spec SettleInitialEnter baked onto it -- can change, so a
+    // latch set under the old parent must not suppress the settle the NEW parent's spec
+    // needs. Scoped to the direct child exactly like the retraction above, and for the
+    // same reason: this is the node whose governing transition this call moves.
+    ViewDataImpl::Get(childImpl).mInitialEnterSettled = false;
 
     // Invalidate the child's measure cache -- its previous cache was computed
     // under a different parent's constraints and is no longer reliable.
@@ -4036,7 +4055,9 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache()
   //    it is an UNCONDITIONAL per-pass reconciliation, not a one-time apply, and it
   //    is what restores geometry clobbered outside layout (Extension::SetPositionX,
   //    a transition frame). Its exact `!=` write suppression makes the settled case
-  //    free -- four property reads and no scene-graph write.
+  //    free -- four property reads and no scene-graph write. Step 3's mirror is
+  //    guarded the same way, so "settled means no writes" holds for a right-to-left
+  //    subtree too.
   //
   //    The LOGICAL bounds are re-applied, never a mirrored value: mirroring stays
   //    the parent's job in step 3, which reads this view's logical mArrangedBounds,
@@ -4056,8 +4077,9 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache()
   //    keeps the INDEX valid; the local handle below is what keeps the CHILD alive.
   //    Between them they give the MISS path's snapshot guarantee without its
   //    per-node heap allocation, which is part of what the hit buys. In the settled
-  //    case the exact `!=` suppression performs no writes at all, so the
-  //    re-entrancy window is empty.
+  //    case this replay performs no scene-graph writes at all, so the re-entrancy
+  //    window is empty: both writers on the path -- ApplySelfBoundsIfChanged in step 1
+  //    and ApplyLayoutDirection's mirror in step 3 -- are read-compare-write.
   //
   //    The handle copy is NOT bookkeeping: the recursive call below can reach app
   //    code that unparents the very child being visited, and mChildren holds the
@@ -4531,7 +4553,9 @@ void ViewDataImpl::ApplyLayoutDirection(float parentWidth)
   // PushBack would reallocate and an Erase would shift; re-reading Count() keeps
   // the index sound and the local handle keeps the child alive for the call. This
   // path is now reached at EVERY node of a cache-hit replay, not only at the node
-  // that missed, so the exposure is no longer confined to a producer's own frame.
+  // that missed, so the exposure is no longer confined to a producer's own frame --
+  // though the write below is read-compare-write and therefore fires only when the
+  // child actually moves, which narrows the window to passes that change something.
   for(uint32_t i = 0; i < mChildren.Count(); ++i)
   {
     Ui::View  childView = mChildren[i];
@@ -4557,8 +4581,20 @@ void ViewDataImpl::ApplyLayoutDirection(float parentWidth)
     // Mirror from the child's LOGICAL arranged bounds, never from the actor. This
     // is a pure function of the result the child published and is therefore
     // idempotent and immune to external actor-position writes.
-    const LayoutRect logical = childData.GetArrangedBounds();
-    child.SetPositionX(MirrorX(parentWidth, logical.x, logical.width));
+    const LayoutRect logical  = childData.GetArrangedBounds();
+    const float      mirrored = MirrorX(parentWidth, logical.x, logical.width);
+
+    // Read-compare-write, exactly as ApplySelfBoundsIfChanged does it and with the same
+    // exact `!=`. The value above is a pure function of the child's published logical
+    // bounds and of this parent's arranged width, so a SETTLED right-to-left subtree
+    // computes the value the actor already holds and the write is suppressed -- which
+    // is what makes a cache-hit replay of such a subtree genuinely free instead of one
+    // scene-graph write per direct child per pass. Reconciliation is unaffected: an
+    // external clobber still differs from the computed value and is still repaired.
+    if(child.GetProperty<float>(Actor::Property::POSITION_X) != mirrored)
+    {
+      child.SetPositionX(mirrored);
+    }
   }
 }
 
@@ -5126,7 +5162,7 @@ void ViewDataImpl::SetTrait(TraitId id, IntrusivePtr<TraitObject> object)
       {
         entry.second->OnAttached(id, self);
       }
-      OnArrangeProducerTraitChanged(id);
+      OnLayoutProducerTraitChanged(id);
       return;
     }
   }
@@ -5136,12 +5172,12 @@ void ViewDataImpl::SetTrait(TraitId id, IntrusivePtr<TraitObject> object)
   {
     mTraits.back().second->OnAttached(id, self);
   }
-  OnArrangeProducerTraitChanged(id);
+  OnLayoutProducerTraitChanged(id);
 }
 
-void ViewDataImpl::OnArrangeProducerTraitChanged(TraitId id)
+void ViewDataImpl::OnLayoutProducerTraitChanged(TraitId id)
 {
-  // Two reserved traits carry a view's arrange producer: LAYOUT_SIGNALS holds the
+  // Two reserved traits carry a view's layout producers: LAYOUT_SIGNALS holds the
   // ArrangeCallback and LAYOUT_MANAGER the LayoutManager, the first two rungs of the
   // dispatch order in Arrange() (ArrangeCallback > LayoutManager > OnArrange).
   // Swapping either changes WHICH producer runs, so the derived policy bit must not
@@ -5168,14 +5204,26 @@ void ViewDataImpl::OnArrangeProducerTraitChanged(TraitId id)
   RefreshArrangeProducerPolicy();
 
   // Pair the change with an invalidation so a view that has already published an entry
-  // cannot be served from it under the new producer. Gated exactly as in
-  // SetArrangePolicy(), and for the same reason: this can run before the CustomActor
-  // handle exists (the first SetMeasureCallback/SetArrangeCallback creates the
-  // LAYOUT_SIGNALS trait), and mArrangeCacheValid is false until a pass publishes, so
-  // there is provably nothing to serve then.
-  if(mArrangeCacheValid)
+  // cannot be served from it under the new producer.
+  //
+  // The MEASURE axis has to go too, and that is why this is InvalidateMeasure() rather
+  // than InvalidateArrange(): both trait ids carry a measure producer as well as an
+  // arrange one. LAYOUT_MANAGER supplies LayoutManager::Measure(), and LAYOUT_SIGNALS
+  // holds the MeasureCallback and the ArrangeCallback in ONE LayoutCallbacksObject, so
+  // removing it removes both. Leaving the measured slot cached is worse than leaving the
+  // arranged one: the slot is what every ancestor arranges FROM, so a stale slot
+  // survives as geometry after the view's own arrange has been recomputed.
+  // InvalidateMeasure() supersedes InvalidateArrange() here -- it clears both cache bits
+  // and raises both dirty bits.
+  //
+  // Gated exactly as in SetArrangePolicy(), and for the same reason: this can run before
+  // the CustomActor handle exists (the first SetMeasureCallback/SetArrangeCallback
+  // creates the LAYOUT_SIGNALS trait) and the invalidation walk dereferences Self().
+  // Neither cache bit can be true without a handle, because only a completed pass sets
+  // them, so the gate cannot suppress a needed invalidation.
+  if(mMeasureCacheValid || mArrangeCacheValid)
   {
-    InvalidateArrange();
+    InvalidateMeasure();
   }
 }
 
@@ -5209,7 +5257,7 @@ bool ViewDataImpl::RemoveTrait(TraitId id)
         it->second->OnDetaching(id, self);
       }
       mTraits.erase(it);
-      OnArrangeProducerTraitChanged(id);
+      OnLayoutProducerTraitChanged(id);
       return true;
     }
   }
