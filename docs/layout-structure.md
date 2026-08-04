@@ -157,11 +157,16 @@ Anything else it reads, it owns: it must call `InvalidateMeasure()` itself when
 that state changes, or the view keeps its previous measured size until some
 unrelated invalidation happens to arrive.
 
+The effective scale is part of the measure cache key, so a scale change alone
+forces a re-measure.
+
 The **arrange cache** uses `ArrangePolicy::ARRANGE_IF_CHANGED` by default.
 `View::Arrange()` may serve a stored result when the input bounds, effective layout
 direction and effective scale are unchanged and nothing has invalidated the view.
 The default applies to `OnArrange()`, a callback installed through the one-argument
-`SetArrangeCallback()`, and `LayoutManager::Arrange()`.
+`SetArrangeCallback()`, and `LayoutManager::Arrange()`. It reaches the same
+guarantee about the scale by a different route: the scale is not part of the
+arrange key, it is an invalidation — a scale change drops the entry.
 
 Use `ArrangePolicy::ARRANGE_ALWAYS` when a producer reads state outside layout
 invalidation or performs externally visible work on every pass:

@@ -183,6 +183,9 @@ public: // Measure / Arrange API
    * reads anything else owns the invalidation and must call InvalidateMeasure() when
    * that state changes. See ViewImpl::OnMeasure().
    *
+   * The framework keys the measure cache on the effective scale as well as on the
+   * constraint, so a scale change alone forces a re-measure.
+   *
    * @param[in] widthConstraint The width constraint for measurement
    * @param[in] heightConstraint The height constraint for measurement
    * @return The measured size

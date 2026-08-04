@@ -916,9 +916,12 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   mRequestedX(0.0f),
   mRequestedY(0.0f),
   mMeasuredSize{0.0f, 0.0f},
-  // Pure cache key; its initial value is never consulted because
-  // mMeasureCacheValid starts false.
+  // Pure cache keys; their initial values are never consulted because
+  // mMeasureCacheValid starts false. NaN is nevertheless the fail-safe choice for
+  // both: it compares unequal to everything, including itself, so a predicate that
+  // somehow reached them without the validity bit would MISS rather than serve.
   mLastMeasureConstraint{std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN()},
+  mLastMeasureScale(std::numeric_limits<float>::quiet_NaN()),
   mArrangedBounds{0.0f, 0.0f, 0.0f, 0.0f},
   mLastArrangeInput{0.0f, 0.0f, 0.0f, 0.0f},
   // 0 = "never propagated", which no live epoch ever equals, so the first
@@ -3763,7 +3766,32 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   float effNatW = std::min(std::max(natW, GetMinimumWidth()), GetMaximumWidth());
   float effNatH = std::min(std::max(natH, GetMinimumHeight()), GetMaximumHeight());
 
+  // The effective scale is a KEY term here, where the ARRANGE cache instead relies on
+  // invalidation plus a DEBUG assert (Corollary C). The asymmetry is deliberate:
+  //
+  //  - As a KEY, a missed invalidation degrades to a MISS -- one recomputed
+  //    measurement -- and can never produce a measured size computed for a different
+  //    scale. That is the same reasoning mLastArrangeDirection applies to
+  //    arrange x direction, and `s` is already in hand here (it is read above the
+  //    predicate because the constraint normalisation needs it), so the term costs one
+  //    float compare and no extra property access.
+  //  - Under the CURRENT invariant this term cannot fire: every path that moves the
+  //    cached scale pairs DropCachedLogicalContext() with InvalidateLayoutCaches(),
+  //    which clears mMeasureCacheValid first. It is therefore defence in depth, and it
+  //    exists so that a future unpaired caller degrades to a miss instead of serving a
+  //    result produced at the old scale.
+  //
+  // Compared EXACTLY rather than with FloatEqual: this is a copy of the very
+  // computation the producer was run under, with no arithmetic in between, so an
+  // epsilon compare would only widen the key -- it would let a sub-epsilon scale change
+  // serve a result computed for a different producer input. The constraint terms below
+  // do need the tolerance: they arrive through a /s normalisation and a min/max clamp.
+  // NaN (the constructed value) equals nothing, so the never-measured state fails safe.
+  //
+  // Cost order: after the three bit tests, which are cheaper and reject more often;
+  // before the FloatEqual calls, which are not.
   if(mMeasureCacheValid && !mMeasureDirty && !mMeasurePassPoisoned &&
+     mLastMeasureScale == s &&
      mLastMeasureConstraint.width >= 0.0f && FloatEqual(mLastMeasureConstraint.width, effNatW) &&
      FloatEqual(mLastMeasureConstraint.height, effNatH))
   {
@@ -3828,6 +3856,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   {
     mLastMeasureConstraint.width  = effNatW;
     mLastMeasureConstraint.height = effNatH;
+    mLastMeasureScale             = s;
     mMeasureCacheValid            = true;
   }
   else if(mMeasurePassPoisoned && !mMeasureDirty)
@@ -4216,6 +4245,25 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   //    clear the layout caches, so mArrangeCacheValid already implies "scale in
   //    sync" (Corollary C). The DEBUG assert in the body is that implication's
   //    live check rather than a re-test.
+  //
+  //    The four (axis, input) pairs are handled three different ways, and the choice
+  //    is per pair rather than per axis or per input:
+  //      measure x scale     -- KEY (mLastMeasureScale). `s` is already read above
+  //                             that predicate for the constraint normalisation, so
+  //                             the term is one float compare.
+  //      arrange x scale     -- invalidation + DEBUG assert (this bullet). Reading it
+  //                             here would be a fresh call on a path that needs it for
+  //                             nothing else.
+  //      arrange x direction -- KEY (mLastArrangeDirection). The direction lives in
+  //                             dali-core and can move through actors dali-ui does not
+  //                             own, so a missed hook must not mirror the wrong way.
+  //      measure x direction -- invalidation (OnLayoutDirectionChanged invalidates the
+  //                             MEASURE axis). A key term would put a layout-direction
+  //                             read into the per-view, per-pass measure predicate to
+  //                             cover a producer shape no first-party view has.
+  //    The rule behind the split: a KEY where the value is already in hand or the
+  //    failure mode is a wrong RESULT; invalidation where reading it would cost a
+  //    property access on a hot path and the failure mode is only a stale one.
   //  - mMeasureCacheValid. A full Measure pass clears mArrangeCacheValid from
   //    MeasurePassGuard, so the two are cleared as a pair.
   if(CanServeArrangeFromCache(bounds) &&
@@ -4598,6 +4646,19 @@ void ViewDataImpl::DropCachedLogicalContext()
   // with whatever scale was current when it was set", and it is why this bit needs
   // no invalidation path of its own: every scale-context change already comes
   // through here.
+  //
+  // What this clear is still REQUIRED for, and what it no longer is:
+  //  - the ARRANGE cache: required. Its hit predicate carries no scale term at all,
+  //    so Corollary C -- "a valid arrange entry implies the scale has not moved" --
+  //    is only true because every caller pairs this with InvalidateLayoutCaches().
+  //  - the actor push: required. The bit cleared just above is the ONLY record that
+  //    the animatable VIEW_EFFECTIVE_SCALE property is behind, so without this clear
+  //    the next Measure() would skip the push and leave decoration constraints on the
+  //    old scale.
+  //  - the MEASURE cache: no longer required for CORRECTNESS. That cache keys on the
+  //    effective scale (mLastMeasureScale), so a caller that forgot the pairing would
+  //    take a miss rather than serve a size computed at the old scale. The pairing is
+  //    still the contract; the key is the second line of defence, not a licence.
   mEffectiveScaleActorSynced = false;
 
   if(mArrangeInProgress)

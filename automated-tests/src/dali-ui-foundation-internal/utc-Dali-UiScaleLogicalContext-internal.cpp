@@ -452,3 +452,108 @@ int UtcDaliUiScaleEffectiveScaleActorSyncRepairedOnMeasureCacheHitP(void)
   UiScaleManager::Get().SetScale(originalScale);
   END_TEST;
 }
+
+// ---------------------------------------------------------------------------
+// The effective scale as a measure-cache KEY (mLastMeasureScale).
+//
+// The arrange cache omits a scale term and relies on the invalidation pairing plus a
+// DEBUG assert; the measure cache records the scale instead, because `s` is already
+// read above its predicate for the constraint normalisation and because a missed
+// invalidation then costs a MISS rather than a measured size computed at another
+// scale.
+//
+// Under the CURRENT pairing discipline -- every DropCachedLogicalContext() caller also
+// calls InvalidateLayoutCaches() -- the rejection branch of that term is unreachable,
+// so it is defence in depth. What IS observable, and what these two tests pin, is that
+// the key is recorded at the publish, that it does not cost the steady state its hit,
+// and that a real scale change re-publishes it at the new value with the producer
+// re-run rather than serving the old entry.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+int gMeasureKeyMeasureCount = 0;
+
+MeasuredSize CountingKeyMeasure(View, float, float)
+{
+  ++gMeasureKeyMeasureCount;
+  return MeasuredSize(40.0f, 30.0f);
+}
+} // namespace
+
+// The publish records the scale it ran at, and the term does not spoil the steady
+// state: an unchanged scale with an unchanged constraint is still a HIT.
+//
+// Non-vacuity (verified by mutation): removing `mLastMeasureScale = s;` from the
+// measure publish block leaves the member at its constructed NaN, so the recorded-value
+// check fails and the second Measure() misses (NaN == s is false) -- the producer count
+// becomes 2.
+int UtcDaliUiScaleMeasureCacheKeyRecordsEffectiveScaleP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A measure publish records the effective scale it ran at, and the term keeps the hit");
+
+  const float originalScale = UiScaleManager::Get().GetScale();
+  UiScaleManager::Get().SetScale(1.0f);
+
+  View view                = View::New();
+  gMeasureKeyMeasureCount  = 0;
+  view.SetMeasureCallback(MeasureCallback::New(&CountingKeyMeasure));
+
+  // Never measured: no entry, so no key.
+  DALI_TEST_CHECK(!DataOf(view).IsMeasureCacheValid());
+
+  // First Measure: a MISS. Publishes the entry and both key halves.
+  view.Measure(200.0f, 200.0f);
+  DALI_TEST_EQUALS(gMeasureKeyMeasureCount, 1, TEST_LOCATION);
+  DALI_TEST_CHECK(DataOf(view).IsMeasureCacheValid());
+  // Exact: the recorded key is a copy of the same GetEffectiveScale() value the
+  // predicate compares against, so an epsilon comparison here would say less.
+  DALI_TEST_CHECK(DataOf(view).GetLastMeasureScale() == 1.0f);
+
+  // Same constraint, same scale: still a HIT. The producer must not run again.
+  view.Measure(200.0f, 200.0f);
+  DALI_TEST_EQUALS(gMeasureKeyMeasureCount, 1, TEST_LOCATION);
+  DALI_TEST_CHECK(DataOf(view).GetLastMeasureScale() == 1.0f);
+
+  UiScaleManager::Get().SetScale(originalScale);
+  END_TEST;
+}
+
+// A real scale change re-publishes the key at the NEW scale, with the producer re-run.
+// The producer count is what separates "re-published" from "served stale": the key
+// could only move by a pass that actually measured.
+int UtcDaliUiScaleMeasureCacheKeyRepublishedAtNewScaleP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A scale change re-runs the measure producer and re-publishes the key at the new scale");
+
+  const float originalScale = UiScaleManager::Get().GetScale();
+  UiScaleManager::Get().SetScale(1.0f);
+
+  View view               = View::New();
+  gMeasureKeyMeasureCount = 0;
+  view.SetMeasureCallback(MeasureCallback::New(&CountingKeyMeasure));
+  view.SetRequestedWidth(100.0f);
+  view.SetRequestedHeight(100.0f);
+
+  // On-scene so the view is a registered layout root and a global scale change
+  // reaches it.
+  application.GetScene().Add(view);
+  Settle(application);
+
+  DALI_TEST_CHECK(DataOf(view).IsMeasureCacheValid());
+  DALI_TEST_CHECK(DataOf(view).GetLastMeasureScale() == 1.0f);
+  const int countAtUnitScale = gMeasureKeyMeasureCount;
+  DALI_TEST_CHECK(countAtUnitScale > 0);
+
+  UiScaleManager::Get().SetScale(1.5f);
+  Settle(application);
+
+  DALI_TEST_CHECK(DataOf(view).IsMeasureCacheValid());
+  DALI_TEST_CHECK(DataOf(view).GetLastMeasureScale() == 1.5f);
+  DALI_TEST_CHECK(gMeasureKeyMeasureCount > countAtUnitScale);
+
+  UiScaleManager::Get().SetScale(originalScale);
+  END_TEST;
+}

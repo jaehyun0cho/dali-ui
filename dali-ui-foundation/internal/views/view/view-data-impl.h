@@ -321,6 +321,12 @@ public:
   {
     return mMeasureCacheValid;
   }
+  /// The effective scale the measure cache entry was produced at, and a KEY term of
+  /// the measure hit predicate. Meaningful only while IsMeasureCacheValid().
+  float GetLastMeasureScale() const
+  {
+    return mLastMeasureScale;
+  }
   bool IsArrangeCacheValid() const
   {
     return mArrangeCacheValid;
@@ -939,9 +945,12 @@ private:
    * measure producer reads it (verified across the layout managers and components;
    * text views resolve direction inside their own signal handlers) -- but
    * GetEffectiveLayoutDirection() is public and OnMeasure() is virtual, so an
-   * APPLICATION's measure producer can size on it, and the measure cache key
-   * (mLastMeasureConstraint) has no direction term. Invalidating measure here is what
-   * lets that just work instead of becoming a contract the application has to know.
+   * APPLICATION's measure producer can size on it, and the measure cache key has no
+   * direction term. That is now a SPECIFIC claim rather than a blanket one: the key is
+   * mLastMeasureConstraint plus mLastMeasureScale, so it does carry the effective
+   * scale, and the layout direction is the one producer input it deliberately leaves
+   * out. Invalidating measure here is what lets that just work instead of becoming a
+   * contract the application has to know.
    *
    * The rejected alternative was a direction term in the measure cache KEY: that puts
    * a layout-direction read into the measure HIT predicate, which runs per view per
@@ -1151,6 +1160,12 @@ private:
    * arrange cache computed against the old scale, served as a hit with no test
    * to catch it. Pair the two, or use InvalidateLogicalContextRecursive() which
    * does.
+   *
+   * The MEASURE cache is the one exception, and only because it carries a scale
+   * KEY of its own (mLastMeasureScale): an unpaired caller would cost it a miss
+   * rather than a wrong measured size. That does not license the unpaired call --
+   * the arrange cache and the actor-side push below both still depend on the
+   * pairing -- it just means the measure side has a second line of defence.
    */
   void DropCachedLogicalContext();
 
@@ -1404,6 +1419,7 @@ private:
   float        mRequestedY;
   MeasuredSize mMeasuredSize;          ///< Last completed measure result. Always readable (GetMeasuredSize() and layout managers consume it during Arrange regardless of cache state); mMeasureCacheValid only governs whether the KEY below may serve a cache hit.
   MeasuredSize mLastMeasureConstraint; ///< Pure cache KEY: the effective natural constraint the cached mMeasuredSize was produced for. Carries no dirty/never-measured sentinel meaning; validity lives in mMeasureCacheValid / mMeasureDirty.
+  float        mLastMeasureScale;      ///< Pure cache KEY: the effective scale the cached mMeasuredSize was produced at. Compared EXACTLY, not with FloatEqual, because it is a straight copy of the same GetEffectiveScale() value with no arithmetic between publish and compare -- unlike the constraint beside it, which reaches the predicate through a /s normalisation and a min/max clamp and therefore needs the tolerance. Valid only while mMeasureCacheValid is true.
   LayoutRect   mArrangedBounds;
   LayoutRect   mLastArrangeInput; ///< Pure cache KEY: the input bounds mArrangedBounds was produced for. Valid only while mArrangeCacheValid is true.
   /// @name Invalidation propagation records
@@ -1424,7 +1440,7 @@ private:
   uint32_t mArrangePropagationEpoch;
   /// @}
 
-  Dali::LayoutDirection::Type           mLastArrangeDirection;         ///< Pure cache KEY: the effective layout direction mArrangedBounds was produced under. Valid only while mArrangeCacheValid is true. Unlike the effective scale -- whose freshness is carried by a sync bit this class owns -- the direction lives in dali-core and can be moved through actors dali-ui does not own, so it is recorded as a KEY: a missed invalidation then degrades to "no cache hit", never to a wrong result.
+  Dali::LayoutDirection::Type           mLastArrangeDirection;         ///< Pure cache KEY: the effective layout direction mArrangedBounds was produced under. Valid only while mArrangeCacheValid is true. Recorded as a KEY because the direction lives in dali-core and can be moved through actors dali-ui does not own, so a missed invalidation must degrade to "no cache hit" and never to a wrongly mirrored arrangement. The choice is per (axis, input) pair, not per input: measure x scale is also a KEY (mLastMeasureScale, and `s` is already in hand there), while arrange x scale relies on invalidation plus a DEBUG assert (reading the scale here would be a fresh call the path needs for nothing else) and measure x direction relies on invalidation (OnLayoutDirectionChanged), because a direction term would put a layout-direction read into the per-view, per-pass measure predicate.
   Insets                                mMargin;                       ///< Layout margin
   Insets                                mPadding;                      ///< Layout padding
   float                                 mRequestedWidth;               ///< Requested width (WRAP_CONTENT = -1.0f, MATCH_PARENT = -2.0f)
@@ -1441,7 +1457,7 @@ private:
   int32_t                            mAccessibilityRole : Dali::Log<static_cast<uint32_t>(Accessibility::Role::MAX_COUNT)>::value + 2; ///< Frequently touched accessibility-related value kept here to avoid AccessibilityData creation.
 
   bool         mSkipChildrenUpdate : 1;
-  bool         mMeasureCacheValid : 1;                            ///< True when mLastMeasureConstraint + mMeasuredSize hold a usable cache entry.
+  bool         mMeasureCacheValid : 1;                            ///< True when mLastMeasureConstraint + mLastMeasureScale + mMeasuredSize hold a usable cache entry.
   bool         mMeasureDirty : 1;                                 ///< True when invalidated since the last measure.
   bool         mMeasureInProgress : 1;                            ///< True while this view's own Measure() is on the stack.
   bool         mMeasurePassPoisoned : 1;                          ///< True when an invalidation arrived while this view's measure pass was running.
