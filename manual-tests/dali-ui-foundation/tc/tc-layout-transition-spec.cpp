@@ -1,0 +1,252 @@
+/* Copyright (c) 2026 Samsung Electronics Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "manual-test-case.h"
+
+using namespace Dali;
+using namespace Dali::Ui;
+
+namespace
+{
+constexpr Vector4 PALETTE[] = {
+  Color::RED, Color::GREEN, Color::BLUE,
+  Color::YELLOW, Color::CYAN, Color::MAGENTA};
+constexpr uint32_t PALETTE_SIZE = sizeof(PALETTE) / sizeof(PALETTE[0]);
+} // namespace
+
+/**
+ * @brief Verifies LayoutTransition in declarative spec mode.
+ *
+ * A vertical StackLayout owns a LayoutTransition with declarative ENTER /
+ * EXIT / CHANGE specs sharing a single 0.4s EASE_IN_OUT_SINE timing.
+ * ENTER expands height 0 -> child height and fades opacity 0 -> 1; EXIT
+ * shrinks height back to 0 and fades opacity to 0; CHANGE reflows
+ * existing children when their requested height changes.
+ *
+ * Ported from samples/layout-transition/layout-transition-spec-example.cpp.
+ */
+class TcLayoutTransitionSpec : public ManualTest::TestCase, public ConnectionTracker
+{
+public:
+  Dali::String GetName() const override
+  {
+    return "LayoutTransition: Declarative Spec";
+  }
+
+  Dali::String GetDescription() const override
+  {
+    return "ENTER/EXIT ViewAnimationSpec and CHANGE timing on a StackLayout";
+  }
+
+  void OnEnter(View contentArea) override
+  {
+    ResetState();
+
+    mBackdrop = View::New();
+    mBackdrop.SetRequestedWidth(MATCH_PARENT);
+    mBackdrop.SetRequestedHeight(MATCH_PARENT);
+    mBackdrop.SetBackgroundColor(Color::WHITE);
+
+    // Three Clickable labels, one per LayoutTransition slot.
+    mEnterButton = MakeClickableLabel("Click to ENTER");
+    mEnterButton.TouchEventSignal().Connect(this, &TcLayoutTransitionSpec::OnEnterButtonTouched);
+
+    mExitButton = MakeClickableLabel("Click to EXIT");
+    mExitButton.TouchEventSignal().Connect(this, &TcLayoutTransitionSpec::OnExitButtonTouched);
+
+    mChangeButton = MakeClickableLabel("Click to CHANGE");
+    mChangeButton.TouchEventSignal().Connect(this, &TcLayoutTransitionSpec::OnChangeButtonTouched);
+
+    // Root: vertical stack with a LayoutTransition attached.
+    mStack = StackLayout::New();
+    mStack.SetRequestedWidth(MATCH_PARENT);
+    mStack.SetRequestedHeight(MATCH_PARENT);
+    mStack.SetSpacing(10.0f);
+
+    // Single timing shared by ENTER / EXIT / CHANGE: 0.4s EASE_IN_OUT_SINE.
+    LayoutTransitionTiming timing{Duration(0.4f),
+                                  AlphaFunction(AlphaFunction::EASE_IN_OUT_SINE),
+                                  Duration()};
+
+    // ENTER: opacity 0 -> 1. Spec mode declares only the target; dali-core
+    // captures the actor's current opacity as the start when Play() runs
+    // at ENTER dispatch. AppendChild pre-sets OPACITY = 0 before
+    // mStack.Add() so the spec animates the actor from 0 to 1.
+    ViewAnimationSpec enterSpec = ViewAnimationSpec::New();
+    enterSpec.Opacity(1.0f, Duration(0.4f), AlphaFunction(AlphaFunction::EASE_IN_OUT_SINE));
+
+    // EXIT: opacity 1 -> 0.
+    ViewAnimationSpec exitSpec = ViewAnimationSpec::New();
+    exitSpec.Opacity(0.0f, Duration(0.4f), AlphaFunction(AlphaFunction::EASE_IN_OUT_SINE));
+
+    // ENTER / EXIT bounds: ExpandFrom collapses height to 0 anchored at
+    // the TOP edge and grows down to the layout-applied size. ShrinkTo
+    // is the mirror for EXIT (full -> 0 collapsed at TOP).
+    LayoutTransition transition = LayoutTransition::New();
+    transition.SetEnterVisualSpec(enterSpec)
+              .SetExitVisualSpec(exitSpec)
+              .SetEnterBoundsEffect(LayoutBoundsEffects::ExpandFrom(
+                LayoutBoundsEdge::TOP, timing))
+              .SetExitBoundsEffect(LayoutBoundsEffects::ShrinkTo(
+                LayoutBoundsEdge::TOP, timing))
+              .SetChangeTiming(timing);
+
+    mStack.SetLayoutTransition(transition);
+
+    // Seed with three children so the user can immediately watch CHANGE.
+    // The framework default suppresses ENTER for children present at the
+    // parent's first arrange pass, but the declarative ENTER spec
+    // (Opacity 1.0) is still settled; the children that pre-set
+    // OPACITY = 0 in AppendChild land at opacity 1.0 on the first frame
+    // without animation. Runtime adds via the ENTER button fade in normally.
+    AppendChild();
+    AppendChild();
+    AppendChild();
+
+    // Button row hosts the three Clickables; equal width via FlexGrow 1.
+    FlexLayout buttonRow = FlexLayout::New();
+    buttonRow.SetRequestedWidth(MATCH_PARENT);
+    buttonRow.SetRequestedHeight(60.0f);
+    buttonRow.SetDirection(FlexDirection::ROW);
+    buttonRow.SetAlignItems(FlexAlign::STRETCH);
+    buttonRow.Add(mEnterButton);
+    buttonRow.Add(mExitButton);
+    buttonRow.Add(mChangeButton);
+
+    // Outer container: button row above the transition stack. The outer
+    // view has no LayoutTransition so toggling the bar's hit does not
+    // loop animations on itself.
+    StackLayout root = StackLayout::New();
+    root.SetRequestedWidth(MATCH_PARENT);
+    root.SetRequestedHeight(MATCH_PARENT);
+    root.Add(buttonRow);
+    root.Add(mStack);
+
+    mBackdrop.Add(root);
+    contentArea.Add(mBackdrop);
+  }
+
+  void OnExit() override
+  {
+    // Release every retained handle so the previous subtree is not kept
+    // alive for the lifetime of the launcher.
+    mBackdrop.Reset();
+    mStack.Reset();
+    mEnterButton.Reset();
+    mExitButton.Reset();
+    mChangeButton.Reset();
+
+    // Remaining scalars back to their initial values.
+    mNextColorIndex = 0u;
+    mExpanded       = false;
+  }
+
+private:
+  void ResetState()
+  {
+    mNextColorIndex = 0u;
+    mExpanded       = false;
+  }
+
+  Label MakeClickableLabel(const Dali::String& text)
+  {
+    Label label = Label::New();
+    label.SetText(text);
+    label.SetTextColor(Color::WHITE);
+    label.SetHorizontalTextAlignment(Text::Alignment::CENTER);
+    label.SetVerticalTextAlignment(Text::Alignment::CENTER);
+    label.SetBackgroundColor(Color::BLACK);
+    label.SetLayoutParams(FlexLayoutParams::New().SetFlexGrow(1.0f));
+    // 5px on each side gives a 10px visual gap between adjacent buttons.
+    label.SetMargin(Extents(5, 5, 0, 0));
+    return label;
+  }
+
+  void AppendChild()
+  {
+    View child = View::New();
+    child.SetBackgroundColor(PALETTE[mNextColorIndex % PALETTE_SIZE]);
+    child.SetRequestedWidth(MATCH_PARENT);
+    child.SetRequestedHeight(mExpanded ? 160.0f : 80.0f);
+    // Drive the spec-mode ENTER fade-in by pre-setting opacity to 0 BEFORE
+    // attaching the child to the stack. The ENTER spec then animates the
+    // actor's OPACITY property up to its declared target (1.0). dali-core
+    // captures this 0 as the AnimateTo's starting value at Play() time, so
+    // the resulting on-screen effect is opacity 0 -> 1 over the slot timing.
+    child.SetProperty(Actor::Property::OPACITY, 0.0f);
+    mStack.Add(child);
+    ++mNextColorIndex;
+  }
+
+  void RemoveLastChild()
+  {
+    const uint32_t count = mStack.GetChildViewCount();
+    if(count == 0u)
+    {
+      return;
+    }
+    // The logical child list excludes any in-flight EXIT ghost, so the last
+    // logical child is the last live item. Use View::Remove so the EXIT slot
+    // is honoured (deferred-remove).
+    View last = mStack.GetChildViewAt(count - 1u);
+    mStack.Remove(last, RemovePolicy::ANIMATE_EXIT);
+  }
+
+  bool OnEnterButtonTouched(Actor /*actor*/, TouchEvent touch)
+  {
+    if(touch.GetState(0) != PointState::STARTED)
+    {
+      return false;
+    }
+    AppendChild();
+    return true;
+  }
+
+  bool OnExitButtonTouched(Actor /*actor*/, TouchEvent touch)
+  {
+    if(touch.GetState(0) != PointState::STARTED)
+    {
+      return false;
+    }
+    RemoveLastChild();
+    return true;
+  }
+
+  bool OnChangeButtonTouched(Actor /*actor*/, TouchEvent touch)
+  {
+    if(touch.GetState(0) != PointState::STARTED)
+    {
+      return false;
+    }
+    mExpanded             = !mExpanded;
+    const float newHeight = mExpanded ? 160.0f : 80.0f;
+    const uint32_t count  = mStack.GetChildViewCount();
+    for(uint32_t i = 0; i < count; ++i)
+    {
+      mStack.GetChildViewAt(i).SetRequestedHeight(newHeight);
+    }
+    return true;
+  }
+
+  View        mBackdrop;
+  StackLayout mStack;
+  Label       mEnterButton;
+  Label       mExitButton;
+  Label       mChangeButton;
+  uint32_t    mNextColorIndex = 0u;
+  bool        mExpanded       = false;
+};
+
+REGISTER_MANUAL_TEST(TcLayoutTransitionSpec)
