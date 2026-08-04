@@ -27,6 +27,7 @@
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
+#include <dali-ui-foundation/public-api/configuration/ui-scale-manager.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout-manager.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout.h>
 #include <dali-ui-foundation/public-api/layouts/flex-layout-manager.h>
@@ -1459,5 +1460,153 @@ int UtcDaliArrangeCacheStandaloneSelfPassKeepsParentEntryP(void)
   DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 40.0f, TEST_LOCATION);
   DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
 
+  END_TEST;
+}
+
+// ---------------------------------------------------------------------------
+// The exemption above (a boundary view's framework root pass leaves the parent's
+// entry standing) is sound only while the two derivations of that view's own slot
+// agree. They now agree BY CONSTRUCTION: LayoutController::ProcessLayoutRoot and
+// ArrangeStandaloneChild both end on Internal::DeriveStandaloneRootBounds(). These
+// two tests pin the two halves of that -- the min/max clamp, which only one of the
+// two used to apply, and the float association, which the exact arrange cache KEY
+// makes observable at a non-unit scale.
+// ---------------------------------------------------------------------------
+
+// A MATCH_PARENT boundary child with a MaximumWidth below the parent extent is the
+// shape where the two derivations used to disagree: the root-driven pass clamped the
+// slot to the view's own maximum while the parent-driven pass placed it at the full
+// parent extent, so the parent's next MISS moved a view its own root pass had already
+// placed. Both apply the clamp now.
+//
+// Non-vacuity (verified by mutation): dropping the min/max clamp from
+// DeriveStandaloneRootBounds leaves the parent-driven derivation at the full parent
+// extent and the post-InvalidateArrange width assertion fails.
+int UtcDaliArrangeCacheStandaloneMatchParentMaximumConvergesP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A boundary view's own maximum clamps its slot on both derivations");
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(120.0f);
+  root.Add(parent);
+
+  View standalone = View::New();
+  standalone.SetLayoutMode(LayoutMode::STANDALONE);
+  standalone.SetRequestedWidth(MATCH_PARENT);
+  standalone.SetRequestedHeight(MATCH_PARENT);
+  standalone.SetMaximumWidth(50.0f);
+  parent.Add(standalone);
+
+  Settle(application);
+
+  // The MATCH_PARENT axis discards the measured size, so the slot derivation is the
+  // only place the view's own maximum can reach it.
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 50.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 120.0f, TEST_LOCATION);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(standalone).IsArrangeCacheValid());
+
+  // The PARENT-driven half. Force the parent to miss so it re-derives the boundary
+  // child's slot itself instead of replaying the child's cached one.
+  parent.InvalidateArrange();
+  Settle(application);
+
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 50.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 120.0f, TEST_LOCATION);
+
+  // The ROOT-driven half. A min/max change stops at the boundary and self-registers,
+  // so only the boundary view's own root pass runs -- and the parent's entry, which
+  // that pass is exempted from retracting, must still be servable afterwards.
+  standalone.SetMaximumWidth(40.0f);
+  Settle(application);
+
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 40.0f, TEST_LOCATION);
+  DALI_TEST_CHECK(DataOf(parent).IsArrangeCacheValid());
+
+  // ...and the parent agrees with it: a forced parent miss reproduces the new clamp
+  // rather than moving the view back to the parent extent.
+  parent.InvalidateArrange();
+  Settle(application);
+
+  DALI_TEST_EQUALS(standalone.GetProperty<float>(Actor::Property::SIZE_WIDTH), 40.0f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The arrange cache KEY is an EXACT compare (SameLayoutRect), so two derivations that
+// are algebraically equal but associate their floats differently are still two
+// different keys at a scale != 1. Both derivations share one expression now, so the
+// value a boundary view is placed at is bit-identical whichever pass placed it.
+//
+// The comparisons here are deliberately exact (DALI_TEST_CHECK on ==, not
+// DALI_TEST_EQUALS with an epsilon): an epsilon compare is precisely what would hide
+// the failure this test exists to catch. The inputs are chosen so that
+// (x + margin) * scale and x * scale + margin * scale differ in float32:
+// (2 + 5) * 1.3 == 9.09999942 while 2 * 1.3 + 5 * 1.3 == 9.10000038.
+//
+// UiScaleManagerImpl keeps the scale in a process-wide singleton, so the incoming
+// scale is recorded and restored.
+//
+// Non-vacuity (verified by mutation): splitting DeriveStandaloneRootBounds' position
+// term back into x * s + margin * s makes the parent-driven re-derivation land one
+// ulp away and the second exact comparison fails.
+int UtcDaliArrangeCacheStandaloneKeyConvergesAtNonUnitScaleP(void)
+{
+  UiTestApplication application;
+  tet_infoline("Both boundary-slot derivations produce a bit-identical position at a non-unit scale");
+
+  const float originalScale = UiScaleManager::Get().GetScale();
+  UiScaleManager::Get().SetScale(1.3f);
+
+  View root = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(200.0f);
+  application.GetScene().Add(root);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(120.0f);
+  root.Add(parent);
+
+  View standalone = View::New();
+  standalone.SetLayoutMode(LayoutMode::STANDALONE);
+  standalone.SetRequestedWidth(MATCH_PARENT);
+  standalone.SetRequestedHeight(MATCH_PARENT);
+  standalone.SetRequestedX(2.0f);
+  standalone.SetRequestedY(2.0f);
+  standalone.SetMargin(5.0f);
+  parent.Add(standalone);
+
+  Settle(application);
+
+  // Baseline: whatever the settled batch produced. Both passes have run on this view
+  // by now (the parent's placement, then its own root pass).
+  const float settledX = standalone.GetProperty<float>(Actor::Property::POSITION_X);
+  const float settledY = standalone.GetProperty<float>(Actor::Property::POSITION_Y);
+  DALI_TEST_CHECK(settledX != 0.0f);
+
+  // The PARENT-driven derivation, re-run on a forced parent miss. Bit-exact, or the
+  // exact arrange KEY would reject the boundary view's own settled entry forever.
+  parent.InvalidateArrange();
+  Settle(application);
+
+  DALI_TEST_CHECK(standalone.GetProperty<float>(Actor::Property::POSITION_X) == settledX);
+  DALI_TEST_CHECK(standalone.GetProperty<float>(Actor::Property::POSITION_Y) == settledY);
+
+  // The ROOT-driven derivation, re-run through the boundary's own registration.
+  standalone.InvalidateArrange();
+  Settle(application);
+
+  DALI_TEST_CHECK(standalone.GetProperty<float>(Actor::Property::POSITION_X) == settledX);
+  DALI_TEST_CHECK(standalone.GetProperty<float>(Actor::Property::POSITION_Y) == settledY);
+
+  UiScaleManager::Get().SetScale(originalScale);
   END_TEST;
 }

@@ -75,6 +75,7 @@
 #include <dali-ui-foundation/internal/layouts/layout-reflow-resolver.h>
 #include <dali-ui-foundation/internal/layouts/layout-transition-impl.h>
 #include <dali-ui-foundation/internal/layouts/stack-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/standalone-bounds-utils.h>
 #include <dali-ui-foundation/internal/ui-color-manager-impl.h>
 #include <dali-ui-foundation/internal/ui-localization-manager-impl.h>
 #include <dali-ui-foundation/internal/views/state-effect-target-trait.h>
@@ -324,10 +325,15 @@ void ArrangeStandaloneChild(ViewImpl& owner, ViewImpl& childImpl, float parentFu
   // and for a WRAP_CONTENT / MATCH_PARENT child it is also the one
   // LayoutController::ProcessLayoutRoot derives (parent SIZE - margin) when the
   // same view is driven as a layout root in its own right -- so a standalone root
-  // takes a measure cache HIT here rather than re-running its producer. (A FIXED-size
-  // standalone root instead uses its requested size in ProcessLayoutRoot, so an
-  // unconsumed pass may re-run its producer once here; that value is constraint-
-  // independent, so there is no geometry change and no thrash.)
+  // takes a measure cache HIT here rather than re-running its producer.
+  //
+  // The ARRANGE bounds now converge for EVERY shape, because both paths end on the
+  // same DeriveStandaloneRootBounds() call. What is still divergent is the FIXED-size
+  // MEASURE constraint: ProcessLayoutRoot measures such a root at its REQUESTED size
+  // rather than at the parent extent, so an unconsumed pass may re-run its producer
+  // once here. That value is constraint-independent, so there is no geometry change
+  // and no thrash; unifying the measure constraint is deliberately left for a
+  // separate change.
   const float availW = std::max(0.0f, parentFullWidth - marginW);
   const float availH = std::max(0.0f, parentFullHeight - marginH);
   const bool  matchW = childImpl.GetRequestedWidth() == MATCH_PARENT;
@@ -366,21 +372,27 @@ void ArrangeStandaloneChild(ViewImpl& owner, ViewImpl& childImpl, float parentFu
     childImpl.Measure(availW, availH);
   }
 
-  MeasuredSize measured = childImpl.GetMeasuredSize();
-  float        childW   = matchW ? availW : measured.width;
-  float        childH   = matchH ? availH : measured.height;
+  const MeasuredSize measured = childImpl.GetMeasuredSize();
+  const float        childW   = ResolveStandaloneExtent(matchW, availW, measured.width);
+  const float        childH   = ResolveStandaloneExtent(matchH, availH, measured.height);
 
   // A MATCH_PARENT axis is placed at the parent's extent rather than at the measured
-  // size, so the child is re-measured against the size it will actually get.
+  // size, so the child is re-measured against the size it will actually get. The
+  // UNCLAMPED extent is used deliberately: ProcessLayoutRoot re-measures a boundary
+  // root at the same unclamped value, so the measure cache KEY converges too.
   if(matchW || matchH)
   {
     LayoutDependency::ArrangeOwnedMeasureScope ownerScope(&owner);
     childImpl.Measure(childW, childH);
   }
 
-  LayoutRect bounds(childImpl.GetRequestedX() * childScale + static_cast<float>(margin.start) * childScale,
-                    childImpl.GetRequestedY() * childScale + static_cast<float>(margin.top) * childScale,
-                    childW, childH);
+  // THE shared derivation, the same call LayoutController::ProcessLayoutRoot makes for
+  // a boundary view driven as a layout root -- which is what makes the two results
+  // converge by construction. It re-resolves the extents from the `measured` SNAPSHOT
+  // taken above, so the re-measure in between cannot change them, and it applies the
+  // child's own min/max clamp: that clamp is new on this path and is exactly what makes
+  // it identical to ProcessLayoutRoot.
+  const LayoutRect bounds = DeriveStandaloneRootBounds(childImpl, availW, availH, measured);
   childImpl.Arrange(bounds);
 }
 
@@ -3611,10 +3623,17 @@ void ViewDataImpl::InvalidateParentArrangeCacheForOutOfBandArrange(bool framewor
 {
   // A standalone view is its own layout root, but that alone does NOT make every
   // Arrange() owned: an application can call the public View::Arrange() with
-  // arbitrary bounds, and the parent's next MISS would replace them with the
-  // requested-position / measured-extent slot from ArrangeStandaloneChild. Only
-  // LayoutController's root entry point proves that this pass used the framework
-  // derivation which converges with the parent's derivation.
+  // arbitrary bounds, and the parent's next MISS would replace them with the slot
+  // ArrangeStandaloneChild derives. Only LayoutController's root entry point proves
+  // that this pass used the framework derivation.
+  //
+  // And that derivation converging with the parent's is now a CALL-GRAPH fact rather
+  // than a coincidence of two hand-written expressions: ProcessLayoutRoot and
+  // ArrangeStandaloneChild both end on Internal::DeriveStandaloneRootBounds(), so the
+  // framework root pass hands the view exactly the bounds the parent's next miss
+  // would. An application calling the public View::Arrange() carries no such
+  // ownership, which is why the exemption is gated on the root entry point and not on
+  // the layout mode alone.
   if(frameworkLayoutRootPass && IntegrationView::IsLayoutModeStandalone(mViewImpl))
   {
     return;

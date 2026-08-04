@@ -33,6 +33,7 @@
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/internal/layouts/layout-invalidation-epoch.h>
 #include <dali-ui-foundation/internal/layouts/layout-transition-dispatcher.h>
+#include <dali-ui-foundation/internal/layouts/standalone-bounds-utils.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 #include <dali-ui-foundation/public-api/views/view.h>
@@ -873,25 +874,19 @@ private:
     MeasuredSize measuredSize = view->Measure(widthConstraint, heightConstraint);
 
     // Arrange pass: use the user-set position (parent is not a layout).
-    // MATCH_PARENT roots fill the available constraint rather than using
-    // their measured (minimum) size.
-    LayoutRect bounds;
-    bounds.x      = (view->GetRequestedX() + margin.start) * s;
-    bounds.y      = (view->GetRequestedY() + margin.top) * s;
-    bounds.width  = (layoutWidth == MATCH_PARENT) ? widthConstraint : measuredSize.width;
-    bounds.height = (layoutHeight == MATCH_PARENT) ? heightConstraint : measuredSize.height;
-
-    // Root has no parent layout to clamp against, so enforce the view's
-    // own min/max here. For MATCH_PARENT axes, the measured value was
-    // discarded above, so this is the only place min/max is applied.
-    bounds.width  = std::min(std::max(bounds.width, view->GetMinimumWidth() * s), view->GetMaximumWidth() * s);
-    bounds.height = std::min(std::max(bounds.height, view->GetMinimumHeight() * s), view->GetMaximumHeight() * s);
+    // MATCH_PARENT roots fill the available constraint rather than using their
+    // measured (minimum) size, and the root's own min/max is enforced on the result.
+    // The whole derivation -- position, extents and clamp -- is the shared helper, so
+    // this root pass and the parent-driven ArrangeStandaloneChild placement of the
+    // same view cannot drift apart.
+    const LayoutRect bounds = Internal::DeriveStandaloneRootBounds(*view, widthConstraint, heightConstraint, measuredSize);
 
     // Use the internal root entry point rather than the public Arrange path. For a
     // STANDALONE boundary this identifies the framework-owned self pass whose bounds
-    // converge with its parent's ArrangeStandaloneChild derivation; an application
-    // calling View::Arrange directly carries no such ownership and retracts the
-    // parent's arrange entry when it rewrites the child's records.
+    // are derived by the SAME helper as the parent's ArrangeStandaloneChild path
+    // (DeriveStandaloneRootBounds); an application calling View::Arrange directly
+    // carries no such ownership and retracts the parent's arrange entry when it
+    // rewrites the child's records.
     Internal::ViewDataImpl::Get(*view).ArrangeAsLayoutRoot(bounds);
   }
 
