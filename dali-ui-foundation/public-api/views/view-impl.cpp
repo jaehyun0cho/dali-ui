@@ -838,6 +838,11 @@ void ViewImpl::Initialize()
   // covered too.
   DevelActor::ChildOrderChangedSignal(Self()).Connect(mImpl, &Internal::ViewDataImpl::OnChildOrderChanged);
 
+  // Observe effective on-scene visibility here so notification views can emit
+  // their accessibility SHOWING event without component-specific callbacks.
+  // Keep this in non-virtual Initialize() so derived views cannot skip the hook.
+  DevelActor::OnSceneVisibilityChangedSignal(Self()).Connect(mImpl, &Internal::ViewDataImpl::OnAccessibilityVisibilityChanged);
+
   if(mImpl->AreVisualsEnabled())
   {
     mImpl->InitializeVisualData();

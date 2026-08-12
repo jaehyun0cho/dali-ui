@@ -1000,6 +1000,8 @@ private:
   void         OnChildRemoved(Actor& child);
   void         OnViewSceneConnection();
   void         OnViewSceneDisconnection();
+  /** Emits accessibility SHOWING when a notification view becomes visible on scene. */
+  void         OnAccessibilityVisibilityChanged(Actor actor, bool visible);
   void         OnPropertySet(Property::Index index, const Property::Value& propertyValue);
   void         OnSizeSet(const Vector3& targetSize);
   void         OnSizeAnimation(Animation& animation);

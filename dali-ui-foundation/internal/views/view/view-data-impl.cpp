@@ -7356,6 +7356,33 @@ void ViewDataImpl::EmitAccessibilityStateChanged(Dali::Integration::Accessibilit
   }
 }
 
+void ViewDataImpl::OnAccessibilityVisibilityChanged(Actor actor, bool visible)
+{
+  // Notification announcements are triggered only when the view actually
+  // becomes visible; hiding does not require a screen-reader announcement.
+  if(!visible)
+  {
+    return;
+  }
+
+  const auto view = View::DownCast(actor);
+  if(!view || view.GetAccessibilityRole() != Accessibility::Role::NOTIFICATION)
+  {
+    return;
+  }
+
+  // Keep this event consistent with ViewAccessible::IsShowing(): an on-scene
+  // view that is fully transparent or culled must not be reported as showing.
+  if(Dali::EqualsZero(actor.GetProperty<Vector4>(Actor::Property::WORLD_COLOR).a) ||
+     actor.GetProperty<bool>(Dali::DevelActor::Property::CULLED))
+  {
+    return;
+  }
+
+  // ActorAccessible forwards SHOWING=true for the NOTIFICATION role to AT-SPI.
+  EmitAccessibilityStateChanged(Dali::Integration::Accessibility::State::SHOWING, 1);
+}
+
 void ViewDataImpl::ApplyFittingMode(const Vector2& size, bool isLayoutFinishedUpdate)
 {
   if(DALI_LIKELY(mVisualData))
