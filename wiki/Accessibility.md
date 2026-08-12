@@ -346,6 +346,16 @@ view.ClearTranslatableAccessibilityDescription();
 
 Omitting the domain uses the default domain. Calling `SetAccessibilityName()` or `SetAccessibilityDescription()` with an explicit string clears its translation binding and language spans. See [Localization & Multilingual UI](https://github.sec.samsung.net/NUI/dali-ui/wiki/Localization-&-Multilingual-UI) for localization setup.
 
+To reuse a string the platform screen reader already translates, look it up with `Extension::ScreenReaderLocalization` and set the result explicitly.
+
+```cpp
+#include <dali-ui-foundation/extension-api/screen-reader-localization.h>
+
+view.SetAccessibilityName(Extension::ScreenReaderLocalization::GetLocalizedString("IDS_ACCS_TBOPT_BUTTON"));
+```
+
+That catalog belongs to the platform screen reader package, so the lookup falls back to the resource id wherever the package is absent, and the result is a plain string rather than a binding that refreshes on locale change. See [Screen Reader Catalog Lookup](https://github.sec.samsung.net/NUI/dali-ui/wiki/Localization-&-Multilingual-UI#screen-reader-catalog-lookup).
+
 ### 11.2 Language Ranges Within One String
 
 Add language spans when a single name or description contains multiple languages.

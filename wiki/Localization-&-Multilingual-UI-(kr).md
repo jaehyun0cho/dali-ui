@@ -234,6 +234,36 @@ Dali::String settingsTitle = manager.GetLocalizedString("IDS_TITLE", "myapp-sett
 
 <br/>
 
+## Screen Reader Catalog Lookup
+
+`Extension::ScreenReaderLocalization`은 플랫폼 screen reader의 message catalog에서 문자열을 읽어오므로, 접근성 문자열에 screen reader가 이미 제공하는 번역을 그대로 사용할 수 있습니다.
+
+~~~cpp
+#include <dali-ui-foundation/extension-api/screen-reader-localization.h>
+
+// fallback을 그대로 사용하는 경우
+Dali::String text = Extension::ScreenReaderLocalization::GetLocalizedString("IDS_ACCS_TBOPT_BUTTON");
+
+// 번역이 실제로 존재했는지 확인해야 하는 경우
+Dali::String label;
+if(Extension::ScreenReaderLocalization::TryGetLocalizedString("IDS_ACCS_TBOPT_BUTTON", label))
+{
+  // label에 번역된 문자열이 들어 있습니다
+}
+~~~
+
+`outString`에는 항상 값이 채워집니다. 번역을 찾으면 번역 문자열, 찾지 못하면 resourceId, resourceId가 비어 있으면 빈 문자열이 됩니다. `GetLocalizedString()`은 같은 값을 반환하고 플래그만 버립니다.
+
+catalog domain은 프로세스당 한 번, 첫 조회 시점에 bind되며 모든 조회는 해당 domain을 명시적으로 전달합니다. 애플리케이션의 default domain은 읽지도 변경하지도 않습니다.
+
+> [!IMPORTANT]
+> catalog는 플랫폼 screen reader 패키지가 소유하고 설치합니다. Dali UI는 읽기만 하므로, 해당 패키지가 설치되어 있고 현재 locale에 대한 메시지를 제공하는 타겟에서만 번역이 반환됩니다. 그 외의 환경에서는 resourceId가 fallback으로 반환됩니다.
+
+> [!NOTE]
+> 번역 문자열이 msgid와 완전히 동일하면 번역되지 않은 것으로 보고됩니다. 복수형(plural form)은 지원하지 않습니다.
+
+<br/>
+
 ## Direct Binding
 
 `SetBindingResource()`를 사용하면 localized string을 resolve하여 callback으로 전달합니다.

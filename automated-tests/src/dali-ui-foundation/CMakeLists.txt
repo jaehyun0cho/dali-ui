@@ -33,6 +33,7 @@ SET(TC_SOURCES
         utc-Dali-SelectableLottieImage.cpp
         utc-Dali-SelectableLottieAnimationView.cpp
         utc-Dali-UiColorManager.cpp
+        utc-Dali-ScreenReaderLocalization.cpp
         utc-Dali-UiLocalizationManager.cpp
         utc-Dali-UiThemeManager.cpp
         utc-Dali-UiConfig.cpp

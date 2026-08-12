@@ -24,6 +24,7 @@
 #include <dali-ui-foundation/extension-api/group-selectable-view-impl.h>
 #include <dali-ui-foundation/extension-api/interactive-view-impl.h>
 #include <dali-ui-foundation/extension-api/property-registration-helper.h>
+#include <dali-ui-foundation/extension-api/screen-reader-localization.h>
 #include <dali-ui-foundation/extension-api/selectable-view-impl.h>
 #include <dali-ui-foundation/extension-api/shadow.h>
 #include <dali-ui-foundation/extension-api/styles/ui-style-debug.h>

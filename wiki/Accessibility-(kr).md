@@ -346,6 +346,16 @@ view.ClearTranslatableAccessibilityDescription();
 
 domain 인자를 생략하면 default domain을 사용합니다. `SetAccessibilityName()`이나 `SetAccessibilityDescription()`으로 명시적 문자열을 다시 설정하면 해당 translation binding과 language span은 해제됩니다. localization 설정 방법은 [Localization & Multilingual UI](https://github.sec.samsung.net/NUI/dali-ui/wiki/Localization-&-Multilingual-UI-(kr))를 참고하세요.
 
+플랫폼 screen reader가 이미 번역해 둔 문자열을 재사용하려면 `Extension::ScreenReaderLocalization`으로 조회한 뒤 결과를 명시적으로 설정합니다.
+
+```cpp
+#include <dali-ui-foundation/extension-api/screen-reader-localization.h>
+
+view.SetAccessibilityName(Extension::ScreenReaderLocalization::GetLocalizedString("IDS_ACCS_TBOPT_BUTTON"));
+```
+
+이 catalog는 플랫폼 screen reader 패키지 소유이므로 해당 패키지가 없는 환경에서는 resource id가 그대로 fallback되며, 결과는 locale 변경 시 갱신되는 binding이 아니라 단순 문자열입니다. 자세한 내용은 [Screen Reader Catalog Lookup](https://github.sec.samsung.net/NUI/dali-ui/wiki/Localization-&-Multilingual-UI-(kr)#screen-reader-catalog-lookup)을 참고하세요.
+
 ### 11.2 한 문자열 안의 언어 구간
 
 한 name 또는 description 안에 여러 언어가 섞여 있으면 language span을 추가합니다.

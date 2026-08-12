@@ -147,6 +147,7 @@ cmake \
 %if 0%{?enable_gpu_memory_profile}
       -DENABLE_GPU_MEMORY_PROFILE=ON \
 %endif
+      -DTZ_SYS_RO_APP=%{TZ_SYS_RO_APP} \
       -DCMAKE_INSTALL_PREFIX=%{_prefix} \
       -DCMAKE_INSTALL_LIBDIR=%{_libdir} \
       -DCMAKE_INSTALL_INCLUDEDIR=%{_includedir}
