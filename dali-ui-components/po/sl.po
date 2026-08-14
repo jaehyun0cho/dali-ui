@@ -1,0 +1,1097 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n%100==1 ? 1 : n%100==2 ? 2 : (n%100==3 || n%100==4) ? 3 : 5);"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d znak"
+msgstr[2] "%d znaka"
+msgstr[3] "%d znaki"
+msgstr[4] "N/A"
+msgstr[5] "%d znakov"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Uredi polje"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Bralnik zaslona (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Polnjenje"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Dvakrat pritisnite, da odprete meni."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Nobena naprava ni najdena"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Iščem"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Ni storitve"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Neznano"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "AM"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Ni povezano"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Razširljiv seznam"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Moč signala"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Okvara vida"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Število prikazanih elementov: %d"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Skoraj povsem prazna baterija"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Dvotapnite za aktivacijo."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Izbrisani so bili vsi znaki."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Baterija"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Gumb"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Datum"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Onemogočeno."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Dvakrat pritisnite, da strnete seznam."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Dvakrat pritisnite za urejanje."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Dvakrat pritisnite, da razširite seznam"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Dvotapnite, da izberete."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Spustni seznam"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Domači zaslon"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Tipkovnica je skrita."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Glasnost medija"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "Število znakov: %d."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Izbrano."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Zavihek %1$d od %2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Ko je omogočen Bralnik zaslona, telefon predvaja glasovne povratne informacije. Bralnik zaslona vam tako na primer na vsakem zaslonu pove, s katerim elementi je možna interakcija. Pritisnite elemente, da jih izberete in slišite njihov opis, nato pa dvakrat pritisnite elemente, da se izvede ustrezno dejanje."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Signal Wi-Fi je šibek"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Onemog."
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Urejanje besedila"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Črno-belo"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Velika črka %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Glas. naprave"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Ležeči pogled"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Tiho"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Ni izbrano"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Ni elementov"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "Število elementov: %d"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Pokončni pogled"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Nastavitve"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Stran %1$d od %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Prilagodite glasnost."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Stanje polnjenja: %1$s. Moč baterije (odstotki): %2$s."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "V teku."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Pritisnite tipko za nazaj, da zaprete pojavno okno."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Zaslon je vklopljen."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Z enim prstom podrsajte v desno ali levo, da izberete naslednjo oziroma prejšnjo črko."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Abecedna kazalna vrstica"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Zmanjšaj za en dan"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Zmanjšaj za en mesec"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Zmanjšaj za eno leto"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Povečaj za en dan"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Povečaj za en mesec"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Povečaj za eno leto"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Krmarjenje nazaj"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "Element %s je izbrisan"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "Funkcija %s je onemogočena"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Gumb za radio"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Besedilno polje"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "IZHOD"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "KONČAJ"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "NAPREJ"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "In še enkrat za odkritje vaših obvestil."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Še en obrat v desno vas premakne na naslednjo stran."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "In v isti smeri, dokler ne najdete ikone Naslednja stran."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "In to je to. Vse končano. Za dokončanje vadnice dvakrat pritisnite KONČAJ na dnu zaslona."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "In znova zavrtite okvir v desno za pomik na naslednjo stran."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Z vrtenjem okvirja poiščite ikono %s."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Naprava Gear bo izvedla izbrano dejanje."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Naprava Gear bo prebrala element pod prstom."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Naprava Gear bo prebrala naslednji element."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Naprava Gear bo prebrala prejšnji element."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Naprava Gear bo vkl. način izbir. ali urejanja."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Pomikanje po straneh na zaslonu."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Zdaj zavrtite okvir v levo, da poiščete ikono Prejšnja stran."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Pritisnite tipko Nazaj desno zgoraj v napravi Gear za pomik na prejšnji zaslon."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Pritisnite tipko Domov desno spodaj v napr. Gear za ogled aplikacij."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Bralnika zaslona ni mogoče uporabiti z:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Pomikanje navzdol po seznamih."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Pomikanje navzgor po seznamih."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Za ogled pripomočkov z dvema prstoma podrsajte v levo."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Podrsajte v desno z dvema prstoma za vrnitev na štev. ure."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Pritisnite na poljubno mesto na zaslonu."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Prit. V REDU za konč. vad."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Tren. zasl. vsebuje aplikacije. Prit. na ikono apl., da jo izberete, in njeno ime bo prebrano naglas."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Tega jezika ni mogoče upor. za meh. TTS. Pritisnete lahko V REDU in izberete drugega, vendar se bo Bralnik zaslona izklopil."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Pritisnite gumb Preskoči, da zaprete vadnico."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Za vrnitev zavrtite okvir v levo."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Če se želite pomakniti na naslednjo stopnjo vadnice, dvakrat pritisnite NAPREJ na dnu zaslona."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Za navigacijo po številnih straneh z ikonami aplikacij z dvema prstoma podrsajte levo ali desno."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Če se želite pomikati po seznamih elementov, z dvema prstoma drsajte navzgor ali navzdol po zaslonu."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Zavrtite okvir v desno, da poiščete želeno aplikacijo."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Pripomočki"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Našli ste jo. Dvakrat pritisnite kjer koli na zaslonu, da odprete aplikacijo."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Dod. bližnjico"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Dvakrat pritisnite"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Dvakrat prit. in drž."
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Dvakrat prit. in drž. z 2 prstoma"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Območje za vajo"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Pomoč za br. zasl."
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "Podrsajte navzdol z dvema prstoma"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Podrsajte v levo"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "Podrsajte v levo z dvema prstoma"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Podrsaj. v desno"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Podrsajte v desno z dvema prstoma"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "Podrsajte navzgor z dvema prstoma"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Pritisk"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Preskusna plošča"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Vadnica"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Raziskovanje zaslona"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Navigacija po straneh"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Bralnik zaslona"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Pomoč za br. zasl."
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Preskusna plošča"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Povečava"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Želite, da zaslon ostane izklopljen?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Jezik ni prepoznan. Pojdite na nastavitve telefona in izberite drug jezik za uporabo funkcije Bralnik zaslona."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Jezik ni prepoznan. Pritisnite V REDU, da spremenite nastavitve jezika za uporabo funkcije Bralnik zaslona."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Za nastavitve funkcije Dostopnost pritisnite in pridržite tipko za domov."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Za povečevanje in pomanjševanje trikrat hitro pritisnite na zaslon. Po povečavi z dvema prstoma vlecite po zaslonu za panoramsko pomikanje."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Za nastavitev Bralnika zaslona trikrat hitro pritisnite na zaslon z dvema prstoma."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Trikrat hitro pritisnite na zaslon z dvema prstoma, da omogočite ali onemogočite funkcijo Bralnik zaslona."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Preklop zvoka iz stereo v mono med uporabo ene slušalke."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Pritisnite V REDU, da namestite glasovne podatke za uporabo Bralnika zaslona. Namestitev prek mobilnega omrežja lahko povzroči dodatne stroške."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Tega jezika ni mogoče uporabiti za mehanizem TTS, zato se bo Bralnik zaslona izklopil. Če ga želite znova vklopiti, pojdite v nastavitve telefona in izberite drug jezik."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Trikrat pritisnite na zaslon z dvema prstoma, da vklopite ali izklopite funkcije."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Preskusite poteze."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Med branjem informacij vadnice je interakcija na dotik blokirana."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Stran %1$d od %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Vklop zvoka"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Za vklop Bralnika zaslona izberite drug jezik."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Za povečevanje in pomanjševanje trikrat pritisnite na zaslon. Povečajte in z dvema prstoma vlecite po zaslonu za panoramsko pomikanje."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Ko je Bralnik zaslona vklopljen, naprava Gear predvaja glasovne povratne informacije. Bralnik zaslona lahko denimo predvaja zvočne komentarje, ki opisujejo vsak zaslon. Preprosto pritisnite vsak element, da slišite njegov opis, nato pa pritisnite dvakrat, da zaženete opisano funkcijo."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Ko je Bralnik zaslona vklopljen, naprava Gear predvaja glasovne komentarje, ki opisujejo vsak zaslon. Pritisnite poljubni element, da slišite njegov opis. Dvakrat pritisnite, da zaženete opisano funkcijo."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Dvakrat pritisnite in pridržite, nato pa vlecite, da prerazporedite."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Dne"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Izključeno"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Vrtite okvir, da prilagodite možnost %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Naslovna vrstica"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Koralna"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Zmanjšaj za 1 uro"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Zmanjšaj za 1 minuto"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Zmanjšaj za 1 sekundo"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Povečaj za 1 uro"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Povečaj za 1 minuto"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Povečaj za 1 sekundo"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Priljubljene"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Element je spuščen na položaj %d."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Element ste začeli vleči na položaj %d."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Prilagojena barvna paleta"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Prikaz elementa %1$d od %2$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Ni dogodkov"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "Glasnost za %1$s, %2$d odstotkov"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Zaslon je izklopljen"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Ta aplikacija ne podpira bralnika zaslona. Pritisnite tipko za domov ali za nazaj, da se vrnete na domači zaslon."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Aplik. ni mogoče odpreti"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Dan"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Mesec"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Leto"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Siva"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Temno siva"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Zvok"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Vibriranje"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Črna"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Modrovijolična"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Temno modra"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Gozdno zelena"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Vroče rožnata"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Limetino zelena"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Temno vijoličasta"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Nebeško modra"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Bela"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Rumena"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Naslovna vrstica"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Urejanje."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Nadzor iskanja"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Dvakrat pritisnite, da izberete vse."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Zatemnjeno."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Rdeče"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Dvakrat pritisnite, da spremenite."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Omogoči"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Paradižnikova"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Potrjeno"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Izberi pojavni način"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Izbirnik"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Ni potrjeno"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Več možnosti"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Pomikanje po kazalu"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Opozorilo"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Zaslon je vklopljen."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Za iskanje po kazalu zavrtite %s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Za pomikanje po elementih zavrtite %s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Zavrtite %1$s, da prilagodite možnost %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Za iskanje po kazalu vrtite okvir."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Za pomikanje po elementih vrtite okvir."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Napredovanje"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Dvakrat pritisnite za prikaz."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Dvakrat pritisnite, da pošljete."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Dvakrat pritisnite, da izberete vse."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Dvakrat pritisnite za urejanje."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Dvakrat pritisnite, da prekličete izbiro vseh."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Dvakrat pritisnite, da zaprete pojavno okno."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Za nastav. Bralnika zaslona trikrat pritis. na zaslon z dvema prstoma."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Bralnik zaslona bo onemogočen. Vsi zvoki morajo biti vklopljeni."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Bralnik zaslona podpira samo:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Za nastavitve dostopnosti pritisnite in pridržite tipko za domov."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "Ni podprto kot jezik za mehanizem TTS. Za prenos pritisnite V REDU."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Ni na voljo. Bralnik zaslona je vklopljen."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Zaslon naj bo izklopljen."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Dostopnost"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Izključi vse zvoke"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Negativne barve"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Mono zvok"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Neposredni dostop"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Temen zaslon"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Okvara sluha"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Preklop zvoka iz stereo v mono, ko uporabljate samo eno slušalko."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Odstranjeno."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Baterija je povsem polna"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Skoraj prazna baterija"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Napravi sta povezani"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Napajalnik je priključen."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "V sili"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Polnilnik je izključen."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 neprebran element"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d neprebranih obvestil"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Dober"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Signal ni zaznan"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Kazalo skupin"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Potrditveno polje"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Razširljiv seznam"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Slika"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "Odstotki: %1$s"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Prerazporeditev"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Dvakrat pritisnite za vnos besedila."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Januar"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Februar"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Marec"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "April"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Maj"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Junij"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Julij"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Avgust"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "September"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Oktober"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "November"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "December"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "PM"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "Ur: %d"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Minute"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "Skupno število izbranih: %d."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s od %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Gumb za nazaj"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Izključeno"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Tipkovnica je prikazana."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Potrditveno polje za celotno skupino"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopiraj"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Prilepi"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Izreži"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Podrsajte okvir, da spremenite %s."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Pika"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Vejica"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Vprašaj"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Klicaj"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Enojni narekovaj"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Afna"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "In"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Poševnica"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Dvopičje"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Podpičje"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Narekovaji"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Oklepaj"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Zaklepaj"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Plus"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Zvezdica"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Deljeno z"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Je enako"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Odstotek"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Funt"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Manjše kot"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Večje kot"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Začetni oglati oklepaj"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Zaključni oglati oklepaj"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Začetni zaviti oklepaj"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Zaključni zaviti oklepaj"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Belo srce"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Bela zvezda"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Tilda"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Levi dvojni narekovaj"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Desni dvojni narekovaj"
+
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Obrnjen klicaj"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Obrnjen vprašaj"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Poševnica nazaj"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Krativec"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Oznaka seznama"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Navpičnica"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Znak za valuto"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Dolar"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Evro"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Von"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Jen"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Podčrtaj"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Lojtra"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Pomišljaj"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Strešica"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Temen zaslon"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Hitrost govora"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Začni"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Končaj"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Prostor"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Označeno"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Neoznačeno"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Naslov"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Preklopi"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Drsnik"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Podrsajte gor ali dol za spremembo."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Vrstica %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Stolpec %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "V mreži %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d vrstic"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d stolpcev"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "vrstica napredka"

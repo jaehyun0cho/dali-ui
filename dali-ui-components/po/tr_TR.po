@@ -1,0 +1,1096 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n != 1) ? 5 : 1;"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d karakter"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d karakter"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Alanı düzenle"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Ses Kılavuzu"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Şarj"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Menüyü açmak için çift dokunun."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Cihaz bulunamadı"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Aranıyor"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Servis yok"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Bilinmeyen"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "AM"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Bağlı değil"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Genişletilebilen liste"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Sinyal gücü"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Görme"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "%d öğe gösteriliyor"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Pil kritik seviyede düşük"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Etkinleştirmek için çift dokunun."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Tüm karakterler silindi."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Pil"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Tuş"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Tarih"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Devre dışı."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Listeyi daraltmak için çift dokunun."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Düzenlemek için çift dokunun."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Listeyi genişletmek için çift dokunun"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Seçmek için çift dokunun."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Açılır liste"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Ana ekran"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Klavye gizlendi."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Medya ses düzeyi"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d karakter."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Seçildi."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Sekme %1$d / %2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Ekran okuyucu etkinken telefonunuz sesli geri bildirim sağlar. Örneğin, Ekran okuyucu size her ekranda nelerle etkileşim kurabileceğinizi söyler. Seçmek ve ne olduklarını duymak için öğelere dokunun ve ilgili işlemi gerçekleştirmek için öğelere çift dokunun."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Wi-Fi sinyali zayıf"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Devre dışı bırak"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Metin düzenleme"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Siyah-beyaz"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Capital %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Cihz ses dzyi"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Yatay görünüm"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Sessiz"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Seçili değil"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Öğe yok"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d öğe"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Portre görünümü"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Ayarlar"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Sayfa %1$d / %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Ses düzeyini ayarlayın."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "%1$s şarj oluyor. Pil gücü yüzde %2$s."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Sürüyor."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Açılır pencereyi kapatmak için Geri tuşuna basın."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Ekran açıldı."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Sonraki veya önceki mektubu seçmek için tek parmağınızla sağa veya sola kaydırın."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Alfabetik dizin çubuğu"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Bir gün azalt"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Bir ay azalt"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Bir yıl azalt"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Bir gün artır"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Bir ay artır"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Bir yıl artır"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Geri git"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s silindi"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s devre dışı"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Radyo tuşu"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Metin alanı"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "ÇIKIŞ"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "BİTİR"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "İLERİ"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "Ve tekrar bildirimlerinizi gösterin."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Saat yönünde bir kez daha döndürüp sonraki sayfaya gidin."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "Sonraki sayfa simgesini bulana kadar aynı yönde."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "İşte bu. Bitti. Kılavuzu bitirmek için ekranın altındaki BİTİR öğesine çift dokunun."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "Bezeli saat yönünde tekrar çevirip sonraki sayfaya geçin."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Bezeli döndürerek %s simgesini bulun."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear, seçiminize göre işlem gerçekleştirecek."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear, parmağınızın altındaki öğeyi sesli okur."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear sonraki öğeyi sesli okur."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear önceki öğeyi sesli okur."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear ya Seçim ya da Düzenleme modunu açar."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Ekrandaki sayfalarda gezinin."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Bezeli saatin tersi yönde çevirip Önceki sayfa simgesini bulun."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Önceki ekrana gitmek için Gear'ın sağ üstündeki Geri tuşuna basın."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Uygulamalarınızı görmk içn Gear'ın sağ altndki Ana ekran tuşna basn."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Ekran okuyucu şununla birlikte kullanılamaz:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Listeleri aşağı kaydırın."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Listeleri yukarı kaydırın."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Widget'larınızı görmek için 2 parmakla sola kaydırın."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Saat şekline dönmek için 2 parmağınızla sağa kaydırın."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Ekranda herhangi bir yere dokunun."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Tamam'a dknp klavuzu btrn."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Geçerli ekran, uygulamaları içeriyor. Seçmek için bir uyg. simgesine dokunduğnzda ismi sesli okunur."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Bu dil, TTS dili olarak kullanılamaz. Başka bir tane seçmek için Tamam öğesine dokunabilirsiniz ama Ekran okuyucu kapatılır."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Kılavuzu kapatmak için Atla tuşuna dokunun."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Geri dönmek için bezeli saat yönünün tersine çevirin."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Kılavuzun sonraki aşamasına geçmek için ekranın altında SONRAKİ öğesine çift dokunun."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Birden fazla sayfalık uygulama simgelerinde gezinmek için 2 parmakla sola veya sağa kaydırın."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Öğe listelerinde gezinmek için ekranı iki parmağınızla yukarı veya aşağı kaydırın."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Bezeli saat yönünde çevirip istediğiniz uygulamayı bulun."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Widget'lar"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Buldunuz. Uygulamayı açmak için ekranda herhangi bir yere çift dokunun."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Kısayol ekle"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Çift dokunun"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Çift dokunup tutun"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "2 parmağınızla çift dokunup tutun"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Pratik bölgesi"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Ekran okuycu yrdmı"
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "2 parmağınızla aşağı kaydırın"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Sola kaydırın"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "2 parmağınızla sola kaydırın"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Sağa kaydırın"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "2 parmağınızla sağa kaydırın"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "2 parmağınızla yukarı kaydırın"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Dokun"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Testpad"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Kılavuz"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Ekranı keşfet"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Sayfalarda gezin"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Ekran okuyucu"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Ekran okuycu yrdmı"
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Testpad"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Yakınlaştır"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Ekran kapalı tutulsun mu?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Dil tanınamadı. Ekran okuyucuyu kullanmak için telefonunuzun ayarlarına gidin ve farklı bir dil seçin."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Dil tanınamadı. Ekran okuyucu kullanmak için dil ayarlarınızı değiştirmek amacıyla Tamam'a dokunun."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Erişilebilirlik ayarları için Ana ekran tuşunu basılı tutun."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Yakınlaştırmak ve uzaklaştırmak için ekrana hızlıca üç kez dokunun. Yakınlaştırdıktan sonra, gezdirmek için ekran boyunca iki parmağınızla sürükleyin."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Ekran okuyucu ayarları için iki parmağınızla ekrana hızlıca üç kez dokunun."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Ekran okuyucuyu etkinleştirmek veya devre dışı bırakmak için iki parmağınızla ekrana hızlıca üç kez dokunun."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Tek kulaklık kullandığınız sırada sesi stereo'dan mono'ya geçirin."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Ekran okuyucuyu kullanmak üzere ses verilerini yüklemek için Tamam öğesine dokunun. Mobil ağ yoluyla yüklüyorsanız ekstra ücret uygulanabilir."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Bu dil bir TTS dili olarak kullanılamaz, bu nedenle Ekran okuyucu kapatılacak. Tekrar açmak için telefonunuzun ayarlarına gidip farklı bir dil seçin."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "İşlevleri açıp kapatmak için ekrana iki parmağınızla üç kez dokunun."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Harekt becerlrni deneyn."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Dokunma etkileşimi, kılavuz bilgileri sesli okunurken engellenir."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Sayfa %1$d / %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Sesi aç"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Ekran okuyucuyu açmak için başka bir dil seçin."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Yakınlaştırmak ve uzaklaştırmak için ekrana üç kez dokunun. Gezdirmek için ekran üzerinde iki parmağınızla yakınlaştırıp sürükleyin."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Ekran okuyucu açıkken Gear'ınız sesli geri bildirim sunar. Örneğin, Ekran okuyucu her bir ekranı açıklayan sesli yorum sunabilir. Açıklamasını dinlemek için her bir öğeye dokunmanız yeterlidir, ardından açıklanan işlevi başlatmak için çift dokunun."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Ekran Okuyucu açıkken Gear, her bir ekranı açıklayan sesli yorum sunabilir. Açıklamasını duymak için herhangi bir öğeye dokunun. Açıklanan işlevi başlatmak için çift dokunun."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Çift dokunup basılı tutun, ardından yeniden sıralamak için sürükleyin."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Açık"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Kapalı"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "%s ayarı için bezeli döndürün."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Üst Bilgi"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Mercan"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "1 saat düşür"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "1 dakika düşür"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "1 saniye düşür"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "1 saat artır"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "1 dakika artır"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "1 saniye artır"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Favori"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Öğe %d pozisyonuna bırakıldı."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "%d pozisyonunda öğe sürükleme başladı."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Özel renk paleti"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "%1$d / %2$d öğe gösteriliyor."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Etkinlik yok"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$s ses düzeyi, yüzde %2$d"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Ekran kapalı"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Ekran okuyucu bu uygulama tarafından desteklenmiyor. Ana ekrana dönmek için anasayfa veya geri tuşuna basın."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Uygulama açılamıyor"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Gün"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Ay"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Yıl"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Gri"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Koyu gri"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Ses"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Titreşim"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Siyah"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Mavi menekşe"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Koyu mavi"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Orman yeşili"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Sıcak pembe"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Limon yeşili"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Açık mor"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Gök mavisi"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Beyaz"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Sarı"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Üst Bilgi"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Düzenleniyor."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Arama kontrolü"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Tümünü seçmek için çift dokunun."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Kısıldı."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Kırmızı"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Değiştirmek için çift dokunun."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Etkinleştir"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Domates"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "İşaretli"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Mod açılır penceresini seç"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Seçici"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "İşaretli değil"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Daha fazla seçenek"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Dizini kaydır"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Uyarı"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Ekran açık."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Dizinde arama yapmak için %s öğesini döndürün."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Öğelerde dolaşmak için %s öğesini döndürün."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "%1$s öğesini döndürerek %2$s öğesini ayarlayın."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Dizini aramak için bezeli döndürün."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Öğelerde dolaşmak için bezeli döndürün."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Sürüyor"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Görüntülemek için çift dokunun."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Göndermek için çift dokunun."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Tümünü seçmek için çift dokunun."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Düzenlemek için çift dokunun."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Tümünün seçimini iptal etmek için çift dokunun."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Açılır pencereyi kapatmak için çift dokunun."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Ekran okuyucu ayarları için iki parmağınızla ekrana üç kez dokunun."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Ekran okuyucu devre dışı bırakılacak. Tüm seslerin açılması gerekir."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Ekran okuyucu yalnızca şunları destekler:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Erişilebilirlik ayarları için Ana ekran tuşunu basılı tutun."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "TTS dili olarak desteklenmez. İndirmek için Tamam öğesine dokunun."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Kullanılamaz. Ekran okuyucu açık."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Ekranı kapalı tutun."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Erişilebilirlik"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Tüm sesleri kapat"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Negatif Renkler"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Mono Ses"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Doğrudan erişim"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Karanlık ekran"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Duyma"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Tek bir kulaklık kullanırken sesi stereodan monoya değiştirin."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Kaldırıldı."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Pil tamamen şarj oldu"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Düşük pil"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Cihazlar bağlandı"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Şarj cihazı bağlı."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Acil durum"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Şarj cihazı kablosu bağlı değil."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 okunmamış öğe"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d okunmamış bildirim"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "İyi"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Sinyal algılanmadı"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Grup endeksi"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Onay kutusu"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Genişletilebilir liste"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Görüntü"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "Yüzde %1$s"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Yeniden düzenle"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Metin girmek için çift dokunun."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Ocak"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Şubat"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Mart"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Nisan"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Mayıs"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Haziran"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Temmuz"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Ağustos"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Eylül"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Ekim"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Kasım"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Aralık"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "PM"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d saat"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Dakika"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "Toplamda %d öğe seçildi."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s saniye (%2$s saniyeden)"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Geri düğmesi"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Kapalı"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Klavye görüntülendi."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Tüm grup için onay kutusu"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopyala"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Yapıştır"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Kes"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "%s ögesini değiştirmek için çerçeveyi kaydırın."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Nokta"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Virgül"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Soru işareti"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Ünlem işareti"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Tek tırnak"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Et"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "Ve"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Eğik çizgi"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "İki nokta"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Noktalı virgül"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Çift tırnak"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Sol parantez"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Sağ parantezi"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Artı"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Yıldız işareti"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Bölü"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Eşittir"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Yüzde"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Pound"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Küçüktür"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Büyüktür"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Sol köşeli ayraç"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Sağ köşeli ayraç"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Sola kıvrık ayraç"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Sağ kıvrık ayraç"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz kalp"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz yıldız"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Tilde"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Sol açılı çift tırnak işareti"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Sağ açılı çift tırnak işareti"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Ters ünlem işareti"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Ters soru işareti"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Ters eğik çizgi"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Aksan işareti"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Madde işareti"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Çubuk"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Para birimi"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Dolar"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Avro"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Won"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Yen"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Alt çizgi"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Kare"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Tire"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Şapka"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Karanlık ekran"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Konuşma hızı"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Başla"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Bitir"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Boşluk"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Onaylı"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Onaysız"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Başlık"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Değiştir"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Kaydırıcı"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Değiştirmek için yukarı veya aşağı sürükleyin."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Satır %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Sütun %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "%1$s kılavuzunda"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d satır"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d sütun"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Siyah daire"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Siyah kare"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz daire"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz sinek simgesi"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz elmas"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz maça simgesi"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Beyaz kare"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "ilerleme çubuğu"

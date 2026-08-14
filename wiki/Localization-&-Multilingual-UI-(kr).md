@@ -218,6 +218,45 @@ editor.SetTranslatablePlaceholder("IDS_COMMENT_PLACEHOLDER");
 
 <br/>
 
+## Components Message Catalog
+
+`Components::Localization`은 `dali-ui-components`와 함께 배포되는 message catalog에서 문자열을 읽습니다. 따라서 애플리케이션이 별도의 번역을 제공하지 않아도 component가 번역된 텍스트를 표시할 수 있습니다.
+
+~~~cpp
+#include <dali-ui-components/public-api/localization/components-localization.h>
+
+namespace Localization = Dali::Ui::Components::Localization;
+
+// 단순 조회
+Dali::String text = Localization::GetLocalizedString("IDS_ACCS_TBOPT_BUTTON");
+
+// 정수 인자를 사용하는 조회 -> "Page 1 of 5."
+Dali::String page = Localization::GetLocalizedString(
+  "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS", 1, 5);
+
+// 문자열과 정수 인자를 함께 사용하는 조회 -> "Media volume, 42 percent"
+Dali::String volume = Localization::GetLocalizedString(
+  "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS", "Media", 42);
+
+// catalog domain. UiLocalizationManager로 직접 조회할 때 사용할 수 있습니다.
+Dali::String domain = Localization::GetDomain();
+~~~
+
+catalog domain은 프로세스당 한 번, localization manager에 접근할 수 있는 첫 조회 시점에 bind되며 모든 조회는 이 domain을 명시적으로 전달합니다. 애플리케이션의 default domain은 읽지도, 변경하지도 않습니다.
+
+인자를 받는 overload는 번역된 텍스트를 format string으로 사용합니다. catalog가 사용하는 조합(`%d`, `%s`, 그리고 `"%1$s volume, %2$d percent"` 같은 혼합)의 정수·문자열 인자를 지원합니다. 번역문은 값을 순차 지정자(`%d`, `%s`) 또는 위치 지정자(`%1$d`, `%1$s`)로 배치할 수 있으며, 위치 지정자를 사용하면 번역문마다 인자 순서를 바꿀 수 있습니다. 위 호출은 `en_US`에서 `"Page 1 of 5."`, 번역문이 `"%2$d페이지 중 %1$d페이지."`인 `ko_KR`에서는 `"5페이지 중 1페이지."`가 됩니다.
+
+> [!IMPORTANT]
+> catalog 텍스트는 코드가 아니라 데이터입니다. 포맷팅 전에 검증하여 전달한 인자 개수 범위 안의 `%%`와 정수(`%d`/`%i`, `%<index>$d`/`%<index>$i`)·문자열(`%s`, `%<index>$s`) 변환만 허용하고, 각 변환은 소비하는 인자의 타입과 일치해야 하며, 위치 지정자와 순차 지정자를 섞어 쓸 수 없습니다. `%n` 변환, 폭 지정, 타입 불일치처럼 그 밖의 텍스트는 `snprintf()`에 전달하지 않고 포맷팅 없이 그대로 반환합니다.
+
+> [!NOTE]
+> 위치 지정자의 index는 1부터 빠짐없이 이어져야 합니다. 뒤쪽 인자를 생략하는 것(두 개 중 `%1$d`만 사용)은 허용되지만, `%2$d`만 단독으로 쓰면 유효하지 않은 format으로 보고 포맷팅 없이 반환합니다. 참조되지 않은 위치 인자의 동작은 libc 구현마다 다르기 때문입니다.
+
+> [!NOTE]
+> Fallback: resourceId가 비어 있으면 빈 문자열을, 번역이 없으면 resourceId를 반환합니다.
+
+<br/>
+
 ## Direct Lookup
 
 `GetLocalizedString()`을 사용하면 binding 없이 직접 localized string을 조회할 수 있습니다.
@@ -498,6 +537,10 @@ Mode 설명:
 ### Custom component sample
 - [text-localization-custom-component-example.cpp](https://github.sec.samsung.net/NUI/dali-ui/tree/devel/samples/text/text-localization-custom-component-example.cpp)
 - custom component 자체에 binding을 걸고 내부 view를 갱신하는 샘플
+
+### Components message catalog sample
+- [components-localization-example.cpp](https://github.sec.samsung.net/NUI/dali-ui/tree/devel/samples/components-localization/components-localization-example.cpp)
+- `dali-ui-components`와 함께 배포되는 catalog를 읽고, 언어별로 위치 인자 순서가 바뀌는 것을 보여주는 샘플
 
 <br/>
 

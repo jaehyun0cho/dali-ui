@@ -1,0 +1,1096 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n != 1) ? 5 : 1;"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d знак"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d знака"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Редактиране на поле"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Екранен четец (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Зареждане"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Чукнете двукратно, за да отворите менюто."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Не са намерени устройства"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Търсене"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Няма услуга"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Няма информация"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "AM"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Не е свързано"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Разгъваем списък"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Сила на сигнала"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Зрение"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Показване на %d елемента"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Батерията е изтощена докрай"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Докоснете двукратно, за да активирате."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Всички знаци са изтрити."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Батерия"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Бутон"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Дата"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Деактивирано е."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Чукнете двукратно, за да свиете списъка."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Чукнете двукратно, за да редактирате."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Чукнете двукратно, за да разгънете списъка"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Докоснете двукратно, за да изберете."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Падащ списък"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Начален екран"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Клавиатурата е скрита."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Сила на звука на мултимедия"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d знака."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Избрано."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Раздел %1$d от %2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Докато „Екранен четец“ е активиран, телефонът ще предоставя гласова обратна връзка. Например „Екранен четец“ ще ви казва с какво можете да взаимодействате на всеки екран. Докоснете елементи, за да ги изберете и чуете какви са те, и докоснете двукратно върху елементи, за да изпълните подходящото действие."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Wi-Fi сигналът е слаб"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Деакти-\nвиране"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Редактиране на текст"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Скала на сивото"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Главно %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Звук на устр."
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Пейзажен изглед"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Заглушаване"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Не е избрано"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Няма елементи"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d елемента"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Портретен изглед"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Настройки"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Страница %1$d от %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Настройте силата на звука."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Зареждане %1$s. Зарядът на батерията е %2$s процента."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Изпълнява се."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Натиснете клавиша за назад, за да затворите изскачащия прозорец."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Екранът е включен."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Плъзнете надясно или наляво с един пръст, за да изберете следващата или предишната буква."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Индексна лента в азбучен ред"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Намаляване с един ден"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Намаляване с един месец"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Намаляване с една година"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Увеличаване с един ден"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Увеличаване с един месец"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Увеличаване с една година"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Навигиране назад"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s изтрито"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s деактивирано"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Бутон за избор"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Текстово поле"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "ИЗХОД"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "ГОТОВО"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "НАПРЕД"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "И отново, за да покажете уведомленията."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "А с още едно завъртане по часов. стр. отивате на следв. стр."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "И в същата посока, докато намерите иконата „Следваща страница“."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Това е всичко. Готово е. За да завършите самоучителя, докоснете двукратно ГОТОВО долу на екрана."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "И завъртете безела по часовн. стр. за премин. на следв. стр."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Намерете иконата %s, като завъртите безела."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear ще извърши действие при вашия избор."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear ще прочете на глас елемента под пръста."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear ще прочете на глас следващия елемент."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear ще прочете на глас предишния елемент."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear ще включи Режим полет или Режим на избор."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Навигирайте през страниците на екрана."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Зав. безела обр. на часовн. стр. за нам. иконата Следв. стр."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Натис. клав. назад в горната дясна част на Gear за отиване на предишния екран."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Натис. клав. за начало в долната дясна част на Gear за прегл. прил."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Екранният четец не може да се използва с:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Превъртете надолу през списъците."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Превъртете нагоре през списъците."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Плъзнете наляво с 2 пръста, за да видите уиджетите."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Плъзнете надясно с 2 пръста за връщане на циферблата."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Докоснете някъде по екрана."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Док. OK за край на самоуч."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "На този екран има приложения. Докоснете иконата на някое, за да го изберете, и името ще се изчете."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Този език не може да се използва като TTS език. Може да докоснете OK, за да изберете друг, но „Екранен четец“ ще се изключи."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "За затв. самоуч. докос. бутона „Пропускане“."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "За връщане завъртете безела обратно на часовник. стрелка."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "За да преминете на следв. етап от самоучителя, докоснете двукратно НАПРЕД в долната част на екрана."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "За да навигирате през много страници с икони на приложения, плъзнете наляво или надясно с 2 пръста."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "За да превъртите през списъците с елементи, плъзнете екрана нагоре или надолу с два пръста."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Завъртете безела по часовн. стр. за нам. желаното прилож."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Уиджети"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Намерихте го. Докоснете двукратно екрана, за да отворите приложението."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Добав. пряк път"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Двукратно докосване"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Двукр. док. и задър."
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Двукр. докос. и задърж. с 2 пръста"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Зона за упражнение"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Помощ екран. четец"
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "Плъзгане надолу с 2 пръста"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Плъзгане наляво"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "Плъзгане наляво с 2 пръста"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Плъзг. надясно"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Плъзгане надясно с 2 пръста"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "Плъзгане нагоре с 2 пръста"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Докосване"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Тестова област"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Самоучител"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Разучаване на екрана"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Навигиране през страници"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Екранен четец"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Помощ екран. четец"
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Тестова област"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Мащабиране"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Да се задържи ли екранът изключен?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Езикът не е разпознат. Отидете в настройките на телефона и изберете различен език, за да използвате „Екранен четец“."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Езикът не е разпознат. Докоснете OK, за да промените настройките на езика си, за да използвате „Екранен четец“."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Натиснете и задръжте клавиша за начало за настройки за достъпност."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Бързо докоснете трикратно екрана, за да увеличите или намалите. След увеличаване плъзнете два пръста през екрана, за да панорамирате."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Бързо докоснете трикратно екрана с два пръста за настройки на Екранен четец."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Докоснете бързо три пъти екрана с два пръста, за да активирате или деактивирате „Екранен четец“."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Превключете звука от стерео на моно, докато използвате една слушалка."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Докоснете OK за инсталиране на данните за глас, за да използвате Екранен четец. Може да се начислят допълнителни такси, ако инсталирате чрез мобилна мрежа."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Този език не може да се използва като TTS език, поради което Екранен четец ще се изключи. За да го включите отново, отидете в настройките на телефона и изберете друг език."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Докоснете три пъти екрана с два пръста за включване или изключване на функции."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Изпробвайте жестовете."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Взаимодействието с докосване е блокирано, докато информацията на самоучителя се чете на глас."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Страница %1$d от %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Включване на звука"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Изберете друг език, за да включите Екранен четец."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Докоснете трикратно екрана, за да увеличите или намалите. Увеличете и плъзнете два пръста през екрана, за да панорамирате."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Докато Екранен четец е включен, Gear ще предоставя гласова обратна връзка. Например Екранен четец може да предоставя звукови коментари, описващи всеки екран. Просто докоснете някой елемент, за да чуете описанието му, след което докоснете двукратно, за да задействате описаната функция."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Когато Екранен четец е включен, Gear предоставя звуков коментар, който описва всеки екран. Докоснете някой елемент, за да чуете описанието му. Докоснете двукратно, за да задействате описаната функция."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Докоснете двукратно и задръжте, след което плъзнете, за да пренаредите."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Включено"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Изключено"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Завъртете безела за регулиране на %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Заглавие"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Корал"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Намаляване с 1 час"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Намаляване с 1 минута"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Намаляване с 1 секунда"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Увеличаване с 1 час"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Увеличаване с 1 минута"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Увеличаване с 1 секунда"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Предпочитано"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Елементът е пуснат на позиция %d."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Започна плъзгането на елемента на позиция %d."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Цветова палитра по избор"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Показване на елемент %1$d от %2$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Няма събития"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "Сила на звука на %1$s, %2$d процента"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Екранът е изключен"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Екранният четец не се поддържа от това приложение. Натиснете клавиша за начало или назад, за да се върнете на началния екран."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Прил. не може да се отв."
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Ден"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Месец"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Година"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Сиво"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Тъмносиво"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Звук"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Вибрация"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Черно"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Виолетовосиньо"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Тъмносиньо"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Тъмнозелено"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Яркорозово"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Жълтозелено"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Тъмновиолетово"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Небесносиньо"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Бяло"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Жълто"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Заглавие"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Редактира се."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Управление на търсене"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Чукнете двукратно, за да изберете всички."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Затъмнено."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Червен"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Докоснете двукратно, за да промените."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Разре-\nшаване"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Домат"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Отметнато"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Изскачащ прозорец за режим на избиране"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Избирач"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Не е отметнато"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Още опции"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Превъртане на индекса"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Известие"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Екранът е включен."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Завъртете %s, за да търсите в индекса."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Завъртете %s, за да навигирате в елементите."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Завъртете %1$s, за да регулирате %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Завъртете безела, за да търсите в индекса."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Завъртете безела, за да навигирате в елементите."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Развитие"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Докоснете двукратно, за да прегледате."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Докоснете двукратно, за да изпратите."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Докоснете двукратно, за да изберете всички."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Докоснете двукратно, за да редактирате."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Докоснете двукратно, за да махнете избора от всички."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Докоснете двукратно, за да затворите изскачащия прозорец."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Докоснете трикратно екрана с два пръста за настройки на Екранен четец."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Екранен четец е изкл. За него е необходимо всички звуци да бъдат вкл."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Екранен четец поддържа само:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Натиснете и задръжте клавиша за начало за настройки за достъпност."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "Не се поддържа като TTS език. Докоснете OK, за да се изтегли."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Не е налично. Екранен четец е включен."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Дръжте екрана изключен."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Достъпност"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Изключ. на всички звуци"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Цветове в негатив"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Моно звук"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Директен достъп"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Тъмен екран"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Слух"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Превключете звука от стерео на моно, когато използвате една слушалка."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Премахнато."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Батерия напълно заредена"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Изтощена батерия"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Устройствата са свързани"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Зарядното е свързано."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Спешен случай"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Зарядното е извадено."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 непрочетен елемент"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d непрочетени известия"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Добър"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Няма открит сигнал"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Индекс за група"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Квадратче за отметка"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Разгъваем списък"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Изображение"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s процента"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Пренареждане"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Чукнете двукратно, за да въведете текст."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Януари"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Февруари"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Март"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Април"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Май"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Юни"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Юли"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Август"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Септември"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Октомври"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Ноември"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Декември"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "PM"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d часа"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Минути"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "%d общо са избрани."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s от %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Бутон Назад"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Изключено"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Клавиатурата се показва."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Поле за отметка за цялата група"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Копиране"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Поставяне"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Отрежи"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Плъзнете безела, за да промените %s."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Точка"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Запетая"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Въпросителен знак"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Удивителен знак"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Единични кавички"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Кльомба"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "И"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Наклонена черта"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Двоеточие"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Точка и запетая"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Кавички"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Отваряща скоба"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Затваряща скоба"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Плюс"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Звездичка"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Делено на"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Равно"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Процент"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Паунд"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "По-малко от"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "По-голямо от"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Отваряща квадратна скоба"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Затваряща квадратна скоба"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Отваряща скоба"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Затваряща кръгла скоба"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Бяло сърце"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Бяла звезда"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Тилда"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Леви ъглови кавички"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Десни ъглови кавички"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Обратен удивителен знак"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Обратен въпросителен знак"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Обратно наклонена черта"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Ляво ударение"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Водещ символ"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Вертикална черта"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Знак за валута"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Долар"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Евро"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Вон"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Йена"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Долна черта"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Диез"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Тире"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Двойно ударение"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Тъмен екран"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Скорост на речта"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Начало"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Край"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Интервал"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Отметнато"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Неотметнато"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Заглавие"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Превключвател"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Плъзгач"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Плъзнете нагоре или надолу, за да промените."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Ред %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Колона %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "В решетка %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d реда"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d колони"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "лента за напредък"

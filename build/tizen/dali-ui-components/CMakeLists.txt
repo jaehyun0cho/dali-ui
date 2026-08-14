@@ -41,6 +41,22 @@ ELSE()
   TARGET_COMPILE_DEFINITIONS(${PROJECT_LIB_NAME} PRIVATE DALI_UI_COMPONENTS_IMAGE_DIR=0)
 ENDIF()
 
+# Components-owned message catalog, installed to the standard locale directory
+# (<prefix>/share/locale) alongside dali-ui-foundation.mo. Mirrors
+# DALI_UI_COMPONENTS_IMAGE_DIR's =0 env fallback so non-default-resource builds
+# keep resolving via the DALI_UI_COMPONENTS_LOCALE_DIR environment variable.
+SET(DALI_UI_COMPONENTS_LOCALE_DOMAIN "dali-ui-components")
+# CMAKE_INSTALL_PREFIX may carry backslashes on Windows; normalize them the same
+# way the top-level CMakeLists does for dataReadOnlyDir before baking the path.
+SET(componentsLocaleDir "${CMAKE_INSTALL_PREFIX}/share/locale")
+STRING(REPLACE "\\" "/" componentsLocaleDir "${componentsLocaleDir}")
+TARGET_COMPILE_DEFINITIONS(${PROJECT_LIB_NAME} PRIVATE DALI_UI_COMPONENTS_LOCALE_DOMAIN="${DALI_UI_COMPONENTS_LOCALE_DOMAIN}")
+IF( USE_DEFAULT_RESOURCE_DIR )
+  TARGET_COMPILE_DEFINITIONS(${PROJECT_LIB_NAME} PRIVATE DALI_UI_COMPONENTS_LOCALE_DIR="${componentsLocaleDir}")
+ELSE()
+  TARGET_COMPILE_DEFINITIONS(${PROJECT_LIB_NAME} PRIVATE DALI_UI_COMPONENTS_LOCALE_DIR=0)
+ENDIF()
+
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_LIB_NAME}
   PUBLIC
     $<BUILD_INTERFACE:${ROOT_SRC_DIR}>
@@ -49,6 +65,7 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_LIB_NAME}
     ${DALICORE_INCLUDE_DIRS}
     ${DALIADAPTOR_INCLUDE_DIRS}
     ${DALIUI_INCLUDE_DIRS}
+    ${DALI_UI_GETTEXT_INCLUDE_DIRS}
     ${VCPKG_INCLUDE_DIR}
     ${INCLUDE_DIR}
 )
@@ -56,6 +73,7 @@ TARGET_INCLUDE_DIRECTORIES(${PROJECT_LIB_NAME}
 TARGET_LINK_LIBRARIES(${PROJECT_LIB_NAME}
   PUBLIC dali2-ui-foundation
   PRIVATE
+    ${DALI_UI_GETTEXT_LIBRARIES}
     ${COVERAGE}
     dali-ui-components-md4c
 )
@@ -119,3 +137,47 @@ ENDIF()
 # Install resources
 INSTALL(DIRECTORY ${COMPONENTS_ROOT_SRC_DIR}/images/
         DESTINATION ${dataReadOnlyInstallDir}/ui/images/components)
+
+# Compile the components message catalog (.po -> .mo) and install it under
+# <prefix>/share/locale/<locale>/LC_MESSAGES/<domain>.mo, the layout
+# gettext expects from bindtextdomain().
+INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/../dali-ui-gettext.cmake)
+DALI_UI_FIND_MSGFMT()
+
+IF(MSGFMT_EXECUTABLE)
+  MESSAGE(STATUS "Using gettext msgfmt: ${MSGFMT_EXECUTABLE}")
+
+  SET(COMPONENTS_LOCALE_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/locale")
+  FILE(GLOB COMPONENTS_PO_FILES "${COMPONENTS_ROOT_SRC_DIR}/po/*.po")
+
+  SET(COMPONENTS_MO_FILES)
+  FOREACH(PO_FILE ${COMPONENTS_PO_FILES})
+    GET_FILENAME_COMPONENT(LOCALE ${PO_FILE} NAME_WE)
+    SET(MO_DIR "${COMPONENTS_LOCALE_BINARY_DIR}/${LOCALE}/LC_MESSAGES")
+    SET(MO_FILE "${MO_DIR}/${DALI_UI_COMPONENTS_LOCALE_DOMAIN}.mo")
+    ADD_CUSTOM_COMMAND(
+      OUTPUT ${MO_FILE}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${MO_DIR}
+      COMMAND ${MSGFMT_EXECUTABLE} -o ${MO_FILE} ${PO_FILE}
+      DEPENDS ${PO_FILE}
+      ${MSGFMT_JOB_POOL_ARGUMENT}
+      COMMENT "Generating ${MO_FILE} from ${PO_FILE}"
+      VERBATIM
+    )
+    INSTALL(FILES ${MO_FILE}
+            DESTINATION ${componentsLocaleDir}/${LOCALE}/LC_MESSAGES)
+    LIST(APPEND COMPONENTS_MO_FILES ${MO_FILE})
+  ENDFOREACH()
+
+  # An ALL target, so the catalogs are always built. The library does not consume
+  # them, so it deliberately does not depend on this target: that would serialize
+  # the link behind every msgfmt run.
+  ADD_CUSTOM_TARGET(dali-ui-components-locale ALL DEPENDS ${COMPONENTS_MO_FILES})
+ELSEIF(WIN32)
+  MESSAGE(FATAL_ERROR
+    "msgfmt is required to build the dali-ui-components message catalog. "
+    "Run the windows-dependencies tools setup or set DALI_MSGFMT_EXECUTABLE."
+  )
+ELSE()
+  MESSAGE(WARNING "msgfmt not found; the dali-ui-components message catalog will not be generated")
+ENDIF()

@@ -69,6 +69,7 @@ samples/text/res/locale/formatted/*/LC_MESSAGES/*.mo
 samples/text/res/locale/gradient/*/LC_MESSAGES/*.mo
 samples/text/res/locale/windows/*/LC_MESSAGES/*.mo
 samples/accessibility-localized-name/res/locale/*/LC_MESSAGES/*.mo
+/build/tizen/dali-ui-components/locale/
 
 /dali-ui-foundation/internal/graphics/generated
 /build/tizen/dali-ui-foundation/dali-ui-shader-generator

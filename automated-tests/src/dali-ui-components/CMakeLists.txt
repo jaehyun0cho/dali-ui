@@ -20,6 +20,7 @@ SET(TC_SOURCES
     utc-Dali-DialogContainer.cpp
     utc-Dali-AlertDialog.cpp
     utc-Dali-MarkdownView.cpp
+    utc-Dali-ComponentsLocalization.cpp
 )
 
 SET(TC_GENERATED_HEADER

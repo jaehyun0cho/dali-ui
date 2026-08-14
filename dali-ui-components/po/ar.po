@@ -1,0 +1,1057 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "%d حرف"
+msgstr[1] "حرف واحد"
+msgstr[2] "حرفان"
+msgstr[3] "%d أحرف"
+msgstr[4] "%d حرفاً"
+msgstr[5] "%d حرف"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "تعديل الحقل"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "قارئ الشاشة (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "يتم الآن الشحن"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "انقر نقرا مزدوجا لفتح القائمة."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "لم يتم العثور على أجهزة"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "البلوتوث"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "البحث"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "لا توجد خدمة"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "غير معروف"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "ص"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "غير متصل"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "القائمة القابلة للتوسيع"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "قوة الإشارة"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "الرؤية"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "إظهار %d عناصر"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "شحن البطارية ضعيف للغاية"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "اضغط ضغطًا مزدوجًا للتفعيل."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "تم حذف كل الأحرف."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "البطارية"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "الزر"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "التاريخ"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "تم إلغاء التفعيل."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "انقر نقرا مزدوجا لطي القائمة."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "انقر نقرا مزدوجا للتعديل."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "انقر نقرا مزدوجا لتوسيع القائمة"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "اضغط ضغطًا مزدوجًا للتحديد."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "القائمة المنسدلة"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "الشاشة الرئيسية"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "تم إخفاء لوحة المفاتيح."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "مستوى صوت الوسائط"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d الحروف."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "تم التحديد."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "علامة تبويب %1$d من %2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "سيوفر هاتفك الملاحظات الصوتية عندما يكون قارئ الشاشة مفعلاً. على سبيل المثال، سيعلمك قارئ الشاشة بالمحتويات التي يمكنك التفاعل معها على كل شاشة. انقر فوق العناصر لتحديدها وسماع ما هي، وانقر نقراً مزدوجاً فوقها لتنفيذ الإجراء ذي الصلة."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "إشارة Wi-Fi ضعيفة"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "إلغاء تفعيل"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "تعديل النص"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "تدرج الرمادي"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "حرف %s كبير"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "مستوى صوت الجهاز"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "عرض أفقي"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "كتم"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "لم يتم التحديد"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "ما من عنصر"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d من العناصر"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "عرض طولي"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "الإعدادات"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "الصفحة %1$d من %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "يمكنك تعديل مستوى الصوت."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "جارٍ شحن %1$s. تبلغ طاقة البطارية %2$s بالمئة."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "قيد التقدم."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "اضغط على مفتاح الرجوع لإغلاق الإطار المنبثق."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "تم تشغيل الشاشة."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "مرّر إصبعك نحو اليمين أو اليسار بإصبع واحد لتحديد الحرف التالي أو السابق."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "شريط دليل الأحرف الأبجدية"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "الرجوع يوم واحد"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "الرجوع شهر واحد"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "الرجوع سنة واحدة"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "التقديم يوم واحد"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "التقديم شهر واحد"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "التقديم سنة واحدة"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "الرجوع"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "تم حذف %s"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "تم إلغاء تفعيل ‎%s"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "زر الراديو"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "الحقل النصي"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "الخروج"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "إنهاء"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "التالي"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "ومجدداً لعرض إشعاراتك."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "ستنقلك دورة أخرى باتجاه عقارب الساعة إلى الصفحة التالية."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "وفي الاتجاه نفسه حتى تعثر على رمز الصفحة التالية."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "هذا كل شيء. لقد انتهينا. لإنهاء البرنامج التعليمي، انقر نقراً مزدوجاً فوق ”إنهاء“ في أسفل الشاشة."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "وأدر الإطار باتجاه عقارب الساعة مجدداً للانتقال إلى الصفحة التالية."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "يمكنك العثور على رمز %s من خلال تدوير الإطار."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "ستُنفذ ساعة Gear مهمة بحسب اختيارك."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "ستقرأ ساعة Gear العنصر الموجود تحت إصبعك."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "ستقرأ ساعة Gear العنصر التالي."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "ستقرأ ساعة Gear العنصر السابق."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "ستُشغّل ساعة Gear وضع التحديد أو التعديل."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "تنقل عبر الصفحات الموجودة على الشاشة."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "أدر الآن الإطار عكس اتجاه عقارب الساعة للعثور على رمز الصفحة السابقة."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "اضغط على مفتاح التطبيقات الأخيرة على الجهة العلوية اليمنى لساعة Gear للانتقال إلى الشاشة السابقة."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "اضغط على مفتاح الشاشة الرئيسية على الجهة السفلية اليمنى لساعة Gear لرؤية تطبيقاتك."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "يتعذر استخدام قارئ الشاشة مع:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "قم بالتمرير نحو الأسفل بين القوائم."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "قم بالتمرير نحو الأعلى بين القوائم."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "اسحب الشاشة نحو اليسار بإصبعين لعرض تطبيقاتك المصغرة."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "سحب نحو اليمين بإصبعين للعودة إلى وجه الساعة."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "انقر فوق أي مكان على الشاشة."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "انقر فوق ”موافق“ لإنهاء البرنامج التعليمي."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "تحتوي الشاشة الحالية على تطبيقات. انقر فوق رمز تطبيق لتحديد واحدٍ، وستتم قراءة اسمه بصوت مرتفع."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "ا يمكن استخدام هذه اللغة كلغة TTS. يمكنك النقر فوق ”موافق“ لاختيار لغة أخرى، ولكن سيتم إيقاف تشغيل قارئ الشاشة."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "لإغلاق البرنامج التعليمي، انقر فوق زر تخطي."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "للعودة، أدر الإطار عكس اتجاه عقارب الساعة."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "للانتقال إلى المرحلة التالية من البرنامج التعليمي، انقر نقراً مزدوجاً فوق ”التالي“ في أسفل الشاشة."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "للتنقل بين عدة صفحات من رموز التطبيقات، اسحب الشاشة نحو اليسار أو اليمين بإصبعين."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "للتمرير بين قوائم العناصر، اسحب الشاشة نحو الأعلى أو الأسفل بإصبعين."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "أدر الإطار باتجاه عقارب الساعة للعثور على التطبيق الذي تريده."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "التطبيقات المصغرة"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "لقد عثرت عليه. انقر نقراً مزدوجاً فوق أي مكانٍ على الشاشة لفتح التطبيق."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "إضافة اختصار"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "نقرة مزدوجة"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "انقر نقراً مزدوجاً مع الاستمرار"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "انقر نقراً مزدوجاً مع الاستمرار بإصبعين"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "منطقة التمرين"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "تعليمات حول قارئ الشاشة"
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "سحب على الشاشة نحو الأسفل بإصبعين"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "سحب نحو اليسار"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "سحب نحو اليسار بإصبعين"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "سحب نحو اليمين"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "سحب نحو اليمين بإصبعين"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "سحب نحو الأعلى بإصبعين"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "النقر"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "لوحة الاختبار"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "البرنامج التعليمي"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "استكشاف الشاشة"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "التنقل عبر الصفحات"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "قارئ الشاشة"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "تعليمات قارئ الشاشة"
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "لوحة الاختبار"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "التكبير/التصغير"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "هل تريد إبقاء الشاشة متوقفة عن التشغيل؟"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "لم يتم التعرف على اللغة. انتقل إلى ضبط هاتفك وحدد لغة أخرى لاستخدام قارئ الشاشة."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "لم يتم التعرف على اللغة. انقر فوق ”موافق“ لتغيير ضبط لغتك لاستخدام قارئ الشاشة."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "اضغط مع الاستمرار على مفتاح الشاشة الرئيسية لعرض ضبط إمكانية الوصول."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "انقر نقراً ثلاثياً بسرعة فوق الشاشة للتكبير أو التصغير. بعد التكبير، اسحب الشاشة بإصبعين للتحريك."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "انقر نقراً ثلاثياً بسرعة فوق الشاشة بإصبعين للحصول على ضبط قارئ الشاشة."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "انقر بسرعة ثلاث مرات فوق الشاشة بإصبعين لتفعيل قارئ الشاشة أو إلغاء تفعيله."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "قم بتبديل الصوت من استريو إلى أحادي أثناء استخدام سماعة أذن واحدة."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "انقر فوق ”موافق“ لتثبيت بيانات الصوت لاستخدام قارئ الشاشة. قد يتم فرض تكاليف إضافية في حال كنت تستخدم شبكة الهاتف المحمول لإجراء عملية تثبيت."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "لا يمكن استخدام هذه اللغة كلغة TTS، لذا سيتم إيقاف تشغيل قارئ الشاشة. لتشغيله مجدداً، انتقل إلى ضبط هاتفك وحدد لغة مختلفة."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "انقر ثلاث مرات فوق الشاشة بإصبعين لتشغيل الوظائف أو إيقاف تشغيلها."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "حاول تنفيذ مهارات الإيماءات."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "يكون تفاعل اللمس محظوراً أثناء قراءة معلومات البرنامج التعليمي."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "الصفحة %1$d من %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "إلغاء الكتم"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "حدد لغة أخرى لتشغيل قارئ الشاشة."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "انقر نقراً ثلاثياً فوق الشاشة للتكبير والتصغير. قم بالتكبير واسحب الشاشة بإصبعين للتحريك."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "ستوفر ساعة Gear ملاحظة صوتية عندما يكون قارئ الشاشة قيد التشغيل. يمكن لقارئ الشاشة مثلاً توفير تعليق مسموع يصف فيه كل شاشة. ما عليك سوى النقر فوق كل عنصر لسماع وصفه، ثم النقر نقراً مزدوجاً لبدء الوظيفة الموصوفة."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "عندما يكون قارئ الشاشة قيد التشغيل، توفّر ساعة Gear تعليق مسموع يصف كل شاشة. انقر فوق كل عنصر لسماع وصف عنه. انقر نقراً مزدوجاً لتشغيل الوظيفة الموصوفة."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "انقر نقراً مزدوجاً مع الاستمرار، ثم اسحب لإعادة الترتيب."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "تشغيل"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "غير مفعل"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "قم بتدوير الإطار لتعديل %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "رأس"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "مرجان"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "خفض ساعة واحدة"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "خفض دقيقة واحدة"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "خفض ثانية واحدة"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "زيادة ساعة واحدة"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "زيادة دقيقة واحدة"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "زيادة ثانية واحدة"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "المفضلة"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "تم إسقاط العنصر في الموضع %d."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "بدء سحب العنصر من الموضع %d."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "لوحة الألوان المخصصة"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "جارٍ إظهار العنصر %1$d من %2$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "ما من أحداث"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$s من مستوى الصوت، %2$d بالمئة"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "تم إيقاف تشغيل الشاشة"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "قارئ الشاشة غير مدعوم بواسطة هذا التطبيق. اضغط على المفتاح الرئيسي أو مفتاح الرجوع للرجوع إلى الشاشة الرئيسية."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "يتعذر فتح التطبيق"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "اليوم"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "الشهر"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "العام"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "رمادي"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "رمادي داكن"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "الصوت"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "الاهتزاز"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "أسود"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "أزرق بنفسجي"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "أزرق داكن"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "أخضر صاف"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "قرنفلي رائع"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "أخضر ليموني"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "برقوقي"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "أزرق سماوي"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "أبيض"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "أصفر"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "رأس"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "يتم الآن التعديل."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "التحكم في البحث"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "انقر نقرًا مزدوجًا لتحديد الكل."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "تم خفت الإضاءة."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "أحمر"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "انقر نقراً مزدوجاً للتغيير."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "تفعيل"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "طماطم"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "تم التحديد"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "الإطار المنبثق لتحديد الوضع"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "المنتقي"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "لم يتم التحديد"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "مزيد من الخيارات"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "تمرير في الفهرس"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "تنبيه"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "إن الشاشة قيد التشغيل."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "قم بتدوير %s للبحث في الفهرس."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "قم بتدوير %s للتنقل خلال العناصر."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "قم بتدوير %1$s لتعديل %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "قم بتدوير الإطار للبحث في الفهرس."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "قم بتدوير الإطار للتنقل بين العناصر."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "قيد التقدم"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "انقر نقراً مزدوجاً للعرض."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "انقر نقراً مزدوجاً للإرسال."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "انقر نقراً مزدوجاً لتحديد الكل."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "انقر نقراً مزدوجاً للتحرير."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "انقر نقراً مزدوجاً لإلغاء تحديد الكل."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "انقر نقراً مزدوجاً لإغلاق الإطار المنبثق."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "انقر نقراً ثلاثياً فوق الشاشة بإصبعين للحصول على ضبط قارئ الشاشة."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "سيتم إلغاء تفعيل قارئ الشاشة. يجب تشغيل كل الأصوات."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "يدعم قارئ الشاشة فقط:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "اضغط مع الاستمرار على مفتاح الشاشة الرئيسية للحصول على ضبط إمكانية الوصول."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "غير مدعومة كلغة TTS. انقر فوق ”موافق“ لتنزيلها."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "غير متوفر. إن قارئ الشاشة قيد التشغيل."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "أبق الشاشة متوقفة عن التشغيل."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "إمكانية الوصول"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "إيقاف تشغيل جميع الأصوات"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "ألوان سلبية"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "صوت أحادي"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "الوصول المباشر"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "شاشة مظلمة"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "السمع"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "قم بتبديل الصوت من استريو‬ إلى أحادي‬ عند استخدام ‏‫سماعة أذن‬‬ واحدة."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "تمت الإزالة."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "تم شحن البطارية بالكامل"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "طاقة البطارية منخفضة"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "تم توصيل الجهازين"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "تم توصيل الشاحن."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "الطوارئ"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "تم فصل الشاحن."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "يوجد عنصر واحد غير مقروء"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "توجد %d إخطارات غير مقروءة‬"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "جيدة"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "لم تُكتشف أي إشارة"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "فهرس المجموعات"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "مربع اختيار"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "قائمة قابلة للتوسيع"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "صورة"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s بالمئة"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "إعادة ترتيب"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "انقر نقراً مزدوجاً لإدخال نص."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "٠‎١‎"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "٠‎٢‎"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "٠‎٣"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "٠‎٤"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "مايو"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "٠‎٦‎"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "٠‎٧"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "٠‎٨"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "٠‎٩"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "١‎٠"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "نوفمبر"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "١‎٢"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "م"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d الساعات"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "دقائق"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "تم تحديد %d بشكل إجمالي."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s من %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "زر الرجوع"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "غير مفعل"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "تم عرض لوحة المفاتيح."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "مربع تحديد للمجموعة بالكامل"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "نسخ"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "لصق"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "قص"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "اسحب الإطار لتغيير %s."
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "و"
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "علامة النجمة"
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "عند"
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "شرطة مائلة للخلف"
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "رمز النقطة"
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "قوس الإغلاق"
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "قوس الإغلاق"
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "أقواس إغلاق"
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "علامة النقطتين"
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "فاصلة"
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "علامة العملة"
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "مقسومًا على"
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "دولار"
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "نقطة"
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "يساوي"
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "يورو"
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "علامة تعجّب"
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "نبر الإطالة"
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "أكبر من"
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "علامة تعجب مقلوبة"
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "علامة استفهام مقلوبة"
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "اقتباسات الزاوية اليسرى"
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "أقل من"
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "قوس الفتح"
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "قوس الفتح"
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "أقواس الفتح"
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "بالمئة"
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "أنبوب"
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "المزيد"
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "جنيه"
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "علامة استفهام"
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "اقتباسات"
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "اقتباسات الزاوية اليمنى"
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "اقتباس واحد"
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "نقطة وفاصلة"
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "شرطة"
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "التلدة"
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "قلب أبيض"
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "نجمة بيضاء"
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "وون"
+
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "ين"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "علامة التسطير السفلي"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "هاش"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "شرطة"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "إشارة المدّ"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "شاشة مظلمة"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "سرعة الحديث"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "البدء"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "إنهاء"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "مسافة"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "محدد"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "غير محدد"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "العنوان"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "مفتاح"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "شريط التمرير"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "اسحب لأعلى أو لأسفل للتغيير."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "صف %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "عمود %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "في الشبكة %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d صفوف"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d أعمدة"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "شريط التقدم"

@@ -1,0 +1,1097 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n>1) ? 5 : 1;"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d նիշ"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d նիշ"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Խմբագրման դաշտ"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Էկրանի ընթերցիչ (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Լիցքավորում"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Կրկնակի թակեք՝ ընտրացանկը բացելու համար:"
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Սարքեր չեն գտնվել"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Որոնում"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Ծառայություն չկա"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Անհայտ"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "ԿԱ"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Միացված չէ"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Ընդլայնելի ցուցակ"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Ազդանշանի ուժգնություն"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Տեսողություն"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Ցույց է տրվում %d տարր"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Մարտկոցը սաստիկ նստած է"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Double tap to activate."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Բոլոր նիշերը վերացվեցին:"
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Մարտկոց"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Կոճակ"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Թվական"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Կասեցված է:"
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Կրկնակի թակեք՝ ցուցակը կոծկելու համար:"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Կրկնակի թակեք խմբագրելու համար:"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Կրկնակի թակեք՝ ցուցակն ընդարձակելու համար"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Կրկնակի թակեք ընտրելու համար:"
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Իջնող ցուցակ"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Հիմնական էկրան"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Ստեղնաշարը թաքցված է:"
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Միջոցների ձայնի ուժգնություն"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d գրանշան:"
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Ընտրվել է:"
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Ներդիր %1$d՝ %2$d-ից:"
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Երբ Էկրանի ընթերցիչն ընձեռված է, հեռախոսը կտրամադրի ձայնով հետադարձ կապ: Օրինակ՝ Էկրանի ընթերցիչը կասի, թե ինչի հետ կարող եք փոխգործողություն կատարել յուրաքանչյուր էկրանի վրա: Թակեք տարրերը՝ ընտրելու և լսելու, թե դրանք ինչ են, և կրկնակի թակեք տարրերը՝ համապատասխան գործողությունը կատարելու համար:"
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Wi-Fi ազդանշանը թույլ է"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Անջատել"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Տեքստի խմբագրում"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Գորշի սանդղակ"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Մեծատառ %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Սարքի ձայն"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Հորիզոնական դիտակերպ"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Խլացնել"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Չի ընտրվել"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Տարրեր չկան"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d տարր"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Ուղղաձիգ դիտակերպ"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Settings"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Էջ %1$d՝ %2$d-ից:"
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Կարգավորեք ձայնի ուժգնությունը:"
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Լիցքավորվում է %1$s: Մարտկոցի էներգիան՝ %2$s տոկոս:"
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Ընթացքում է:"
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Սեղմեք Վերադարձի ստեղնը՝ ելնող պատուհանը փակելու համար:"
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Էկրանը միացվեց:"
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Մեկ մատով սահեցրեք իրավունք աջ կամ ձախ՝ հաջորդ կամ նախորդ տառն ընտրելու համար:"
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Այբբենական ցանկի գոտի"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Պակասեցնել մեկ օրով"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Պակասեցնել մեկ ամսով"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Պակասեցնել մեկ տարով"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Ավելացնել մեկ օրով"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Ավելացնել մեկ ամսով"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Ավելացնել մեկ տարով"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Նավարկել հետ"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s վերացվեց"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s կասեցված է"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Ռադիոկոճակ"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Տեքստի դաշտ"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "ԵԼՔ"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "ՎԵՐՋԱՑՆԵԼ"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "ՀԱՋՈՐԴ"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "Եվ կրկին բացահայտեք Ձեր ծանուցումները:"
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Իսկ ժամ. սլաքի ուղղությամբ ևս մեկ պտույտ կբացի հաջորդ էջը:"
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "Եվ նույն ուղղությամբ, մինչև գտնեք Հաջորդ էջի պատկերակը:"
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Ահա և ամենը: Ամեն ինչ պատրաստ է: Ձեռնարկը վերջացնելու համար էկրանի ներքևում կրկնակի թակեք ՎԵՐՋԱՑՆԵԼ:"
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "Եվ շրջանակը նորից շրջեք ժամ. սլաքի ուղղ.՝ հաջորդ էջ անց. հր:"
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Գտնել %s պատկերակը՝ շրջանակը պտտելով:"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear-ը կկատարի Ձեր ընտրած գործողությունը:"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear-ը բարձր կկարդա Ձեր մատի տակ գտնվող տարրը:"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear-ը բարձրաձայն կկարդա հաջորդ տարրը:"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear-ը բարձրաձայն կկարդա նախորդ տարրը:"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear-ը կմիացնի Ընտրության կամ Խմբագրման ռեժիմը:"
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Էկրանի վրա անցնել էջից էջ:"
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Հիմա շրջնկ շրջեք ժամ. սլ. հակ. ուղղ.՝ Նխրդ էջի պատկերակ գտն. հր:"
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Gear-ի վերին աջ կողմում սեղմեք Վերադարձի ստեղնը՝ նախորդ էկրանը գնալու համար:"
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Gear-ի ստորին աջ կողմում սեղմեք Սկզբի ստեղնը՝ ծրագրերը տեսնելու հր:"
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Հնարավոր չէ էկրանի ընթերցիչն օգտագործել հետևյալի հետ՝"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Ցուցակներով ոլորել վար:"
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Ցուցակներով ոլորել վեր:"
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Ձեր պատկերագրերը տեսնելու համար 2 մատով սահեցրեք ձախ:"
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "2 մատով սահեց. աջ՝ դեպի ժամացույցի թվացույցը հետ գնալու հր:"
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Թակեք ցանկացած տեղ էկրանի վրա:"
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Թակեք OK՝ ձռնրկ ավարտ. հր:"
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Ընթացիկ էկրանը պարունակում է ծրագրեր: Ընտրելու հր թակեք որևէ ծրագիր, և դրա անվանումը բարձր կհնչեցվի:"
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Այս լեզուն չի կարող օգտագործվել որպես TTS լեզու: Մեկ ուրիշն ընտրելու համար կարող եք թակել OK, բայց Էկրանի ընթերցիչը կանջատվի:"
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Ձեռնարկը փակելու հր թակեք «Բաց թողնել» կոճակ:"
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Հետ գնալու համար շրջանակը շրջեք ժամ. սլաքի հակառակ ուղղ.:"
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Ուսումնական ձեռնարկի հաջորդ փուլին անցնելու համար էկրանի ներքևի մասում կրկնակի թակեք ՀԱՋՈՐԴ:"
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Ծրագրերի պատկերակների մեկից ավելի էջերով նավարկելու համար 2 մատով սահեցրեք ձախ կամ աջ:"
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Տարրերի ցուցակներով ոլորելու համար էկրանը երկու մատով սահեցրեք վեր կամ վար:"
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Շրջանակը շրջեք ժամ. սլաքի ուղղ.՝ ուզած ծրագիրը գտնելու հր:"
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Պատկերագրեր"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Դուք այն գտաք: Կրկնակի թակեք ցանկացած տեղ էկրանի վրա՝ ծրագիրը բացելու համար:"
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Ավլց. դյուրանց."
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Կրկնակի թակել"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Կրկն. թակել և պահել"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Կրկնակի թակել և պահել 2 մատով"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Պարապմունքի գոտի"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Էկ. ընթերցիչի օգն."
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "2 մատով սահեցնել վար"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Սահում ձախ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "2 մատով սահեցնել ձախ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Սահում աջ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "2 մատով սահեցնել աջ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "2 մատով սահեցնել վեր"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Թակել"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Փորձարկ. հարթակ"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Ուսումն. ձեռնարկ"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Հետազոտեք էկրանը"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Նավարկել էջերով"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Էկրանի ընթերցիչ"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Էկ. ընթերցիչի օգն."
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Փորձարկման հարթակ"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Մասշտաբ."
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Էկրանը պահե՞լ անջատված:"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Լեզուն չի ճանաչվել: Գնացեք հեռախոսի դրվածքներ և ուրիշ լեզու ընտրեք էկրանի ընթերցիչն օգտագործելու համար:"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Լեզուն չի ճանաչվել: Թակեք OK, որպեսզի փոխեք լեզվի դրվածքները՝ էկրանի ընթերցիչն օգտագործելու համար:"
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Սեղմեք և պահեք Սկզբի ստեղնը Մատչելիության դրվածքների համար:"
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Երեք անգամ արագորեն թակեք էկրանը՝ մեծացնել-փոքրացնելու համար: Մասշտաբը մեծացնելուց հետո երկու մատը քարշեք էկրանով մեկ՝ համայնապատկերելու համար:"
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Էկրանի ընթերցիչի դրվածքների համար երկու մատով երեք անգամ արագորեն թակեք էկրանը:"
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Էկրանը երկու մատով արագ երեք անգամ թակեք՝ Էկրանի ընթերցիչն ընձեռելու կամ կասեցնելու համար:"
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Մեկ ականջակալ օգտագործելիս ձայնը տարածականից փոխարկեք միահունչի:"
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Թակեք OK, որպեսզի ձայնային տվյալներ տեղադրեք Էկրանի ընթերցիչն օգտագործելու համար: Կարող են գանձվել հավելյալ վճարներ, եթե տեղադրում եք շարժական կապի ցանցի միջոցով:"
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Այս լեզուն չի կարող օգտագործվել որպես TTS լեզու, ուստի Էկրանի ընթերցիչը կանջատվի: Այն կրկին միացնելու համար գնացեք հեռախոսի դրվածքները և ընտրեք ուրիշ լեզու:"
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Երկու մատով երեք անգամ թակեք էկրանը՝ գործառույթները միացնելու կամ անջատելու համար:"
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Փորձեք ժեստ. հմտություն:"
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Հպման փոխգործողությունն արգելափակված է, քանի դեռ ձեռնարկի տեղեկությունները բարձրաձայն կարդացվում են:"
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Էջ %1$d՝ %2$d-ից"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Միացնել ձայնը"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Էկրանի ընթերցիչը միացնելու համար ընտրեք մեկ այլ լեզու:"
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Երեք անգամ թակեք էկրանը՝ մեծացնել-փոքրացնելու համար: Մեծացրեք մասշտաբը և համայնապատկերելու համար երկու մատը քարշեք էկրանով մեկ:"
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Քանի դեռ Էկրանի ընթերցիչը միացված է, Gear-ը ձայն. հետադարձ կապ կտրամադրի: Օրինակ՝ Էկրանի ընթերցիչը կարող է տրամադրել յուրաքանչյուր էկրանը նկարագրող ձայն. մեկնաբանություն: Պարզապես թակեք յուրաքանչյուր տարրը, որպեսզի լսեք նկարագրությունը, հետո կրկնակի թակեք՝ նկարագրված գործառույթն աշխատեցնելու համար:"
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Երբ Էկրանի ընթերցիչը միացված է, Gear-ը տրամադրում է յուրաքանչյուր էկրանը նկարագրող ձայնային մեկնաբանություն: Թակեք ցանկացած տարր, որպեսզի լսեք նկարագրությունը: Կրկնակի թակեք՝ նկարագրված գործառույթը սկսելու համար:"
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Կրկնակի թակեք և պահեք, հետո քարշեք վերադասավորելու համար:"
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Միացված"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Անջատված է"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Պտտեք շրջանակը՝ %s կարգավորելու համար:"
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Գլխագիր"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Մարջան"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Նվազեցնել 1 ժամով"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Նվազեցնել 1 րոպեով"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Նվազեցնել 1 վայրկյանով"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Մեծացնել 1 ժամով"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Մեծացնել 1 րոպեով"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Մեծացնել 1 վայրկյանով"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Սիրված"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Միույթը գցված է %d դիրքում։"
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Սկսված է միույթի քաշումը %d դիրք։"
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Ընտրակայված գունապնակ"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Ցուցադրվում է տարր %1$d՝ %2$d-ից:"
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Իրադարձություններ չկան"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$s ձայնի ուժգնություն, %2$d տոկոս"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Էկրանն անջատվեց"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Էկրանային ընթերցիչը չի աջակցվում այս ծրագրում: Սեղմեք սկիզբ կամ հետ ստեղնը վերադառնալու համար սկզբնական էկրանին"
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Անհնար է բացել ծրագիրը"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Օր"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Ամիս"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Տարի"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Գորշ"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Մուգ մոխրագույն"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Հնչյուն"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Թրթռում"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Սև"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Կապույտ մանուշակ"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Մուգ կապույտ"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Անտառային կանաչ"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Վառ վարդագույն"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Կիտրոնագույն կանաչ"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Սալոր"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Լազուր"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Սպիտակ"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Դեղին"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Գլխագիր"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Խմբագրում:"
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Որոնել կարգավորում"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Կրկնակի թակեք՝ բոլորն ընտրելու համար:"
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Աղոտ:"
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Կարմիր"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Կրկնակի թակեք փոխելու համար:"
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Միացնել"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Լոլիկի գույն"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Նշված"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Ընտրել ռեժիմի ելնող պատուհանը"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Ընտրիչ"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Չնշված"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Այլ ընտրանքներ"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Ցանկի ոլորում"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Զգուշացում"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Էկրանը միացված է:"
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Պտտեք %s՝ առարկայացանկում որոնելու համար:"
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Պտտեք %s՝ տարրերով նավարկելու համար:"
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Պտտեք %1$s՝ %2$s կարգավորելու համար:"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Պտտեք շրջանակը՝ առարկայացանկում որոնելու համար:"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Պտտեք շրջանակը՝ տարրերով նավարկելու համար:"
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Առաջընթաց"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Կրկնակի թակեք դիտելու համար:"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Կրկնակի թակեք ուղարկելու համար:"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Կրկնակի թակեք՝ բոլորն ընտրելու համար:"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Կրկնակի թակեք խմբագրելու համար:"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Կրկնակի թակեք՝ բոլորն ապընտրելու համար:"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Կրկնակի թակեք՝ ելնող պատուհանը փակելու համար:"
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Էկրանի ընթերցիչի դրվածքների համար երկու մատով երեք անգամ թակեք էկրանը:"
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Էկրանի ընթերցիչը կկասեցվի: Հարկավոր է միացնել բոլոր ձայները:"
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Էկրանի ընթերցիչն ապահովում է միայն՝"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Սեղմեք և պահեք Սկզբի ստեղնը մատչելիության դրվածքների համար:"
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "Չի ապահովվում որպես TTS-ի լեզու: Այն ներբեռնելու համար թակեք OK:"
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Մատչելի չէ: Էկրանի ընթերցիչը միացված է:"
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Էկրանն անջատված պահեք:"
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Մատչելիություն"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Անջատել բոլոր հնչյունները"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Բացասական գույներ"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Մոնո ձայն"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Անմիջական մուտք"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Մութ էկրան"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Լսողություն"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Ձայնը ստերեոյից փոխարկեք մոնոյի, երբ մեկ ականջակալ եք օգտագործում:"
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Հեռացվեց:"
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Մարտկոցը լրիվ լիցքավորվեց"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Մարտկոցը նստած է"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Սարքերը կապակցվեցին"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Լիցքավորիչը միացված է:"
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Արտակարգ իրավիճակ"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Լիցքավորիչն անջատված է:"
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 չկարդացված տարր"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d չկարդացված ծանուցումներ"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Լավ"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Ազդնշան չի հյտնբերվել"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Խմբի ցուցիչ"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Նշման վանդակ"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Ընդլայնելի ցուցակ"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Պատկեր"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s տոկոս"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Վերադասավորել"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Կրկնակի թակել՝ տեքստ մուտքագրելու համար:"
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Հունվար"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Փետրվար"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Մարտ"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Ապրիլ"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Մայ"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Հունիս"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Հուլիս"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Oգոստոս"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Սեպտեմբեր"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Հոկտեմբեր"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Նոյեմբեր"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Դեկտեմբեր"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "ԿՀ"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d ժամ"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Րոպեներ"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "Ընդամենն ընտրվել է %d:"
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s՝ %2$s-ից"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Վերադարձի կոճակ"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Անջատված է"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Ստեղնաշարը ցուցադրված է:"
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Նշման վանդակ ամբողջ խմբի համար"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Պատճենել"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Տեղադրել"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Կտրել"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Սահեցրեք շրջանակը՝ %s-ը փոխելու համար:"
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Կետ"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Ստորակետ"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Հարցական նշան"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Բացականչական նշան"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Եզակի չակերտ"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Շնիկ"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "Եվ"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Շեղագիծ"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Կրկնակետ"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Կետ-ստորակետ"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Չակերտներ"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Բացող կլոր փակագիծ"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Փակող կլոր փակագիծ"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Պլյուս"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Աստղանիշ"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Կոտորակի նշան"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Հավասար է"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Տոկոս"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Ֆունտ"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Փոքրի նշան"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Մեծի նշան"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Բացող ուղիղ փակագիծ"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Փակող ուղիղ փակագիծ"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Բացող ձևավոր փակագիծ"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Փակող ձևավոր փակագիծ"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Սպիտակ սիրտ"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Սպիտակ աստղ"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Ալիքանշան"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Ձախ անկյունավոր չակերտներ"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Աջ անկյունավոր չակերտներ"
+
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Շրջված բացականչական նշան"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Շրջված հարցական նշան"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Հակադարձ շեղագիծ"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Իջնող շեշտ"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Կետանշան"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Ուղղաձիգ գիծ"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Տարադրամի նշան"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Դոլար"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Եվրո"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Վոն"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Իեն"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Ստորագիծ"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Վանդականիշ"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Անջատման գիծ"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Բարձրացող-իջնող շեշտ"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Մութ էկրան"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Խոսքի արագություն"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Սկսել"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Վերջ"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Տարածություն"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Նշված է"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Նշված չէ"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Heading"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Switch"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Slider"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Swipe up or down to change."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Row %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Column %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "In grid %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d rows"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d columns"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "progress bar"
