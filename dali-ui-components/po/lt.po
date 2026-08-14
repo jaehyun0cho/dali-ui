@@ -1,0 +1,1097 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n%10==1 && !(n%100>=11 && n%100<=19) ? 1 : (n%10>=2 && n%10<=9) && !(n%100>=11 && n%100<=19) ? 3 : 5);"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "Simbolis: %d"
+msgstr[2] "N/A"
+msgstr[3] "Simbolių: %d"
+msgstr[4] "Simbolių: %d"
+msgstr[5] "Simbolių: %d"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Redaguoti lauką"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Ekrano skaitytuvas (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Kraunama"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Bakstelėkite du kartus, kad atidarytumėte meniu."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Įrenginių nerasta"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Ieškoma"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Paslauga neteikiama"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Nežinomas"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "AM"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Neprisijungta"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Išskleidžiamasis sąrašas"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Signalo stiprumas"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Rega"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Rodoma elementų: %d"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Akumuliatorius baigia išsikrauti"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Bakstelėkite du kartus ir aktyvinkite."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Visi simboliai ištrinti."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Akumuliatorius"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Mygtukas"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Data"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Išjungta."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Bakstelėkite du kartus, kad sutrauktumėte sąrašą."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Bakstelėkite du kartus norėdami redaguoti."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Bakstelėkite du kartus, kad išplėstumėte sąrašą"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Bakstelėkite du kartus ir pasirinkite."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Išskleidžiamasis sąrašas"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Pradžios ekranas"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Klaviatūra paslėpta."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Medijos garsumas"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "Simbolių: %d."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Pasirinkta."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "%1$d skirtukas iš %2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Įjungus ekrano skaitytuvą telefonas pateiks atsakymus balsu. Pavyzdžiui, ekrano skaitytuvas pasakys, su kokiais elementais galite atlikti veiksmus kiekviename ekrane. Bakstelėdami elementus juos pasirinksite ir išgirsite jų pavadinimus, o bakstelėję elementus dukart galėsite atlikti su jais susietus veiksmus."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "„Wi-Fi“ signalas silpnas"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "„Wi-Fi“"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Išjungti"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Teksto redagavimas"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Pilki tonai"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Didžioji %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Įreng. gars."
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Gulsčias rodinys"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Tildyti"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Nepasirinkta"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Nėra elementų"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "Elementų: %d"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Portreto rodinys"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Nuostatos"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "%1$d iš %2$d psl."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Sureguliuokite garsumą."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Įkraunama %1$s. Akumuliatoriaus įkrova – %2$s proc."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Vykdoma."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Paspauskite mygtuką „Atgal“ ir uždarykite iškylantįjį langą."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Ekranas įjungtas."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Jei norite pasirinkti kitą ar ankstesnę raidę, vienu pirštu braukite į dešinę ar kairę."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Abėcėlinė rodyklės juosta"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Sumažinti viena diena"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Sumažinti vienu mėnesiu"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Sumažinti vienais metais"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Padidinti viena diena"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Padidinti vienu mėnesiu"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Padidinti vienais metais"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Grįžti atgal"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "Ištrinta: %s"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s išjungta"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Išrinkimo mygtukas"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Teksto laukelis"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "IŠEITI"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "BAIGTI"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "TOLIAU"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "Ir dar kartą, kad būtų parodyti pranešimai."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Pasukę pagal laikrodžio rodyklę pereisite į kitą puslapį."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "Ir ta pačia kryptimi, kol rasite kito puslapio piktogramą."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Ir viskas. Atlikta. Jei norite užbaigti mokymo programą, ekrano apačioje bakstelėkite dukart BAIGTI."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "Vėl rėmelį sukit pagal laik. rodyklę ir pereikit į kitą psl."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Sukdami rėmelį ieškokite %s piktogramos."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "„Gear“ atliks veiksmą su pasirinktu elementu."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "„Gear“ nuskaitys elementą po jūsų pirštu."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "„Gear“ perskaitys kitą elementą."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "„Gear“ perskaitys ankstesnį elementą."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "„Gear“ įjungs pasirinkimo ar redagavimo režimą."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Eikite per puslapius ekrane."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Dabar sukit rėmelį prieš laik. rod. ir rask. ankst. psl. piktog."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Į ankstesnį ekraną grįšite paspaudę „Gear“ grįžties mygtuką viršuje, dešinėje."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Spauskite Gear pradžios mygtuką apačioje, dešinėje ir žr. programas."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Ekrano skaitytuvo negalima naudoti su:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Slinkite žemyn per sąrašus."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Slinkite aukštyn per sąrašus."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Braukite į kairę 2 pirštais ir peržiūrėkite valdiklius."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Brauk. į deš. 2 pirštais ir grįžkit prie laikrod. vaizdo."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Bakstelėkite bet kurioje ekrano vietoje."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Bak.Gerai ir užb.mok.prog."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Šiame ekrane yra programų. Bakst. programos piktogr. ir ją pasirinkite; pavadin. pasakomas garsiai."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Ši kalba negali būti naudojama kaip TTS kalba. Kitą pasirinksite bakstelėję „Gerai“, tačiau ekrano skaitytuvas bus išjungtas."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Uždarykite vadovą bakstelėdami „Praleisti“."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Jei norite grįžt, pasukite rėmelį prieš laikrodžio rodyklę."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Jei norite pereiti prie kito mokymo programos etapo, ekrano apačioje bakstelėkite dukart TOLIAU."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Jei norite naršyti per kelis programų piktogramų puslapius, 2 pirštais braukite į kairę ar dešinę."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Jei norite slinkti per sąrašų elementus, dviem pirštais braukite per ekraną aukštyn arba žemyn."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Sukite rėmelį pagal laik. rodyklę ir rask. reikiamą progr."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Valdikliai"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Radote. Bakstelėkite dukart bet kurioje ekrano vietoje ir programą atidarykite."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Pridėt trumpinį"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Bakstelėti dukart"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Bak. dukart ir laik."
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Bakst. dukart ir laik. 2 pirštais"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Treniruočių zona"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Ekr. skait. pagal."
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "Braukite žemyn 2 pirštais"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Braukoit kairėn"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "Braukite kairėn 2 pirštais"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Braukit dešinėn"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Braukite dešinėn 2 pirštais"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "Braukite aukštyn 2 pirštais"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Bakstelėti"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Band. klaviat."
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Vadovas"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Susipažin. su ekranu"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Naršyti per puslapius"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Ekrano skaityt."
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Ekr. skait. pagal."
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Band. klaviat."
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Mastelis"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Laikyti ekraną išjungtą?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Kalba neatpažįstama. Jei norite naudoti Ekrano skaitytuvą, eikite į telefono nustatymus ir pasirinkite kitą kalbą."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Kalba neatpažįstama. Bakstelėkite „Gerai“ ir pakeiskite kalbos nustatymus, kad galėtumėte naudoti Ekrano skaitytuvą."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Paspauskite ir laikykite pradžios mygtuką, kad įjungtumėte pasiekiamumo nustatymus."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Jei norite padidinti ar sumažinti mastelį, triskart greitai bakstelėkite ekraną. Padidinę mastelį, braukite dviem pirštais per ekraną ir peržiūrėkite panoraminį vaizdą."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Dviem pirštais triskart greitai bakstelėkite ekraną ir įjunkite ekrano skaitytuvo nustatymus."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Greitai tris kartus bakstelėkite ekraną trimis pirštais, kad įjungtumėte arba išjungtumėte ekrano skaitytuvą."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Naudodami vieną ausinę perjunkite garsą iš stereofoninio į monofoninį."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Jei norite naudoti ekrano skaitytuvą, bakstelėdami „Gerai“ įdiekite balso duomenis. Jei diegsite per mobiliojo ryšio tinklą, gali būti taikomi papildomi mokesčiai."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Ši kalba negali būti naudojama kaip TTS kalba, todėl ekrano skaitytuvas bus išjungtas. Jei norite vėl įjungti, eikite į telefono nustatymus ir pasirinkite kitą kalbą."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Jei funkcijas norite įjungti ar išjungti, dviem pirštais triskart bakstelėkite ekraną."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Išbandykite gestus."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Jutiklinė sąveika blokuojama, kai skaitoma mokymo programos informacija."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "%1$d iš %2$d psl."
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Įjungti garsą"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Pasirinkite kitą kalbą ir įjunkite ekrano skaitytuvą."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Norėdami padidinti arba sumažinti, bakstelėkite ekraną triskart. Norėdami paslinkti, padidinkite ir braukite per ekraną dviem pirštais."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Įjungus ekrano skaitytuvą „Gear“ pateiks atsakymus balsu. Pavyzdžiui, ekrano skaitytuvas gali teikti garsinius komentarus, apibūdinančius kiekvieną ekraną. Norėdami išgirsti apibūdinimą, bakstelėkite kiekvieną elementą, tada bakstelėkite dukart, kad būtų inicijuota aprašyta funkcija."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Įjungus ekrano skaitytuvą, „Gear“ pateiks atsakymus balsu, kuriais apibūdins kiekvieną ekraną. Norėdami išgirsti apibūdinimą, bakstelėkite bet kurį elementą. Norėdami inicijuoti apibūdintą funkciją, bakstelėkite dukart."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Bakstelėkite dukart ir palaikykite, tada nuvilkite ir pertvarkykite."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Įjungta"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Išjungta"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Pasukite rėmelį ir sureguliuokite %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Antraštė"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Koralų"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Sumažinti 1 val."
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Sumažinti 1 min."
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Sumažinti 1 sek."
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Padidinti 1 val."
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Padidinti 1 min."
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Padidinti 1 sek."
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Parankiniai"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Elementas nuvilktas į %d padėtį."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Elementas pradėtas vilkti %d padėtyje."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Pasirinktinė spalvų paletė"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Rodomas %1$d element. iš %2$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Įvykių nėra"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$s garsumas, %2$d proc."
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Ekranas išjungtas"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Ši programa nepalaiko ekrano skaitytuvo. Paspauskite pradžios mygtuką arba „Atgal“, kad sugrįžtumėte į pradžios ekraną."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Negal. atidaryti program."
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Diena"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Mėnuo"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Metai"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Pilka"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Tamsiai pilka"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Garsas"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Vibravimas"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Juoda"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Mėlynai violetinis"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Tamsiai mėlyna"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Žalia"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Ryškiai rožinė"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Gelsvai žalsva"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Tamsiai violetinė"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Melsva"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Balta"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Geltonas"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Antraštė"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Redaguojama."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Paieškos valdymas"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Bakstelėkite du kartus ir viską pasirinkite."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Pritemdyta."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Raudona"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Bakstelėkite dukart, jei norite pakeisti."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Įjungti"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Pomidorų raudona"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Pažymėta"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Pasirinkti iškylančiojo lango režimą"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Parinkiklis"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Nepažymėta"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Daugiau parinkčių"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Indekso slankioji juosta"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Įspėjimas"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Ekranas įjungtas."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Pasukite %s, jei norite ieškoti rodyklėje."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Pasukite %s, jei norite naršyti po elementus."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Pasukite %1$s ir sureguliuokite %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Pasukite rėmelį ir ieškokite rodyklėje."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Pasukite rėmelį ir naršykite po elementus."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Vykdoma"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Bakstelėkite dukart, jei norite peržiūrėti."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Bakstelėkite dukart, jei norite siųsti."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Bakstelėkite du kartus ir viską pasirinkite."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Bakstelėkite dukart, jei norite redaguoti."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Jei norite panaikinti visų žymėjimą, bakstelėkite dukart."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Bakstelėkite dukart, jei norite uždaryti iškylantį langą."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Tris k. bakst. ekraną dviem pirštais, kad įjungt. ekrano skait. nust."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Ekrano skaitytuvas bus išjungtas. Turite įjungti visus garsus."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Ekrano skaitytuvas palaiko tik:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Paspauskite ir laikykite pradžios myg., kad įjungtumėte pasiek. nust."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "Nėra palaikoma kaip TTS kalba. Bakstelėkite „Gerai“ ir atsisiųskite."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Nėra. Ekrano skaitytuvas įjungtas."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Laikyti ekraną išjungtą."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Pasiekiamumas"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Išjungti visus garsus"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Negatyvo spalvos"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Mono garsas"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Tiesioginė prieiga"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Tamsus ekranas"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Klausa"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Naudodami vieną ausinę perjunkite garsą iš stereofoninio į monofoninį."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Pašalinta."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Akum. visiškai įkrautas"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Akumuliatorius senka"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Prijungti įrenginiai"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Prijungtas kroviklis."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Pavojaus situacija"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Kroviklis atjungtas."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 neskaitytas elementas"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "Neskaitytų pranešimų: %d"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM kortelė"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Geras"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Nėra signalo"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Grupių rodyklė"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Žymimasis langelis"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Išskleidžiamasis sąrašas"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Vaizdas"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s proc."
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Pertvarkyti"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Bakstelėkite du kartus, kad įvestumėte tekstą."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Sausis"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Vasaris"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Kovas"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Balandis"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Gegužė"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Birželis"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Liepa"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Rugpjūtis"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Rugsėjis"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Spalis"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Lapkritis"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Gruodis"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "PM"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d val."
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Minutės"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "Iš viso pasirinkta: %d."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s iš %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Grįžimo mygtukas"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Išjungta"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Rodoma klaviatūra."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Visos grupės žymimasis langelis"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopijuoti"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Įklijuoti"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Iškirpti"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Braukite per rėmelį ir pakeiskite %s."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Taškas"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Kablelis"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Klaustukas"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Šauktukas"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Viena kabutė"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Eta"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "Ampersendas"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Pasvirasis dešininis brūkšnys"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Dvitaškis"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Kabliataškis"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Kabutės"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Kairysis lenktinis skliaustas"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Dešinysis lenktinis skliaustas"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Plius"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Žvaigždutė"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Padalinta iš"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Lygu"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Procentas"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Svaras"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Mažiau nei"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Daugiau nei"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Kairysis laužtinis skliaustas"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Dešinysis laužtinis skliaustas"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Kairysis riestinis skliaustas"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Dešinysis riestinis skliaustas"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Balta širdis"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Balta žvaigždė"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Tildė"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Kairiosios pusės kabutės"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Dešiniosios pusės kabutės"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Apverstas šauktukas"
+
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Apverstas klaustukas"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Pasvirasis kairinis brūkšnys"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Kairinis kirtis"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Skrituliukas"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Vertikalusis brūkšnys"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Valiutos ženklas"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Doleris"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Euras"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Vonas"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Jena"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Pabraukimo brūkšnys"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Grotelės"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Brūkšnys"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Stogelio ženklas"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Tamsus ekranas"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Kalbėjimo sparta"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Pradėti"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Pabaiga"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Tarpas"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Pažymėta"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Nepažymėta"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Antraštė"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Jungiklis"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Slankiklis"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Braukite aukštyn arba žemyn ir pakeiskite."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "%1$d eilutė"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "%1$d stulpelis"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "%1$s tinklelyje"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d eilutės"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d stulpeliai"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "progreso juosta"

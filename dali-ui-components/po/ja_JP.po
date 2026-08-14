@@ -1,0 +1,1096 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=5;"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "N/A"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d文字"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "フィールドを編集します。"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "スクリーンリーダー(TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "充電中"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "メニューを開くにはダブルタップします。"
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "デバイスが見つかりません。"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "検索しています。"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "サービスが利用できません。"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "不明"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "午前"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "未接続"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "拡張できるリストです。"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "電波強度"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "視覚"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "%d件のアイテムを表示"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "バッテリー残量なし"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "有効にするにはダブルタップしてください。"
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "全ての文字を削除しました。"
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "バッテリー"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "ボタン"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "日付"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "無効にしました。"
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "リストを非表示にするには、ダブルタップしてください。"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "編集するにはダブルタップします。"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "リストを展開するにはダブルタップします。"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Double tap to select."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "ドロップダウンリスト"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "ホーム画面"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "キーボードを非表示にします。"
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "メディア音量"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d文字です。"
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "選択しました。"
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "%2$d件中%1$d件目のタブ"
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "スクリーンリーダーが有効な間は、音声フィードバックが提供されます。たとえば、スクリーンリーダーでは各画面で入力操作できる内容を確認することができます。項目をタップして選択し、音声による内容の確認や、項目をダブルタップして関連する操作を実行することができます。"
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Wi-Fiの電波が弱い"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "無効"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "テキストを編集"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "グレースケール"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "大文字の%s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "端末の音量"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "横画面表示"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "消音"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "選択なし"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "アイテムがありません"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d件のアイテム"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "縦画面表示"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "設定"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "%2$dページ中%1$dページ"
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "音量を調整します。"
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "充電を%1$s。バッテリー残量は%2$sパーセントです。"
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "進行中です。"
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "ポップアップを閉じるには、戻るキーを押してください。"
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "画面がONになりました。"
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "前後の文字を選択するには、1本の指で左右にスワイプしてください。"
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "50音順インデックスバー"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "1日減らす"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "1か月減らす"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "1年減らす"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "1日増やす"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "1か月増やす"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "1年増やす"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "戻る"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%sを削除しました。"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s 無効"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "ラジオボタン"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "テキスト入力欄"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "終了"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "終了"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "次へ"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "通知を再度表示します。"
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "さらに時計回りに回すと、次のページに移動します。"
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "次のページアイコンが見つかるまで、同じ方向に回します。"
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "これで全て終了しました。ﾁｭｰﾄﾘｱﾙを終了するには、画面下部にある[終了]をﾀﾞﾌﾞﾙﾀｯﾌﾟしてください。"
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "ベゼルを再度時計回りに回すと、次のページに移動します。"
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "ベゼルを回して%sアイコンを検索します。"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "選択した操作をGearで実行します。"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "タップした箇所にあるアイテムを読み上げます。"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "次のアイテムを読み上げます。"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "前のアイテムを読み上げます。"
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "選択モードまたは編集モードがONになります。"
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "画面上のページを移動します。"
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "ベゼルを反時計回りに回すと、前のページアイコンが表示されます。"
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "前の画面に移動するには、Gearの右上にある戻るキーを押します。"
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "アプリを表示するには、Gearの右下にあるホームキーを押します。"
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "以下のアプリはスクリーンリーダーを使用できません。"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "リストを下にスクロールします。"
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "リストを上にスクロールします。"
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "ウィジェットを表示するには、2本の指で左にスワイプします。"
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "時計の画面に戻るには2本の指で右にスワイプします。"
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "画面の任意の場所をタップして操作します。"
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "[OK]を押してﾁｭｰﾄﾘｱﾙを終了"
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "現在の画面にはｱﾌﾟﾘが複数あります。その内1つのｱｲｺﾝを選択してﾀｯﾌﾟすると、その名前が読み上げられます。"
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "この言語は、TTS言語として使用できません。[OK]をﾀｯﾌﾟして別の言語を選択することはできますが、ｽｸﾘｰﾝﾘｰﾀﾞｰはOFFになります。"
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "ﾁｭｰﾄﾘｱﾙを終了するにはｽｷｯﾌﾟﾎﾞﾀﾝをﾀｯﾌﾟします。"
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "戻るには、ベゼルを反時計回りに回します。"
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "チュートリアルの次のステージに移動するには、画面下部にある[次へ]をダブルタップしてください。"
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "複数あるアプリアイコンのページを移動するには、2本の指で左右にスワイプします。"
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "アイテムのリストをスクロールするには、2本の指で画面を上下にスワイプします。"
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "ベゼルを時計回りに回すと、目的のアプリを検索できます。"
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "ウィジェット"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "見つかりました。アプリを起動するには、画面の任意の場所をダブルタップします。"
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "ｼｮｰﾄｶｯﾄを追加"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "ダブルタップ"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "ﾀﾞﾌﾞﾙﾀｯﾌﾟして長押し"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "2本の指でダブルタップして長押し"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "練習ゾーン"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "ｽｸﾘｰﾝﾘｰﾀﾞｰﾍﾙﾌﾟ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "2本の指で下にスワイプ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "左にスワイプ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "2本の指で左にスワイプ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "右にスワイプ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "2本の指で右にスワイプ"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "2本の指で上にスワイプ"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "タップ"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "テストパッド"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "チュートリアル"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "画面を探索"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "ページを移動"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "ｽｸﾘｰﾝﾘｰﾀﾞｰ"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "ｽｸﾘｰﾝﾘｰﾀﾞｰﾍﾙﾌﾟ"
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "テストパッド"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "ズーム"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "画面OFFを維持しますか？"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "言語を認識できません。スクリーンリーダーを使用するには、端末の設定に移動し、別の言語を選択してください。"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "言語を認識できません。スクリーンリーダーを使用するには、[OK]をタップし、言語設定を変更してください。"
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "ユーザー補助を設定するには、ホームキーを長押ししてください。"
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "ズームイン/ズームアウトするには、画面を素早くトリプルタップします。パンニングするには、画面をズームインしてから2本の指でドラッグします。"
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "スクリーンリーダーを設定するには、画面を2本の指で素早くトリプルタップします。"
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "2本の指で画面を素早くトリプルタップすることで、スクリーンリーダーを有効または無効にすることができます。"
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "モノラルイヤホンを使用する際に、オーディオをステレオからモノラルに変換します。"
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "音声データをインストールしてスクリーンリーダーを使用するには、[OK]をタップしてください。モバイルネットワークでインストールすると、追加料金が発生する可能性があります。"
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "この言語はTTS言語として使用できないため、スクリーンリーダーはOFFになります。再度ONにするには、端末の設定に移動し、別の言語を選択してください。"
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "機能をONまたはOFFにするには、2本の指で画面をトリプルタップします。"
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "ｼﾞｪｽﾁｬｰを練習します。"
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "チュートリアルで情報が読み上げられている間、画面のタッチ操作はブロックされます。"
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "%2$dページ中%1$dページ"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "消音解除"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "ｽｸﾘｰﾝﾘｰﾀﾞｰをONにするには、別の言語を選択してください。"
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "ズームイン/ズームアウトするには、画面をトリプルタップします。パンニングするには、画面をズームインして2本の指でドラッグします。"
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "スクリーンリーダーがONの間、Gearは音声フィードバックを提供します。例えば、各画面で音声解説の説明を提供できます。それぞれの項目はタップするだけで説明が再生され、ダブルタップすると説明された機能が開始されます。"
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "スクリーンリーダーがONの場合、Gearは各画面で音声の解説を行います。任意のアイテムをタップすると、その説明が聞けます。ダブルタップすると説明した機能を開始します。"
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "並べ替えるには、ダブルタップして長押ししてからドラッグします。"
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "ON"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "OFF"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "%sを調整するには、ベゼルを回します。"
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "ヘッダー"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "珊瑚色"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "1時間減らす"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "1分減らす"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "1秒減らす"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "1時間増やす"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "1分増やす"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "1秒増やす"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "お気に入り"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "アイテムをポジション%dにドロップしました。"
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "ポジション%dのアイテムのドラッグを開始しました。"
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "カスタムカラーパレット"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "%2$d件中%1$d件のアイテムを表示します。"
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "イベントなし"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$sの音量、%2$dパーセント"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "画面がOFF"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "このアプリケーションはスクリーンリーダーに対応していません。ホーム画面に戻るには、ホームキーまたは戻るキーを押してください。"
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "アプリ起動不可"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "日"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "月"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "年"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "グレー"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "ダークグレー"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "サウンド"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "バイブ"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "黒"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "青紫"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "ダークブルー"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "深緑色"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "ピンク"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "ライムグリーン"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "プラム"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "スカイブルー"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "白"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "黄"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "ヘッダー"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "編集中です。"
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "シーク調整"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "全てを選択するにはダブルタップしてください。"
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "選択できません。"
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "赤"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "変更するにはダブルタップします。"
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "有効"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "トマト色です。"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "選択済みです"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "選択モードのポップアップ"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "ピッカー"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "選択されていません"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "他のオプション"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "インデックススクロール"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "通知"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "画面がONになりました。"
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "インデックスを検索するには、%sを回します。"
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "アイテムを選択するには、%sを回します。"
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "%2$sを調整するには、%1$sを回してください。"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "インデックスを検索するには、ベゼルを回します。"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "アイテムを選択するには、ベゼルを回します。"
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "進行中"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "表示するにはダブルタップします。"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "送信するにはダブルタップします。"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "全てを選択するには、ダブルタップしてください。"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "編集するにはダブルタップします。"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "全ての選択を解除するには、ダブルタップしてください。"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "ポップアップを閉じるにはダブルタップします。"
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "ｽｸﾘｰﾝﾘｰﾀﾞｰを設定するには、画面を2本指でﾄﾘﾌﾟﾙﾀｯﾌﾟしてください。"
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "ｽｸﾘｰﾝﾘｰﾀﾞｰが無効になります。有効にするには全ての音をONにしてください。"
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "スクリーンリーダーは以下の機能にのみ対応します。"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "ユーザー補助を設定するには、ホームキーを長押ししてください。"
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "TTS言語として対応していません。[OK]をﾀｯﾌﾟしてﾀﾞｳﾝﾛｰﾄﾞしてください。"
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "使用できません。スクリーンリーダーがONになっています。"
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "画面がOFFの状態を維持します。"
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "ユーザー補助"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "全ての音をOFF"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "ネガポジ反転"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "モノラル再生"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "ダイレクトアクセス"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "画面の情報を保護"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "聴覚"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "モノラルイヤホンを使用する場合、オーディオをステレオからモノラルに変換します。"
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "削除されています。"
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "バッテリー充電完了"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "ﾊﾞｯﾃﾘｰ残量不足"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "接続デバイス"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "充電器が接続されました。"
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "緊急"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "充電器が接続されていません。"
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1件の未読アイテム"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d件の未読通知"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "良い"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "圏外"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "グループインデックス"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "チェックボックス"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "拡張可能なリスト"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "画像"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$sパーセント"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "並べ替え"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "ダブルタップしてテキストを入力"
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "1月"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "2月"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "3月"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "4月"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "5月"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "6月"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "7月"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "8月"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "9月"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "10月"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "11月"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "12月"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "午後"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d時間"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "分"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "合計%d件を選択しました。"
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%2$s中の%1$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "戻るボタン"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "OFF"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "キーボードが表示されました。"
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "グループ全体のチェックボックス"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "コピー"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "貼り付け"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "切り取り"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "%sを変更するには、ベゼルをスワイプしてください。"
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "ドット"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "コンマ"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "疑問符"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "感嘆符"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "シングルクォート"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "アットマーク"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "アンド"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "スラッシュ"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "コロン"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "セミコロン"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "クォート"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "丸括弧開き"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "丸括弧閉じ"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "プラス"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "アスタリスク"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "割る"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "イコール"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "パーセント"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "ポンド"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "小なり"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "大なり"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "角括弧開き"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "角括弧閉じ"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "中括弧開き"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "中括弧閉じ"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "白ハート"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "白星"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "チルダ"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "二重山括弧開き"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "二重山括弧閉じ"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "逆感嘆符"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "逆疑問符"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "バックスラッシュ"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "アクサングラーブ"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "箇条書き記号"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "パイプライン"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "通貨記号"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "ドル"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "ユーロ"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "ウォン"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "円"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "アンダースコア"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "ハッシュ"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "ダッシュ"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "キャレット"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "画面の情報を保護"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "読み上げの速度"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "開始"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "終了"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "スペース"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "選択しました"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "選択を解除しました"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Heading"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Switch"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Slider"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Swipe up or down to change."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Row %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Column %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "In grid %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d rows"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d columns"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "プログレスバー"

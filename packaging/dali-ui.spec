@@ -21,6 +21,7 @@ BuildRequires:  pkgconfig(gles20)
 BuildRequires:  pkgconfig(glesv2)
 BuildRequires:  pkgconfig(egl)
 BuildRequires:  gettext
+BuildRequires:  gettext-tools
 BuildRequires:  python3
 
 %if 0%{?tizen_version_major} >= 3
@@ -217,7 +218,7 @@ exit 0
 %{_libdir}/libdali2-ui-foundation.so*
 %license LICENSE
 
-%{_datadir}/locale/*/LC_MESSAGES/*
+%{_datadir}/locale/*/LC_MESSAGES/dali-ui-foundation.mo
 %{dali_ui_image_files}/*.*
 
 %files devel
@@ -245,6 +246,7 @@ exit 0
 %{_libdir}/lib%{dali_ui_components}.so*
 %license LICENSE
 %{dali_ui_image_files}/components/*
+%{_datadir}/locale/*/LC_MESSAGES/dali-ui-components.mo
 
 %files -n %{dali_ui_components}-devel
 %defattr(-,root,root,-)

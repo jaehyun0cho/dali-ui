@@ -1,0 +1,1095 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n != 1) ? 5 : 1;"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d таңба"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d таңба"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Өрісті өңдеу"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Экран оқу құралы (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Зарядталуда"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Мәзірді ашу үшін, екі рет түртіңіз."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Құрылғылар табылмады"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Іздеу"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Қызмет жоқ"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Белгісіз"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "ТД"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Қосылмаған"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Кеңейтілмелі тізім"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Сигнал деңгейі"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Көру"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "%d элементті көрсету"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Батарея заряды өте төмен"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Іске қосу үшін екі рет түртіңіз."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Барлық таңбалар жойылды."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Батарея"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Түйме"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Күн"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Өшірілген."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Тізімді бұзу үшін, екі рет түртіңіз."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Өңдеу үшін екі рет түртіңіз."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Тізімді кеңейту үшін, екі рет түртіңіз"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Таңдау үшін екі рет түртіңіз."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Ашылмалы тізім"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Бастапқы экран"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Пернетақта жасырылды."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Медия дыбысы"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d таңба."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Таңдалған."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "%2$d ішіндегі %1$d жиекбелгі."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Экранды оқу құралы қосулы кезде, телефоныңыз дауыстық хабар береді. Мысалы, экранды оқу құралы сізге әрбір экранда қандай элементпен өзара әрекеттесе алатыныңызды айтады. Элементтерді таңдап, олардың қандай элемент екенін есту үшін, элементтерді түртіңіз, ал қатысты әрекетті орындау үшін, элементтерді екі рет түртіңіз."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Wi-Fi сигналы әлсіз"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "WI-FI"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Өшіру"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Мәтінді өзгерту"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Жартылай өңдік"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "%s бас әрпі"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Құрылғы дыбыс"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Пейзаж көрінісі"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Дыбыссыз"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Таңдалмады"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Элементтер жоқ"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d элемент"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Портрет көрінісі"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Орнатулар"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "%2$d ішінен %1$d-бет."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Дыбыс деңгейін реттеңіз."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Зарядтау %1$s. Батарея қуатының деңгейі %2$s пайызды құрайды."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Орындалуда."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Қалқымалы терезені жабу үшін, “Артқа” пернесін басыңыз."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Экран қосылды."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Келесі немесе алдыңғы әріпті таңдау үшін, бір саусақпен оңға не солға қарай сипаңыз."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Алфавиттік индекс жолағы"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Бір күнге азайту"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Бір айға азайту"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Бір жылға азайту"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Бір күнге көбейту"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Бір айға көбейту"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Бір жылға көбейту"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Артқа қарай шарлау"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s жойылды"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s функциясы өшірілді"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Радио түймесі"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Мәтін өрісі"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "ШЫҒУ"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "АЯҚТАУ"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "КЕЛЕСІ"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "Хабарландыруларды қайта көрсету үшін."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Және сағат тілімен қайта бұру сізді келесі бетке көшіреді."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "Келесі бет белгішесі табылмағанша бір бағытта."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Бұл соңы. Дайын. Оқулықты аяқтау үшін, экранның төменгі жағындағы АЯҚТАУ түймесін екі рет түртіңіз."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "Келесі бетке өту үшін тұтқышты сағат тілімен бұрыңыз."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Тұтқышты бұру арқылы %s белгішесін табыңыз."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear таңдауыңыз бойынша әрекет орындайды."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear саусағыңыздың астындағы элементті оқиды."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear келесі элементті дауыстап оқиды."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear алдыңғы элементті дауыстап оқиды."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear таңдау не өңдеу режимін қосады."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Экрандағы беттер арқылы навигациялаңыз."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Алдыңғы бет белг табу үшін, тұтқышты сағат тіліне қарсы бұрыңыз."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Алдыңғы экранға өту үшін Gear-ның жоғарғы оң жағындағы “Артқа” пернесін басыңыз."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Қолданба көру үшін Gear-ның төменгі оң жағындағы “Бастапқы” басыңыз."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Экран оқу құралын келесімен пайдалану мүмкін емес:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Тізімдер бойымен төмен қарай жылжытыңыз."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Тізімдер бойымен жоғары қарай жылжытыңыз."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Виджеттерді көру үшін 2 саусақпен солға қарай сипаңыз."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Сағат бетіне оралу үшін 2 саусақпен оңға қарай сипаңыз."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Экранның кез келген жерін түртіңіз."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Оқулықты аяқтауға ОК түрт."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Осы экранда қолданбалар бар. Біреуін таңдау үшін белгішесін түртіңіз, оның атауы дауыстап оқылады."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Бұл тілді TTS тілі ретінде қолдану мүмкін емес. Басқасын таңдау үшін ОК түртуге болады, бірақ “Экранды оқу құралы” өшіріледі."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Оқулықты жабу үшін, Өткізу түймесін түртіңіз."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Оралу үшін, тұтқышты сағат тіліне қарсы бұрыңыз."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Оқулықтан кейін келесі қадамға өту үшін, экран төменгі жағындағы КЕЛЕСІ түймесін екі рет түртіңіз."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Қолданба белгішелерінің бірнеше беті бойымен шарлау үшін, 2 саусақпен солға не оңға қарай сипаңыз."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Элементтер тізімдері бойымен жылжыту үшін, екі саусақпен экранды жоғары не төмен сипаңыз."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Қалаған қолданба табу үшін, тұтқышты сағат тілімен бұрыңыз."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Виджеттер"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Таптыңыз. Қолданбаны ашу үшін экранның кез келген жерінде екі рет түртіңіз."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Белгіше қосу"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Екі рет түрту"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "2 рет түртіп, ұстау"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "2 саусақпен екі рет түртіп, ұстау"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Жаттығулар аймағы"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Экр оқу құр. анық."
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "2 саусақпен төмен қарай сипау"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Солға сипау"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "2 саусақпен солға қарай сипау"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Оңға сипау"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "2 саусақпен оңға қарай сипау"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "2 саусақпен жоғары сипау"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Түрту"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Сынақ тақтасы"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Оқулық"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Экранды зерттеу"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Беттер бойымен шарлау"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Экран оқу құрал"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Экр оқу құр. анық."
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Сынақ тақтасы"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Масштабтау"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Экранды өшірулі күйде сақтау керек пе?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Тіл танылмады. Экран оқу құралын пайдалану үшін телефон параметрлеріне өтіп, басқа тілді таңдаңыз."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Тіл танылмады. Экран оқу құралын пайдалану мақсатында тіл параметрлерін өзгерту үшін OK түймесін түртіңіз."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Арнайы мүмкіндіктер параметрлері үшін “Бастапқы” пернесін басып, ұстап тұрыңыз."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Үлкейту және кішірейту үшін, экранды жылдам үш рет түртіңіз. Үлкейткеннен кейін панорамалау үшін, экран бойлап екі саусақпен сүйреңіз."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Экранды оқу құралының параметрлері үшін экранды екі саусақпен жылдам үш рет түртіңіз."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Экранды оқу құралын қосу немесе өшіру үшін, екі саусағыңызбен экранды үш рет жылдам түртіңіз."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Бір құлаққапты пайдаланған кезде, аудионы стереодан моноға ауыстырыңыз."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Экранды оқу құралын пайдалану мақсатында дауыстық деректерді орнату үшін, ОК түймесін түртіңіз. Ұялы байланыс желісі арқылы орнатқан жағдайда қосымша ақылар алынуы мүмкін."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Бұл тілді TTS тілі ретінде пайдалану мүмкін емес, сондықтан “Экранды оқу құралы” өшіріледі. Оны қайта қосу үшін, телефоныңыздың параметрлеріне өтіп, басқа тілді таңдаңыз."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Функцияларды қосу немесе өшіру үшін, екі саусағыңызбен экранды үш рет түртіңіз."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Қимыл мүмк. сынаңыз."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Оқулық ақпараты дауыстап оқылып жатқан кезде, сенсорлық өзара әрекет бұғатталады."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "%2$d ішінен %1$d бет"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Дыбыс шығару"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Экранды оқу құралын қосу үшін, басқа тілді таңдаңыз."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Үлкейту және кішірейту үшін, экранды үш рет түртіңіз. Панорамалау үшін, үлкейтіңіз және экран бойлап екі саусақпен сүйреңіз."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Экран оқу құралы қосылған кезде, Gear сізге дауыстық пікір жібереді. Мысалы, экран оқу құралы әр экранды сипаттайтын дыбыстық пікірлер жібере алады. Сипаттамасын тыңдау үшін, әр элементті жай ғана түртіңіз, содан кейін сипаттамасы бар функцияны іске қосу үшін, екі рет түртіңіз."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Экранды оқу құралы қосулы кезде, Gear құрылғысы әрбір экранды сипаттайтын дыбыстық түсініктемелермен қамтамасыз етеді. Кез келген элементтің сипаттамасын тыңдау үшін, оны түртіңіз. Сипатталған функцияны іске қосу үшін, екі рет түртіңіз."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Қайта ретке келтіру үшін, екі рет түртіп ұстап тұрып, сүйреңіз."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Қосу"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Өшірілген"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "%s уақытын реттеу үшін, тұтқышты бұрыңыз."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Тақырып"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Маржан"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "1 сағат бойынша азайту"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "1 минут бойынша азайту"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "1 секунд бойынша азайту"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "1 сағат бойынша көбейту"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "1 минут бойынша көбейту"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "1 секунд бойынша көбейту"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Таңдаулы"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Элемент %d күйіне сүйреп апарылды."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "%d күйіндегі элементті сүйреу басталды."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Таңдамалы түс бояуы"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "%2$d ішінен %1$d элемент көрсетуде."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Оқиғалар жоқ"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$s дыбыс қаттылығы, %2$d пайыз"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Экран өшірулі"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Экраннан оқу құралы осы бағдарламада қолданылмайды. Бастапқы экранға қайту үшін бастапқы немесе артқа түймесін басыңыз"
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Бағдар-ны ашу мүмкін емес"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Күн"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Ай"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Жыл"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Сұр"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Қою сұр"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Дыбыс"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Діріл"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Қара"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Көгілдір күлгін"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Қою көк"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Орман жасыл"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Ашық қызғылт"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Лайм түсті (жасыл)"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Алхоры"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Көгілдір"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Ақ"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Сары"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Тақырып"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Өңдеу."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Басқаруды іріктеу"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Барлығын таңдау үшін, екі рет түртіңіз."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Бәсеңдетілген."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Қызыл"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Өзгерту үшін, екі рет түртіңіз."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Қосу"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Қызанақ"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Белгіленген"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Режим қалқымалы терезесін таңдау"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Таңдағыш"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Белгіленбеген"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Қосымша опциялар"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Индекс бойынша айналдыру"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Дабыл"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Экран қосулы."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Индексті іздеу үшін, %s тұтқасын бұрыңыз."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Элементтерді шарлау үшін, %s тұтқасын бұрыңыз."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "%2$s реттеу үшін, %1$s бұрыңыз."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Индексті іздеу үшін, тұтқышты бұрыңыз."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Элементтерді шарлау үшін, тұтқышты бұрыңыз."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Орындалуда"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Көру үшін, екі рет түртіңіз."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Жіберу үшін, екі рет түртіңіз."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Барлығын таңдау үшін, екі рет түртіңіз."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Өңдеу үшін, екі рет түртіңіз."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Барлығын таңдаудан бас тарту үшін, екі рет түртіңіз."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Қалқымалы терезені жабу үшін, екі рет түртіңіз."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Экран оқу құралы парам. үшін экранды екі саусақпен үш рет түртіңіз."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Экран оқу құралы өшіріледі. Бұл үшін барлық дыбыстар қосылуы керек."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Экран оқу құралы тек келесіге қолдау көрсетеді:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Арнайы мүм.параметрлері үшін “Бастапқы” пернесін басып, ұстап тұрыңыз."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "TTS тілі ретінде қолдау көрсетілмейді. Жүктеу үшін ОК түртіңіз."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Қолжетімді емес. Экран оқу құралы қосулы."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Экранды өшірілген күйде сақтау."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Арнайы мүмкіндік"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Барлық дыбыстарды өшіру"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Теріс түстер"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Моно дыбыс"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Тікелей кіру"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Күңгірт экран"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Есту"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Бір құлақаспапты пайдаланғанда дыбысты стереодан моноға ауыстыру."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Жойылды."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Батарея толық зарядталды"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Батарея заряды аз"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Құрылғылар қосылды"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Зарядтағыш қосылды."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Төтенше жағдай"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Зарядтағыш ажыратылған."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 оқылмаған элемент"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d оқылмаған хабарландыру"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM-карта"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Жақсы"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Сигнал анықталмады"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Топ индексі"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Құсбелгі"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Кеңейтілмелі тізім"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Сурет"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s пайызы"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Қайта тапсырыс беру"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Мәтінді енгізу үшін екі рет түртіңіз."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Қаңтар"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Ақпан"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Наурыз"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Сәуір"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Maм."
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Маусым"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Шілде"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Тамыз"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Қыркүйек"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Қазан"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Қараша"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Желтоқсан"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "TK"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d сағат"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Минуттар"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "Жалпы %d таңдалды."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%2$s уақытының %1$s уақыты"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Артқа түймесі"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Өшірілген"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Пернетақта өшірілді."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Бүкіл топқа арналған құсбелгі ұяшығы"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Көшіру"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Қою"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Кесу"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "%s өзгерту үшін дөңгелекті саусағыңызбен жүргізіп өтіңіз."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Нүкте"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Үтір"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Сұрақ белгісі"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Леп белгісі"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Бір тырнақша"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Айқұлақ таңбасы"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "Және"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Қиғаш сызық"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Қос нүкте"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Үтірлі нүкте"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Тырнақшалар"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Ашу жай жақшасы"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Жабу жай жақшасы"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Қосу"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Жұлдызша"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Бөлу"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Тең"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Пайыз"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Фунт"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Кіші"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Үлкен"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Ашу тік жақшасы"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Жабу тік жақшасы"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Ашу жақшасы"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Жабу жақшасы"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Ақ жүрек"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Ақ жұлдыз"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Ирек сызықша"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Сол жақ бұрыш тырнақшалары"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Оң жақ бұрыш тырнақшалары"
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Аударылған леп белгісі"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Аударылған сұрақ белгісі"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Кері қиғаш сызық"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Бәсең үн"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Қалың нүкте"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Тік сызық"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Валюта белгісі"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Доллар"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Еуро"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Вон"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Иена"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Астын сызу"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Кэш"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Тире"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Циркумфлекс"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Күңгірт экран"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Сөйлеу жылдамдығы"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Бастау"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Аяқтау"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Бос орын"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Тексерілді"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Белгіленбеген"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Бағыт"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Қосқыш"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Жүгірткі"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Өзгерту үшін жоғары немесе төмен сырғытыңыз."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Жол %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Баған %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "Торда %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d жолдар"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d бағандар"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "үдеріс жолағы"

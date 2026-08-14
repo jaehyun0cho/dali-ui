@@ -1,0 +1,1096 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n != 1) ? 5 : 1; "
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d carácter"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d caracteres"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Editar campo"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Guía de voz"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Cargando"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Pulse dos veces para abrir el menú."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "No se han encontrado dispositivos"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Buscando"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Sin servicio"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Desconocido"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "AM"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "No conectado"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Lista ampliable"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Intensidad de la señal"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Visión"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Mostrando %d elementos"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Batería muy baja"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Pulse dos veces para activar."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Se han eliminado todos los caracteres."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Batería"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Botón"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Fecha"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Desactivado."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expandida"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Contraída"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Pulse dos veces para comprimir la lista."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Pulse dos veces para editar."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Pulse dos veces para ampliar la lista"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Pulse dos veces para seleccionar."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Lista desplegable"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Pantalla Inicio"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Teclado oculto."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Volumen multimedia"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d caracteres."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Seleccionado."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Ficha %1$d de %2$d"
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Mientras Lector de pantalla está activado, el teléfono proporcionará respuestas de voz. Por ejemplo, Lector de pantalla le dirá con qué puede interactuar en cada pantalla. Pulse los elementos para seleccionarlos y escuchar su descripción, y pulse dos veces los elementos para realizar la acción correspondiente."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Señal Wi-Fi débil"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Desactivar"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Editar texto"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Escala de grises"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "%s mayúscula"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Volumen"
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Vista horizontal"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Silencio"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Sin seleccionar"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Ningún elemento"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d elementos"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Vista vertical"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Ajustes"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Página %1$d de %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Ajustar el volumen."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "El proceso de carga se ha %1$s. La batería está cargada al %2$s por ciento."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "En curso."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Pulse la tecla Atrás para cerrar la ventana emergente."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Pantalla encendida."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Deslice con un dedo hacia la derecha o hacia la izquierda para seleccionar la letra siguiente o la anterior."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Barra de índice alfabético"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Un día menos"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Un mes menos"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Un año menos"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Un día más"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Un mes más"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Un año más"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Regresar"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s eliminado"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s desactivado"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Botón de radio"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Campo de texto"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "SALIR"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "FINALIZAR"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "SIGUIENTE"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "Y de nuevo para revelar sus notificaciones."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Y otro giro en sentido horario para ir a página siguiente."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "Y en la misma dirección hasta encontrar icono Página siguiente."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Ya está. Para terminar el tutorial, pulse dos veces FINALIZAR en la parte inferior de la pantalla."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "Y gire bisel en sentido horario de nuevo para ir página sig."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Busque el icono %s girando el bisel."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear realizará una acción según su selección."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear leerá en alto el elemento bajo su dedo."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear leerá en alto el siguiente elemento."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear leerá en alto el elemento anterior."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear activará el modo Selección o Edición."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Desplácese por las páginas de la pantalla."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Ahora, gire bisel al contrario y busque icono Página anterior."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Pulse Atrás en el lado superior derecho del Gear para ir a la pantalla anterior."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Pulse Inicio en el lado inferior derecho del Gear para ver sus apps."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "El lector de pantalla no se puede usar con:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Desplácese hacia abajo por las listas."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Desplácese hacia arriba por las listas."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Deslice hacia la izquierda con 2 dedos para ver widgets."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Deslice a la derecha con 2 dedos para volver a la esfera."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Pulse cualquier parte de la pantalla."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "ACEPTAR para terminar."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Pulse el icono de una aplicación para seleccionarla y el nombre se leerá en alto."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "No se puede usar este idioma como TTS. Puede pulsar ACEPTAR para elegir otro, pero el Lector de pantalla se desactivará."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Para cerrar el tutorial, pulse Omitir."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Para volver, gire el bisel en sentido antihorario."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Para ir al siguiente nivel de tutorial, pulse dos veces SIGUIENTE en la parte inferior de pantalla."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Para desplazarse por varias páginas de iconos de apps, deslice a izquierda o derecha con 2 dedos."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Para desplazarse por las listas de elementos, deslice hacia arriba o hacia abajo con dos dedos."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Gire bisel en sentido horario para buscar una aplicación."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Widgets"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Ya lo tiene. Pulse dos veces en cualquier parte de la pantalla para abrir la aplicación."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Añad acc direc"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Pulsar dos veces"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "2 pulsaciones largas"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Dos pulsaciones largas con 2 dedos"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Zona de práctica"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Ayuda del lector"
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "Deslizar hacia abajo con 2 dedos"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Deslizar izda"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "Deslizar a izquierda con 2 dedos"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Deslizar dcha"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Deslizar a la derecha con 2 dedos"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "Deslizar hacia arriba con 2 dedos"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Pulsar"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Panel de prueba"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Tutorial"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Explorar la pantalla"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Desplazarse por páginas"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Lector pantalla"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Ayuda del lector"
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Panel de prueba"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Zoom"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "¿Mantener la pantalla apagada?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "No se ha reconocido el idioma. Vaya a los ajustes del teléfono y seleccione otro idioma para usar Lector de pantalla."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "No se ha reconocido el idioma. Pulse ACEPTAR y cambie los ajustes de idioma para usar Lector de pantalla."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Mantenga pulsado el botón Inicio para ir a los ajustes de accesibilidad."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Pulse tres veces la pantalla rápidamente para acercar y alejar. Después de acercar, deslice con dos dedos por la pantalla para desplazarse."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Pulse tres veces la pantalla rápidamente con dos dedos para ir a los ajustes del Lector de pantalla."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Pulse rápidamente tres veces la pantalla con dos dedos para activar o desactivar Lector de pantalla."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Cambie el audio de estéreo a mono mientras utiliza un auricular."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Pulse ACEPTAR para instalar los datos de voz necesarios para usar Lector de pantalla. Puede que se apliquen cargos si realiza la instalación mediante una red móvil."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "No se puede usar este idioma como idioma de TTS, por lo que el Lector de pantalla se desactivará. Para activarlo de nuevo, vaya a los ajustes del teléfono y seleccione otro idioma."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Pulse tres veces la pantalla con dos dedos para activar o desactivar funciones."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Practique los gestos."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "La interacción táctil se bloquea mientras se lee en alto la información del tutorial."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Página %1$d de %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Activar sonido"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Seleccione otro idioma para activar Lector de pantalla."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Pulse tres veces la pantalla para acercar y alejar. Acerque y deslice con dos dedos por la pantalla para desplazarse."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Cuando Lector de pantalla esté activado, Gear proporcionará respuesta de voz. Por ejemplo, Lector de pantalla puede ofrecer comentarios de audio que describen cada pantalla. Solo tiene que pulsar los elementos para escuchar su descripción y pulsar dos veces para iniciar la función descrita."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Con Lector de pantalla activado, Gear proporciona comentarios de audio que describen cada pantalla. Pulse cualquier elemento para escuchar su descripción. Pulse dos veces para iniciar la función descrita."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Pulse dos veces y mantenga pulsado y, a continuación, deslice para reordenar."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Activar"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Desactivar"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Gire el bisel para ajustar %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Encabezado"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Coral"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Reducir en 1 hora"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Reducir en 1 minuto"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Reducir en 1 segundo"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Aumentar en 1 hora"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Aumentar en 1 minuto"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Aumentar en 1 segundo"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Favorito"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Elemento soltado en la posición %d."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Se ha comenzado a arrastrar el elemento en la posición %d."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Paleta de colores personalizada"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Se muestra elemento %1$d de %2$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "No hay eventos"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "Volumen de %1$s, %2$d por ciento"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Pantalla apagada"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "El lector de pantalla no es compatible con esta aplicación. Pulse la tecla de inicio o de retroceso para volver a la pantalla de inicio."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Imposible abrir la aplic"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Día"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Mes"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Año"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Gris"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Gris oscuro"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Sonido"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Vibración"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Negro"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Malva"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Azul oscuro"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Verde bosque"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Rosa chicle"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Verde lima"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Ciruela"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Azul cielo"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Blanco"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Amarillo"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Encabezado"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Edición."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Control de búsqueda"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Pulse dos veces para seleccionarlo todo."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Atenuado."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Rojo"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Pulse dos veces para cambiar."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Activar"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Tomate"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Marcada"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Seleccionar ventana emergente de modo"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Selector"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Sin marcar"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Más opciones"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Desplazamiento por índice"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Alerta"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "La pantalla está encendida."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Gire %s para buscar el índice."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Gire %s para navegar por los elementos."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Gire la %1$s para ajustar la %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Gire el bisel para buscar en el índice."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Gire el bisel para navegar por los elementos."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Progresando"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Pulse dos veces para ver."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Pulse dos veces para enviar."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Pulse dos veces para seleccionar todo."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Pulse dos veces para editar."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Pulse dos veces para cancelar toda la selección."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Pulse dos veces para cerrar la ventana emergente."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Toque tres veces pant con dos dedos para ir a ajustes Lector pantalla."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Lector de pantalla se desactivará. Necesarios todos sonidos activados."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Lector de pantalla solo es compatible con:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Mantenga pulsado el botón Inicio para ir a ajustes de accesibilidad."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "No está admitido como idioma de TTS. Pulse Aceptar para descargarlo."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "No disponible. Lector de pantalla está activado."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Mantenga la pantalla apagada."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Accesibilidad"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Desactivar todos sonidos"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Colores negativos"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Audio mono"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Acceso directo"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Pantalla oscura"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Audición"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Cambiar el sonido de estéreo a mono cuando utilice un auricular."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Eliminada."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Batería cargada al 100%"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Batería baja"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Dispositivos conectados"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Cargador conectado."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Emergencia"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Cargador desconectado"
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 elemento no leído"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d notificaciones no leídas"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Buena"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Ninguna señal detec"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Índice de grupo"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Casilla de verificación"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Lista ampliable"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Imagen"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s por ciento"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Reordenar"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Pulse dos veces para introducir texto."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Enero"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Febrero"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Marzo"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Abril"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Mayo"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Junio"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Julio"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Agosto"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Septiembre"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Octubre"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Noviembre"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Diciembre"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "PM"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d horas"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Minutos"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "%d seleccionados en total."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s de %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Botón Atrás"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Desactivado"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Teclado mostrado."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Casilla de verificación para todo el grupo"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Copiar"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Pegar"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Cortar"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Desliza el bisel para cambiar %s."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Punto"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Coma"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Signo de interrogación de cierre"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Signo de exclamación de cierre"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Comilla simple"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Arroba"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "Y"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Barra diagonal"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Dos puntos"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Punto y coma"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Comillas"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Paréntesis de apertura"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Paréntesis de cierre"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Más"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Asterisco"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Dividido entre"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Igual"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Porcentaje"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Libra"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Menor que"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Mayor que"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Corchete de apertura"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Corchete de cierre"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Llave de apertura"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Llave de cierre"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Corazón blanco"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Estrella blanca"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Virgulilla"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Comillas latinas izquierdas"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Comillas latinas derechas"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Signo de exclamación de apertura"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Signo de interrogación de apertura"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Barra inversa"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Acento grave"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Viñeta"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Barra vertical"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Símbolo de moneda"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Dólar"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Euro"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Won"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Yen"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Guión bajo"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Almohadilla"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Guión"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Circunflejo"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Pantalla oscura"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Velocidad de la voz"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Comenzar"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Final"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Espacio"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Marcado"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "No marcado"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Encabezado"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Interruptor"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Control deslizante"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Deslice hacia abajo o arriba para cambiar."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Fila %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Columna %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "En la rejilla %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d filas"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d columnas"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Círculo negro"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Cuadrado negro"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Círculo blanco"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "Trébol blanco"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "Diamante blanco"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "Pica blanca"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Cuadrado blanco"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "barra de progreso"

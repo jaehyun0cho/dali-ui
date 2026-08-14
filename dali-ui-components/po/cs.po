@@ -1,0 +1,1096 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=((n==1) ? 1 : (n>=2 && n<=4) ? 3 : 5);"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d znak"
+msgstr[2] "N/A"
+msgstr[3] "%d znaky"
+msgstr[4] "%d znaků"
+msgstr[5] "%d znaků"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Upravit pole"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Hlasový průvodce"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Nabíjení"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Poklepáním otevřete menu."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Nebyla nalezena žádná zařízení"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Vyhledávání"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Žádné služby"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Neznámé"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "dop."
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Nepřipojeno"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Rozbalitelný seznam"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Intenzita signálu"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Zrak"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Zobrazení %d položek"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Baterie je téměř vybitá"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Aktivujte dvojitým klepnutím."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Všechny znaky byly odstraněny."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Baterie"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Tlačítko"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Datum"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Vypnuto."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Rozbaleno"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Sbaleno"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Poklepáním sbalíte seznam."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Poklepejte a upravte."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Poklepáním rozbalíte seznam"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Výběr se provede poklepáním."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Rozevírací seznam"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Domovská obrazovka"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Klávesnice je skrytá."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Hlasitost média"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d znaků."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Vybráno."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Karta %1$d z %2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Když bude funkce Čtečka displeje zapnutá, telefon bude poskytovat hlasovou zpětnou vazbu. Čtečka displeje vám například řekne, jaké jsou možné interakce na jednotlivých obrazovkách. Klepnutím na položky je vyberete a poslechnete si co jsou zač, a poklepáním provedete související akci."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Slabý signál Wi-Fi"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Vypnout"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Úpravy textu"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Stupně šedi"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Velké %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Hlasit. zař."
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Zobrazení na šířku"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Ztlumit"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Nevybráno"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Žádné položky"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d položek"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Zobrazení na výšku"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Nastavení"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Stránka %1$d z %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Nastavte hlasitost."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Nabíjení %1$s. Stav nabití baterie je %2$s procent."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Probíhá."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Stisknutím tlačítka Zpět zavřete okno."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Obrazovka je zapnutá."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Přejetím doprava nebo doleva jedním prstem vyberete další nebo předchozí písmeno."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Abecední odčítací index"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Snížit o jeden den"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Snížit o jeden měsíc"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Snížit o jeden rok"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Zvýšit o jeden den"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Zvýšit o jeden měsíc"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Zvýšit o jeden rok"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Zpět"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s odstraněn"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s je vypnutá"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Přepínač"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Textové pole"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "KONEC"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "DOKONČIT"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "DALŠÍ"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "A dalším klepnutím odkryjete oznámení."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "A dalším otočením doprava přejdete na další stránku."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "A ve stejném směru, dokud nenajdete ikonu Další stránka."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "A je to. Vše je hotovo. Chcete-li ukončit kurz, poklep. na tl. DOKONČIT u dolního okraje obrazovky."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "A dalším otočením rámečku doprava přejdete na další stránku."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Najděte ikonu %s otočením rámečku."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear provede akci podle vašeho výběru."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear přečte položku po vaším prstem."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear přečte další položku."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear přečte předchozí položku."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear zapne Režim výběru nebo úprav."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Pohyb po stránkách na obrazovce."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Dalším otočením rámečku doleva najdete ikonu Předchozí stránka."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Stisknutím tl. Zpět nahoře na pravé straně Gear se vraťte na předch. obrazovku."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Stisknutím tl. Domů dole na pravé straně Gear zobrazíte aplikace."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Čtečku displeje nelze použít s:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Posouváním seznamů dolů."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Posouváním seznamů nahoru."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Pomůcky zobrazíte přejetím doleva dvěma prsty."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Přejetím 2 prsty doprava se vrátíte na ciferník."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Klepněte kdekoli na obrazovce."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Klepn. na OK ukonč. kurz."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Aktuální obrazovka obsahuje aplikace. Klepnutím na ikonu vyberte aplikaci, jejíž název bude přečten."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Tento jazyk nelze použít jako jazyk převodu textu na řeč. Klepnutím na OK zvolíte jiný, ale Čtečka displeje se vypne."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Chcete-li kurz zavřít, klepněte na Přeskočit."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Chcete-li se vrátit, otočte rámeček doleva."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Chcete-li přejít k další fázi kurzu, poklepejte na tlačítko DALŠÍ u dolního okraje obrazovky."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Přejetím dvěma prsty doleva nebo doprava můžete procházet různé stránky s ikonami aplikací."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Chcete-li procházet seznamy položek, přejíždějte po obrazovce dvěma prsty nahoru nebo dolů."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Otáčením rámečku doprava najdete požadovanou aplikaci."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Pomůcky"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Našli jste ji. Poklepáním kdekoli na obrazovce spustíte aplikaci."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Přidat zástupce"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Poklepání"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Poklepání a přidrž."
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Poklepání 2 prsty a přidržení"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Cvičná zóna"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Náp. čtečky displ."
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "Přejetí dolů 2 prsty"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Přejetí doleva"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "Přejetí doleva 2 prsty"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Přejetí doprava"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Přejetí doprava 2 prsty"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "Přejetí nahoru 2 prsty"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Klepnout"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Testovací plocha"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Kurz"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Prozkoum. obrazovky"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Pohyb po stránkách"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Čtečka displeje"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Náp. čtečky displ."
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Testovací plocha"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Zoom"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Zachovat vypnutý displej?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Jazyk nebyl rozpoznán. Přejděte na nastavení telefonu a vyberte jiný jazyk, abyste mohli použít Čtečku displeje."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Jazyk nebyl rozpoznán. Klepněte na tlačítko OK a změňte nastavení jazyka, abyste mohli použít Čtečku displeje."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Stisknutím a přidržením tlačítka Domů zobrazíte nastavení Usnadnění."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Trojím rychlým klepnutím na obrazovku zvětšíte a zmenšíte obraz. Když zvětšíte obraz, tažením dvěma prsty po obrazovce ho posunete."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Trojím rychlým klepnutím dvěma prsty na obrazovku zobrazíte nastavení Čtečka displeje."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Rychlým trojím klepnutím na displej dvěma prsty zapnete nebo vypnete Čtečku displeje."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Při používání jednoho sluchátka přepnout zvuk ze stereo na mono."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Klepnutím na OK nainstalujete hlasová data pro použití aplikace Čtečka displeje. Při instalaci prostřednictvím mobilní sítě mohou být účtovány další poplatky."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Tento jazyk nelze použít jako jazyk převodu textu na řeč, proto se Čtečka displeje vypne. Pokud ji budete chtít znovu zapnout, přejděte na nastavení telefonu a vyberte jiný jazyk."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Trojím klepnutím na displej dvěma prsty zapnete nebo vypnete funkce."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Vyzkoušejte si gesta."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Během čtení informací z kurzu jsou dotykové interakce blokovány."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Stránka %1$d z %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Nahlas"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Vyberte jiný jazyk pro Čtečku displeje."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Klepnutím třikrát na obrazovku zvětšíte a zmenšíte obraz. Když zvětšíte obraz, přejetím dvěma prsty po obrazovce ho posunete."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Když je Čtečka displeje zapnutá, Gear bude poskytovat hlasovou zpětnou vazbu. Čtečka displeje může poskytovat zvukový komentář popisující jednotlivé obrazovky. Jednoduše klepnete na položku a uslyšíte její popis, a následným poklepáním iniciujete popsanou funkci."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Když je Čtečka displeje zapnutá, Gear poskytuje zvukový komentář popisující jednotlivé obrazovky. Klepněte na libovolnou položku a uslyšíte její popis. Poklepáním iniciujete popsanou funkci."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Poklepáním a přidržením, a následným tažením změníte pořadí."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Zapnutí"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Vypnutí"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Otočte rámeček a upravte %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Záhlaví"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Korálová červená"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Snížit o 1 hodinu"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Snížit o 1 minutu"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Snížit o 1 sekundu"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Zvýšit o 1 hodinu"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Zvýšit o 1 minutu"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Zvýšit o 1 sekundu"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Oblíbené"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Položka byla přetažena na pozici %d."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Bylo zahájeno přetažení položky na pozici %d."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Vlastní paleta barev"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Zobrazuje položku %1$d z %2$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Žádné události"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "Hlasitost %1$s, %2$d procent"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Obrazovka je vypnutá"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "Čtečka displeje není touto aplikací podporována. Stisknutím tlačítka domů nebo zpět se vraťte na domovskou obrazovku."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Aplikaci nelze spustit"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Den"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Měsíc"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Rok"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Šedá"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Tmavě šedá"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Zvuk"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Vibrace"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Černá"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Modrofialová"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Tmavě modrá"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Lesní zeleň"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Jasně růžová"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Limetkově zelená"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Švestková"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Nebeská modrá"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Bílá"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Žlutá"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Záhlaví"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Upravuje se."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Hledat ovládací prvek"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Poklepáním vyberte vše."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Ztmavený."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Červená"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Poklepáním změňte."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Zapnout"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Tomatová"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Zaškrtnuto"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Okno režimu Výběr"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Výběr"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Nezaškrtnuto"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Další možnosti"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Posouvání indexu"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Výstraha"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Displej je zapnutý."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Otočením %s můžete vyhledat index."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Otočením %s můžete procházet položky."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Otočte %1$s a upravte %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Otočením rámečku můžete hledat v rejstříku."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Otočením rámečku můžete procházet položky."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Probíhá spuštění"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Poklepáním zobrazíte."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Poklepáním odešlete."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Poklepáním vyberte vše."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Poklepejte a upravte."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Poklepáním zrušíte výběr všeho."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Poklepáním zavřete okno."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Trojím klepnutím dvěma prsty zobrazíte nastavení Čtečka displeje."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Čtečka displeje se vypne. Potřebuje mít zapnuté všechny zvuky."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Čtečka displeje podporuje pouze:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Stisknutím a přidržením tlačítka Domů zobrazíte nastavení usnadnění."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "Jazyk není podporován jako jazyk TTS. Klepnutím na OK ho stáhnete."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Není dostupné. Čtečka displeje je zapnutá."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Zachovat vypnutý displej."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Usnadnění"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Vypnout všechny zvuky"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Negativní barvy"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Mono zvuk"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Přímý přístup"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Vypnutý displej"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Sluch"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Při používání jednoho sluchátka přepnout zvuk ze stereo na mono."
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Odebráno."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Baterie je plně nabitá"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Nízký stav baterie"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Připojená zařízení"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Nabíječka byla připojena."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Nouzový stav"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Nabíječka byla odpojena."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 nepřečtená položka"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d nepřečtených oznámení"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Dobrý"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Nebyl zjištěn signál"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Skupinový index"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Zaškrtávací políčko"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Rozbalitelný seznam"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Obrázek"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s procent"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Změnit uspořádání"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Poklepejte pro zadání textu."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Leden"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Únor"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Březen"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Duben"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Kvě"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Červen"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Červenec"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "Srpen"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "Září"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Říjen"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "Listopad"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Prosinec"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "odp."
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d hodin"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Minuty"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "Celkem vybráno %d."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s z %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Tlačítko Zpět"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Vypnuto"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Klávesnice je zobrazena."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Zaškrtávací políčko pro celou skupinu"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopírovat"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Vložit"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Vyjmout"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Potažením rámečku změníte %s."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Tečka"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Čárka"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Otazník"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Vykřičník"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Jednoduchá uvozovka"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Zavináč"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "A"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Lomítko"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Dvojtečka"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Středník"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Uvozovky"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Levá kulatá závorka"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Pravá kulatá závorka"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Plus"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Hvězdička"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Děleno"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Rovná se"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Procento"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Libra"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Menší než"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Větší než"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Levá závorka"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Pravá závorka"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Levá složená závorka"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Pravá složená závorka"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Bílé srdce"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Bílá hvězda"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Tilda"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Levé šikmé uvozovky"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Pravé šikmé uvozovky"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Obrácený vykřičník"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Obrácený otazník"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Zpětné lomítko"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Těžký přízvuk"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Odrážka"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Svislá čára"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Znak měny"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Dolar"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Euro"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Won"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Jen"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Podtržítko"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Křížek"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Pomlčka"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Cirkumflex"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Vypnutý displej"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Rychlost mluvení"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Začátek"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Konec"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Mezera"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Zaškrtnuto"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Nezaškrtnuto"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Nadpis"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Přepínač"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Posuvník"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Změna se provede potažením nahoru nebo dolů."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Řádek %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Sloupec %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "V mřížce %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "Řádky: %1$d"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "Sloupce: %1$d"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "ukazatel průběhu"

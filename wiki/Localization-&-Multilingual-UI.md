@@ -220,6 +220,45 @@ editor.SetTranslatablePlaceholder("IDS_COMMENT_PLACEHOLDER");
 
 <br/>
 
+## Components Message Catalog
+
+`Components::Localization` reads strings from the message catalog shipped with `dali-ui-components`, so a component can present translated text without the application providing its own translations.
+
+~~~cpp
+#include <dali-ui-components/public-api/localization/components-localization.h>
+
+namespace Localization = Dali::Ui::Components::Localization;
+
+// Plain lookup
+Dali::String text = Localization::GetLocalizedString("IDS_ACCS_TBOPT_BUTTON");
+
+// Lookup with integer arguments -> "Page 1 of 5."
+Dali::String page = Localization::GetLocalizedString(
+  "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS", 1, 5);
+
+// Lookup with a string and an integer argument -> "Media volume, 42 percent"
+Dali::String volume = Localization::GetLocalizedString(
+  "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS", "Media", 42);
+
+// The catalog domain, e.g. to look the catalog up through UiLocalizationManager
+Dali::String domain = Localization::GetDomain();
+~~~
+
+The catalog domain is bound once per process, on the first lookup that can reach the localization manager, and every lookup passes that domain explicitly. The application's default domain is neither read nor changed.
+
+The argument overloads treat the translated text as a format string. Integer and string arguments are supported in the combinations the catalog uses (`%d`, `%s` and mixes such as `"%1$s volume, %2$d percent"`). A translation may place the values with sequential (`%d`, `%s`) or positional (`%1$d`, `%1$s`) specifiers, and positional specifiers let a translation reorder them. The same call above reads `"Page 1 of 5."` in `en_US` and `"5페이지 중 1페이지."` in `ko_KR`, whose translation is `"%2$d페이지 중 %1$d페이지."`.
+
+> [!IMPORTANT]
+> Catalog text is data, not code. It is validated before formatting: only `%%` and the integer (`%d`/`%i`, `%<index>$d`/`%<index>$i`) and string (`%s`, `%<index>$s`) conversions within the supplied argument count are accepted, every conversion must match the type of the argument it consumes, and positional and sequential specifiers may not be mixed. Any other text, e.g. a `%n` conversion, a width field, or a type mismatch, is returned unformatted instead of being passed to `snprintf()`.
+
+> [!NOTE]
+> Positional indices must run from 1 without a hole. A translation may drop trailing arguments, e.g. use only `%1$d` of two, but `%2$d` on its own is treated as invalid and returned unformatted: how an unreferenced positional argument behaves differs between libc implementations.
+
+> [!NOTE]
+> Fallbacks: an empty resourceId returns an empty string, and an entry with no translation returns the resourceId.
+
+<br/>
+
 ## Direct Lookup
 
 `GetLocalizedString()` allows you to look up localized strings directly without binding.
@@ -500,6 +539,10 @@ Mode descriptions:
 ### Custom component sample
 - [text-localization-custom-component-example.cpp](https://github.sec.samsung.net/NUI/dali-ui/tree/devel/samples/text/text-localization-custom-component-example.cpp)
 - Sample that registers bindings on a custom component and updates internal views
+
+### Components message catalog sample
+- [components-localization-example.cpp](https://github.sec.samsung.net/NUI/dali-ui/tree/devel/samples/components-localization/components-localization-example.cpp)
+- Sample reading the catalog shipped with `dali-ui-components`, showing how positional arguments are reordered per language
 
 <br/>
 

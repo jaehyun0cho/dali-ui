@@ -1,0 +1,1096 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Plural-Forms: nplurals=6; plural=(n != 1) ? 5 : 1;"
+
+
+msgid "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgid_plural "PLURAL_ZERO_ACCS_TBOPT_PD_CHARACTERS"
+msgstr[0] "N/A"
+msgstr[1] "%d tähemärk"
+msgstr[2] "N/A"
+msgstr[3] "N/A"
+msgstr[4] "N/A"
+msgstr[5] "%d tähemärki"
+
+msgid "IDS_TPLATFORM_BODY_EDIT_FIELD_M_NOUN_T_TTS"
+msgstr "Redigeeri välja"
+
+msgid "IDS_ST_MBODY_SCREEN_READER_HTTS"
+msgstr "Ekraanilugeja (TTS)"
+
+msgid "IDS_ST_MBODY_CHARGING"
+msgstr "Laadimine"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_OPEN_THE_MENU_T_TTS"
+msgstr "Toksake kaks korda, et avada menüüd."
+
+msgid "IDS_BT_BODY_NO_DEVICES_FOUND_ABB"
+msgstr "Seadmeid ei leitud"
+
+msgid "IDS_BT_BODY_BLUETOOTH"
+msgstr "Bluetooth"
+
+msgid "IDS_COM_BODY_SEARCHING"
+msgstr "Otsimine"
+
+msgid "IDS_COM_BODY_NO_SERVICE"
+msgstr "Teenus puudub"
+
+msgid "IDS_WIFI_BODY_UNKNOWN"
+msgstr "Tundmatu"
+
+msgid "IDS_COM_BODY_AM"
+msgstr "EL"
+
+msgid "IDS_WIFI_SBODY_NOT_CONNECTED_M_STATUS_ABB"
+msgstr "Pole ühendatud"
+
+msgid "IDS_MSGS_BODY_EXPANDABLE_LIST_T_TTS"
+msgstr "Laiendatav loend"
+
+msgid "IDS_ACCS_BODY_SIGNAL_STRENGTH_TTS"
+msgstr "Signaali tugevus"
+
+msgid "IDS_ST_HEADER_VISION"
+msgstr "Nägemine"
+
+msgid "IDS_WEBVIEW_BODY_SHOWING_PD_ITEMS_TTS"
+msgstr "Näidatakse %d üksust"
+
+msgid "IDS_COM_HEADER_BATTERY_CRITICALLY_LOW"
+msgstr "Aku laetuse tase on kriitiliselt madal"
+
+msgid "IDS_ACCS_BODY_3G_TTS"
+msgstr "3G"
+
+msgid "BODY_DOUBLETAPT_051"
+msgstr "Topeltpuudutage aktiveerimiseks."
+
+msgid "IDS_ACCS_BODY_4G_TTS"
+msgstr "4G"
+
+msgid "IDS_ACCS_BODY_ALL_CHARACTERS_DELETED_TTS"
+msgstr "Kõik tähemärgid on kustutatud."
+
+msgid "IDS_ACCS_BODY_BATTERY_TTS"
+msgstr "Aku"
+
+msgid "IDS_ACCS_BODY_BUTTON_TTS"
+msgstr "Nupp"
+
+msgid "IDS_ACCS_BODY_DATE_TTS"
+msgstr "Kuupäev"
+
+msgid "IDS_ACCS_BODY_DISABLED_TTS"
+msgstr "Desaktiveeritud."
+
+msgid "IDS_ACCS_BODY_EXPANDED_TTS"
+msgstr "Expanded"
+
+msgid "IDS_ACCS_BODY_COLLAPSED_TTS"
+msgstr "Collapsed"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_COLLAPSE_THE_LIST_T_TTS"
+msgstr "Toksake kaks korda, et ahendada loendit."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EDIT_T_TTS"
+msgstr "Toksake kaks korda, et redigeerida."
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_EXPAND_THE_LIST_T_TTS"
+msgstr "Toksake kaks korda, et laiendada loendit"
+
+msgid "IDS_ACCS_BODY_DOUBLE_TAP_TO_SELECT_TTS"
+msgstr "Topeltpuudutage valimiseks."
+
+msgid "IDS_ACCS_BODY_DROPDOWN_LIST_TTS"
+msgstr "Ripploend"
+
+msgid "IDS_ACCS_BODY_HOME_SCREEN"
+msgstr "Avaekraan"
+
+msgid "IDS_ACCS_BODY_KEYBOARD_HIDDEN_TTS"
+msgstr "Klaviatuur on peidetud."
+
+msgid "IDS_ACCS_BODY_MEDIA_VOLUME_TTS"
+msgstr "Meediumi helitugevus"
+
+msgid "IDS_ACCS_BODY_PD_CHARACTERS_TTS"
+msgstr "%d tähemärki."
+
+msgid "IDS_ACCS_BODY_SELECTED_TTS"
+msgstr "Valitud."
+
+msgid "IDS_ACCS_BODY_TAB_P1SD_OF_P2SD"
+msgstr "Vahekaart %1$d/%2$d."
+
+msgid "IDS_ACCS_BODY_WHILE_SCREEN_READER_IS_ENABLED_YOUR_PHONE_WILL_PROVIDE_VOICE_FEEDBACK_FOR_EXAMPLE_SCREEN_READER_WILL_MSG"
+msgstr "Kui ekraanilugeja on aktiivne, annab teie telefon häältagasisidet. Näiteks ütleb ekraanilugeja teile, millised toimingud on igal ekraanil võimalikud. Toksake üksust, et see valida ja kuulda selle kohta selgitust, ning soovitud toimingu tegemiseks toksake seda kaks korda."
+
+msgid "IDS_ACCS_BODY_WI_FI_SIGNAL_WEAK_M_STATUS_TTS"
+msgstr "Wi-Fi-signaal on nõrk"
+
+msgid "IDS_ACCS_BODY_WI_FI_TTS"
+msgstr "Wi-Fi"
+
+msgid "IDS_ACCS_BUTTON2_DISABLE"
+msgstr "Desak-\ntiveeri"
+
+msgid "IDS_ACCS_MBODY_EDITING_TEXT"
+msgstr "Teksti redigeerimine"
+
+msgid "IDS_ACCS_MBODY_GREYSCALE"
+msgstr "Hallskaala"
+
+msgid "IDS_ACCS_OPT_CAPITAL_PS_TTS"
+msgstr "Suurtäht %s"
+
+msgid "IDS_ACCS_OPT_DEVICE_VOLUME_ABB"
+msgstr "Seadme helit."
+
+msgid "IDS_ACCS_OPT_LANDSCAPE_VIEW_TTS"
+msgstr "Rõhtpaigutusvaade"
+
+msgid "IDS_ACCS_OPT_MUTE_M_NOTI_TTS"
+msgstr "Vaigista"
+
+msgid "IDS_ACCS_OPT_NOT_SELECTED_TTS"
+msgstr "Pole valitud"
+
+msgid "IDS_ACCS_OPT_NO_ITEMS_TTS"
+msgstr "Üksusi pole"
+
+msgid "IDS_ACCS_OPT_PD_ITEMS_TTS"
+msgstr "%d üksust"
+
+msgid "IDS_ACCS_OPT_PORTRAIT_VIEW_TTS"
+msgstr "Portreevaade"
+
+msgid "IDS_ACCS_OPT_SETTINGS_VZW"
+msgstr "Seaded"
+
+msgid "IDS_ACCS_POP_PAGE_P1SD_OF_P2SD_M_DESCRIPTIVE_FORM_TTS"
+msgstr "Leht %1$d koguhulgast %2$d."
+
+msgid "IDS_ACCS_TBBODY_ADJUST_VOLUME"
+msgstr "Helitugevuse reguleerimine."
+
+msgid "IDS_ACCS_TBBODY_CHARGING_P1SS_BATTERY_POWER_P2SS_PERCENT"
+msgstr "Laadimine %1$s. Akutoidet %2$s protsenti."
+
+msgid "IDS_ACCS_TBBODY_IN_PROGRESS"
+msgstr "Pooleli."
+
+msgid "IDS_ACCS_TBBODY_PRESS_BACK_KEY_TO_CLOSE_POP_UP"
+msgstr "Vajutage hüpiku sulgemiseks tagasiliikumise klahvi."
+
+msgid "IDS_ACCS_TBBODY_SCREEN_TURNED_ON"
+msgstr "Ekraan on sisse lülitatud."
+
+msgid "IDS_ACCS_TBBODY_SWIPE_RIGHT_OR_LEFT_WITH_ONE_FINGER_TO_SELECT_NEXT_OR_PREVIOUS_LETTER"
+msgstr "Libistage ühe sõrmega paremale või vasakule, et valida järgmist või eelmist tähte."
+
+msgid "IDS_ACCS_TBOPT_ALPHABETICAL_INDEX_BAR"
+msgstr "Tähestikuline registririba"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_DAY"
+msgstr "Vähenda ühe päeva jagu"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_MONTH"
+msgstr "Vähenda ühe kuu jagu"
+
+msgid "IDS_ACCS_TBOPT_DECREASE_BY_ONE_YEAR"
+msgstr "Vähenda ühe aasta jagu"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_DAY"
+msgstr "Suurenda ühe päeva jagu"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_MONTH"
+msgstr "Suurenda ühe kuu jagu"
+
+msgid "IDS_ACCS_TBOPT_INCREASE_BY_ONE_YEAR"
+msgstr "Suurenda ühe aasta jagu"
+
+msgid "IDS_ACCS_TBOPT_NAVIGATE_BACK"
+msgstr "Navigeeri tagasi"
+
+msgid "IDS_ACCS_TBOPT_PS_DELETED"
+msgstr "%s on kustutatud"
+
+msgid "IDS_ACCS_TBOPT_PS_DISABLED"
+msgstr "%s inaktiveeritud"
+
+msgid "IDS_ACCS_TBOPT_RADIO_BUTTON"
+msgstr "Raadio nupp"
+
+msgid "IDS_ACCS_TBOPT_TEXT_FIELD"
+msgstr "Tekstiväli"
+
+msgid "WDS_ACCS_ACBUTTON_EXIT_ABB"
+msgstr "VÄLJU"
+
+msgid "WDS_ACCS_ACBUTTON_FINISH_ABB2"
+msgstr "LÕPETA"
+
+msgid "WDS_ACCS_ACBUTTON_NEXT_ABB2"
+msgstr "EDASI"
+
+msgid "WDS_ACCS_BODY_AND_AGAIN_TO_REVEAL_YOUR_NOTIFICATIONS_ABB"
+msgstr "Uuesti, et kuvada teie teavitused."
+
+msgid "WDS_ACCS_BODY_AND_ANOTHER_CLOCKWISE_TURN_TAKES_YOU_TO_THE_NEXT_PAGE_ABB"
+msgstr "Ja veel üks päripäeva keeramine viib teid järgmisele lehele."
+
+msgid "WDS_ACCS_BODY_AND_IN_THE_SAME_DIRECTION_UNTIL_YOU_FIND_THE_NEXT_PAGE_ICON_ABB"
+msgstr "Ja samas suunas, kuni leiate järgmise lehe ikooni."
+
+msgid "WDS_ACCS_BODY_AND_THATS_IT_ALL_DONE_TO_FINISH_UP_THE_TUTORIAL_DOUBLE_TAP_FINISH_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Ja ongi kõik. Kõik valmis. Õpetuse sulgemiseks topelttoksake ekraani alanurgas valikul LÕPETA."
+
+msgid "WDS_ACCS_BODY_AND_TURN_THE_BEZEL_CLOCKWISE_AGAIN_TO_MOVE_TO_THE_NEXT_PAGE_ABB"
+msgstr "Ja keerake rõngast taas päripäeva, et liikuda järgm. lehele."
+
+msgid "WDS_ACCS_BODY_FIND_THE_PS_ICON_BY_ROTATING_THE_BEZEL_ABB"
+msgstr "Keerake rõngast, et leida ikoon %s."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_PERFORM_AN_ACTION_ON_YOUR_SELECTION_ABB"
+msgstr "Gear teeb teie valiku alusel toimingu."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_ITEM_UNDER_YOUR_FINGER_ABB"
+msgstr "Gear loeb ette teie sõrme all oleva üksuse."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_NEXT_ITEM_ABB"
+msgstr "Gear loeb ette järgmise üksuse."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_READ_OUT_THE_PREVIOUS_ITEM_ABB"
+msgstr "Gear loeb ette eelmise üksuse."
+
+msgid "WDS_ACCS_BODY_GEAR_WILL_TURN_ON_EITHER_SELECTION_OR_EDIT_MODE_ABB"
+msgstr "Gear lül. sisse val. režiimi või redig. režiimi."
+
+msgid "WDS_ACCS_BODY_NAVIGATE_THROUGH_PAGES_ON_THE_SCREEN_ABB"
+msgstr "Ekraanil olevatel lehtedel navigeerimine."
+
+msgid "WDS_ACCS_BODY_NOW_TURN_THE_BEZEL_ANTICLOCKWISE_TO_FIND_THE_PREVIOUS_PAGE_ICON_ABB"
+msgstr "Nüüd keerake rõngast vastupäeva, et leida eelmise lehe ikoon."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_BACK_KEY_ON_THE_UPPER_RIGHT_SIDE_OF_GEAR_TO_GO_TO_THE_PREVIOUS_SCREEN_ABB"
+msgstr "Vajut. Geari ülem. paremal küljel tagasiliik. klahvi, et liikuda eel. ekraanile."
+
+msgid "WDS_ACCS_BODY_PRESS_THE_HOME_KEY_ON_THE_LOWER_RIGHT_SIDE_OF_GEAR_TO_SEE_YOUR_APPS_ABB"
+msgstr "Vajut. Geari alum. parem. küljel avaekr. klahvi, et näha oma rak.-i."
+
+msgid "WDS_ACCS_BODY_SCREEN_READER_CANT_BE_USED_WITH_C"
+msgstr "Ekraanilugejat ei saa kasutada rakendus(t)ega:"
+
+msgid "WDS_ACCS_BODY_SCROLL_DOWN_THROUGH_LISTS_ABB"
+msgstr "Läbi loendite alla kerimine."
+
+msgid "WDS_ACCS_BODY_SCROLL_UP_THROUGH_LISTS_ABB"
+msgstr "Läbi loendite üles kerimine."
+
+msgid "WDS_ACCS_BODY_SWIPE_LEFT_WITH_2_FINGERS_TO_SEE_YOUR_WIDGETS_ABB"
+msgstr "Libistage kahe sõrmega vasakule, et näha oma vidinaid."
+
+msgid "WDS_ACCS_BODY_SWIPE_RIGHT_WITH_2_FINGERS_TO_GO_BACK_TO_THE_WATCH_FACE_ABB"
+msgstr "Libistage kahe sõrmega paremale, et naasta sihverplaadile."
+
+msgid "WDS_ACCS_BODY_TAP_ANYWHERE_ON_THE_SCREEN_ABB"
+msgstr "Toksake ekraanil ükskõik kus."
+
+msgid "WDS_ACCS_BODY_TAP_OK_TO_FINISH_TUTORIAL_ABB"
+msgstr "Toks. õpet. lõpet.-ks OK."
+
+msgid "WDS_ACCS_BODY_THE_CURRENT_SCREEN_CONTAINS_APPS_TAP_ON_AN_APP_ICON_TO_SELECT_ONE_AND_ITS_NAME_WILL_BE_READ_ALOUD_ABB"
+msgstr "Sellel kuval on rakendusi. Toks. rak. ikoonil, et see valida, ja selle nimi loet. valjult ette."
+
+msgid "WDS_ACCS_BODY_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_YOU_CAN_TAP_OK_TO_CHOOSE_ANOTHER_ONE_BUT_SCREEN_READER_WILL_BE_TURNED_OFF_ABB"
+msgstr "Seda keelt ei saa kasutada TTS-i keelena. Võite toksata valikut OK, et valida mõni muu, kuid ekraanilugeja lülitatakse välja."
+
+msgid "WDS_ACCS_BODY_TO_CLOSE_THE_TUTORIAL_TAP_THE_SKIP_BUTTON_ABB"
+msgstr "Õpetuse sulgemiseks toks. nuppu Jäta vahele."
+
+msgid "WDS_ACCS_BODY_TO_GO_BACK_TURN_THE_BEZEL_ANTICLOCKWISE_ABB"
+msgstr "Tagasiliikumiseks keerake rõngast vastupäeva."
+
+msgid "WDS_ACCS_BODY_TO_MOVE_ON_TO_THE_NEXT_STAGE_OF_THE_TUTORIAL_DOUBLE_TAP_NEXT_AT_THE_BOTTOM_OF_THE_SCREEN_ABB"
+msgstr "Õpetuse järgmise astme juurde liikumiseks topelttoksake ekraani alaosas valikul EDASI."
+
+msgid "WDS_ACCS_BODY_TO_NAVIGATE_THROUGH_MULTIPLE_PAGES_OF_APP_ICONS_SWIPE_LEFT_OR_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Libistage kahe sõrmega vasakule või paremale, et navigeerida läbi mitme rakenduste ikoonide lehe."
+
+msgid "WDS_ACCS_BODY_TO_SCROLL_THROUGH_LISTS_OF_ITEMS_SWIPE_UP_OR_DOWN_THE_SCREEN_WITH_TWO_FINGERS_ABB"
+msgstr "Üksuste loendis kerimiseks libistage kahe sõrmega ekraanil üles või alla."
+
+msgid "WDS_ACCS_BODY_TURN_THE_BEZEL_CLOCKWISE_TO_FIND_THE_APP_YOU_WANT_ABB"
+msgstr "Soovitud rakenduse leidmiseks keerake rõngast päripäeva."
+
+msgid "WDS_ACCS_BODY_WIDGETS_ABB"
+msgstr "Vidinad"
+
+msgid "WDS_ACCS_BODY_YOU_FOUND_IT_DOUBLE_TAP_ANYWHERE_ON_THE_SCREEN_TO_OPEN_THE_APP_ABB"
+msgstr "Te leidsite selle. Topelttoksake rakenduse avamiseks ekraanil vabalt valitud kohas."
+
+msgid "WDS_ACCS_HEADER_ADD_SHORTCUT_ABB"
+msgstr "Lisa otsetee"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP"
+msgstr "Topelttoksamine"
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_ABB"
+msgstr "Topelttoks. ja hoid."
+
+msgid "WDS_ACCS_HEADER_DOUBLE_TAP_AND_HOLD_WITH_2_FINGERS_ABB"
+msgstr "Topelttoks. ja hoid. kahe sõrmega"
+
+msgid "WDS_ACCS_HEADER_PRACTICE_ZONE_ABB"
+msgstr "Harjutamistsoon"
+
+msgid "WDS_ACCS_HEADER_SCREEN_READER_HELP_ABB"
+msgstr "Ekr. lugeja spikker"
+
+msgid "WDS_ACCS_HEADER_SWIPE_DOWN_WITH_2_FINGERS_ABB"
+msgstr "Kahe sõrmega alla libistamine"
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_ABB"
+msgstr "Vasak. libist."
+
+msgid "WDS_ACCS_HEADER_SWIPE_LEFT_WITH_2_FINGERS_ABB"
+msgstr "Kahe sõrmega vasakule libistamine"
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_ABB"
+msgstr "Parem. libist."
+
+msgid "WDS_ACCS_HEADER_SWIPE_RIGHT_WITH_2_FINGERS_ABB"
+msgstr "Kahe sõrmega paremale libistamine"
+
+msgid "WDS_ACCS_HEADER_SWIPE_UP_WITH_2_FINGERS_ABB"
+msgstr "Kahe sõrmega üles libistamine"
+
+msgid "WDS_ACCS_HEADER_TAP"
+msgstr "Toksamine"
+
+msgid "WDS_ACCS_HEADER_TESTPAD_ABB"
+msgstr "Testpadi"
+
+msgid "WDS_ACCS_HEADER_TUTORIAL_ABB"
+msgstr "Õpetus"
+
+msgid "WDS_ACCS_MBODY_EXPLORE_THE_SCREEN_ABB"
+msgstr "Ekraani uurimine"
+
+msgid "WDS_ACCS_MBODY_NAVIGATE_THROUGH_PAGES_ABB"
+msgstr "Lehtedel navigeerimine"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_ABB"
+msgstr "Ekraanilugeja"
+
+msgid "WDS_ACCS_MBODY_SCREEN_READER_HELP_ABB"
+msgstr "Ekraanilug. spikk."
+
+msgid "WDS_ACCS_MBODY_TESTPAD_ABB"
+msgstr "Testpadi"
+
+msgid "WDS_ACCS_MBODY_ZOOM_ABB"
+msgstr "Suumimine"
+
+msgid "WDS_ACCS_POP_KEEP_SCREEN_TURNED_OFF_Q"
+msgstr "Kas hoida ekraan väljalülitatuna?"
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_LANGUAGE_TO_USE_SCREEN_READER"
+msgstr "Keelt ei tuvastatud. Avage oma telefoni seaded ja valige mõni muu keel, mida kasutada ekraanilugejaga."
+
+msgid "WDS_ACCS_POP_LANGUAGE_NOT_RECOGNISED_TAP_OK_TO_CHANGE_YOUR_LANGUAGE_SETTINGS_TO_USE_SCREEN_READER"
+msgstr "Keelt ei tuvastatud. Toksake valikut OK, et muuta oma keeleseadeid ekraanilugejaga kasutamiseks."
+
+msgid "WDS_ACCS_POP_PRESS_AND_HOLD_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS"
+msgstr "Vajutage ja hoidke all avaekraani klahvi juurdepääsu seadete jaoks."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_TO_ZOOM_IN_AND_OUT_AFTER_ZOOMING_IN_DRAG_TWO_FINGERS_ACROSS_SCREEN_TO_PAN"
+msgstr "Toksake ekraani kiirelt kolm korda, et suumida sisse ja välja. Pärast suumimist lohistage kahe sõrmega üle ekraani, et panoraamida."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS"
+msgstr "Toksake ekraani kiirelt kahe sõrmega kolm korda, et avada ekraanilugeja seaded."
+
+msgid "WDS_ACCS_POP_QUICKLY_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_ENABLE_OR_DISABLE_SCREEN_READER"
+msgstr "Ekraanilugeja aktiveerimiseks või inaktiveerimiseks toksake kahe sõrmega kiiresti kolm korda ekraani."
+
+msgid "WDS_ACCS_POP_SWITCH_AUDIO_FROM_STEREO_TO_MONO_WHILE_USING_ONE_EARPHONE"
+msgstr "Lülitage heli stereolt monole, kui kasutate ühte kõrvaklappi."
+
+msgid "WDS_ACCS_POP_TAP_OK_TO_INSTALL_THE_VOICE_DATA_TO_USE_SCREEN_READER_EXTRA_CHARGES_MAY_APPLY_IF_YOURE_INSTALLING_VIA_A_MOBILE_NETWORK"
+msgstr "Toksake valikut OK, et installida hääleandmed, mida kasutada ekraanilugejas. Rakenduda võivad lisatasud, kui installite mobiilsidevõrgu kaudu."
+
+msgid "WDS_ACCS_POP_THIS_LANGUAGE_CANT_BE_USED_AS_A_TTS_LANGUAGE_SO_SCREEN_READER_WILL_BE_TURNED_OFF_TO_TURN_IT_ON_AGAIN_GO_TO_YOUR_PHONES_SETTINGS_AND_SELECT_A_DIFFERENT_MSG"
+msgstr "Seda keelt ei saa kasutada TTS-i keelena, seega lülitatakse ekraanilugeja välja. Selleks, et seda taas sisse lülitada, avage oma telefoni seaded ja valige mõni muu keel."
+
+msgid "WDS_ACCS_POP_TRIPLE_TAP_THE_SCREEN_WITH_TWO_FINGERS_TO_TURN_FUNCTIONS_ON_OR_OFF"
+msgstr "Toksake ekraani kolm korda kahe sõrmega, et lülitada funktsioone sisse või välja."
+
+msgid "WDS_ACCS_SBODY_TRY_OUT_GESTURE_SKILLS_ABB"
+msgstr "Katsetage liigutusi."
+
+msgid "WDS_ACCS_TBBODY_TOUCH_INTERACTION_IS_BLOCKED_WHILE_TUTORIAL_INFORMATION_IS_BEING_READ_OUT"
+msgstr "Puutetoimingud on õpetusteabe ettelugemise ajal blokeeritud."
+
+msgid "WDS_ACCS_TBOPT_PAGE_P1SD_OF_P2SD"
+msgstr "Leht %1$d koguhulgast %2$d"
+
+msgid "WDS_ACCS_TBOPT_UNMUTE"
+msgstr "Tühista vaigistus"
+
+msgid "WDS_ACCS_TPOP_SELECT_ANOTHER_LANGUAGE_TO_TURN_ON_SCREEN_READER_ABB"
+msgstr "Valige mõni muu keel, et ekraanilugeja sisse lülitada."
+
+msgid "WDS_ACCS_TPOP_TRIPLE_TAP_THE_SCREEN_TO_ZOOM_IN_AND_OUT_ZOOM_IN_AND_DRAG_TWO_FINGERS_ACROSS_THE_SCREEN_TO_PAN"
+msgstr "Toksake ekraani kolm korda, et suumida sisse ja välja. Suumige sisse ja lohistage kahte sõrme üle ekraani, et panoraamida."
+
+msgid "WDS_ACCS_TPOP_WHILE_THE_SCREEN_READER_IS_ON_YOUR_GEAR_WILL_PROVIDE_VOICE_FEEDBACK_MSG_ABB"
+msgstr "Kui ekraanilugeja on sees, annab teie seade Gear häältagasisidet. Näiteks võib ekraanilugeja väljastada kuuldava kommentaari, mis kirjeldab kõiki ekraane. Toksake lihtsalt üksust, mida see kirjeldas, seejärel toksake kaks korda, et käivitada kirjeldatud funktsioon."
+
+msgid "WDS_ACCS_TPOP_WITH_THE_SCREEN_READER_ON_MSG_ABB"
+msgstr "Kui ekraanilugeja on sisse lülitatud, väljastab teie Gear kuuldava kommentaari, mis kirjeldab kõiki ekraane. Toksake üksust, et kuulda selle kirjeldust. Toksake kaks korda, et käivitada kirjeldatud funktsioon."
+
+msgid "IDS_BR_BODY_DOUBLE_TAP_AND_HOLD_THEN_DRAG_TO_REORDER_TTS"
+msgstr "Toksake kaks korda ja hoidke, seejärel lohistage, et järjestada ümber."
+
+msgid "IDS_MSG_BODY_ON_T_TTS"
+msgstr "Ajal"
+
+msgid "IDS_MSG_BODY_OFF_T_TTS"
+msgstr "Väljas"
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_ADJUST_PS"
+msgstr "Keerake rõngast, et seadistada %s."
+
+msgid "IDS_AM_OPT_HEADER_TTS"
+msgstr "Päis"
+
+msgid "IDS_CLD_BODY_CORAL_M_COLOUR"
+msgstr "Korall"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_HOUR"
+msgstr "Vähenda 1 tunni võrra"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_MINUTE"
+msgstr "Vähenda 1 minuti võrra"
+
+msgid "IDS_CLOCK_BUTTON_DECREASE_BY_1_SECOND"
+msgstr "Vähenda 1 sekundi võrra"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_HOUR"
+msgstr "Suurenda 1 tunni võrra"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_MINUTE"
+msgstr "Suurenda 1 minuti võrra"
+
+msgid "IDS_CLOCK_BUTTON_INCREASE_BY_1_SECOND"
+msgstr "Suurenda 1 sekundi võrra"
+
+msgid "IDS_COM_BODY_FAVOURITE_T_TTS"
+msgstr "Lemmik"
+
+msgid "IDS_COM_POP_ITEM_DROPPED_INTO_POSITION_PD_TTS"
+msgstr "Üksus on lohistatud asukohta %d."
+
+msgid "IDS_COM_POP_STARTED_DRAGGING_ITEM_AT_POSITION_PD_TTS"
+msgstr "Alustati üksuse lohistamist asukohas %d."
+
+msgid "IDS_EL_BODY_CUSTOM_COLOUR_PALETTE_T_TTS"
+msgstr "Kohandatud värvipalett"
+
+msgid "IDS_GCTS_BODY_SHOWING_ITEM_P1SD_OF_P2SD_TTS"
+msgstr "Kuvatakse %2$d üksusest üksust %1$d."
+
+msgid "IDS_GCTS_OPT_NO_EVENTS_TTS"
+msgstr "Sündmusi pole"
+
+msgid "IDS_GCTS_OPT_P1SS_VOLUME_P2SD_PERCENT_TTS"
+msgstr "%1$s helitugevus, %2$d protsenti"
+
+msgid "IDS_GCTS_OPT_SCREEN_TURNED_OFF_TTS"
+msgstr "Ekraan on välja lülitatud"
+
+msgid "IDS_GP_POP_SCREEN_READER_IS_NOT_SUPPORTED_BY_THIS_APPLICATION_PRESS_THE_HOME_OR_BACK_KEY_MSG"
+msgstr "See rakendus ei toeta ekraanilugejat. Avaekraanile naasmiseks vajutage avaekraani või tagasiliikumise klahvi."
+
+msgid "IDS_IDLE_HEADER_UNABLE_TO_OPEN_APP_ABB"
+msgstr "Rakendust ei saa avada"
+
+msgid "IDS_IDLE_TBOPT_DAY"
+msgstr "Päev"
+
+msgid "IDS_IDLE_TBOPT_MONTH"
+msgstr "Kuu"
+
+msgid "IDS_IDLE_TBOPT_YEAR"
+msgstr "Aasta"
+
+msgid "IDS_MEMO_BODY_GREY_M_COLOUR_TTS"
+msgstr "Hall"
+
+msgid "IDS_OCR_HEADER_DARK_GREY_M_COLOUR"
+msgstr "Tumehall"
+
+msgid "IDS_QP_BODY_SOUND_TTS"
+msgstr "Heli"
+
+msgid "IDS_QP_BODY_VIBRATION_TTS"
+msgstr "Värin"
+
+msgid "IDS_SMEMO_BODY_BLACK"
+msgstr "Must"
+
+msgid "IDS_SMEMO_BODY_BLUE_VIOLET"
+msgstr "Sinakasvioletne"
+
+msgid "IDS_SMEMO_BODY_DARK_BLUE_M_COLOUR_TTS"
+msgstr "Tumesinine"
+
+msgid "IDS_SMEMO_BODY_FOREST_GREEN_M_COLOUR_T_TTS"
+msgstr "Metsaroheline"
+
+msgid "IDS_SMEMO_BODY_HOT_PINK_M_COLOUR"
+msgstr "Ereroosa"
+
+msgid "IDS_SMEMO_BODY_LIME_GREEN_M_COLOUR"
+msgstr "Laimiroheline"
+
+msgid "IDS_SMEMO_BODY_PLUM"
+msgstr "Ploomikarva"
+
+msgid "IDS_SMEMO_BODY_SKY_BLUE_M_COLOUR_TTS"
+msgstr "Taevasinine"
+
+msgid "IDS_SMEMO_BODY_WHITE_M_COLOUR_TTS"
+msgstr "Valge"
+
+msgid "IDS_SMEMO_BODY_YELLOW_M_COLOUR_TTS"
+msgstr "Kollane"
+
+msgid "IDS_SSWITCH_OPT_HEADER_TTS"
+msgstr "Päis"
+
+msgid "IDS_ST_BODY_EDITING_T_TTS"
+msgstr "Redigeerimine."
+
+msgid "IDS_ST_BODY_SEEK_CONTROL"
+msgstr "Liugriba reguleerimine"
+
+msgid "IDS_TPLATFORM_BODY_DOUBLE_TAP_TO_SELECT_ALL_T_TTS"
+msgstr "Toksake kaks korda, et valida kõiki."
+
+msgid "MIDS_OTS_TBBODY_DIMMED"
+msgstr "Tuhm."
+
+msgid "IDS_SMEMO_BODY_RED"
+msgstr "Punane"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CHANGE"
+msgstr "Toksake kaks korda, et muuta."
+
+msgid "IDS_HEALTH_BUTTON2_ENABLE"
+msgstr "Akti-\nveeri"
+
+msgid "IDS_SMEMO_BODY_TOMATO"
+msgstr "Tomatpunane"
+
+msgid "WDS_TTS_TBOPT_TICKED"
+msgstr "Märgistatud"
+
+msgid "WDS_TTS_TBOPT_SELECT_MODE_POP_UP"
+msgstr "Valikurežiimi hüpik"
+
+msgid "WDS_TTS_TBOPT_PICKER"
+msgstr "Valija"
+
+msgid "WDS_TTS_TBOPT_NOT_TICKED"
+msgstr "Pole märgistatud"
+
+msgid "WDS_TTS_TBOPT_MORE_OPTIONS"
+msgstr "Veel valikuid"
+
+msgid "WDS_TTS_TBOPT_INDEX_SCROLL"
+msgstr "Keri registrit"
+
+msgid "WDS_TTS_TBOPT_ALERT"
+msgstr "Märguanne"
+
+msgid "WDS_TTS_TBBODY_SCREEN_ON"
+msgstr "Ekraan sees."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_SEARCH_INDEX"
+msgstr "Keerake ratast %s, et otsida registrist."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_PS_TO_NAVIGATE_ITEMS"
+msgstr "Keerake ratast %s, et navigeerida üksuseid."
+
+msgid "WDS_TTS_TBBODY_ROTATE_THE_P1SS_TO_ADJUST_P2SS"
+msgstr "Keerake üksust %1$s, et seada ühikut %2$s."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_SEARCH_INDEX"
+msgstr "Keerake rõngast, et otsida registrist."
+
+msgid "WDS_TTS_TBBODY_ROTATE_BEZEL_TO_NAVIGATE_ITEMS"
+msgstr "Keerake rõngast, et navigeerida üksusi."
+
+msgid "WDS_TTS_TBBODY_PROGRESSING"
+msgstr "Edenemine"
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_VIEW"
+msgstr "Toksake kaks korda, et kuvada."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SEND"
+msgstr "Toksake kaks korda, et saata."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_SELECT_ALL"
+msgstr "Toksake kaks korda, et valida kõiki."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_EDIT"
+msgstr "Toksake kaks korda, et redigeerida."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_DESELECT_ALL"
+msgstr "Toksake kaks korda, et tühistada kõigi valimine."
+
+msgid "WDS_TTS_TBBODY_DOUBLE_TAP_TO_CLOSE_THE_POP_UP"
+msgstr "Toksake kaks korda, et sulgeda hüpikut."
+
+msgid "WDS_ST_TPOP_TRIPLE_TAP_SCREEN_WITH_TWO_FINGERS_FOR_SCREEN_READER_SETTINGS_ABB"
+msgstr "Toks. kolm korda kahe sõrmega ekraani, et avada ekraanilugeja seaded."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_WILL_BE_DISABLED_IT_NEEDS_ALL_SOUNDS_TO_BE_TURNED_ON_ABB"
+msgstr "Ekraanilugeja inaktiv. Selle jaoks peavad kõik helid olema sisse lül."
+
+msgid "WDS_ST_TPOP_SCREEN_READER_ONLY_SUPPORTS_C_ABB"
+msgstr "Ekraanilugeja toetab ainult:"
+
+msgid "WDS_ST_TPOP_PRESS_AND_HOLD_THE_HOME_KEY_FOR_ACCESSIBILITY_SETTINGS_ABB"
+msgstr "Vajutage ja hoidke avaekraani klahvi juurdepääsu seadete jaoks."
+
+msgid "WDS_ST_TPOP_NOT_SUPPORTED_AS_A_TTS_LANGUAGE_TAP_OK_TO_DOWNLOAD_IT_ABB"
+msgstr "Ei toetata TTS-i keelena. Toksake allalaadimiseks valikut OK."
+
+msgid "WDS_ST_TPOP_NOT_AVAILABLE_SCREEN_READER_IS_ON_ABB"
+msgstr "Pole saadaval. Ekraanilugeja on aktiveeritud."
+
+msgid "WDS_ST_TPOP_KEEP_THE_SCREEN_TURNED_OFF_ABB"
+msgstr "Hoidke ekraan väljalülitatuna."
+
+msgid "WDS_PN_OPT_ACCESSIBILITY_ABB"
+msgstr "Juurdepääs"
+
+msgid "IDS_ST_MBODY_TURN_OFF_ALL_SOUNDS"
+msgstr "Kõigi helide väljalülitamine"
+
+msgid "IDS_ST_MBODY_NEGATIVE_COLOURS"
+msgstr "Negatiivivärvid"
+
+msgid "IDS_ST_MBODY_MONO_AUDIO"
+msgstr "Monoheli"
+
+msgid "IDS_ST_MBODY_DIRECT_ACCESS"
+msgstr "Otsene juurdepääs"
+
+msgid "IDS_ST_MBODY_DARK_SCREEN"
+msgstr "Tume ekraan"
+
+msgid "IDS_ST_HEADER_HEARING"
+msgstr "Kuulmine"
+
+msgid "IDS_ST_BODY_SWITCH_AUDIO_FROM_STEREO_TO_MONO_FOR_WHEN_YOU_ARE_USING_ONE_EARPHONE_ABB"
+msgstr "Valige heli seadistuseks stereo asemel mono, kui kasutate ühte kuularit"
+
+msgid "IDS_HEALTH_TBBODY_REMOVED"
+msgstr "Eemaldatud."
+
+msgid "IDS_QP_MBODY_BATTERY_FULLY_CHARGED_ABB"
+msgstr "Aku on täielikult laetud"
+
+msgid "IDS_ST_MBODY_LOW_BATTERY"
+msgstr "Aku on tühi"
+
+msgid "IDS_GCTS_OPT_DEVICES_CONNECTED_TTS"
+msgstr "Seadmed on ühendatud"
+
+msgid "IDS_MSG_TPOP_CHARGER_CONNECTED"
+msgstr "Laadija on ühendatud."
+
+msgid "IDS_ST_BODY_2G"
+msgstr "2G"
+
+msgid "IDS_AUTO_HEADER_EMERGENCY"
+msgstr "Hädaolukord"
+
+msgid "IDS_ST_BODY_LTE"
+msgstr "LTE"
+
+msgid "IDS_COM_POP_CHARGER_DISCONNECTED"
+msgstr "Laadija ei ole ühendatud."
+
+msgid "IDS_SCR_BODY_1_UNREAD_ITEM"
+msgstr "1 lugemata üksus"
+
+msgid "IDS_SCR_BODY_PD_UNREAD_ITEMS"
+msgstr "%d lugemata teavitust"
+
+msgid "IDS_ST_BODY_SIM"
+msgstr "SIM"
+
+msgid "IDS_WIFI_BODY_GOOD"
+msgstr "Hea"
+
+msgid "IDS_WIFI_SBODY_NO_SIGNAL_DETECTED_M_STATUS_ABB"
+msgstr "Sign. ei tuvastatud"
+
+msgid "IDS_ST_TBOPT_GROUP_INDEX"
+msgstr "Rühmade indeks"
+
+msgid "IDS_ACCS_TBOPT_CHECK_BOX_TTS"
+msgstr "Märkeruut"
+
+msgid "IDS_TPLATFORM_BODY_EXPANDABLE_LIST"
+msgstr "Laiendatav loend"
+
+msgid "IDS_BR_BODY_IMAGE_T_TTS"
+msgstr "Pilt"
+
+msgid "IDS_GCTS_OPT_P1SS_PERCENT_TTS"
+msgstr "%1$s protsenti"
+
+msgid "IDS_GALLERY_OPT_REORDER"
+msgstr "Järjesta ümber"
+
+msgid "IDS_ST_BODY_DOUBLE_TAP_TO_ENTER_TEXT_T_TTS"
+msgstr "Teksti sisestamiseks toksake kaks korda."
+
+msgid "IDS_IME_BODY_JANUARY"
+msgstr "Jaanuar"
+
+msgid "IDS_IME_BODY_FEBRUARY"
+msgstr "Veebruar"
+
+msgid "IDS_IME_BODY_MARCH"
+msgstr "Märts"
+
+msgid "IDS_IME_BODY_APRIL"
+msgstr "Aprill"
+
+msgid "IDS_IME_BODY_MAY"
+msgstr "Mai"
+
+msgid "IDS_IME_BODY_JUNE"
+msgstr "Juuni"
+
+msgid "IDS_IME_BODY_JULY"
+msgstr "Juuli"
+
+msgid "IDS_IME_BODY_AUGUST"
+msgstr "August"
+
+msgid "IDS_IME_BODY_SEPTEMBER"
+msgstr "September"
+
+msgid "IDS_IME_BODY_OCTOBER"
+msgstr "Oktoober"
+
+msgid "IDS_IME_BODY_NOVEMBER"
+msgstr "November"
+
+msgid "IDS_IME_BODY_DECEMBER"
+msgstr "Detsember"
+
+msgid "IDS_COM_BODY_PM"
+msgstr "PL"
+
+msgid "IDS_ST_TBOPT_PD_HOURS"
+msgstr "%d tundi"
+
+msgid "IDS_CLOCK_BODY_MINUTES_ABB2"
+msgstr "Minutit"
+
+msgid "IDS_SCR_BODY_PD_SELECTED_IN_TOTAL_TTS"
+msgstr "%d üksust on valitud kokku."
+
+msgid "IDS_MUSIC_TBOPT_P1SS_OF_P2SS"
+msgstr "%1$s koguhulgast %2$s"
+
+msgid "MIDS_MH_BODY_BACK_BUTTON_T_TTS"
+msgstr "Tagasiliikumise nupp"
+
+msgid "IDS_ALM_BODY_OFF"
+msgstr "Väljas"
+
+msgid "IDS_IME_BODY_KEYBOARD_DISPLAYED_T_TTS"
+msgstr "Klaviatuur on kuvatud."
+
+msgid "IDS_SCR_TBOPT_TICKBOX_FOR_ENTIRE_GROUP"
+msgstr "Märkeruut terve rühma jaoks"
+
+msgid "IDS_COM_BODY_COPY"
+msgstr "Kopeeri"
+
+msgid "IDS_COM_BODY_PASTE"
+msgstr "Kleebi"
+
+msgid "IDS_COM_BODY_CUT"
+msgstr "Lõika"
+
+msgid "WDS_ACCS_TBBODY_SWIPE_THE_BEZEL_TO_CHANGE_PS"
+msgstr "Libistage rõngast, et muuta valikut %s."
+
+
+msgid "IDS_IME_BODY_DOT_M_KEYBOARD_SYMBOL"
+msgstr "Punkt"
+
+
+msgid "IDS_IME_BODY_COMMA_M_KEYBOARD_SYMBOL"
+msgstr "Koma"
+
+
+msgid "IDS_IME_BODY_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Küsimärk"
+
+
+msgid "IDS_IME_BODY_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Hüüumärk"
+
+
+msgid "IDS_IME_BODY_SINGLE_QUOTE_M_KEYBOARD_SYMBOL"
+msgstr "Ülakoma"
+
+
+msgid "IDS_IME_BODY_AT_M_KEYBOARD_SYMBOL"
+msgstr "Ät"
+
+
+msgid "IDS_IME_BODY_AND_M_KEYBOARD_SYMBOL"
+msgstr "Ja"
+
+
+msgid "IDS_IME_BODY_SLASH_M_KEYBOARD_SYMBOL"
+msgstr "Kaldkriips"
+
+
+msgid "IDS_IME_BODY_COLON_M_KEYBOARD_SYMBOL"
+msgstr "Koolon"
+
+
+msgid "IDS_IME_BODY_SEMICOLON_M_KEYBOARD_SYMBOL"
+msgstr "Semikoolon"
+
+
+msgid "IDS_IME_BODY_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Jutumärgid"
+
+
+msgid "IDS_IME_BODY_OPENING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Vasak ümarsulg"
+
+
+msgid "IDS_IME_BODY_CLOSING_PARENTHESIS_M_KEYBOARD_SYMBOL"
+msgstr "Parem ümarsulg"
+
+
+msgid "IDS_IME_BODY_PLUS_M_KEYBOARD_SYMBOL"
+msgstr "Pluss"
+
+
+msgid "IDS_IME_BODY_ASTERISK_M_KEYBOARD_SYMBOL"
+msgstr "Tärn"
+
+
+msgid "IDS_IME_BODY_DIVIDED_BY_M_KEYBOARD_SYMBOL"
+msgstr "Jagamismärk"
+
+
+msgid "IDS_IME_BODY_EQUALS_M_KEYBOARD_SYMBOL"
+msgstr "Võrdusmärk"
+
+
+msgid "IDS_IME_BODY_PERCENT_M_KEYBOARD_SYMBOL"
+msgstr "Protsent"
+
+
+msgid "IDS_IME_BODY_POUND_M_KEYBOARD_SYMBOL"
+msgstr "Nael"
+
+
+msgid "IDS_IME_BODY_LESS_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Vähem kui"
+
+
+msgid "IDS_IME_BODY_GREATER_THAN_M_KEYBOARD_SYMBOL"
+msgstr "Suurem kui"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Vasak sulg"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACKET_M_KEYBOARD_SYMBOL"
+msgstr "Parem sulg"
+
+
+msgid "IDS_IME_BODY_OPENING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Vasak looksulg"
+
+
+msgid "IDS_IME_BODY_CLOSING_BRACE_M_KEYBOARD_SYMBOL"
+msgstr "Parem looksulg"
+
+
+msgid "IDS_IME_BODY_WHITE_HEART_M_KEYBOARD_SYMBOL"
+msgstr "Valge süda"
+
+
+msgid "IDS_IME_BODY_WHITE_STAR_M_KEYBOARD_SYMBOL"
+msgstr "Valge täht"
+
+
+msgid "IDS_IME_BODY_TILDE_M_KEYBOARD_SYMBOL"
+msgstr "Tilde"
+
+
+msgid "IDS_IME_BODY_LEFT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Vasak nurkjutumärk"
+
+
+msgid "IDS_IME_BODY_RIGHT_ANGLE_QUOTES_M_KEYBOARD_SYMBOL"
+msgstr "Parem nurkjutumärk"
+
+
+msgid "IDS_IME_BODY_INVERTED_EXCLAMATION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Pööratud hüüumärk"
+
+
+msgid "IDS_IME_BODY_INVERTED_QUESTION_MARK_M_KEYBOARD_SYMBOL"
+msgstr "Pööratud küsimärk"
+
+
+msgid "IDS_IME_BODY_BACKSLASH_M_KEYBOARD_SYMBOL"
+msgstr "Kurakriips"
+
+
+msgid "IDS_IME_BODY_GRAVE_ACCENT_M_KEYBOARD_SYMBOL"
+msgstr "Graavis"
+
+
+msgid "IDS_IME_BODY_BULLET_POINT_M_KEYBOARD_SYMBOL"
+msgstr "Täpploend"
+
+
+msgid "IDS_IME_BODY_PIPE_M_KEYBOARD_SYMBOL"
+msgstr "Püstkriips"
+
+
+msgid "IDS_IME_BODY_CURRENCY_SIGN_M_KEYBOARD_SYMBOL"
+msgstr "Valuuta märk"
+
+
+msgid "IDS_IME_BODY_DOLLAR_M_KEYBOARD_SYMBOL"
+msgstr "Dollar"
+
+
+msgid "IDS_IME_BODY_EURO_M_KEYBOARD_SYMBOL"
+msgstr "Euro"
+
+
+msgid "IDS_IME_BODY_WON_M_KEYBOARD_SYMBOL"
+msgstr "Von"
+
+
+msgid "IDS_IME_BODY_YEN_M_KEYBOARD_SYMBOL"
+msgstr "Jeen"
+
+
+msgid "IDS_IME_BODY_UNDERSCORE_M_KEYBOARD_SYMBOL"
+msgstr "Allkriips"
+
+
+msgid "IDS_IME_BODY_HASH_M_KEYBOARD_SYMBOL"
+msgstr "Trellid"
+
+
+msgid "IDS_IME_BODY_DASH_M_KEYBOARD_SYMBOL"
+msgstr "Mõttekriips"
+
+
+msgid "IDS_IME_BODY_CIRCUMFLEX_M_KEYBOARD_SYMBOL"
+msgstr "Tsirkumfleks"
+
+
+msgid "WDS_ACCS_TBOPT_DARK_SCREEN"
+msgstr "Tume ekraan"
+
+
+msgid "WDS_ACCS_TBOPT_SPEECH_RATE"
+msgstr "Kõne kiirus"
+
+
+msgid "WDS_ACCS_TBOPT_BEGIN"
+msgstr "Alusta"
+
+
+msgid "WDS_ACCS_TBOPT_END"
+msgstr "Lõpeta"
+
+
+msgid "IDS_IME_BODY_SPACE"
+msgstr "Tühik"
+
+msgid "IDS_ACCS_TBOPT_CHECKED_TTS"
+msgstr "Märgitud"
+
+msgid "IDS_ACCS_TBOPT_NOT_CHECKED_TTS"
+msgstr "Pole märgistatud"
+
+msgid "IDS_ACCS_TBOPT_HEADING_TTS"
+msgstr "Päis"
+
+msgid "IDS_ACCS_TBOPT_SWITCH_TTS"
+msgstr "Lüliti"
+
+msgid "IDS_ACCS_TBOPT_SLIDER_TTS"
+msgstr "Liugur"
+
+msgid "IDS_ACCS_TBOPT_SWIPE_UP_OR_DOWN_TO_CHANGE_T_TTS"
+msgstr "Muutmiseks pühkige alla."
+
+msgid "IDS_ACCS_BODY_ROW_P1SD"
+msgstr "Rida %1$d"
+
+msgid "IDS_ACCS_BODY_COLUMN_P1SD"
+msgstr "Veerg %1$d"
+
+msgid "IDS_ACCS_BODY_IN_GRID_CAPTION_P1SS"
+msgstr "Võrgus %1$s"
+
+msgid "IDS_ACCS_BODY_P1SD_ROWS"
+msgstr "%1$d rida"
+
+msgid "IDS_ACCS_BODY_P1SD_COLUMNS"
+msgstr "%1$d veergu"
+
+msgid "IDS_IME_BODY_BLACK_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "Black circle"
+
+msgid "IDS_IME_BODY_BLACK_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "Black square"
+
+msgid "IDS_IME_BODY_WHITE_CIRCLE_M_KEYBOARD_SYMBOL"
+msgstr "White circle"
+
+msgid "IDS_IME_BODY_WHITE_CLUB_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White club suit"
+
+msgid "IDS_IME_BODY_WHITE_DIAMOND_M_KEYBOARD_SYMBOL"
+msgstr "White diamond"
+
+msgid "IDS_IME_BODY_WHITE_SPADE_SUIT_M_KEYBOARD_SYMBOL"
+msgstr "White spade suit"
+
+msgid "IDS_IME_BODY_WHITE_SQUARE_M_KEYBOARD_SYMBOL"
+msgstr "White square"
+
+msgid "IDS_ACCS_ROLE_PROGRESS_BAR"
+msgstr "edenemisriba"

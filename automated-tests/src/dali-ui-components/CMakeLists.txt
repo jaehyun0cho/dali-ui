@@ -19,6 +19,7 @@ SET(TC_SOURCES
     utc-Dali-Dialog.cpp
     utc-Dali-DialogContainer.cpp
     utc-Dali-AlertDialog.cpp
+    utc-Dali-ComponentsLocalization.cpp
 )
 
 LIST(APPEND TC_SOURCES
