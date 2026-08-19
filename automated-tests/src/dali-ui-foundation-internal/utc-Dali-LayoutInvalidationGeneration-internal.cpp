@@ -60,6 +60,17 @@ void utc_dali_layout_invalidation_generation_internal_cleanup(void)
 //  - the skip is disabled outright while a layout pass is running, because mid-pass
 //    the walk also poisons in-progress ancestors, which a root registration does not
 //    stand in for.
+//
+// Everything here is stated about the FRAMEWORK-INTERNAL invalidation primitives
+// (ViewDataImpl::InvalidateMeasure / InvalidateArrange, reached below through
+// DataOf()). The public View::InvalidateMeasure() / View::InvalidateArrange() are a
+// different entry point with a different contract: inside a Measure/Arrange pass or a
+// LayoutFinished emit they are warned once per View and IGNORED, dropping caches and
+// raising dirty but performing no walk at all. Where a test here drives an
+// invalidation from INSIDE a pass it must therefore use DataOf(), or it would be
+// measuring the ignore branch instead of the generation record. At event time (pass
+// depth 0) the two routes are identical, so the tests that invalidate between passes
+// use whichever reads better.
 
 namespace
 {
@@ -110,6 +121,18 @@ Chain BuildChain(UiTestApplication& application)
 
 // --- Test 3 harness: an arrange producer that invalidates a descendant twice, with
 // --- that descendant's ancestor completing a pass in between.
+//
+// The two invalidations go through the INTERNAL primitive
+// (DataOf(view).InvalidateArrange()), not the public View handle method, and that is
+// the whole point of this harness: it exercises the FRAMEWORK-INTERNAL invalidation
+// path, which is exempt from the layout processing window and therefore still walks,
+// poisons and registers from inside a pass. The public View::InvalidateArrange()
+// would be warned and IGNORED here -- it would drop caches and raise dirty but never
+// walk -- so driving this generation test through it would test nothing about the
+// generation short-circuit.
+//
+// The nested gStagedMid.Arrange() in step (b) stays a PUBLIC call on purpose: a
+// nested Arrange() is still perfectly legal mid-pass; only Invalidate* is guarded.
 View gStagedMid;
 View gStagedLeaf;
 int  gStagedRuns = 0;
@@ -121,7 +144,7 @@ LayoutRect StagedRootArrange(View, const LayoutRect& bounds)
   {
     // (a) First invalidation. Walks leaf -> mid -> root and records the generation on all
     //     three; mid is now arrange-dirty.
-    gStagedLeaf.InvalidateArrange();
+    DataOf(gStagedLeaf).InvalidateArrange();
 
     // (b) mid runs a full arrange pass, which CONSUMES the dirty raised in (a) and
     //     publishes a fresh cache entry.
@@ -131,7 +154,7 @@ LayoutRect StagedRootArrange(View, const LayoutRect& bounds)
     //     short-circuit were live during a layout pass this would return without
     //     touching mid, leaving the entry published in (b) standing over a subtree
     //     that has just been invalidated underneath it.
-    gStagedLeaf.InvalidateArrange();
+    DataOf(gStagedLeaf).InvalidateArrange();
   }
   return bounds;
 }
@@ -147,6 +170,70 @@ MeasuredSize DirectionSensitiveMeasure(View view, float, float)
   ++gDirectionSensitiveMeasures;
   const bool rtl = (view.GetEffectiveLayoutDirection() == LayoutDirection::RIGHT_TO_LEFT);
   return MeasuredSize(rtl ? DIRECTION_SENSITIVE_RTL_WIDTH : DIRECTION_SENSITIVE_LTR_WIDTH, 30.0f);
+}
+
+// --- Warn-latch harness: what the IGNORE branch of the public invalidation entry
+// --- points actually writes, observed from inside the pass that triggers it.
+//
+// Both halves need a snapshot taken WHILE the pass is on the stack: the warn latch is
+// the only trace the log leaves that a test can see (DALI_LOG_ERROR goes to stderr,
+// which the tct harness does not capture), and the dirty bits are consumed again at
+// the NEXT pass's entry, so reading them after the pass returns would prove nothing
+// about when they were raised.
+struct IgnoreBranchSnapshot
+{
+  int  runs{0};
+  bool warnedBefore{false};
+  bool warnedAfterFirst{false};
+  bool warnedAfterSecond{false};
+  bool measureDirtyBefore{false};
+  bool measureDirtyAfter{false};
+  bool arrangeDirtyBefore{false};
+  bool arrangeDirtyAfter{false};
+};
+
+View                 gWarnLatchView;
+IgnoreBranchSnapshot gWarnLatchMeasure;
+IgnoreBranchSnapshot gWarnLatchArrange;
+
+MeasuredSize WarnLatchMeasure(View, float, float)
+{
+  ++gWarnLatchMeasure.runs;
+  ViewDataImpl& data = DataOf(gWarnLatchView);
+
+  // MeasurePassGuard cleared mMeasureDirty at pass ENTRY, so this reads false and the
+  // reading after the call below is a genuine RAISE rather than a leftover.
+  gWarnLatchMeasure.warnedBefore       = data.HasWarnedInPassInvalidation();
+  gWarnLatchMeasure.measureDirtyBefore = data.IsMeasureDirty();
+
+  // PUBLIC entry point, from inside the pass: warned once for this view, then ignored.
+  gWarnLatchView.InvalidateMeasure();
+  gWarnLatchMeasure.warnedAfterFirst  = data.HasWarnedInPassInvalidation();
+  gWarnLatchMeasure.measureDirtyAfter = data.IsMeasureDirty();
+  gWarnLatchMeasure.arrangeDirtyAfter = data.IsArrangeDirty();
+
+  // A second offence in the same pass. The latch is already set, so this one is
+  // silently ignored -- the diagnostic is per call SITE, not per call.
+  gWarnLatchView.InvalidateMeasure();
+  gWarnLatchMeasure.warnedAfterSecond = data.HasWarnedInPassInvalidation();
+
+  return MeasuredSize(60.0f, 40.0f);
+}
+
+LayoutRect WarnLatchArrange(View, const LayoutRect& bounds)
+{
+  ++gWarnLatchArrange.runs;
+  ViewDataImpl& data = DataOf(gWarnLatchView);
+
+  // ArrangePassGuard cleared mArrangeDirty at pass ENTRY, same as the measure side.
+  gWarnLatchArrange.warnedBefore       = data.HasWarnedInPassInvalidation();
+  gWarnLatchArrange.arrangeDirtyBefore = data.IsArrangeDirty();
+
+  gWarnLatchView.InvalidateArrange();
+  gWarnLatchArrange.warnedAfterFirst  = data.HasWarnedInPassInvalidation();
+  gWarnLatchArrange.arrangeDirtyAfter = data.IsArrangeDirty();
+
+  return bounds;
 }
 
 } // namespace
@@ -639,5 +726,70 @@ int UtcDaliLayoutInvalidationBatchLeavesGeometryUnchangedP(void)
     DALI_TEST_EQUALS(children[i].GetProperty<float>(Actor::Property::POSITION_Y), static_cast<float>(i) * 40.0f, TEST_LOCATION);
   }
 
+  END_TEST;
+}
+
+// White-box counterpart to the black-box in-pass invalidation tests in
+// utc-Dali-View.cpp, pinning the two things the ignore branch does that no public
+// observation can reach:
+//
+//  1. the per-View WARN LATCH is set on the first offence and stays set, which is
+//     what keeps a defective call site from re-logging every frame. The log line
+//     itself is invisible to the harness (DALI_LOG_ERROR -> stderr), so the latch bit
+//     is the only evidence the guard fired at all;
+//  2. the branch RAISES the dirty bits rather than merely dropping caches. That raise
+//     is the mechanism by which the running pass still declines its cache publish and
+//     a later cache test still misses -- the whole reason "ignored" does not mean
+//     "stale results get pinned".
+//
+// Driven through out-of-band Measure()/Arrange() rather than a scene pass: both open a
+// real pass guard (so the window is genuinely open) while keeping the exact entry
+// state of the dirty bits knowable.
+int UtcDaliLayoutInPassInvalidationWarnLatchInternalN(void)
+{
+  UiTestApplication application;
+  tet_infoline("The in-pass invalidation warn latch is set once per View, and the ignore branch raises the dirty bits");
+
+  View view = View::New();
+  view.SetMeasureCallback(MeasureCallback::New(&WarnLatchMeasure));
+  view.SetArrangeCallback(ArrangeCallback::New(&WarnLatchArrange));
+
+  gWarnLatchView    = view;
+  gWarnLatchMeasure = IgnoreBranchSnapshot();
+  gWarnLatchArrange = IgnoreBranchSnapshot();
+
+  // ARRANGE axis first, on a view that has never offended.
+  view.Arrange(LayoutRect(0.0f, 0.0f, 100.0f, 50.0f));
+
+  DALI_TEST_EQUALS(gWarnLatchArrange.runs, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchArrange.warnedBefore, false, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchArrange.warnedAfterFirst, true, TEST_LOCATION);
+
+  // Entry consumed it, the ignored call raised it back: a RAISE, not a leftover.
+  DALI_TEST_EQUALS(gWarnLatchArrange.arrangeDirtyBefore, false, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchArrange.arrangeDirtyAfter, true, TEST_LOCATION);
+
+  // MEASURE axis next, on the SAME view. The latch is already set from the arrange
+  // offence and is never cleared -- that is precisely what "once per View" means, and
+  // it is why warnedBefore is true here where it was false above.
+  view.Measure(200.0f, 100.0f);
+
+  DALI_TEST_EQUALS(gWarnLatchMeasure.runs, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchMeasure.warnedBefore, true, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchMeasure.warnedAfterFirst, true, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchMeasure.warnedAfterSecond, true, TEST_LOCATION);
+
+  DALI_TEST_EQUALS(gWarnLatchMeasure.measureDirtyBefore, false, TEST_LOCATION);
+  DALI_TEST_EQUALS(gWarnLatchMeasure.measureDirtyAfter, true, TEST_LOCATION);
+
+  // The measure branch raises BOTH axes (a changed measured size moves the arranged
+  // geometry with it). Not asserted as a before/after pair, because the arrange offence
+  // above already left mArrangeDirty standing and no arrange pass has consumed it since.
+  DALI_TEST_EQUALS(gWarnLatchMeasure.arrangeDirtyAfter, true, TEST_LOCATION);
+
+  // The latch outlives the passes that observed it.
+  DALI_TEST_CHECK(DataOf(view).HasWarnedInPassInvalidation());
+
+  gWarnLatchView.Reset();
   END_TEST;
 }

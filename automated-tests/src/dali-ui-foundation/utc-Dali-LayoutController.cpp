@@ -101,10 +101,14 @@ struct ViewLayoutFinishedSignalFunctor
   ViewLayoutFinishedSignalData& d;
 };
 
-// Re-invalidates `target` once on first emit (window-suppress test).
-struct ReinvalidateOnceFunctor
+// Changes a layout PROPERTY on `target` once, on the first emit (window-suppress
+// test). A property setter invalidates through the framework-internal primitive,
+// which is EXEMPT from the layout processing window, so this really does schedule
+// another pass from inside the emit. Contrast InvalidateFromSlotFunctor below,
+// whose public Invalidate*() call is warned and ignored there.
+struct ChangeWidthOnceFunctor
 {
-  ReinvalidateOnceFunctor(View target, int& count, bool& done)
+  ChangeWidthOnceFunctor(View target, int& count, bool& done)
   : target(target),
     count(count),
     done(done)
@@ -124,8 +128,47 @@ struct ReinvalidateOnceFunctor
   bool& done;
 };
 
-// On first emit, re-invalidates `target` and RE-ENTERS ProcessLayouts (b1
-// stale-skip regression guard).
+// Calls the PUBLIC View::InvalidateMeasure() from inside the emit, on every emit.
+// The emit holds the layout processing window open, so the call is logged once for
+// the view and IGNORED: nothing is scheduled, and the endless
+// dirty->settled->emit cycle this shape used to create cannot form.
+struct InvalidateFromSlotFunctor
+{
+  InvalidateFromSlotFunctor(View target, int& count)
+  : target(target),
+    count(count)
+  {
+  }
+  void operator()(View, LayoutRect)
+  {
+    ++count;
+    target.InvalidateMeasure();
+  }
+  View target;
+  int& count;
+};
+
+// A measure producer that calls the PUBLIC LayoutController::RequestLayout() from
+// inside its own view's measure pass. RequestLayout inserts straight into the
+// controller's pending set without reading a dirty bit, so it would be an open
+// bypass of the window if it were not guarded alongside View::Invalidate*().
+Window gRequestLayoutWindow;
+View   gRequestLayoutTarget;
+int    gRequestLayoutProducerCount = 0;
+
+MeasuredSize RequestLayoutDuringMeasure(View, float, float)
+{
+  ++gRequestLayoutProducerCount;
+  if(gRequestLayoutWindow && gRequestLayoutTarget)
+  {
+    LayoutController::Get(gRequestLayoutWindow).RequestLayout(&GetImpl(gRequestLayoutTarget));
+  }
+  return MeasuredSize(80.0f, 60.0f);
+}
+
+// On first emit, changes a layout property on `target` (an EXEMPT, framework-
+// internal invalidation) and RE-ENTERS ProcessLayouts (b1 stale-skip regression
+// guard).
 struct ReenterProcessLayoutsFunctor
 {
   ReenterProcessLayoutsFunctor(LayoutController& c, View target, int& count, bool& done)
@@ -511,7 +554,13 @@ int UtcDaliViewLayoutFinishedSignalRtlTargetBoundsP(void)
   END_TEST;
 }
 
-int UtcDaliViewLayoutFinishedSignalSuppressWindowSignalWhenSlotInvalidatesP(void)
+// A View slot that re-schedules layout through an EXEMPT path -- here a layout
+// property setter, which invalidates via the framework-internal primitive -- still
+// starts a new episode from inside the emit, so the window signal is deferred.
+// This is deliberately NOT the same as a slot calling View::InvalidateMeasure():
+// that public call is inside the layout processing window and is warned and
+// ignored, which UtcDaliViewLayoutFinishedSlotInvalidationIgnoredN pins.
+int UtcDaliViewLayoutFinishedSignalSuppressWindowSignalWhenSlotChangesPropertyP(void)
 {
   UiTestApplication application;
   Window            window = application.GetWindow();
@@ -525,18 +574,100 @@ int UtcDaliViewLayoutFinishedSignalSuppressWindowSignalWhenSlotInvalidatesP(void
   LayoutController&           controller = LayoutController::Get(window);
   controller.LayoutFinishedSignal().Connect(&application, winFunctor);
 
-  int                     viewEmitCount = 0;
-  bool                    didInvalidate = false;
-  ReinvalidateOnceFunctor viewFunctor(root, viewEmitCount, didInvalidate);
+  int                    viewEmitCount = 0;
+  bool                   didChange     = false;
+  ChangeWidthOnceFunctor viewFunctor(root, viewEmitCount, didChange);
   root.LayoutFinishedSignal().Connect(&application, viewFunctor);
 
-  // Post phase emits the View signal; its slot re-invalidates, so the window
-  // signal is suppressed this episode and deferred to the next cycle.
+  // Post phase emits the View signal; its slot changes a layout property, so the
+  // window signal is suppressed this episode and deferred to the next cycle.
   application.SendNotification();
   DALI_TEST_EQUALS(winData.count, 0, TEST_LOCATION);
   DALI_TEST_EQUALS(viewEmitCount, 1, TEST_LOCATION);
   application.SendNotification();
   DALI_TEST_EQUALS(winData.count, 1, TEST_LOCATION);
+  END_TEST;
+}
+
+// The public-API contrast to the test above: a slot that UNCONDITIONALLY calls
+// View::InvalidateMeasure() on every emit. The emit holds the layout processing
+// window open, so the call is logged once for the view and IGNORED -- nothing is
+// registered, no follow-up pass runs, and there is no second emit to re-run the
+// slot. Under the pre-window contract this exact shape spun an endless
+// dirty->settled->emit cycle that kept the event loop awake every frame; the
+// counts below (exactly one each, over ten frames) are that cycle's absence.
+int UtcDaliViewLayoutFinishedSlotInvalidationIgnoredN(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  View              root   = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(100.0f);
+  window.Add(root);
+
+  LayoutFinishedSignalData    winData;
+  LayoutFinishedSignalFunctor winFunctor(winData);
+  LayoutController&           controller = LayoutController::Get(window);
+  controller.LayoutFinishedSignal().Connect(&application, winFunctor);
+
+  int                       viewEmitCount = 0;
+  InvalidateFromSlotFunctor viewFunctor(root, viewEmitCount);
+  root.LayoutFinishedSignal().Connect(&application, viewFunctor);
+
+  for(int frame = 0; frame < 10; ++frame)
+  {
+    application.SendNotification();
+  }
+
+  DALI_TEST_EQUALS(viewEmitCount, 1, TEST_LOCATION);
+
+  // The window signal is NOT suppressed either: the slot's ignored call left the
+  // controller with nothing pending, so the same post phase reported the settle.
+  DALI_TEST_EQUALS(winData.count, 1, TEST_LOCATION);
+  END_TEST;
+}
+
+// The same guard on the other public scheduling entry point. RequestLayout() does
+// not read a dirty bit -- it inserts into the pending set and re-arms the idle pump
+// directly -- so without its own guard it would be an open bypass of the window,
+// and a measure producer could re-arm the pump through it every frame.
+// RequestLayoutInternal(), which the invalidation walk itself uses, stays unguarded.
+int UtcDaliLayoutControllerRequestLayoutDuringPassIgnoredN(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  tet_infoline("Public LayoutController::RequestLayout is ignored while a Measure/Arrange pass is on the stack");
+
+  LayoutController&           controller = LayoutController::Get(window);
+  LayoutFinishedSignalData    data;
+  LayoutFinishedSignalFunctor functor(data);
+  controller.LayoutFinishedSignal().Connect(&application, functor);
+
+  gRequestLayoutProducerCount = 0;
+
+  View view = View::New();
+  view.SetRequestedWidth(200.0f);
+  view.SetRequestedHeight(100.0f);
+  view.SetMeasureCallback(MeasureCallback::New(&RequestLayoutDuringMeasure));
+
+  gRequestLayoutWindow = window;
+  gRequestLayoutTarget = view;
+
+  window.Add(view);
+
+  for(int frame = 0; frame < 10; ++frame)
+  {
+    application.SendNotification();
+  }
+
+  // One pass, one settle. An honoured RequestLayout would have re-queued the view
+  // on every pass, so the producer would have run on every frame and the signal
+  // would never have fired.
+  DALI_TEST_EQUALS(gRequestLayoutProducerCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(data.count, 1, TEST_LOCATION);
+
+  gRequestLayoutTarget.Reset();
+  gRequestLayoutWindow.Reset();
   END_TEST;
 }
 
@@ -569,18 +700,20 @@ int UtcDaliViewLayoutFinishedSignalSlotReentersProcessLayoutsP(void)
   a.LayoutFinishedSignal().Connect(&application, aFunctor);
 
   // The slot re-enters ProcessLayouts() during the post-phase emit; drive
-  // several full cycles so the re-invalidated + re-entered episode settles and
+  // several full cycles so the re-scheduled + re-entered episode settles and
   // b's final (width 120) bounds are delivered.
   application.SendNotification();
   application.SendNotification();
   application.SendNotification();
   application.SendNotification();
 
-  // A slot that re-invalidates a sibling AND re-enters ProcessLayouts starts a
-  // new dirty->settled episode, so exact emit counts are implementation-defined
-  // (a view may legitimately recur per episode). The guaranteed invariants are:
-  // no crash / no permanent stranding (each subscriber is delivered), and b's
-  // LAST delivered bounds reflect its final (re-invalidated, width 120) layout.
+  // A slot that changes a sibling's layout property -- an EXEMPT, framework-
+  // internal invalidation, which the layout processing window deliberately does
+  // NOT ignore -- AND re-enters ProcessLayouts starts a new dirty->settled
+  // episode, so exact emit counts are implementation-defined (a view may
+  // legitimately recur per episode). The guaranteed invariants are: no crash / no
+  // permanent stranding (each subscriber is delivered), and b's LAST delivered
+  // bounds reflect its final (re-scheduled, width 120) layout.
   DALI_TEST_CHECK(aCount >= 1);
   DALI_TEST_CHECK(bData.count >= 1);
   DALI_TEST_EQUALS(bData.bounds.width, b.GetProperty<float>(Actor::Property::SIZE_WIDTH), 0.01f, TEST_LOCATION);
