@@ -226,11 +226,28 @@ public: // Measure / Arrange API
    *
    * This propagates to the parent layout while one exists,
    * until the layout root is reached (no parent Layout).
+   *
+   * @note Calling this DURING layout processing -- from inside any Measure/Arrange
+   * implementation (OnMeasure, OnArrange, a measure/arrange callback, a LayoutManager
+   * producer), or from a LayoutFinishedSignal slot -- is a contract violation. The call
+   * is logged once for this View and IGNORED: this View's cached layout results are
+   * dropped so nothing stale is served, but no relayout is scheduled and the work the
+   * call asked for is NOT performed. Invalidating from inside layout processing re-arms
+   * the layout pump every frame and prevents the main loop from going idle. Change the
+   * state and invalidate at event time instead -- before or after layout processing, or
+   * deferred out of it with an idle callback.
    */
   void InvalidateMeasure();
 
   /**
    * @brief Invalidates the arrange of this view.
+   *
+   * @note Calling this DURING layout processing (any Measure/Arrange pass, or a
+   * LayoutFinishedSignal slot) is a contract violation, exactly as for
+   * InvalidateMeasure(): the call is logged once for this View and IGNORED -- the
+   * cached arrange result is dropped so nothing stale is served, but no relayout is
+   * scheduled and the requested work is not performed. Defer it to event time (e.g. an
+   * idle callback) instead.
    */
   void InvalidateArrange();
 
@@ -1409,24 +1426,27 @@ public: // State API (non-chaining)
    * the mirrored (final) position. The bounds are the PRE-transition target,
    * snapshotted during arrange, not intermediate animated values.
    *
-   * Recurs: if a slot invalidates layout again, the View is re-arranged and the
-   * signal fires again on a later settled pass. Connecting after a layout pass
-   * does not replay the previous result.
+   * Recurs: the signal fires again on a later settled pass whenever this View is
+   * re-arranged. Connecting after a layout pass does not replay the previous result.
    *
-   * @warning A slot that UNCONDITIONALLY triggers a layout recalculation (e.g.
-   * always sets a size/position/layout property, calls a method that invalidates
-   * measure/arrange, or adds/removes children) will spin an ENDLESS
-   * dirty->settled->emit cycle: each emit re-invalidates layout, which schedules
-   * another settled pass that emits again, and so on (the event loop is kept
-   * awake via the idle-process request). There is intentionally no iteration cap
-   * (as with LayoutController::LayoutFinishedSignal and equivalents in other
-   * toolkits). Also note this signal fires whenever the View is (re-)arranged in
-   * a settled pass, INCLUDING when its bounds did NOT change (e.g. it was
-   * re-arranged only because a sibling or ancestor changed) -- do NOT assume
-   * "signal fired" means "this View's geometry changed". Guard any layout-
-   * affecting work in the slot behind a real condition, e.g. compare @p bounds
-   * against a value you cached from the previous emit and act only on an actual
-   * change, or use a one-shot flag.
+   * A slot may NOT invalidate layout. The emit runs inside the layout processing
+   * window, so a slot's InvalidateMeasure() / InvalidateArrange() -- called directly or
+   * through any helper that forwards to them -- is logged once for that View and
+   * IGNORED: its cached layout results are dropped, but no pass is scheduled and the
+   * requested work is not performed. The endless dirty->settled->emit cycle can
+   * therefore no longer be created this way. A slot that genuinely needs another layout
+   * must defer the invalidation OUT of the emit: an idle callback, a timer, or a
+   * property change processed before the next pass. Tree mutations from a slot (Add /
+   * Remove) are unaffected -- they invalidate through the framework-internal path and
+   * still schedule normally, so the resulting layout settles and this signal fires
+   * again.
+   *
+   * @warning This signal fires whenever the View is (re-)arranged in a settled pass,
+   * INCLUDING when its bounds did NOT change (e.g. it was re-arranged only because a
+   * sibling or ancestor changed) -- do NOT assume "signal fired" means "this View's
+   * geometry changed". Guard any layout-affecting work in the slot behind a real
+   * condition, e.g. compare @p bounds against a value you cached from the previous emit
+   * and act only on an actual change, or use a one-shot flag.
    *
    * @note Fires only for a View whose own Arrange() runs during the pass. All
    * built-in LayoutManagers and the default arrange route through child.Arrange().

@@ -123,7 +123,7 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
 
 ### Layout root
 
-A **layout root** is a top-level View in the layout hierarchy (its parent is not a layout). When `InvalidateMeasure()` or `InvalidateArrange()` is called, it propagates up to the layout root, which then registers with the LayoutController via `RequestLayout(ViewImpl*)` so that the root is processed on the next frame.
+A **layout root** is a top-level View in the layout hierarchy (its parent is not a layout). When `InvalidateMeasure()` or `InvalidateArrange()` is called, it propagates up to the layout root, which then registers with the LayoutController via `RequestLayoutInternal(ViewImpl*)` so that the root is processed on the next frame. (The walk uses the *Internal* entry point deliberately: the public `RequestLayout(ViewImpl*)` carries the application-facing policy described under [The layout processing window](#the-layout-processing-window).)
 
 ### Two-phase layout: Measure and Arrange
 
@@ -230,14 +230,42 @@ marked — a further invalidation on the same axis skips the walk. The generatio
 whenever the controller drains its pending set and whenever an outermost
 Measure/Arrange pass completes (a pass is the only consumer of dirty bits, and a manual
 `Measure()`/`Arrange()` call is a pass too), so the next invalidation walks again.
-While any pass is on the stack the skip is disabled outright, because a mid-pass
-walk also poisons in-progress ancestors. Coalescing changes only how often the
-ancestor chain is traversed; a batch of invalidations before one pass is all
-serviced by that pass.
+While any pass is on the stack the skip is disabled outright for **framework-internal
+invalidations** — the only ones that still walk mid-pass — because a mid-pass walk also
+poisons in-progress ancestors. Coalescing changes only how often the ancestor chain is
+traversed; a batch of invalidations before one pass is all serviced by that pass.
 
 The measure and arrange records are independent, because an arrange walk leaves
 the ancestors' measure caches valid and an ancestor measure hit does not
 re-measure its children.
+
+#### The layout processing window
+
+The **layout processing window** is open while either a Measure/Arrange pass is on the
+stack or a `LayoutFinished` emit is in progress. While it is open, the *public* entry
+points — `View::InvalidateMeasure()`, `View::InvalidateArrange()` and
+`LayoutController::RequestLayout()` — are a contract violation. Such a call is:
+
+- **logged once per View** (`DALI_LOG_ERROR`, latched on the View so a repeating call
+  site cannot flood the log), and
+- **ignored**: the view's cached layout results are dropped, so nothing stale can be
+  served, but there is **no ancestor walk, no controller registration, no generation
+  touch and no poison**, and **nothing is scheduled**. The work the call asked for is
+  **not recovered later** — no pass will perform it.
+
+The window exists because an invalidation raised from inside layout processing re-arms
+the idle pump: it schedules another pass, which settles, which emits, which invalidates
+again, so the main loop never goes idle. Closing the window at the public boundary is
+what breaks that circuit. A caller that genuinely needs another layout must defer the
+invalidation out of the window — an idle callback, a timer, or a property change
+processed before the next pass.
+
+**Framework-internal invalidations are exempt.** They go through the internal
+`ViewDataImpl` primitives rather than the public entry points, and there they still
+walk, poison in-progress ancestors and register exactly as documented above. That is
+what lets a tree mutation driven from a `LayoutFinished` slot (`Add()` / `Remove()`)
+converge on the next frame, and what keeps `LayoutController::RequestLayoutInternal()` —
+the registration the walk itself makes — usable mid-pass.
 
 **`LayoutManager` state.** A manager that keeps state of its own — an
 orientation, a spacing, a set of row definitions — is outside every cache key,
@@ -486,6 +514,11 @@ A Standalone child:
 
 When layout must be recomputed (e.g. size or child change):  
 `ViewImpl::InvalidateMeasure()` or `InvalidateArrange()` → propagate to parent layout → at layout root, `RegisterWithLayoutController()` → `LayoutControllerImpl::RequestLayout(ViewImpl*)` adds the root to `mPendingViews` → next frame the Adaptor calls `Process()` → in the pre-process phase `ProcessLayouts()` runs Measure then Arrange for those roots → after core size negotiation, the post-process phase emits the `LayoutFinished` signals.
+
+This flow is entered only from OUTSIDE the layout processing window. A public
+`InvalidateMeasure()` / `InvalidateArrange()` / `LayoutController::RequestLayout()` issued
+while a Measure/Arrange pass is running or while `LayoutFinished` is being emitted is
+warned once per View and ignored — see [The layout processing window](#the-layout-processing-window).
 
 ---
 

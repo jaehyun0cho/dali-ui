@@ -159,6 +159,12 @@ protected:
    * layout-tracked inputs used by their Arrange() implementations.
    *
    * Safe before attach and after the owner is gone: a null owner makes it a no-op.
+   *
+   * @note Call it from the SETTER, never from this manager's own Measure() or Arrange()
+   * producer. Invalidating from inside layout processing is a contract violation: the
+   * call is logged once for the owner View and IGNORED, so no relayout is scheduled and
+   * the requested work is not performed. State a producer needs must be changed, and
+   * invalidated, at event time.
    */
   void InvalidateOwnerMeasure();
 
@@ -171,6 +177,11 @@ protected:
    * does more work.
    *
    * Safe before attach and after the owner is gone: a null owner makes it a no-op.
+   *
+   * @note Same restriction as InvalidateOwnerMeasure(): calling it from inside this
+   * manager's own Measure()/Arrange() producer (or any other layout processing, such as
+   * a LayoutFinishedSignal slot) is a contract violation -- warned once for the owner
+   * View and ignored.
    */
   void InvalidateOwnerArrange();
 

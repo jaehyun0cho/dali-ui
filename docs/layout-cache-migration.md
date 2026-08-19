@@ -33,7 +33,9 @@ void MyManager::SetGap(float gap)
 ```
 
 `InvalidateOwnerMeasure()` / `InvalidateOwnerArrange()`는 `LayoutManager`의
-protected 멤버로 새로 추가되었다. attach 전에 호출해도 안전하다(no-op).
+protected 멤버로 새로 추가되었다. attach 전에 호출해도 안전하다(no-op). 다만
+**setter에서만** 호출해야 하며, manager 자신의 `Measure()` / `Arrange()` producer
+안에서 호출하면 계약 위반으로 경고 후 무시된다(§1.4).
 
 호출이 없는 setter가 실제로 잃는 것:
 
@@ -101,7 +103,30 @@ measure 캐시는 이전부터 **무조건** 동작했으므로 이 위험 자�
 무효화에 기대어 producer가 다시 호출되던 코드는 그 보장을 잃는다. `OnMeasure` /
 `MeasureCallback` / `LayoutManager::Measure`를 per-frame tick으로 쓰고 있었다면
 지금 드러난다. producer 밖의 상태를 읽는다면 그 상태를 바꾸는 쪽에서
-`InvalidateMeasure()`를 호출해야 한다.
+`InvalidateMeasure()`를 호출해야 한다. 단, 그 호출은 **producer 안이 아니라 이벤트
+시점**(pass 이전/이후)에 이루어져야 한다. 자세한 내용은 §1.4를 참고한다.
+
+### 1.4 레이아웃 처리 중에 무효화를 호출하고 있지 않은가
+
+**레이아웃 처리 창(layout processing window)** 은 Measure/Arrange pass가 스택에 있는
+동안, 그리고 `LayoutFinished` emit이 진행 중인 동안 열려 있다. 이 창이 열려 있을 때
+공개 진입점 `View::InvalidateMeasure()` / `View::InvalidateArrange()` /
+`LayoutController::RequestLayout()`를 호출하는 것은 계약 위반이며, 해당 호출은:
+
+- **View당 한 번 로그로 경고되고**(`DALI_LOG_ERROR`, View에 latch되므로 로그 폭주 없음),
+- **무시된다.** 이 View의 캐시된 레이아웃 결과는 폐기되어 낡은 값이 서빙되지는 않지만,
+  조상 walk도 LayoutController 등록도 generation 갱신도 poison도 **일어나지 않으며**,
+  **어떤 pass도 예약되지 않는다.** 즉 그 호출이 요청한 작업은 **나중에도 수행되지
+  않는다.**
+
+레이아웃 처리 도중의 무효화는 매 프레임 레이아웃 펌프를 다시 무장시켜 메인 루프가
+idle로 진입하지 못하게 만들기 때문이다. 정말로 추가 레이아웃이 필요하다면 무효화를
+창 **밖으로 지연**시켜야 한다(idle callback, timer, 또는 다음 pass 이전에 처리되는
+프로퍼티 변경).
+
+**프레임워크 내부 무효화는 면제**되어 지금까지와 동일하게 walk / poison / 등록을
+수행한다. 따라서 `LayoutFinished` 슬롯에서의 트리 변형(`Add()` / `Remove()`)은 그대로
+다음 프레임에 수렴한다.
 
 ---
 

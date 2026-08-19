@@ -91,6 +91,74 @@ DALI_UI_API uint32_t CurrentGeneration();
  */
 DALI_UI_API void AdvanceGeneration();
 
+/**
+ * @brief Returns whether the LayoutController is currently delivering LayoutFinished signals.
+ *
+ * This is the second half of the LAYOUT PROCESSING WINDOW. The window is open while
+ * EITHER a Measure/Arrange pass is on the stack (ViewDataImpl::IsLayoutPassOnStack())
+ * OR a LayoutFinished emit is in progress (this function), and while it is open the
+ * public-API entry points View::InvalidateMeasure() / View::InvalidateArrange() -- and
+ * the public LayoutController::RequestLayout() -- are WARNED ONCE PER VIEW AND IGNORED
+ * rather than honoured.
+ *
+ * The window exists so that layout processing can never re-arm the idle pump. An
+ * invalidation raised from inside it would register a layout root, which schedules
+ * another pass, which settles, which emits again, which invalidates again: the event
+ * loop is kept awake every frame and never goes idle. Closing the window at the public
+ * boundary is what breaks that circuit. Framework-internal invalidations (the walk
+ * itself, tree mutations driven from a slot, resource loads) go through the internal
+ * ViewDataImpl primitives and are deliberately EXEMPT -- they still walk, poison and
+ * register, which is what lets a slot-driven tree mutation converge on the next frame.
+ *
+ * The emit half is a separate counter rather than a bump of the pass depth because a
+ * slot runs at pass depth 0 by design: the emit happens in the post-process phase,
+ * after every Measure/Arrange guard has unwound.
+ *
+ * @return True while a LayoutFinished emit is in progress
+ */
+DALI_UI_API bool IsLayoutFinishedEmitInProgress();
+
+/**
+ * @brief Opens the LayoutFinished half of the layout processing window.
+ *
+ * Nests: the counter it increments allows a re-entrant emit (a slot that drives a
+ * nested settle) to keep the window open until the OUTERMOST emit unwinds.
+ *
+ * Prefer ScopedLayoutFinishedEmit over calling this directly, so that an exception
+ * or an early return out of a slot cannot leave the window stuck open.
+ */
+DALI_UI_API void BeginLayoutFinishedEmit();
+
+/**
+ * @brief Closes one nesting level of the LayoutFinished half of the window.
+ *
+ * Must be paired with exactly one BeginLayoutFinishedEmit().
+ */
+DALI_UI_API void EndLayoutFinishedEmit();
+
+/**
+ * @brief RAII scope that holds the LayoutFinished half of the layout processing window open.
+ *
+ * Construct one around every emit site -- both the per-View LayoutFinished delivery and
+ * the window-level LayoutController::LayoutFinishedSignal -- so that the whole emit,
+ * including anything a slot re-enters, runs inside the window.
+ */
+struct ScopedLayoutFinishedEmit
+{
+  ScopedLayoutFinishedEmit()
+  {
+    BeginLayoutFinishedEmit();
+  }
+
+  ~ScopedLayoutFinishedEmit()
+  {
+    EndLayoutFinishedEmit();
+  }
+
+  ScopedLayoutFinishedEmit(const ScopedLayoutFinishedEmit&)            = delete;
+  ScopedLayoutFinishedEmit& operator=(const ScopedLayoutFinishedEmit&) = delete;
+};
+
 } // namespace LayoutInvalidation
 } // namespace Internal
 } // namespace Ui

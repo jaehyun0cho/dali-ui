@@ -429,12 +429,16 @@ void ViewImpl::ClearGradientColorBinding(StringView bindingId)
 
 void ViewImpl::InvalidateMeasure()
 {
-  mImpl->InvalidateMeasure();
+  // The *FromPublicApi variant, never the raw primitive: this is the application-facing
+  // entry point, so it is where the layout processing window is enforced. Framework
+  // paths that must keep invalidating from inside a pass call ViewDataImpl's primitive
+  // directly and bypass this.
+  mImpl->InvalidateMeasureFromPublicApi();
 }
 
 void ViewImpl::InvalidateArrange()
 {
-  mImpl->InvalidateArrange();
+  mImpl->InvalidateArrangeFromPublicApi();
 }
 
 MeasuredSize ViewImpl::GetMeasuredSize() const

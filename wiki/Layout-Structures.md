@@ -614,6 +614,8 @@ LayoutController controller = LayoutController::Get(window);
 
 > No explicit calls to `LayoutController` are needed in normal use. Invalidation triggers automatic re-layout.
 
+**The layout processing window.** Invalidation may only be raised from OUTSIDE layout processing. The window is open while a Measure/Arrange pass is on the stack (any `OnMeasure`, `OnArrange`, measure/arrange callback or `LayoutManager` producer) and while a `LayoutFinished` emit is in progress. Inside it, the public entry points — `View::InvalidateMeasure()`, `View::InvalidateArrange()` and `LayoutController::RequestLayout()` — are a contract violation: the call is logged once per View and IGNORED. The view's cached layout results are dropped, so nothing stale is served, but there is no ancestor walk, no controller registration and no poison, and nothing is scheduled — the work the call asked for is NOT performed later. This is what stops layout processing re-arming the layout pump every frame and keeping the main loop awake. Defer such an invalidation out of the window instead (an idle callback, a timer, or a property change processed before the next pass). Framework-internal invalidations are exempt: a tree mutation from a `LayoutFinished` slot (`Add()` / `Remove()`) still schedules normally and converges on the next frame.
+
 ---
 
 ### 8.3 Layout Result Caching

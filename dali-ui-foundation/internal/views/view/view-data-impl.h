@@ -210,15 +210,63 @@ public:
   View::FocusChangedSignalType& FocusChangedSignal();
   bool                          NotifyKeyEvent(const KeyEvent& event);
 
-  void             SetRequestedX(float x);
-  void             SetRequestedY(float y);
-  float            GetRequestedX() const;
-  float            GetRequestedY() const;
-  void             SetUiScalePolicy(UiScalePolicy policy);
-  UiScalePolicy    GetUiScalePolicy() const;
-  float            GetEffectiveScale() const;
-  void             InvalidateMeasure();
-  void             InvalidateArrange();
+  void          SetRequestedX(float x);
+  void          SetRequestedY(float y);
+  float         GetRequestedX() const;
+  float         GetRequestedY() const;
+  void          SetUiScalePolicy(UiScalePolicy policy);
+  UiScalePolicy GetUiScalePolicy() const;
+  float         GetEffectiveScale() const;
+  void          InvalidateMeasure();
+  void          InvalidateArrange();
+
+  /**
+   * @brief The PUBLIC-API entry point for measure invalidation, with the layout
+   * processing window applied.
+   *
+   * ViewImpl::InvalidateMeasure() calls this; every framework-internal invalidation
+   * calls the raw InvalidateMeasure() primitive above instead. That split is the whole
+   * policy: an application may not invalidate from inside layout processing, while the
+   * framework's own walk, tree-mutation and resource-load paths must keep working there.
+   *
+   * Outside the window this is exactly InvalidateMeasure(). Inside it (a Measure/Arrange
+   * pass on the stack, or a LayoutFinished emit in progress) the call is logged once for
+   * this view and IGNORED -- see the ignore branch for what "ignored" precisely means.
+   */
+  void InvalidateMeasureFromPublicApi();
+
+  /**
+   * @brief The PUBLIC-API entry point for arrange invalidation, with the layout
+   * processing window applied.
+   *
+   * The arrange-axis twin of InvalidateMeasureFromPublicApi().
+   */
+  void InvalidateArrangeFromPublicApi();
+
+  /**
+   * @brief Logs, once for this view, that @p apiName was called from inside layout processing.
+   *
+   * Public because the guard on the public LayoutController::RequestLayout() handle
+   * method reaches it through ViewDataImpl::Get(); it is a diagnostic helper, not part
+   * of any application-facing surface (this whole class is internal).
+   *
+   * @param[in] apiName The violating entry point, fully qualified as it should appear
+   * in the log, e.g. "View::InvalidateMeasure" or "LayoutController::RequestLayout"
+   */
+  void LogInPassInvalidation(const char* apiName);
+
+  /**
+   * @brief Returns whether any view's Measure()/Arrange() pass is on this thread's stack.
+   *
+   * The pass half of the layout processing window; the emit half is
+   * LayoutInvalidation::IsLayoutFinishedEmitInProgress(). Exposed so the guard on the
+   * public LayoutController::RequestLayout() can test the same window as the guard on
+   * the public View invalidation entry points.
+   *
+   * @return True while a Measure or Arrange pass is running
+   */
+  static bool IsLayoutPassOnStack();
+
   MeasuredSize     GetMeasuredSize() const;
   void             SetRequestedWidth(float width);
   float            GetRequestedWidth() const;
@@ -1588,6 +1636,7 @@ private:
   bool         mFittingModeLayoutFinishedSignalConnected : 1;     ///< Whether layout-finished signal is connected for fitting mode update.
   bool         mDefaultFocusIndicatorSuppressedByStateEffect : 1; ///< Whether the current StateEffect suppresses the default focus indicator.
   bool         mLayoutDirectionSignalConnected : 1;               ///< True once this view registered with the LayoutController on a live window (an on-scene layout root or on-scene standalone boundary) and connected the actor layout-direction signal; never cleared -- the claim "core emits on this actor" survives reparenting and scene disconnection, which is what keeps OnPropertySet's short-circuit sound.
+  bool         mInPassInvalidationWarned : 1;                     ///< Latched once this View has logged an in-pass Invalidate*() contract violation; never cleared.
 
   /// Pure cache KEY: the effective layout direction mArrangedBounds was produced under.
   /// Valid only while mArrangeCacheValid is true. Recorded as a KEY because the direction

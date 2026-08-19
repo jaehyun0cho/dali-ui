@@ -610,6 +610,8 @@ LayoutController controller = LayoutController::Get(window);
 
 > 일반적인 사용에서 `LayoutController`에 대한 명시적 호출은 필요 없습니다. 무효화가 자동으로 재레이아웃을 트리거합니다.
 
+**레이아웃 처리 창(layout processing window).** 무효화는 레이아웃 처리 **밖에서만** 호출할 수 있습니다. 이 창은 Measure/Arrange pass가 스택에 있는 동안(`OnMeasure`, `OnArrange`, measure/arrange 콜백, `LayoutManager` producer 등)과 `LayoutFinished` emit이 진행 중인 동안 열려 있습니다. 창이 열려 있을 때 공개 진입점인 `View::InvalidateMeasure()`, `View::InvalidateArrange()`, `LayoutController::RequestLayout()`를 호출하는 것은 계약 위반이며, 해당 호출은 View당 한 번 로그로 경고되고 **무시됩니다**. 이 view의 캐시된 레이아웃 결과는 폐기되어 낡은 값이 서빙되지는 않지만, 조상 walk도 컨트롤러 등록도 poison도 일어나지 않고 어떤 pass도 예약되지 않습니다. 즉 그 호출이 요청한 작업은 이후에도 수행되지 않습니다. 이는 레이아웃 처리가 매 프레임 레이아웃 펌프를 다시 무장시켜 메인 루프가 idle로 진입하지 못하게 만드는 것을 막기 위한 것입니다. 정말로 필요하다면 무효화를 창 밖으로 지연시키십시오(idle 콜백, 타이머, 또는 다음 pass 이전에 처리되는 프로퍼티 변경). 프레임워크 내부 무효화는 면제됩니다. `LayoutFinished` 슬롯에서의 트리 변형(`Add()` / `Remove()`)은 그대로 예약되어 다음 프레임에 수렴합니다.
+
 ---
 
 ### 8.3 레이아웃 결과 캐싱

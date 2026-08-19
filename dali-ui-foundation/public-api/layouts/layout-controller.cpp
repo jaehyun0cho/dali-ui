@@ -637,19 +637,27 @@ public:
       // frame, and false when pending work remains. Emit exactly once here.
       if(mProcessDepth == 1 && mEmitScheduled)
       {
+        // Hold the LayoutFinished half of the LAYOUT PROCESSING WINDOW open across
+        // BOTH emits below. Slot code runs at pass depth 0 -- every Measure/Arrange
+        // guard has already unwound by the post-process phase -- so this scope is the
+        // only thing that extends the warn+ignore window over LayoutFinished handlers.
+        // Inside it, a slot's View::InvalidateMeasure() / View::InvalidateArrange() /
+        // LayoutController::RequestLayout() is logged once per View and ignored, which
+        // is what stops a slot re-arming the idle pump every frame.
+        //
+        // Framework-internal invalidations stay exempt and still schedule normally: a
+        // slot that calls Add() / Remove() goes through OnChildAdded / OnChildRemoved,
+        // which drive ViewDataImpl's internal primitive, so a slot-driven tree mutation
+        // still converges on the next frame.
+        Internal::LayoutInvalidation::ScopedLayoutFinishedEmit emitScope;
+
         mEmitScheduled = false;
 
         // Deliver every subscribed View's layout-finished event FIRST (in
         // traversal order), then decide the window signal.
         //
-        // CAVEAT (do not "fix" by adding a cap without agreement): a View
-        // LayoutFinishedSignal slot that unconditionally re-invalidates layout
-        // spins an endless dirty->settled->emit cycle. This is intentionally
-        // NOT capped here (consistent with the window signal); the contract is
-        // documented on View::LayoutFinishedSignal as "guard re-layout in the
-        // slot behind a real condition". A view is also re-collected/re-emitted
-        // whenever it is re-arranged, even with unchanged bounds, so callers
-        // must not treat an emit as "bounds changed".
+        // A view is re-collected/re-emitted whenever it is re-arranged, even with
+        // unchanged bounds, so callers must not treat an emit as "bounds changed".
         EmitPendingViewLayoutFinishedSignals();
 
         if(mDestroyPending)
@@ -666,8 +674,11 @@ public:
         }
         else
         {
-          // A slot re-invalidated, or a nested pass repopulated the events map.
-          // Keep the latch armed and schedule a follow-up settled pass to drain.
+          // A slot re-scheduled work through an EXEMPT (framework-internal) path --
+          // a tree mutation, say -- or a nested pass repopulated the events map. A
+          // slot's own Invalidate*() call cannot reach here: emitScope above has it
+          // warned and ignored. Keep the latch armed and schedule a follow-up settled
+          // pass to drain.
           mLayoutDirtySinceEmit = true;
           if(DALI_LIKELY(Adaptor::IsAvailable()))
           {
@@ -1176,6 +1187,22 @@ LayoutController::~LayoutController()
 
 void LayoutController::RequestLayout(ViewImpl* view)
 {
+  // The application-facing scheduling entry point, so the LAYOUT PROCESSING WINDOW
+  // applies here exactly as it does to View::InvalidateMeasure/InvalidateArrange.
+  // Without this the window would have an open bypass: RequestLayout() inserts
+  // straight into the pending set and re-arms the idle pump without reading a single
+  // dirty bit, so a Measure/Arrange producer or a LayoutFinished slot could re-arm the
+  // pump every frame through it. RequestLayoutInternal() stays UNGUARDED -- it is the
+  // registration the invalidation walk itself makes, and the exempt framework paths
+  // depend on it working mid-pass.
+  if(view != nullptr &&
+     (Internal::ViewDataImpl::IsLayoutPassOnStack() ||
+      Internal::LayoutInvalidation::IsLayoutFinishedEmitInProgress()))
+  {
+    Internal::ViewDataImpl::Get(*view).LogInPassInvalidation("LayoutController::RequestLayout");
+    return;
+  }
+
   mImpl->RequestLayout(view);
 }
 

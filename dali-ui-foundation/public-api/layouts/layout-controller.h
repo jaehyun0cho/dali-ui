@@ -75,6 +75,13 @@ public:
    * The controller will batch these requests and process them
    * during the next frame.
    *
+   * @note Calling this DURING layout processing -- from inside any Measure/Arrange
+   * implementation, or from a LayoutFinishedSignal slot (either this controller's or a
+   * View's) -- is a contract violation. The call is logged once for the view and
+   * IGNORED: nothing is scheduled. Scheduling layout from inside layout processing
+   * re-arms the layout pump every frame and prevents the main loop from going idle.
+   * Defer the request out of layout processing instead (e.g. an idle callback).
+   *
    * @param[in] view The view with layout capability to schedule
    */
   void RequestLayout(ViewImpl* view);
@@ -167,10 +174,16 @@ public:
    * - Reflects Measure/Arrange completion ONLY. It does NOT wait for layout
    *   transition animations to finish; use a transition-finished callback if
    *   post-animation geometry is required.
-   * - If a slot invalidates layout again (e.g. triggers InvalidateMeasure),
-   *   that schedules another pass and this signal fires again on a later
-   *   frame. Avoid unconditionally re-laying-out inside the slot, which
-   *   creates a self-perpetuating per-frame emit cycle.
+   * - A slot may NOT invalidate layout. The emit runs inside the layout processing
+   *   window, so a slot's View::InvalidateMeasure() / View::InvalidateArrange() /
+   *   LayoutController::RequestLayout() is logged once for that view and IGNORED --
+   *   nothing is scheduled and the requested work is not performed. This is what stops
+   *   a slot spinning a self-perpetuating per-frame emit cycle. A slot that genuinely
+   *   needs another layout must defer the invalidation out of the emit (an idle
+   *   callback, a timer, or a property change processed before the next pass).
+   * - Tree mutations from a slot (Add / Remove) are NOT affected: they invalidate
+   *   through the framework-internal path, still schedule normally, and this signal
+   *   fires again once the resulting layout settles.
    * - Destroying this controller from within the slot (LayoutController::Remove)
    *   is supported. The controller is detached immediately - it stops processing
    *   and emitting at once - but the object is not freed until the event loop
