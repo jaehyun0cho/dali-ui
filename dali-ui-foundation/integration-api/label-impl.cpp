@@ -251,7 +251,9 @@ UiConfig::SystemFontSize ToUiConfigSystemFontSize(Dali::Integration::SystemSetti
 
 LabelImplPtr LabelImpl::New()
 {
-  return LabelImplPtr(new LabelImpl());
+  LabelImplPtr impl(new LabelImpl());
+
+  return impl;
 }
 
 LabelImpl::LabelImpl()
