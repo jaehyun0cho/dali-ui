@@ -1617,7 +1617,6 @@ private:
   AccessibleObjectCreator            mAccessibleObjectCreator;
   int32_t                            mAccessibilityRole : Dali::Log<static_cast<uint32_t>(Accessibility::Role::MAX_COUNT)>::value + 2; ///< Frequently touched accessibility-related value kept here to avoid AccessibilityData creation.
 
-  bool         mSkipChildrenUpdate : 1;
   bool         mMeasureCacheValid : 1;                            ///< True when mLastMeasureConstraint + mLastMeasureScale + mMeasuredSize hold a usable cache entry.
   bool         mMeasureDirty : 1;                                 ///< True when invalidated since the last measure.
   bool         mMeasureInProgress : 1;                            ///< True while this view's own Measure() is on the stack.

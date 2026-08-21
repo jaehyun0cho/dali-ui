@@ -1045,7 +1045,6 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   mAccessibilityData(nullptr),
   mAccessibleObjectCreator(nullptr),
   mAccessibilityRole{static_cast<int32_t>(Accessibility::Role::NONE)},
-  mSkipChildrenUpdate(false),
   mMeasureCacheValid(false),
   mMeasureDirty(false),
   mMeasureInProgress(false),
