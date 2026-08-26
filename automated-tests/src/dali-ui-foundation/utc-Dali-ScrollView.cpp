@@ -16,6 +16,7 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/public-api/configuration/ui-scale-manager.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
 #include <dali/integration-api/events/touch-event-integ.h>
@@ -1507,5 +1508,104 @@ int UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassP(void)
   DALI_TEST_EQUALS(sibling.GetProperty<float>(Actor::Property::POSITION_X), 12.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(content.GetProperty<float>(Actor::Property::POSITION_Y), scrolledAgainY, TEST_LOCATION);
 
+  END_TEST;
+}
+
+// The same contract as UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassP, at a
+// UI scale of 2. Scale is what separates "survives" from "survives INTACT".
+//
+// ScrollViewImpl::ApplyScrollPosition moves the content with Ui::Extension::SetPositionX/Y,
+// a bare Actor::SetPositionX, so the actor property it writes is already physical.
+// ScrollViewLayoutManager::Arrange reads that property back as the child's arrange input,
+// and it used to multiply the read by the owner's effective scale -- so every pass
+// recomputed y as y * s. At s == 1 that is the identity, which is why the existing test
+// could not see it; at s == 2 the position doubles on each pass and never converges,
+// because SetScrollableWidth/Height ignore a sub-0.01f delta and so nothing recomputes it.
+//
+// The assertion is deliberately EXACT (==, not DALI_TEST_EQUALS' epsilon): the defect
+// multiplies, so the first pass already moves the value far outside any tolerance, and an
+// exact test also rules out a slow one-ULP creep.
+int UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassAtNonUnitScaleP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A scrolled ScrollView holds its content position exactly at a non-unit UI scale");
+
+  const float originalScale = UiScaleManager::Get().GetScale();
+  UiScaleManager::Get().SetScale(2.0f);
+
+  View root = View::New();
+  root.SetRequestedWidth(400.0f);
+  root.SetRequestedHeight(400.0f);
+  application.GetScene().Add(root);
+
+  ScrollView scrollView = ScrollView::New();
+  scrollView.SetScrollDirection(ScrollDirection::Vertical);
+  scrollView.SetVerticalScrollBarVisibility(ScrollBarVisibility::Never);
+  scrollView.SetHorizontalScrollBarVisibility(ScrollBarVisibility::Never);
+  scrollView.SetRequestedWidth(300.0f);
+  scrollView.SetRequestedHeight(300.0f);
+  root.Add(scrollView);
+
+  View content = View::New();
+  content.SetRequestedWidth(300.0f);
+  content.SetRequestedHeight(1000.0f);
+  scrollView.SetContent(content);
+
+  // The reason a later pass happens at all: a sibling of the ScrollView, so its
+  // invalidation walks up to the root and never touches the ScrollView.
+  View sibling = View::New();
+  sibling.SetRequestedWidth(30.0f);
+  sibling.SetRequestedHeight(30.0f);
+  root.Add(sibling);
+
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_EQUALS(content.GetProperty<float>(Actor::Property::POSITION_Y), 0.0f, TEST_LOCATION);
+
+  // Scroll. This moves the content behind layout's back, exactly as a pan would.
+  scrollView.ScrollToY(120.0f, false);
+
+  const float scrolledY = content.GetProperty<float>(Actor::Property::POSITION_Y);
+  DALI_TEST_CHECK(scrolledY != 0.0f);
+
+  // Five idle rounds. Every one of them arranges the settled ScrollView (the manager is
+  // declared ALWAYS), so every one of them re-reads and re-applies this position.
+  for(int i = 0; i < 5; ++i)
+  {
+    application.SendNotification();
+    application.Render();
+    application.SendNotification();
+    application.Render();
+    DALI_TEST_CHECK(content.GetProperty<float>(Actor::Property::POSITION_Y) == scrolledY);
+  }
+
+  // ...and a pass an unrelated sibling drives is no different.
+  sibling.SetRequestedX(11.0f);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_CHECK(sibling.GetProperty<float>(Actor::Property::POSITION_X) != 0.0f);
+  DALI_TEST_CHECK(content.GetProperty<float>(Actor::Property::POSITION_Y) == scrolledY);
+
+  // A second scroll settles at its own exact value, so the position is genuinely being
+  // re-applied rather than merely frozen.
+  scrollView.ScrollToY(200.0f, false);
+  const float scrolledAgainY = content.GetProperty<float>(Actor::Property::POSITION_Y);
+  DALI_TEST_CHECK(scrolledAgainY != scrolledY);
+
+  sibling.SetRequestedX(12.0f);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_CHECK(content.GetProperty<float>(Actor::Property::POSITION_Y) == scrolledAgainY);
+
+  UiScaleManager::Get().SetScale(originalScale);
   END_TEST;
 }

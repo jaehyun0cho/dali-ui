@@ -48,11 +48,12 @@ ScrollViewLayoutManager::ScrollViewLayoutManager()
   // This producer must execute on every arrange pass.
   //
   // Arrange() below takes the scrolled child's CURRENT ACTOR POSITION as that child's
-  // arrange input (childBounds.x = child.GetPositionX() * s, and the same for y). That
+  // arrange input (childBounds.x = child.GetPositionX(), and the same for y). That
   // read is exactly how a scrolled content view survives a layout pass: ScrollView
   // drives scrolling through Ui::Extension::SetPositionX/Y on its content
   // (ScrollViewImpl::ApplyScrollPosition), which writes the actor property WITHOUT
-  // invalidating layout, and this manager reads it back on the next pass.
+  // invalidating layout, and this manager reads it back on the next pass -- in the
+  // same units it was written, which is why no scale factor appears here.
   //
   // ArrangePolicy::IF_CHANGED would let a settled ScrollView serve its children from the
   // arrange cache and re-apply the bounds published BEFORE the scroll, so the content
@@ -117,7 +118,6 @@ void ScrollViewLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
 
   Integration::ScrollViewImpl* scrollImpl = dynamic_cast<Integration::ScrollViewImpl*>(view);
   const uint32_t               count      = GetChildViewCount(view);
-  float                        s          = view->GetEffectiveScale();
 
   for(uint32_t i = 0; i < count; ++i)
   {
@@ -136,8 +136,16 @@ void ScrollViewLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
 
     MeasuredSize childMeasured = childImpl.GetMeasuredSize();
     LayoutRect   childBounds;
-    childBounds.x      = child.GetPositionX() * s;
-    childBounds.y      = child.GetPositionY() * s;
+    // The actor position is read back RAW, with no scale factor. It is already physical:
+    // ScrollViewImpl::ApplyScrollPosition moves the content through
+    // Ui::Extension::View::SetPositionX/Y, which is a bare Actor::SetPositionX
+    // (extension-api/view.cpp) in the same units Arrange applies. Multiplying by the
+    // effective scale here made every pass compute x -> x * s, and at s != 1 the
+    // settled case does not self-correct: SetScrollableWidth/Height drop a sub-0.01f
+    // delta (integration-api/scroll-view-impl.cpp), so nothing recomputes the position
+    // and the drift accumulates one pass at a time.
+    childBounds.x      = child.GetPositionX();
+    childBounds.y      = child.GetPositionY();
     childBounds.width  = childMeasured.width;
     childBounds.height = childMeasured.height;
 
