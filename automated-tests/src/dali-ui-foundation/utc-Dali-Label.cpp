@@ -3046,3 +3046,201 @@ int UtcDaliLabelOrdinaryAsyncMarqueeKeepsPublishedTextureP(void)
 
   END_TEST;
 }
+
+// --- Controller-driven measure invalidation --------------------------------
+//
+// A Label's size, when it is WRAP_CONTENT, is a function of a text measurement the
+// Text::Controller owns. Many controller-side changes report themselves ONLY through
+// Controller::RequestRelayout() -> ControlInterface::RequestTextRelayout(), and the
+// base View disables core relayout, so that hook used to reach nothing at all: the
+// label went on serving its previously measured size for ever. These tests pin the
+// two halves of the fix -- the invalidation happens, and it does not happen while the
+// label's own measure pass is on the stack.
+namespace
+{
+struct LabelWindowLayoutFinishedCounter
+{
+  explicit LabelWindowLayoutFinishedCounter(int& count)
+  : count(count)
+  {
+  }
+  void operator()(Dali::Window)
+  {
+    ++count;
+  }
+  int& count;
+};
+
+// Drives one full layout batch to completion.
+void SettleLabelLayout(UiTestApplication& application)
+{
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+}
+
+bool WasLabelProcessEventsOnIdleRequested(UiTestApplication& application)
+{
+  return application.GetRenderController().WasCalled(TestRenderController::RequestProcessEventsOnIdleFunc);
+}
+} // namespace
+
+// SetMultiLine reaches the framework ONLY through RequestTextRelayout: it writes a
+// controller property and asks for a relayout. On a WRAP_CONTENT label that switch is
+// exactly what turns one long line into several, so the measured height must move.
+int UtcDaliLabelSetMultiLineInvalidatesWrapContentMeasureP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  tet_infoline("SetMultiLine retracts a WRAP_CONTENT label's measure cache, so its height re-measures");
+
+  // A fixed-width parent, so the label has a real width bound to wrap against.
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(400.0f);
+  window.Add(parent);
+
+  Label label = Label::New("The quick brown fox jumps over the lazy dog again and again");
+  label.SetRequestedWidth(MATCH_PARENT);
+  label.SetRequestedHeight(WRAP_CONTENT);
+  label.SetMultiLine(false);
+  parent.Add(label);
+
+  SettleLabelLayout(application);
+
+  const float singleLineHeight = label.GetProperty<float>(Actor::Property::SIZE_HEIGHT);
+  DALI_TEST_CHECK(singleLineHeight > 0.0f);
+
+  label.SetMultiLine(true);
+  SettleLabelLayout(application);
+
+  // The wrapped text needs more lines, so more height. Without the invalidation the
+  // label keeps serving the single-line measurement and this is unchanged.
+  DALI_TEST_CHECK(label.GetProperty<float>(Actor::Property::SIZE_HEIGHT) > singleLineHeight);
+
+  END_TEST;
+}
+
+// The same statement for a second controller-only setter, so the contract is not pinned
+// on SetMultiLine alone -- and pinned here on the SCHEDULING observable rather than on
+// the geometry, because the two are separable claims and this one is the direct one.
+// SetLineWrapMode's whole body is mController->SetLineWrapMode(); the controller reports
+// it with nothing but RequestRelayout(), which lands in RequestTextRelayout(). The
+// RelayoutRequest() there reaches nothing at all -- the base View disables core relayout
+// -- so before the fix this change armed no dali-ui layout work whatsoever, and the
+// label went on serving its old measured size. A LayoutFinished emit is exactly the
+// proof that a layout pass ran.
+//
+// (The measured GEOMETRY is not asserted here: this suite's text abstraction is a stub
+// with fixed glyph metrics that lays WORD and CHARACTER wrapping out identically, so a
+// geometry assertion would be vacuous. UtcDaliLabelSetMultiLineInvalidatesWrapContentMeasureP
+// above carries the geometry half of the contract.)
+int UtcDaliLabelSetLineWrapModeInvalidatesWrapContentMeasureP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  tet_infoline("SetLineWrapMode schedules a layout for a WRAP_CONTENT label; before, it reached nothing");
+
+  int                              emitCount = 0;
+  LabelWindowLayoutFinishedCounter counter(emitCount);
+  LayoutController::Get(window).LayoutFinishedSignal().Connect(&application, counter);
+
+  View parent = View::New();
+  parent.SetRequestedWidth(120.0f);
+  parent.SetRequestedHeight(400.0f);
+  window.Add(parent);
+
+  Label label = Label::New("The quick brown fox jumps over the lazy dog");
+  label.SetRequestedWidth(MATCH_PARENT);
+  label.SetRequestedHeight(WRAP_CONTENT);
+  label.SetMultiLine(true);
+  label.SetLineWrapMode(Text::LineWrapMode::WORD);
+  parent.Add(label);
+
+  SettleLabelLayout(application);
+  const int settledEmits = emitCount;
+  DALI_TEST_CHECK(settledEmits > 0);
+
+  // Baseline: the tree really is settled, so any emit counted below is this change's.
+  // Three rounds, because a pass that re-armed itself would show up as a climbing count.
+  for(int i = 0; i < 3; ++i)
+  {
+    SettleLabelLayout(application);
+    DALI_TEST_EQUALS(emitCount, settledEmits, TEST_LOCATION);
+  }
+
+  label.SetLineWrapMode(Text::LineWrapMode::CHARACTER);
+  SettleLabelLayout(application);
+  DALI_TEST_CHECK(emitCount > settledEmits);
+
+  // ...and it settles again rather than re-arming for ever.
+  const int afterChangeEmits = emitCount;
+  SettleLabelLayout(application);
+  DALI_TEST_EQUALS(emitCount, afterChangeEmits, TEST_LOCATION);
+
+  // A fixed-size label is out of scope by design: InvalidateTextMeasure's WRAP_CONTENT
+  // gate drops the request, because such a label's size does not depend on the text.
+  Label fixed = Label::New("Fixed");
+  fixed.SetRequestedWidth(80.0f);
+  fixed.SetRequestedHeight(30.0f);
+  fixed.SetMultiLine(true);
+  parent.Add(fixed);
+  SettleLabelLayout(application);
+
+  const int fixedSettledEmits = emitCount;
+  fixed.SetLineWrapMode(Text::LineWrapMode::CHARACTER);
+  SettleLabelLayout(application);
+  DALI_TEST_EQUALS(emitCount, fixedSettledEmits, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The regression guard for the gate on the fix above.
+//
+// LabelImpl::OnMeasure drives the controller from INSIDE its own measure pass on the
+// text-fit WRAP_CONTENT path -- SetTextFitEnabled, SetTextFitCandidatesEnabled and
+// SetDefaultFontSize around the natural-size read, and UpdateLineHeight after it. Every
+// one of those calls Controller::RequestRelayout(), which lands in RequestTextRelayout().
+// An UNGATED InvalidateTextMeasure() there would raise mMeasureDirty from inside the
+// pass's own guard: the publish is declined, the ancestor chain is dirtied and the
+// layout root is re-registered on EVERY pass, so the label never settles and its window
+// never emits LayoutFinished. Those mutations are the pass's own scaffolding and are
+// restored before the same OnMeasure returns, so the value it publishes is already the
+// settled one.
+int UtcDaliLabelTextFitWrapContentMeasureStillSettlesP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  tet_infoline("A text-fit WRAP_CONTENT label settles: the pass's own controller writes do not re-invalidate it");
+
+  int                              emitCount = 0;
+  LabelWindowLayoutFinishedCounter counter(emitCount);
+  LayoutController::Get(window).LayoutFinishedSignal().Connect(&application, counter);
+
+  Label label = Label::New("Fit this text into the box");
+  label.SetRequestedWidth(WRAP_CONTENT);
+  label.SetRequestedHeight(WRAP_CONTENT);
+  label.SetTextFit(Text::Fit::Range(10.0f, 40.0f, 2.0f));
+  window.Add(label);
+
+  DALI_TEST_CHECK(WasLabelProcessEventsOnIdleRequested(application));
+  application.GetRenderController().Initialize();
+  application.SendNotification();
+
+  // One pass, and it FINISHED: nothing the pass did to the controller re-armed it.
+  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
+  DALI_TEST_CHECK(!WasLabelProcessEventsOnIdleRequested(application));
+
+  // Three unrelated ProcessEvents rounds. A per-pass self-invalidation would show up
+  // here as a fresh pass on each of them, so emitCount would keep climbing.
+  for(int i = 0; i < 3; ++i)
+  {
+    application.GetRenderController().Initialize();
+    application.SendNotification();
+    DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
+    DALI_TEST_CHECK(!WasLabelProcessEventsOnIdleRequested(application));
+  }
+
+  END_TEST;
+}

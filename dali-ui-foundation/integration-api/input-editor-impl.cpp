@@ -2196,6 +2196,14 @@ void InputEditorImpl::RequestTextRelayout()
 {
   // Signal that a Relayout may be needed
   RelayoutRequest();
+
+  // Same contract as LabelImpl::RequestTextRelayout(): route the controller's relayout
+  // request into the dali-ui measure invalidation, except while this view's own Measure()
+  // pass is on the stack, where the request is the pass's own self-restoring scaffolding.
+  if(!Internal::ViewDataImpl::Get(*this).IsMeasureInProgress())
+  {
+    InvalidateTextMeasure();
+  }
 }
 
 void InputEditorImpl::InvalidateTextMeasure()

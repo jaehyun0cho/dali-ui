@@ -2532,6 +2532,32 @@ void LabelImpl::RequestTextRelayout()
 {
   // Signal that a Relayout may be needed
   RelayoutRequest();
+
+  // ...and retract the dali-ui MEASURE cache with it. RelayoutRequest() alone reaches
+  // nothing: the base View disables core relayout (ViewImpl::Initialize ->
+  // DevelActor::SetRelayoutEnabled(false)), so a controller-side change that arrives only
+  // through this hook -- SetMultiLine, SetLineWrapMode, an outline or underline change,
+  // a marquee state change -- left the label serving its old measured size for ever.
+  // Routing it through InvalidateTextMeasure() covers every such caller from one point
+  // and inherits that function's two existing filters: the WRAP_CONTENT gate (a fixed or
+  // MATCH_PARENT label's size does not depend on text measurement) and the
+  // mMeasureInvalidated latch.
+  //
+  // NOT while this label's own Measure() pass is running. OnMeasure deliberately drives
+  // the controller mid-pass -- SetTextFitEnabled / SetTextFitCandidatesEnabled /
+  // SetDefaultFontSize around the natural-size read, and UpdateLineHeight after it -- and
+  // every one of those calls Controller::RequestRelayout() and lands right here. Those
+  // mutations are the pass's own scaffolding and are RESTORED before the same OnMeasure
+  // returns, so the measured value it publishes is already the value for the settled
+  // state. Honouring them would raise mMeasureDirty and poison the pass from inside its
+  // own guard: the publish would be declined, the ancestor chain dirtied and the layout
+  // root re-registered on EVERY pass, so a text-fit WRAP_CONTENT label would never settle
+  // and its window would never emit LayoutFinished.
+  // UtcDaliLabelTextFitWrapContentMeasureStillSettlesP pins that.
+  if(!Internal::ViewDataImpl::Get(*this).IsMeasureInProgress())
+  {
+    InvalidateTextMeasure();
+  }
 }
 
 void LabelImpl::InvalidateTextMeasure()

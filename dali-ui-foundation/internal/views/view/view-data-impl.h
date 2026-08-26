@@ -442,6 +442,17 @@ public:
   {
     return mMeasureDirty;
   }
+  /// True while this view's own Measure() pass is on the stack (MeasurePassGuard).
+  ///
+  /// Exposed for exactly one caller shape: a producer whose OWN OnMeasure legitimately
+  /// mutates producer-side state and, in doing so, re-enters the framework's
+  /// invalidation entry point. Such a call is self-inflicted and self-restoring -- the
+  /// state is put back before the same OnMeasure returns -- so honouring it would
+  /// poison the pass that is computing the very value it describes.
+  bool IsMeasureInProgress() const
+  {
+    return mMeasureInProgress;
+  }
   bool IsArrangeDirty() const
   {
     return mArrangeDirty;
