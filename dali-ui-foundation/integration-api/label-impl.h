@@ -917,8 +917,25 @@ private: // From ControlInterface
 
   /**
    * @copydoc Text::ControlInterface::InvalidateTextMeasure()
+   *
+   * @note This is InvalidateTextMeasureOnly() PLUS a marquee re-evaluation; see that
+   * function for the split and for which callers may take only its half.
    */
   void InvalidateTextMeasure() override;
+
+  /**
+   * @brief Retracts the measure cache for a text change, and does nothing else.
+   *
+   * The measurement half of InvalidateTextMeasure(), carrying both of its filters -- the
+   * WRAP_CONTENT gate and the mMeasureInvalidated latch -- but not its
+   * EnableAutoMarqueeEvaluation() side effect.
+   *
+   * For callers that must not disturb the marquee suppression state. RequestTextRelayout()
+   * is one: ScrollingFinished() suppresses auto-marquee and then issues a relayout request,
+   * so a relayout request that re-enabled evaluation would undo the suppression its own
+   * caller had just set, and an ON_OVERFLOW marquee would restart for ever.
+   */
+  void InvalidateTextMeasureOnly();
 
   /**
    * @copydoc Text::ControlInterface::RequestAsyncRender()

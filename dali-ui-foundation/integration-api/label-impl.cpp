@@ -2538,10 +2538,18 @@ void LabelImpl::RequestTextRelayout()
   // DevelActor::SetRelayoutEnabled(false)), so a controller-side change that arrives only
   // through this hook -- SetMultiLine, SetLineWrapMode, an outline or underline change,
   // a marquee state change -- left the label serving its old measured size for ever.
-  // Routing it through InvalidateTextMeasure() covers every such caller from one point
-  // and inherits that function's two existing filters: the WRAP_CONTENT gate (a fixed or
-  // MATCH_PARENT label's size does not depend on text measurement) and the
+  // Routing it through InvalidateTextMeasureOnly() covers every such caller from one
+  // point and inherits that function's two existing filters: the WRAP_CONTENT gate (a
+  // fixed or MATCH_PARENT label's size does not depend on text measurement) and the
   // mMeasureInvalidated latch.
+  //
+  // Through the -Only core rather than the full InvalidateTextMeasure(), so the marquee
+  // re-evaluation side effect is deliberately NOT inherited: a relayout request must not
+  // undo a suppression its own caller just set. ScrollingFinished() suppresses
+  // auto-marquee and then calls this function, so an inherited EnableAutoMarqueeEvaluation()
+  // would clear the suppression on the spot and let EvaluateAndApplyMarquee restart an
+  // ON_OVERFLOW marquee for ever. Callers that DO want the re-evaluation ask for it
+  // explicitly -- SetMarqueeEnabled() enables it before calling here.
   //
   // NOT while this label's own Measure() pass is running. OnMeasure deliberately drives
   // the controller mid-pass -- SetTextFitEnabled / SetTextFitCandidatesEnabled /
@@ -2556,11 +2564,11 @@ void LabelImpl::RequestTextRelayout()
   // UtcDaliLabelTextFitWrapContentMeasureStillSettlesP pins that.
   if(!Internal::ViewDataImpl::Get(*this).IsMeasureInProgress())
   {
-    InvalidateTextMeasure();
+    InvalidateTextMeasureOnly();
   }
 }
 
-void LabelImpl::InvalidateTextMeasure()
+void LabelImpl::InvalidateTextMeasureOnly()
 {
   if(!mMeasureInvalidated)
   {
@@ -2574,6 +2582,20 @@ void LabelImpl::InvalidateTextMeasure()
       Internal::ViewDataImpl::Get(*this).InvalidateMeasure();
       mMeasureInvalidated = true;
     }
+  }
+}
+
+void LabelImpl::InvalidateTextMeasure()
+{
+  const bool wasLatched = mMeasureInvalidated;
+
+  InvalidateTextMeasureOnly();
+
+  // The marquee re-evaluation rides on the same latch as the invalidation above, but
+  // NOT on its WRAP_CONTENT gate: a fixed-size label overflows too, so a change that
+  // does not move its measured size can still change whether the text scrolls.
+  if(!wasLatched)
+  {
     EnableAutoMarqueeEvaluation();
   }
 }

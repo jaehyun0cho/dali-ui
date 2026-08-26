@@ -3244,3 +3244,65 @@ int UtcDaliLabelTextFitWrapContentMeasureStillSettlesP(void)
 
   END_TEST;
 }
+
+// ScrollingFinished() suppresses auto-marquee evaluation and then issues a relayout
+// request. Those two statements are one transaction: the suppression is what stops
+// EvaluateAndApplyMarquee from immediately re-enabling an ON_OVERFLOW marquee that has
+// just run out its configured loop count. A relayout request that re-enabled evaluation
+// would undo the suppression on the spot, and a finite-loop marquee would restart for
+// ever -- so RequestTextRelayout() takes InvalidateTextMeasureOnly(), the measurement
+// half of InvalidateTextMeasure() without its EnableAutoMarqueeEvaluation() side effect.
+int UtcDaliLabelScrollingFinishedKeepsMarqueeSuppressedP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A finished ON_OVERFLOW marquee stays stopped: the relayout request must not lift the suppression");
+
+  Label label = Label::New("This is a long single-line marquee text that must finish once and then stay stopped.");
+  label.SetAsyncRendering(false);
+  label.SetRequestedWidth(40.0f);
+  label.SetRequestedHeight(40.0f);
+  // ON_OVERFLOW is the policy the suppression exists for: under MANUAL,
+  // EvaluateAndApplyMarquee returns before it ever reads mSuppressAutoMarquee.
+  label.SetMarqueeTriggerPolicy(Text::MarqueeTriggerPolicy::ON_OVERFLOW);
+  label.SetMarqueeLoopCount(1);
+  label.SetMarqueeLoopDelay(0.0f);
+  label.SetMarqueeSpeed(1000);
+
+  application.GetScene().Add(label);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render(16);
+
+  // The text overflows its 40x40 slot, so ON_OVERFLOW starts it by itself.
+  DALI_TEST_CHECK(label.IsMarqueeRunning());
+
+  // Run the single configured loop out. The scroller reports completion through
+  // LabelImpl::ScrollingFinished(), which suppresses and then requests a relayout.
+  application.Render(1000);
+  application.SendNotification();
+  application.Render(16);
+
+  DALI_TEST_CHECK(!label.IsMarqueeRunning());
+
+  // The suppression has to SURVIVE the relayout request it was paired with. Several
+  // render rounds, because the restart happens on the next pass that evaluates the
+  // marquee, not synchronously inside ScrollingFinished().
+  for(int i = 0; i < 4; ++i)
+  {
+    application.SendNotification();
+    application.Render(16);
+    DALI_TEST_CHECK(!label.IsMarqueeRunning());
+  }
+
+  // ...and a further controller-driven relayout request must not lift it either.
+  label.SetLineWrapMode(Text::LineWrapMode::CHARACTER);
+  for(int i = 0; i < 4; ++i)
+  {
+    application.SendNotification();
+    application.Render(16);
+    DALI_TEST_CHECK(!label.IsMarqueeRunning());
+  }
+
+  END_TEST;
+}
