@@ -331,9 +331,15 @@ public:
   LayoutMode       GetLayoutMode() const;
   void             SetLayoutTransition(LayoutTransition transition);
   LayoutTransition GetLayoutTransition() const;
-  LayoutRect       GetArrangedBounds() const;
-  bool             HasArrangeResult() const;
-  bool             IsInitialLayoutDone() const;
+  void             SetSelfLayoutTransition(LayoutTransition transition);
+  LayoutTransition GetSelfLayoutTransition() const;
+  /// Whether this view carries a self-role transition. Cheap predicate (no handle
+  /// copy / refcount) for the dispatcher's per-child dispatch-time check -- level 1
+  /// of Internal::ResolveGoverningTransition.
+  bool       HasSelfLayoutTransition() const;
+  LayoutRect GetArrangedBounds() const;
+  bool       HasArrangeResult() const;
+  bool       IsInitialLayoutDone() const;
   /// One-shot latch for the layout transition dispatcher's fresh-child ENTER settle.
   /// A child that no producer ever arranges keeps its "fresh" classification forever,
   /// so the settle branch is re-entered on every pass; the settle itself is needed
@@ -1598,7 +1604,8 @@ private:
 
   struct LayoutTransitionData
   {
-    LayoutTransition              transition;
+    LayoutTransition              transition;     ///< Children role: governs this view's children
+    LayoutTransition              selfTransition; ///< Self role: governs THIS view inside its parent's frame
     std::unordered_set<ViewImpl*> pendingEnterChildren;
     std::unordered_set<ViewImpl*> pendingReorderedChildren;
     bool                          hasPendingChildRemoval{false};

@@ -44,6 +44,16 @@ LayoutTransition LayoutTransition::New()
   return LayoutTransition(p.Get());
 }
 
+LayoutTransition LayoutTransition::NewSuppressed()
+{
+  // New() enables the default CHANGE timing (0.3s EASE_IN_OUT, see
+  // LayoutTransitionImpl's constructor) and configures no ENTER / EXIT effect,
+  // so disabling that one default is all it takes to make every slot inert.
+  LayoutTransition transition = New();
+  transition.ClearChangeTiming();
+  return transition;
+}
+
 LayoutTransition LayoutTransition::DownCast(BaseHandle handle)
 {
   return LayoutTransition(dynamic_cast<Internal::LayoutTransitionImpl*>(handle.GetObjectPtr()));

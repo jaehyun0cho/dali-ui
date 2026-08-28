@@ -70,6 +70,9 @@ enum class ReflowSlot
  * ancestor SUBTREE scope must not cross it. Callers therefore do not need to
  * pre-check @p start; the direct-parent-precedence invariant is enforced here.
  *
+ * @note This is level 3 of @c ResolveGoverningTransition; a child that carries its
+ * own transition is claimed at level 1 and never reaches this walk.
+ *
  * @param[in] start The child's direct parent (the container the child was added
  *                  to / removed from)
  * @param[in] slot  The structural slot being resolved (ENTER or EXIT)
@@ -106,6 +109,85 @@ inline ViewImpl* FindGoverningSubtreeOwner(ViewImpl* start, ReflowSlot slot)
     node                    = parentView ? &GetImpl(parentView) : nullptr;
   }
   return nullptr;
+}
+
+/**
+ * @brief Which attachment point supplies the transition governing a child.
+ */
+enum class LayoutTransitionRole
+{
+  NONE,             ///< Nothing governs the child for this slot
+  SELF,             ///< The child's own transition (View::SetSelfLayoutTransition)
+  DIRECT_PARENT,    ///< The direct parent's transition (View::SetLayoutTransition)
+  INHERITED_SUBTREE ///< A SUBTREE-scope ancestor's transition
+};
+
+/**
+ * @brief The result of one governing-transition resolution.
+ */
+struct GoverningTransition
+{
+  Ui::LayoutTransition transition;     ///< Winning handle; uninitialized when nothing governs
+  ViewImpl*            owner{nullptr}; ///< View the handle is attached to (the child itself for SELF)
+  LayoutTransitionRole role{LayoutTransitionRole::NONE};
+};
+
+/**
+ * @brief Resolves WHICH LayoutTransition governs @p child for @p slot.
+ *
+ * The single decision point for every per-(child, slot) event. Each level
+ * terminates on ATTACHMENT alone (wholesale), never per slot:
+ *
+ *   1. @p child carries a self transition          -> SELF, terminal.
+ *   2. @p directParent carries a transition        -> DIRECT_PARENT, terminal.
+ *   3. @c FindGoverningSubtreeOwner(directParent)  -> INHERITED_SUBTREE or NONE.
+ *
+ * Level 2 terminating regardless of slot effect is the pre-existing semantics of
+ * @c FindGoverningSubtreeOwner (see its @note): the closest transition-bearing
+ * node wins even when it carries no effect for the slot, and an ancestor SUBTREE
+ * scope must not cross it. Level 1 extends that same rule to distance zero, so
+ * nothing about levels 2 and 3 changes when no self transition is set.
+ *
+ * @param[in] child        The child the event is about
+ * @param[in] directParent The child's direct (visual) parent
+ * @param[in] slot         The structural slot being resolved (ENTER or EXIT)
+ * @return The governing transition, its owner, and the role that produced it
+ */
+inline GoverningTransition ResolveGoverningTransition(ViewImpl*  child,
+                                                      ViewImpl*  directParent,
+                                                      ReflowSlot slot)
+{
+  GoverningTransition result;
+  if(!child || !directParent)
+  {
+    return result;
+  }
+
+  Ui::LayoutTransition selfTransition = child->GetSelfLayoutTransition();
+  if(selfTransition)
+  {
+    result.transition = selfTransition;
+    result.owner      = child;
+    result.role       = LayoutTransitionRole::SELF;
+    return result;
+  }
+
+  Ui::LayoutTransition parentTransition = directParent->GetLayoutTransition();
+  if(parentTransition)
+  {
+    result.transition = parentTransition;
+    result.owner      = directParent;
+    result.role       = LayoutTransitionRole::DIRECT_PARENT;
+    return result;
+  }
+
+  if(ViewImpl* owner = FindGoverningSubtreeOwner(directParent, slot))
+  {
+    result.transition = owner->GetLayoutTransition();
+    result.owner      = owner;
+    result.role       = LayoutTransitionRole::INHERITED_SUBTREE;
+  }
+  return result;
 }
 
 } // namespace Internal

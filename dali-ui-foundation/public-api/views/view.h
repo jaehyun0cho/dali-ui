@@ -388,6 +388,61 @@ public: // Measure / Arrange API
   LayoutTransition GetLayoutTransition() const;
 
   /**
+   * @brief Attaches a LayoutTransition that governs THIS view as a layout child.
+   *
+   * The transition attached here animates this view's own ENTER / EXIT / CHANGE
+   * inside its parent's layout frame, and takes precedence over the transition
+   * its parent attached with @c SetLayoutTransition as well as over any
+   * @c LayoutReflowScope::SUBTREE ancestor transition.
+   *
+   * The precedence is wholesale: once a self transition is set it alone governs
+   * every slot of this view. Slots it leaves unconfigured are NOT inherited from
+   * the parent — they simply do not animate (CHANGE snaps to the new bounds,
+   * EXIT unparents immediately, ENTER is skipped).
+   *
+   * Pass an uninitialized handle to detach and return to the parent / ancestor
+   * rules. An uninitialized handle is NOT an opt-out: to declare that this view
+   * must never be animated by a layout transition, attach
+   * @c LayoutTransition::NewSuppressed().
+   *
+   * A self transition works whether or not any ancestor carries one.
+   *
+   * @note The two roles are independent and may coexist on one view: the handle
+   * passed to @c SetLayoutTransition governs this view's children, the handle
+   * passed here governs this view itself. @c LayoutTransition::SetReflowScope has
+   * no effect in the self role.
+   *
+   * @note Lifecycle callbacks are emitted by the winning transition only. While a
+   * self transition governs this view, the parent's @c OnStart / @c OnFinished are
+   * NOT emitted for it.
+   *
+   * @note The self transition animates this view inside its parent's frame, so it
+   * is inert while the view has no parent View (for example while it is parented
+   * directly to the window).
+   *
+   * @note Replacing the transition at runtime does not interrupt in-flight
+   * transitions — the same contract as @c SetLayoutTransition.
+   *
+   * @warning Do NOT call @c SetSelfLayoutTransition from inside a custom
+   * @c ArrangeCallback: the dispatcher has already captured the pre-pass bounds
+   * and resolves the governing transition when the pass ends.
+   *
+   * @param[in] transition The transition to attach (uninitialized to detach)
+   */
+  void SetSelfLayoutTransition(LayoutTransition transition);
+
+  /**
+   * @brief Returns the LayoutTransition attached to this view's self role, or an
+   * uninitialized handle.
+   *
+   * Independent of @c GetLayoutTransition(), which returns the handle governing
+   * this view's CHILDREN.
+   *
+   * @return The attached self LayoutTransition handle
+   */
+  LayoutTransition GetSelfLayoutTransition() const;
+
+  /**
    * @brief Attaches a LayoutManager to this View.
    *
    * After attach, the View's layout pass dispatches to LayoutManager::Measure

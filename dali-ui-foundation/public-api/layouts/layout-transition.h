@@ -123,6 +123,13 @@ using LayoutLifecycleCallback = Callback<void(View, LayoutTransitionSlot)>;
  * @brief Declares how a View animates between layout-pass results.
  *
  * A LayoutTransition is attached to a View with @c View::SetLayoutTransition().
+ *
+ * A transition may instead be attached with @c View::SetSelfLayoutTransition(),
+ * in which case it governs @b that @b view @b itself as a layout child, taking
+ * precedence over its parent's and over any ancestor's transition. The role is
+ * decided by the attachment point, not by the handle, so one handle may be used
+ * in both roles on different views.
+ *
  * When attached, the framework captures pre-pass and post-pass bounds for
  * each direct child and dispatches per-slot animations:
  *
@@ -211,6 +218,28 @@ public:
    * @return A handle to a newly allocated LayoutTransition
    */
   static LayoutTransition New();
+
+  /**
+   * @brief Creates a transition that animates nothing.
+   *
+   * Equivalent to @c New() followed by @c ClearChangeTiming(): no ENTER or EXIT
+   * effect is configured and the default CHANGE timing is disabled, so every
+   * slot resolves to "no animation" — CHANGE snaps to the new bounds, EXIT
+   * unparents immediately, ENTER is skipped.
+   *
+   * This is the spelling of an explicit opt-out. Attached with
+   * @c View::SetSelfLayoutTransition it declares "this view is never animated by
+   * a layout transition", overriding whatever its parent or a @c SUBTREE-scope
+   * ancestor declares. Attached with @c View::SetLayoutTransition it declares the
+   * same for the view's direct children and stops an ancestor's @c SUBTREE scope
+   * at this level.
+   *
+   * An uninitialized handle means something different: it detaches, restoring the
+   * parent / ancestor rules.
+   *
+   * @return A handle to a newly allocated LayoutTransition with no active slot
+   */
+  static LayoutTransition NewSuppressed();
 
   LayoutTransition(const LayoutTransition& other);
   LayoutTransition(LayoutTransition&& rhs) noexcept;
@@ -494,7 +523,9 @@ public:
    * @c LayoutChangeCause::OTHER (or @c WINDOW_RESIZED during a window resize)
    * for CHANGE timing, so configure a default CHANGE timing or animator for
    * @c SUBTREE CHANGE to take effect. The scope does not cross a standalone
-   * layout-mode boundary.
+   * layout-mode boundary. The reflow scope applies to the children role only;
+   * it is ignored when the transition is attached with
+   * @c View::SetSelfLayoutTransition(), which governs exactly one view.
    *
    * @param[in] scope The reflow scope to apply
    * @return Reference to this for chaining
