@@ -631,11 +631,13 @@ Both phases cache their result, which is what makes a settled layout pass cheap.
 #### 8.3.1 Measure cache
 
 - The measure cache is unconditional. There is no opt-out.
-- A hit requires all of: a valid entry from a completed measurement, the view not measure-dirty, the pass not poisoned, an EXACT match on the effective scale, and both constraints equal within tolerance.
-- The effective scale is a KEY term, so a missed scale invalidation degrades to a miss — one recomputed measurement — and can never serve a size computed at a different scale.
+- A hit requires all of: a valid entry from a completed measurement, the view not measure-dirty, the pass not poisoned, an exact match on the effective scale, and exact numeric matches on both normalized, min/max-clamped float constraints.
+- Scale and constraints are cache key terms. A mismatch runs this view's measure producer and any dependent child work; it can also invalidate arrange reuse. Even a small constraint change can cross a wrapping boundary, so a tolerance is not used to widen the key.
 - A measure implementation is therefore required to be a pure function of: its two constraints, the view's effective scale, the view's effective layout direction, the view's own layout-tracked state (requested size, padding, margin, min/max bounds, layout params, child list), and its children's measured sizes.
 - Anything else it reads, it owns: it must call `InvalidateMeasure()` itself when that state changes.
 - An unrelated pass does NOT recover a stale result. An ancestor that misses re-measures this view at unchanged inputs, so this view hits again, and an invalidation on a sibling propagates upward only and never reaches this view.
+
+The default View uses the same natural-space child-budget arithmetic when measuring and arranging MATCH_PARENT axes. Arrange derives its space from the actual slot without applying the parent's requested size or min/max again. This sharing applies to finite positive scales and finite nonnegative insets with finite intermediate calculations; other cases retain the existing visual-space subtraction. WRAP/fixed axes keep their measured slots. Different effective inputs, including normalization differences, still require remeasurement; sharing an expression does not guarantee all measure and arrange keys match.
 
 #### 8.3.2 Arrange result cache
 

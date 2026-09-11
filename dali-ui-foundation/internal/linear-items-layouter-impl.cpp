@@ -343,7 +343,27 @@ void LinearItemsLayouterImpl::MeasureUpdate(uint32_t position, float extent)
 
   if(position >= mExtentCache.Size())
   {
-    mExtentCache.Resize(position + 1u, 0.0f);
+    using SizeType = Dali::Vector<float>::SizeType;
+    // Vector storage includes two SizeType metadata entries before the payload.
+    // Validate before adding one, including on platforms with 32-bit SizeType.
+    constexpr SizeType allocationLimit = (std::numeric_limits<SizeType>::max() - 2u * sizeof(SizeType)) / sizeof(float);
+    constexpr SizeType itemCountLimit  = std::numeric_limits<uint32_t>::max();
+    constexpr SizeType maximumCount    = std::min(allocationLimit, itemCountLimit);
+    const SizeType     positionIndex   = static_cast<SizeType>(position);
+    DALI_ASSERT_ALWAYS(positionIndex < maximumCount && "Extent cache position exceeds storage limit");
+
+    const SizeType required = positionIndex + 1u;
+    const SizeType capacity = mExtentCache.Capacity();
+    if(required > capacity)
+    {
+      // Resize reserves its exact count. Reserve spare space here so sequential
+      // measurements do not copy the entire prefix for every new item. A cold
+      // sparse measurement reserves only its required prefix, not all items.
+      const SizeType limit     = std::min(maximumCount, std::max(required, static_cast<SizeType>(mCachedItemCount)));
+      const SizeType increment = std::min(std::max<SizeType>(1u, capacity / 2u), limit - capacity);
+      mExtentCache.Reserve(std::max(required, capacity + increment));
+    }
+    mExtentCache.Resize(required, 0.0f);
     mExtentCache[position] = clamped;
     mTotalMeasuredExtent += clamped;
     ++mMeasuredItemCount;

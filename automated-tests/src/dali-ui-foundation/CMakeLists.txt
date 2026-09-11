@@ -19,6 +19,7 @@ SET(TC_SOURCES
         utc-Dali-FocusManager.cpp
         utc-Dali-View.cpp
         utc-Dali-ViewLayoutBoundary.cpp
+        utc-Dali-LayoutConstraintCache.cpp
         utc-Dali-Label.cpp
         utc-Dali-LabelTextGradient.cpp
         utc-Dali-InputField.cpp

@@ -98,6 +98,8 @@ public:
   virtual ItemInset GetItemCrossInset(uint32_t position) const;
 
 private:
+  friend class LinearItemsLayouterTestAccessor;
+
   struct LayoutState
   {
     uint32_t nextPosition{0u};

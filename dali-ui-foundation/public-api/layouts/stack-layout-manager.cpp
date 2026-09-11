@@ -63,11 +63,10 @@ struct StackMeasureFirstPassResult
   uint32_t visibleChildCount{0};
 };
 
-StackMeasureFirstPassResult MeasureStackNonWeightChildren(std::vector<View>&         children,
-                                                          std::vector<MeasuredSize>& workingSizes,
-                                                          float                      contentWidth,
-                                                          float                      contentHeight,
-                                                          StackOrientation           orientation)
+StackMeasureFirstPassResult MeasureStackNonWeightChildren(std::vector<View>& children,
+                                                          float              contentWidth,
+                                                          float              contentHeight,
+                                                          StackOrientation   orientation)
 {
   StackMeasureFirstPassResult result;
   for(uint32_t i = 0; i < children.size(); ++i)
@@ -93,7 +92,6 @@ StackMeasureFirstPassResult MeasureStackNonWeightChildren(std::vector<View>&    
     float        childWidthConstraint  = std::max(0.0f, contentWidth - marginW);
     float        childHeightConstraint = std::max(0.0f, contentHeight - marginH);
     MeasuredSize childSize             = childImpl.Measure(childWidthConstraint, childHeightConstraint);
-    workingSizes[i]                    = childSize;
     if(orientation == StackOrientation::VERTICAL)
     {
       result.mainAxisNonWeight += childSize.height + marginH;
@@ -108,7 +106,7 @@ StackMeasureFirstPassResult MeasureStackNonWeightChildren(std::vector<View>&    
   return result;
 }
 
-void MeasureStackWeightChildren(std::vector<View>& children, std::vector<MeasuredSize>& workingSizes,
+void MeasureStackWeightChildren(std::vector<View>& children,
                                 float contentMain, float contentWidth,
                                 float contentHeight, float mainAxisNonWeight, float totalWeight,
                                 uint32_t visibleChildCount, float spacing, StackOrientation orientation,
@@ -144,15 +142,11 @@ void MeasureStackWeightChildren(std::vector<View>& children, std::vector<Measure
     MeasuredSize childSize = childImpl.Measure(childWidthConstraint, childHeightConstraint);
     if(orientation == StackOrientation::VERTICAL)
     {
-      workingSizes[i].width  = childSize.width;
-      workingSizes[i].height = std::max(0.0f, share - marginH);
-      maxCrossAxisInOut      = std::max(maxCrossAxisInOut, childSize.width + marginW);
+      maxCrossAxisInOut = std::max(maxCrossAxisInOut, childSize.width + marginW);
     }
     else
     {
-      workingSizes[i].width  = std::max(0.0f, share - marginW);
-      workingSizes[i].height = childSize.height;
-      maxCrossAxisInOut      = std::max(maxCrossAxisInOut, childSize.height + marginH);
+      maxCrossAxisInOut = std::max(maxCrossAxisInOut, childSize.height + marginH);
     }
   }
 }
@@ -245,13 +239,8 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
     children.push_back(GetChildViewAt(view, i));
   }
 
-  // Local working buffer (seed later from child measurements): weight
-  // distribution writes allocation values here without persisting on the
-  // child, so repeated layout passes do not accumulate.
-  std::vector<MeasuredSize> workingSizes(children.size());
-
   StackMeasureFirstPassResult first = MeasureStackNonWeightChildren(
-    children, workingSizes, widthConstraint, heightConstraint, impl->mOrientation);
+    children, widthConstraint, heightConstraint, impl->mOrientation);
 
   float maxCrossAxis = first.maxCrossAxis;
   float mainAxisTotal;
@@ -283,7 +272,7 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
 
     if(targetMain > wrappedMain)
     {
-      MeasureStackWeightChildren(children, workingSizes, targetMain, widthConstraint, heightConstraint,
+      MeasureStackWeightChildren(children, targetMain, widthConstraint, heightConstraint,
                                  first.mainAxisNonWeight, first.totalWeight, first.visibleChildCount, visSpacing,
                                  impl->mOrientation, maxCrossAxis);
       mainAxisTotal = targetMain;
@@ -310,7 +299,6 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
         float        childWidthConstraint  = std::max(0.0f, widthConstraint - marginW);
         float        childHeightConstraint = std::max(0.0f, heightConstraint - marginH);
         MeasuredSize childSize             = childImpl.Measure(childWidthConstraint, childHeightConstraint);
-        workingSizes[i]                    = childSize;
 
         if(impl->mOrientation == StackOrientation::VERTICAL)
         {
