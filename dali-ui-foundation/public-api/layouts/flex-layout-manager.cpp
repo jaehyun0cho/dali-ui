@@ -20,6 +20,7 @@
 
 // EXTERNAL INCLUDES
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 // INTERNAL INCLUDES
@@ -113,7 +114,7 @@ std::vector<FlexLine> BuildFlexLinesForArrange(std::vector<View>&         childr
                       (currentLine.mainSize + childMainSize > availableMain);
     if(shouldWrap)
     {
-      lines.push_back(currentLine);
+      lines.push_back(std::move(currentLine));
       currentLine = FlexLine();
     }
     currentLine.childIndices.push_back(i);
@@ -126,7 +127,7 @@ std::vector<FlexLine> BuildFlexLinesForArrange(std::vector<View>&         childr
   }
   if(!currentLine.childIndices.empty())
   {
-    lines.push_back(currentLine);
+    lines.push_back(std::move(currentLine));
   }
   return lines;
 }
@@ -570,7 +571,7 @@ MeasuredSize FlexLayoutManager::Measure(ViewImpl* view, float widthConstraint, f
 
     if(shouldWrap)
     {
-      lines.push_back(currentLine);
+      lines.push_back(std::move(currentLine));
       currentLine = FlexLine();
     }
 
@@ -581,7 +582,7 @@ MeasuredSize FlexLayoutManager::Measure(ViewImpl* view, float widthConstraint, f
 
   if(!currentLine.childIndices.empty())
   {
-    lines.push_back(currentLine);
+    lines.push_back(std::move(currentLine));
   }
 
   float totalMainSize  = 0.0f;

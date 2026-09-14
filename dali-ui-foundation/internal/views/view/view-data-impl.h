@@ -1808,7 +1808,7 @@ private:
     : propagationGeneration(0u)
     {
     }
-    float    scaleKey; ///< Pure cache KEY: the effective scale the cached mMeasuredSize was produced at. Compared EXACTLY, not with FloatEqual, because it is a straight copy of the same GetEffectiveScale() value with no arithmetic between publish and compare -- unlike mLastMeasureConstraint, which reaches the predicate through a /s normalisation and a min/max clamp and therefore needs the tolerance.
+    float    scaleKey; ///< Pure cache KEY: the effective scale the cached mMeasuredSize was produced at. Compared exactly, like both normalized constraint components; different inputs must not reuse an earlier result.
     uint32_t propagationGeneration;
   };
   union ArrangeKeyOrPropagation

@@ -144,7 +144,9 @@ The **measure cache** is unconditional. `View::Measure()` serves a stored
 `MeasuredSize` whenever the normalised constraint is unchanged and nothing has
 invalidated the view's layout, and the measure implementation — `OnMeasure()`, an
 attached `LayoutManager::Measure()`, or a `MeasureCallback` — is simply not
-called. There is no opt-out. A measure implementation is therefore **required** to be
+called. Both float constraints must be numerically exactly equal (`==`) after
+scale normalisation and min/max clamping; there is no tolerance in this key.
+There is no opt-out. A measure implementation is therefore **required** to be
 a pure function of:
 
 - its two constraints,
@@ -165,6 +167,44 @@ direction change), or a `LayoutManager`'s `InvalidateOwnerMeasure()` -- or by a
 pass that hands it a different normalised constraint or effective scale. The same
 reasoning applies to the arrange cache, with the input bounds and the effective
 layout direction as the keyed inputs.
+
+For the default View, MATCH_PARENT child axes share the measurement budget
+arithmetic with arrange. Arrange normally uses the actual slot divided by the
+parent scale. When a finite nonnegative requested extent multiplied by that scale
+is finite and exactly equals the slot, it uses the requested natural extent instead,
+preserving the fixed-size measurement operand. This does not replace the outer
+slot or reapply the parent's min/max bounds. The sharing requires finite positive
+scales, finite nonnegative insets and finite intermediate calculations; other
+inputs retain the existing visual-space subtraction. Parent inputs are captured
+before child callbacks, and content is calculated only for axes with MATCH_PARENT
+children. WRAP/fixed child axes keep their measured slots, and the MATCH_PARENT
+remeasure result does not replace either arranged extent. This policy is specific
+to the default View; manager budgets and other differences in effective constraints
+can still cause repeated misses. It does not guarantee equal keys for every pass.
+
+Manager wrappers retain separate arithmetic. For a MATCH_PARENT parent axis,
+Measure passes the normalized, min/max-clamped natural constraint back through
+multiplication by the scale; Arrange subtracts scaled padding from the actual
+visual slot. That round trip and the later subtraction can expose different
+normalized child keys. Padding alone does not imply a miss.
+
+A prior Debug run of `UtcDaliLayoutConstraintCacheMatchParentManagerDiagnosticP`
+observed the following after warm-up. The fixture uses a vertical Stack or a
+one-row, one-column Star Grid, scale `1.1`, parent and child MATCH_PARENT widths,
+fixed natural heights `20`, zero margins, and slot `(0, 0, 922.50830078125, 22)`.
+Each row sums 16 passes that explicitly call only `parent.InvalidateMeasure()`;
+the horizontal padding is split equally between start and end.
+
+| Horizontal padding sum | Parent measure/arrange producers | Child measure/arrange producers |
+|---|---|---|
+| 0 | 16/16 | 0/0 |
+| 2 | 16/16 | 32/16 |
+
+These are observed producer executions for both managers in this fixture, not
+Measure API call counts or frame timings. Child counts are printed, not asserted.
+Any extension of budget sharing to managers needs workload measurements and
+geometry checks for their content bounds, fixed/WRAP slots, min/max handling,
+Grid tracks and Flex wrapping boundaries.
 
 The effective scale is part of the measure cache key, so a scale change alone
 forces a re-measure. The effective scale is resolved in one place,
@@ -221,6 +261,29 @@ Delivery is nevertheless gated on the window reaching quiescence. A root retaine
 the pending set by an in-processing invalidation is still pending even though it did
 not arm an idle wake, so completion notification is delayed until another processing
 cycle drains that parked work.
+
+### Recycler extent storage
+
+When growth is needed, `LinearItemsLayouterImpl` reserves at least the required
+prefix and otherwise grows the extent-cache capacity by about 1.5 times, capped
+at the larger of the current item count and required prefix, subject to storage
+limits. This reduces repeated prefix copies while sequentially measuring a
+fixed, known item count. A cold sparse measurement reserves only the prefix
+through the requested position, not the whole list.
+
+For in-range positions, growth reserves no slack beyond the current item count;
+previously allocated capacity is retained even if that count decreases.
+If items are appended one at a time and each update refills the cache through the
+new end, reaching `Size == Capacity == count`, each extension copies the previous
+prefix. The cumulative copied element count can therefore remain Theta(n^2).
+This condition does not apply to every append in a virtualized list. Adapter
+changes clear the cache size while retaining its capacity.
+
+No View fields are added, but spare vector capacity and overlapping old/new
+buffers during reallocation have heap costs. The storage UTCs check geometry,
+range and reset behavior through the existing interfaces; they do not count
+capacity, allocations or copied elements. A different growth policy needs copy
+volume and peak-heap measurements before choosing its memory tradeoff.
 
 ### Invalidation
 
@@ -351,9 +414,20 @@ ceiling drops it to `30` — the final size is `30`.
 - **Units:** the bounds are stored in natural (pre-scale) units and
   multiplied by the effective scale at clamp time, so they compare
   against the visual-unit measured size.
-- The incoming constraint is itself pre-clamped to `[Minimum, Maximum]`
-  before children are measured, so children see the effective available
-  space rather than the raw constraint.
+- The incoming constraint is normalized and clamped to `[Minimum, Maximum]`
+  before dispatching the measure producer. This is separate from its choice of
+  child budget: the default View uses a fixed requested extent when present, and
+  the manager wrapper likewise selects the scaled fixed request before padding.
+  These fixed-request budgets do not inherit the parent's min/max clamp. Each
+  child's own Measure normalization and bounds still apply independently.
+
+For example, at scale 1 with no insets, a default View requested at width 100 with
+maximum width 80 supplies a child budget of 100, then its own measured result is
+clamped to 80. A MATCH_PARENT child is measured again against 80 when Arrange
+receives a slot of 80. If the caller instead supplies a slot of 100, that slot
+remains authoritative for the parent and child arrangement. This preserves the
+existing cold Measure and actual-slot policies; it does not introduce a new
+clamp on the fixed requested child budget.
 
 DALi UI unconditionally lets the maximum win via the fixed clamp order —
 there is no min-wins branch or configurable policy for a

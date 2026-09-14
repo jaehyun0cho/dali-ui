@@ -631,11 +631,47 @@ Both phases cache their result, which is what makes a settled layout pass cheap.
 #### 8.3.1 Measure cache
 
 - The measure cache is unconditional. There is no opt-out.
-- A hit requires all of: a valid entry from a completed measurement, the view not measure-dirty, the pass not poisoned, an EXACT match on the effective scale, and both constraints equal within tolerance.
-- The effective scale is a KEY term, so a missed scale invalidation degrades to a miss — one recomputed measurement — and can never serve a size computed at a different scale.
+- A hit requires all of: a valid entry from a completed measurement, the view not measure-dirty, the pass not poisoned, an exact match on the effective scale, and exact numeric matches on both normalized, min/max-clamped float constraints.
+- Scale and constraints are cache key terms. A mismatch runs this view's measure producer and any dependent child work; it can also invalidate arrange reuse. Even a small constraint change can cross a wrapping boundary, so a tolerance is not used to widen the key.
 - A measure implementation is therefore required to be a pure function of: its two constraints, the view's effective scale, the view's effective layout direction, the view's own layout-tracked state (requested size, padding, margin, min/max bounds, layout params, child list), and its children's measured sizes.
 - Anything else it reads, it owns: it must call `InvalidateMeasure()` itself when that state changes.
 - An unrelated pass does NOT recover a stale result. An ancestor that misses re-measures this view at unchanged inputs, so this view hits again, and an invalidation on a sibling propagates upward only and never reaches this view.
+
+The default View shares its natural-space child-budget arithmetic between measurement and MATCH_PARENT-axis arrangement. Arrange normally normalizes the actual slot by the parent scale. It instead selects a finite nonnegative requested extent when its finite scaled value exactly equals that slot, preserving the fixed-size measurement operand. The outer slot is unchanged and the parent's min/max is not applied again. Sharing requires finite positive scales, finite nonnegative insets and finite intermediate calculations; other cases retain the existing visual-space subtraction. Parent inputs are captured before child callbacks, and content is calculated only for axes with MATCH_PARENT children. WRAP/fixed child axes keep their measured slots; the MATCH_PARENT remeasure result does not replace either arranged extent. This policy is specific to the default View. Manager budgets and other effective-input differences can still cause repeated misses; sharing an expression does not guarantee all measure and arrange keys match.
+
+Producer input clamping, child-budget selection and final result clamping are
+separate. The default View selects a fixed requested extent for its child budget;
+the manager wrapper similarly selects the scaled fixed request before padding.
+The parent's min/max does not clamp those fixed-request budgets, while each child
+still applies its own bounds. At scale 1 with no insets, a default View requested
+at width 100 with maximum 80 gives its child budget 100 and reports measured width
+80. An actual slot of 80 remeasures its MATCH_PARENT child against 80; an actual
+slot of 100 remains authoritative for the parent and child arrangement. This is
+the existing cold Measure and actual-slot policy.
+
+Manager wrappers retain separate arithmetic. For a MATCH_PARENT parent axis,
+Measure passes the normalized, min/max-clamped natural constraint back through
+multiplication by the scale; Arrange subtracts scaled padding from the actual
+visual slot. That round trip and the later subtraction can expose different
+normalized child keys. Padding alone does not imply a miss.
+
+A prior Debug run of `UtcDaliLayoutConstraintCacheMatchParentManagerDiagnosticP`
+observed the following after warm-up. The fixture uses a vertical Stack or a
+one-row, one-column Star Grid, scale `1.1`, parent and child MATCH_PARENT widths,
+fixed natural heights `20`, zero margins, and slot `(0, 0, 922.50830078125, 22)`.
+Each row sums 16 passes that explicitly call only `parent.InvalidateMeasure()`;
+the horizontal padding is split equally between start and end.
+
+| Horizontal padding sum | Parent measure/arrange producers | Child measure/arrange producers |
+|---|---|---|
+| 0 | 16/16 | 0/0 |
+| 2 | 16/16 | 32/16 |
+
+These are observed producer executions for both managers in this fixture, not
+Measure API call counts or frame timings. Child counts are printed, not asserted.
+Any extension of budget sharing to managers needs workload measurements and
+geometry checks for their content bounds, fixed/WRAP slots, min/max handling,
+Grid tracks and Flex wrapping boundaries.
 
 #### 8.3.2 Arrange result cache
 
@@ -672,7 +708,30 @@ void MyManager::SetGap(float gap)
 
 Repeated invalidations issued before a pass runs are coalesced: the local half always runs, while the upward walk to the layout root is skipped as long as the pending registration is still live. Coalescing is disabled while a pass is running. In practice, batching many property changes into one frame costs one layout pass, and no invalidation is lost.
 
-#### 8.3.6 Full contract
+#### 8.3.6 Recycler extent storage
+
+When growth is needed, `LinearItemsLayouterImpl` reserves at least the required
+prefix and otherwise grows the extent-cache capacity by about 1.5 times, capped
+at the larger of the current item count and required prefix, subject to storage
+limits. This reduces repeated prefix copies while sequentially measuring a
+fixed, known item count. A cold sparse measurement reserves only the prefix
+through the requested position, not the whole list.
+
+For in-range positions, growth reserves no slack beyond the current item count;
+previously allocated capacity is retained even if that count decreases.
+If items are appended one at a time and each update refills the cache through the
+new end, reaching `Size == Capacity == count`, each extension copies the previous
+prefix. The cumulative copied element count can therefore remain Theta(n^2).
+This condition does not apply to every append in a virtualized list. Adapter
+changes clear the cache size while retaining its capacity.
+
+No View fields are added, but spare vector capacity and overlapping old/new
+buffers during reallocation have heap costs. The storage UTCs check geometry,
+range and reset behavior through the existing interfaces; they do not count
+capacity, allocations or copied elements. A different growth policy needs copy
+volume and peak-heap measurements before choosing its memory tradeoff.
+
+#### 8.3.7 Full contract
 
 For the full contract, see [the layout guide in the repository](https://github.sec.samsung.net/NUI/dali-ui/blob/devel/docs/layout-structure.md).
 

@@ -489,6 +489,81 @@ inline bool FloatEqual(float a, float b, float epsilon = 0.001f)
   return std::abs(a - b) < epsilon;
 }
 
+inline float DefaultContentExtent(float naturalExtent, float padding)
+{
+  return std::max(0.0f, naturalExtent - padding);
+}
+
+inline float DefaultChildBudget(float contentNatural, float scale, float visualMargin)
+{
+  return contentNatural * scale - visualMargin;
+}
+
+// Share the measurement arithmetic only where normalization and both forms of
+// inset arithmetic stay finite. Unusual insets retain their existing behavior.
+bool TryDefaultArrangeContent(float visualExtent, float scale, float requestedExtent, float leading, float trailing, float& content)
+{
+  if(!std::isfinite(scale) || scale <= 0.0f || !std::isfinite(visualExtent) || visualExtent < 0.0f ||
+     !std::isfinite(leading) || leading < 0.0f || !std::isfinite(trailing) || trailing < 0.0f)
+  {
+    return false;
+  }
+
+  float naturalExtent = visualExtent / scale;
+  if(!std::isfinite(naturalExtent))
+  {
+    return false;
+  }
+
+  // Reuse the measurement operand only when it produces the actual slot.
+  // Keep normalization overflow on the existing visual-space fallback path.
+  if(std::isfinite(requestedExtent) && requestedExtent >= 0.0f)
+  {
+    const float requestedVisual = requestedExtent * scale;
+    if(std::isfinite(requestedVisual) && visualExtent == requestedVisual)
+    {
+      naturalExtent = requestedExtent;
+    }
+  }
+
+  const float padding        = leading + trailing;
+  const float visualLeading  = leading * scale;
+  const float visualTrailing = trailing * scale;
+  const float rawContent     = naturalExtent - padding;
+  if(!std::isfinite(padding) ||
+     !std::isfinite(visualLeading) || !std::isfinite(visualTrailing) ||
+     !std::isfinite(visualLeading + visualTrailing) || !std::isfinite(rawContent))
+  {
+    return false;
+  }
+
+  content = DefaultContentExtent(naturalExtent, padding);
+  return std::isfinite(content * scale);
+}
+
+bool TryDefaultArrangeChildExtent(float content, float scale, float leading, float trailing, float childScale, float& extent)
+{
+  if(!std::isfinite(childScale) || childScale <= 0.0f ||
+     !std::isfinite(leading) || leading < 0.0f || !std::isfinite(trailing) || trailing < 0.0f)
+  {
+    return false;
+  }
+
+  const float margin         = leading + trailing;
+  const float visualLeading  = leading * childScale;
+  const float visualTrailing = trailing * childScale;
+  const float visualMargin   = margin * childScale;
+  const float budget         = DefaultChildBudget(content, scale, visualMargin);
+  if(!std::isfinite(margin) || !std::isfinite(visualLeading) || !std::isfinite(visualTrailing) ||
+     !std::isfinite(visualLeading + visualTrailing) || !std::isfinite(visualMargin) || !std::isfinite(budget))
+  {
+    return false;
+  }
+
+  extent = std::max(0.0f, budget);
+  return true;
+}
+
 // THE single place the global UI-scale master switch is read. Every scale that
 // enters the layout system does so through one of the two calls to this function
 // in ComputeEffectiveScale() -- every other Measure/Arrange site, every
@@ -1324,8 +1399,8 @@ MeasuredSize ViewDataImpl::MeasureDefault(float widthConstraint, float heightCon
   float effectiveWidth  = (mRequestedWidth >= 0) ? mRequestedWidth : natW;
   float effectiveHeight = (mRequestedHeight >= 0) ? mRequestedHeight : natH;
 
-  float contentWidth  = std::max(0.0f, effectiveWidth - pw);
-  float contentHeight = std::max(0.0f, effectiveHeight - ph);
+  float contentWidth  = DefaultContentExtent(effectiveWidth, pw);
+  float contentHeight = DefaultContentExtent(effectiveHeight, ph);
 
   // The branch key is "does this view have a child that CONTRIBUTES to its measured
   // size", not "does it have any child at all". Standalone children are excluded from
@@ -1370,8 +1445,8 @@ MeasuredSize ViewDataImpl::MeasureDefault(float widthConstraint, float heightCon
       Insets       margin                = childImpl.GetMargin();
       float        marginW               = static_cast<float>(margin.start + margin.end) * childScale;
       float        marginH               = static_cast<float>(margin.top + margin.bottom) * childScale;
-      float        childWidthConstraint  = std::max(0.0f, contentWidth * s - marginW);
-      float        childHeightConstraint = std::max(0.0f, contentHeight * s - marginH);
+      float        childWidthConstraint  = std::max(0.0f, DefaultChildBudget(contentWidth, s, marginW));
+      float        childHeightConstraint = std::max(0.0f, DefaultChildBudget(contentHeight, s, marginH));
       MeasuredSize childSize             = childImpl.Measure(childWidthConstraint, childHeightConstraint);
 
       float childNatW  = (s > 0.0f) ? childSize.width / s : childSize.width;
@@ -1466,11 +1541,27 @@ LayoutRect ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
   // the default arrange only places regular children and echoes the input bounds.
   if(!mChildren.Empty())
   {
-    float s            = mViewImpl.GetEffectiveScale();
-    float visPadLeft   = static_cast<float>(mPadding.start) * s;
-    float visPadRight  = static_cast<float>(mPadding.end) * s;
-    float visPadTop    = static_cast<float>(mPadding.top) * s;
-    float visPadBottom = static_cast<float>(mPadding.bottom) * s;
+    // Capture parent inputs before any child callback, including callbacks from
+    // children that do not need a MATCH_PARENT budget.
+    const float  s               = mViewImpl.GetEffectiveScale();
+    const Insets padding         = mPadding;
+    const float  requestedWidth  = mRequestedWidth;
+    const float  requestedHeight = mRequestedHeight;
+    const float  visPadLeft      = padding.start * s;
+    const float  visPadRight     = padding.end * s;
+    const float  visPadTop       = padding.top * s;
+    const float  visPadBottom    = padding.bottom * s;
+
+    enum class ContentState
+    {
+      UNCOMPUTED,
+      SHARED,
+      FALLBACK
+    };
+    ContentState widthState    = ContentState::UNCOMPUTED;
+    ContentState heightState   = ContentState::UNCOMPUTED;
+    float        contentWidth  = 0.0f;
+    float        contentHeight = 0.0f;
 
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
     for(auto& childView : childSnapshot)
@@ -1495,11 +1586,25 @@ LayoutRect ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
 
       if(childImpl.GetRequestedWidth() == MATCH_PARENT)
       {
-        childW = std::max(0.0f, bounds.width - visPadLeft - visPadRight - visMarginW);
+        if(widthState == ContentState::UNCOMPUTED)
+        {
+          widthState = TryDefaultArrangeContent(bounds.width, s, requestedWidth, padding.start, padding.end, contentWidth) ? ContentState::SHARED : ContentState::FALLBACK;
+        }
+        if(widthState != ContentState::SHARED || !TryDefaultArrangeChildExtent(contentWidth, s, margin.start, margin.end, childScale, childW))
+        {
+          childW = std::max(0.0f, bounds.width - visPadLeft - visPadRight - visMarginW);
+        }
       }
       if(childImpl.GetRequestedHeight() == MATCH_PARENT)
       {
-        childH = std::max(0.0f, bounds.height - visPadTop - visPadBottom - visMarginH);
+        if(heightState == ContentState::UNCOMPUTED)
+        {
+          heightState = TryDefaultArrangeContent(bounds.height, s, requestedHeight, padding.top, padding.bottom, contentHeight) ? ContentState::SHARED : ContentState::FALLBACK;
+        }
+        if(heightState != ContentState::SHARED || !TryDefaultArrangeChildExtent(contentHeight, s, margin.top, margin.bottom, childScale, childH))
+        {
+          childH = std::max(0.0f, bounds.height - visPadTop - visPadBottom - visMarginH);
+        }
       }
       float childX = visPadLeft + visMarginStart + childImpl.GetRequestedX() * s;
       float childY = visPadTop + visMarginTop + childImpl.GetRequestedY() * s;
@@ -4782,19 +4887,19 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   float natW = (visualW > 0.f) ? visualW / s : visualW;
   float natH = (visualH > 0.f) ? visualH / s : visualH;
 
-  // Ensure constraints respect this view's min/max bounds so that
-  // OnMeasure (and therefore child measurements) see the effective
-  // available space. Without this, children would be measured against
-  // the original (smaller) constraint, then ApplyConstraints would
-  // enlarge the result — leaving children incorrectly sized.
+  // Clamp the input before dispatching the measure producer. This lets
+  // constraint-based child budgets reflect this view's min/max bounds.
+  // Producers may instead select a fixed requested extent for child budgets;
+  // that selection does not clamp the request to these bounds. ApplyConstraints
+  // separately clamps the producer's returned size before it is published.
   float effNatW = std::min(std::max(natW, GetMinimumWidth()), GetMaximumWidth());
   float effNatH = std::min(std::max(natH, GetMinimumHeight()), GetMaximumHeight());
 
   // The effective scale is a KEY term here, where the ARRANGE cache instead relies on
   // invalidation plus a DEBUG assert (Corollary C). The asymmetry is deliberate:
   //
-  //  - As a KEY, a missed invalidation degrades to a MISS -- one recomputed
-  //    measurement -- and can never produce a measured size computed for a different
+  //  - As a KEY, a missed invalidation degrades to a MISS -- recomputing this
+  //    producer and any dependent descendants -- rather than a cached size for a different
   //    scale. That is the same reasoning mLastArrangeDirection applies to
   //    arrange x direction, and `s` is already in hand here (it is read above the
   //    predicate because the constraint normalisation needs it), so the term costs one
@@ -4805,25 +4910,14 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   //    exists so that a future unpaired caller degrades to a miss instead of serving a
   //    result produced at the old scale.
   //
-  // Compared EXACTLY rather than with FloatEqual: this is a copy of the very
-  // computation the producer was run under, with no arithmetic in between, so an
-  // epsilon compare would only widen the key -- it would let a sub-epsilon scale change
-  // serve a result computed for a different producer input. The constraint terms below
-  // do need the tolerance: they arrive through a /s normalisation and a min/max clamp.
-  // NaN (the constructed value) equals nothing, so the never-measured state fails safe.
-  //
-  // Cost order: after the three bit tests, which are cheaper and reject more often;
-  // before the FloatEqual calls, which are not.
-  //
-  // The width term is a plain FloatEqual: the published key is the clamped
-  // effective natural constraint, which min/max clamping (both validated non-negative)
-  // keeps >= 0, and the NaN the constructor plants is unreachable behind
-  // mMeasureCacheValid. The old `>= 0.0f` pre-test could therefore never reject anything
-  // FloatEqual would have accepted.
+  // All three float key terms match exactly. Even a sub-epsilon constraint
+  // change can cross a wrapping boundary; normalization does not make distinct
+  // constraints interchangeable. NaN never matches, including itself. Keep the
+  // validity, dirty and poison checks: equal inputs alone do not validate a result.
   if(mMeasureCacheValid && !mMeasureDirty && !mMeasurePassPoisoned &&
      mMeasureKeyOrPropagation.scaleKey == s &&
-     FloatEqual(mLastMeasureConstraint.width, effNatW) &&
-     FloatEqual(mLastMeasureConstraint.height, effNatH))
+     mLastMeasureConstraint.width == effNatW &&
+     mLastMeasureConstraint.height == effNatH)
   {
     return mMeasuredSize;
   }

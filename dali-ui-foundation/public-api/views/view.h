@@ -162,6 +162,8 @@ public: // Measure / Arrange API
    * the Template Method pattern, and caches the result. When the view is re-measured
    * with the same normalised constraint and nothing has invalidated its layout, the
    * cached result is served and that implementation is not called.
+   * Both float constraints must compare numerically exactly equal after scale
+   * normalisation and min/max clamping; this cache key has no tolerance.
    *
    * Unlike arrange, measure has no ArrangePolicy::ALWAYS opt-out: measure caching
    * applies to every measure implementation including one written outside this library.
