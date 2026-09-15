@@ -18,6 +18,7 @@
  */
 
 // EXTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali/public-api/adaptor-framework/timer.h>
 #include <dali/public-api/animation/animation.h>
 #include <dali/public-api/object/weak-handle.h>
@@ -271,6 +272,13 @@ public:
    * the first root and misclassify subsequent roots.
    */
   void EndLayoutPass();
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  Integration::LayoutTestDiagnostics::TransitionSnapshot GetLayoutTestSnapshot(Ui::View view) const;
+  Animation                                              GetLayoutTestAnimation(Ui::View view) const;
+  void                                                   GetLayoutTestCounts(Integration::LayoutTestDiagnostics::WindowSnapshot& result) const;
+  bool                                                   TickLayoutTestAnimators(float elapsedSeconds);
+  bool                                                   SetLayoutTestManualTicks(bool enabled);
+#endif
 
 public:
   /// Captures actor properties that the dispatcher mutates transiently for
@@ -457,6 +465,9 @@ private:
   /// correct arguments.
   struct ActiveSpecAnimation
   {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+    Integration::LayoutTestDiagnostics::TransitionSnapshot testObservation{};
+#endif
     Animation            animation;
     Ui::LayoutTransition transition;
     LayoutTransitionSlot slot;
@@ -468,6 +479,9 @@ private:
   /// finishes.
   struct GhostExit
   {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+    Integration::LayoutTestDiagnostics::TransitionSnapshot testObservation{};
+#endif
     WeakHandle<Ui::View> parent;
     Ui::View             child; ///< Strong reference; prevents destruction during EXIT
     Animation            animation;
@@ -485,6 +499,9 @@ private:
   /// unparented when progress reaches 1.0.
   struct AnimatorState
   {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+    Integration::LayoutTestDiagnostics::TransitionSnapshot testObservation{};
+#endif
     LayoutTransitionSlot slot;
     LayoutChangeCause    cause;
     LayoutAnimatorTiming timing;
@@ -582,6 +599,11 @@ private:
   /// whenever the active set transitions from empty to non-empty so a long
   /// idle interval cannot collapse the next tick into a single jump.
   std::chrono::steady_clock::time_point mLastTickTime;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  bool  mLayoutTestManualTicks{false};
+  bool  mLayoutTestTickActive{false};
+  float mLayoutTestDelta{0.0f};
+#endif
 
   bool OnTickTimer();
 

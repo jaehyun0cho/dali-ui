@@ -4471,3 +4471,99 @@ Dali::Property::Value LabelImpl::GetProperty(BaseObject* object, Dali::Property:
 } // namespace Ui
 
 } //namespace DALI_NAMESPACE
+
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+#include <dali-ui-foundation/internal/text/line-helper-functions.h>
+
+namespace DALI_NAMESPACE
+{
+namespace Ui
+{
+namespace Integration
+{
+LayoutTestDiagnostics::TextSnapshot LabelImpl::GetLayoutTestTextSnapshot() const
+{
+  LayoutTestDiagnostics::TextSnapshot result;
+  result.valid = true;
+  if(!mController)
+  {
+    return result;
+  }
+  // ModelInterface readers return existing storage. Do not use Text::View::GetGlyphs,
+  // which may resolve elision and allocate even though that API is const-qualified.
+  const Ui::Text::ModelInterface* model = mController->GetRenderTextModel();
+  if(!model)
+  {
+    return result;
+  }
+  const auto& layout     = model->GetLayoutSize();
+  const auto& control    = model->GetControlSize();
+  const auto  offset     = mController->GetLayoutOffsetWithPadding();
+  result.layoutWidth     = layout.width;
+  result.layoutHeight    = layout.height;
+  result.controlWidth    = control.width;
+  result.controlHeight   = control.height;
+  result.renderedOffsetX = offset.x;
+  result.renderedOffsetY = offset.y;
+  result.lineCount       = model->GetNumberOfLines();
+  result.glyphCount      = model->GetNumberOfGlyphs();
+  const auto& viewData   = Internal::ViewDataImpl::Get(*this);
+  if(viewData.IsMeasureDirty() || viewData.IsArrangeDirty())
+  {
+    return result;
+  }
+  const auto* lines     = model->GetLines();
+  const auto* glyphs    = model->GetGlyphs();
+  const auto* positions = model->GetLayout();
+  if(result.lineCount == 0u || !lines)
+  {
+    return result;
+  }
+  const auto& first         = lines[0];
+  result.firstLineAvailable = true;
+  result.firstAscender      = first.ascender;
+  result.firstDescender     = first.descender;
+  result.firstLineWidth     = first.width;
+  result.firstLineSpacing   = first.lineSpacing;
+  const uint32_t begin      = first.glyphRun.glyphIndex;
+  const uint32_t available  = begin < result.glyphCount ? result.glyphCount - begin : 0u;
+  const uint32_t count      = std::min<uint32_t>(first.glyphRun.numberOfGlyphs, available);
+  if(count == 0u || !glyphs || !positions)
+  {
+    return result;
+  }
+  result.firstGlyphFontId  = glyphs[begin].fontId;
+  result.firstGlyphIndex   = glyphs[begin].index;
+  result.firstGlyphAdvance = glyphs[begin].advance;
+  float baseline           = positions[begin].y + glyphs[begin].yBearing;
+  for(uint32_t index = begin + 1u; index < begin + count; ++index)
+  {
+    baseline = std::max(baseline, positions[index].y + glyphs[index].yBearing);
+  }
+  // Model::GetLayout returns line-local glyph positions. The renderer obtains
+  // View glyphs by adding the first line's ascender and vertical-line pre-offset
+  // (Text::View::GetGlyphsUncached); raw y + yBearing alone is usually zero.
+  // Apply that same coordinate conversion to the already-computed POD values,
+  // without invoking GetGlyphs or any elision/atlas materialization.
+  const float lineBaseline = first.ascender + Ui::Text::GetPreOffsetVerticalLineAlignment(first, model->GetVerticalLineAlignment());
+  result.firstBaseline = offset.y + lineBaseline + baseline;
+  result.ready         = true;
+  return result;
+}
+
+namespace LayoutTestDiagnostics
+{
+TextSnapshot GetTextSnapshot(Ui::Label label)
+{
+  if(!label)
+  {
+    return {};
+  }
+  const auto& implementation = static_cast<const LabelImpl&>(label.GetImplementation());
+  return implementation.GetLayoutTestTextSnapshot();
+}
+} // namespace LayoutTestDiagnostics
+} // namespace Integration
+} // namespace Ui
+} // namespace DALI_NAMESPACE
+#endif

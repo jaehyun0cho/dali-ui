@@ -1,0 +1,79 @@
+/* Copyright (c) 2026 Samsung Electronics Co., Ltd.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <dali-ui-foundation/public-api/views/view-impl.h>
+#include "layout-validation-transition-fixtures.h"
+using namespace LayoutValidation;
+using namespace LayoutValidation::TransitionFixtures;
+class TcLr45 : public Case
+{
+public:
+  TcLr45()
+  : Case("LR45", "Controller root constraints")
+  {
+  }
+  std::vector<Scenario> BuildScenarios() override
+  {
+    std::vector<Scenario> cases;
+    for(unsigned mode = 0; mode < 4; ++mode)
+      cases.push_back(Single(("CT01.constraint-" + std::to_string(mode)).c_str(), "Fixed, parent, no-parent and zero-parent constraints with margins", 8, [mode](Run& r)
+      {
+        auto s         = NewState(r);
+        s->extraWindow = Window::New(PositionSize(30, 30, 320, 240), "LR45 root constraints");
+        s->window      = s->extraWindow;
+        s->root        = View::New();
+        s->root.SetMeasureCallback(MeasureCallback::New(s.get(), &State::Measure));
+        s->root.SetRequestedWidth(mode == 0 ? 300 : MATCH_PARENT);
+        s->root.SetRequestedHeight(mode == 0 ? 200 : MATCH_PARENT);
+        s->root.SetRequestedX(11);
+        s->root.SetRequestedY(13);
+        s->root.SetMargin(Insets(3, 7, 5, 11));
+        if(mode == 1 || mode == 3)
+        {
+          // An ordinary Actor establishes an explicitly sized visual parent.
+          Actor parent = Actor::New();
+          parent.SetSize(Vector3(mode == 3 ? 0.f : 250.f, mode == 3 ? 0.f : 180.f, 0));
+          parent.Add(s->root);
+          s->extraWindow.Add(parent);
+          r.OnCleanup([parent]() mutable
+          { parent.Unparent(); });
+        }
+        else if(mode == 0)
+          s->extraWindow.Add(s->root);
+        auto& controller = LayoutController::Get(s->window);
+        controller.OnWindowResize(320, 240);
+        controller.RequestLayout(&GetImpl(s->root));
+        controller.ProcessLayouts();
+        const float width  = mode == 0 ? 290.f : mode == 1 ? 240.f
+                                               : mode == 2 ? 310.f
+                                                           : 0.f;
+        const float height = mode == 0 ? 184.f : mode == 1 ? 164.f
+                                               : mode == 2 ? 224.f
+                                                           : 0.f;
+        r.Size("root.producer.constraint", s->measuredConstraint, {width, height});
+        r.Rect("root.bounds", LayoutValidation::Bounds(s->root), {14, 18, mode == 0 ? 80.f : width, mode == 0 ? 40.f : height});
+        r.Truth("root.producer.called", s->measureCalls > 0);
+        r.Truth("root.parent.branch", mode == 2 ? !s->root.GetParent() : static_cast<bool>(s->root.GetParent()));
+      }));
+    cases.push_back({"CT01.real-window-resize", "A real Window size change reaches MATCH_PARENT roots", {{"create", 4, [](Run& r)
+    {
+      auto s         = NewState(r);
+      s->extraWindow = Window::New(PositionSize(40, 40, 320, 240), "LR45 resize");
+      s->window      = s->extraWindow;
+      s->root.SetRequestedWidth(MATCH_PARENT);
+      s->root.SetRequestedHeight(MATCH_PARENT);
+      s->extraWindow.Add(s->root);
+      LayoutController::Get(s->window).ProcessLayouts();
+      r.Rect("window.initial.root", LayoutValidation::Bounds(s->root), {0, 0, 320, 240});
+    }},
+                                                                                                         {"resize", 4, [](Run& r)
+    {
+      auto s = r.State<State>();
+      s->extraWindow.SetPositionSize(PositionSize(40, 40, 400, 300));
+      r.AfterLayout(s->window, {s->root}, [s](Run& v)
+      { v.Rect("window.resized.root", v.Snapshot(s->root), {0, 0, 400, 300}); });
+    }}}});
+    return cases;
+  }
+};
+REGISTER_MANUAL_TEST(TcLr45)

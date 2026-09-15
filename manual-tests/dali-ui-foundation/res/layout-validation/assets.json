@@ -1,0 +1,52 @@
+{
+  "revision": 1,
+  "files": {
+    "DejaVuSans.ttf": {
+      "sha256": "ae7b7855e115a5966d8b1b3f80f254ccc117ec86f9965e202ee2940453837280",
+      "bytes": 759720
+    },
+    "DejaVuSans.ttf.LICENSE": {
+      "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9",
+      "bytes": 3859
+    },
+    "NanumGothic.ttf": {
+      "sha256": "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+      "bytes": 4691820
+    },
+    "NanumGothic.ttf.LICENSE": {
+      "sha256": "bb209fecae2b3521a418b0533d9d36d8e73af75524256a39f4d18a638db7483f",
+      "bytes": 5661
+    },
+    "font-metrics.json": {
+      "sha256": "21c3efc3c9704c95a12181e204c2e1c2ad1177fe546767b3f1962e5bf84df62f",
+      "bytes": 351
+    },
+    "fonts.conf": {
+      "sha256": "80d9aba3d098444151533a3bb5bee6ad1cf2469c510770e454a0b89ad112e79f",
+      "bytes": 307
+    },
+    "image-37x19.png": {
+      "sha256": "38edb6c4a401266c24ddfaeef4b0beca9cb61a0c8170baecbf7c8246b0aa73c1",
+      "bytes": 112
+    },
+    "image-73x41.png": {
+      "sha256": "e3997f915e5242169d1577ebb92eedfcd3c0dc686d42c06aa7c3b61622fc9af2",
+      "bytes": 153
+    },
+    "invalid-image.bin": {
+      "sha256": "01047175dc670ee7df5d69a93b4d89168362d45595013af99ac29a87c877d675",
+      "bytes": 46
+    }
+  },
+  "images": {
+    "image-37x19.png": [
+      37,
+      19
+    ],
+    "image-73x41.png": [
+      73,
+      41
+    ]
+  },
+  "generator": "RGBA: R=edge-x?255:32, G=edge-y?255:96, B=160, A=255; filter 0, zlib9"
+}

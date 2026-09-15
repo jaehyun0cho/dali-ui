@@ -18,6 +18,7 @@
  */
 
 // EXTERNAL INCLUDES
+#include <dali-ui-foundation/integration-api/layout-test-diagnostics.h>
 #include <dali/integration-api/system/system-settings.h>
 #include <dali/public-api/common/insets.h>
 #include <dali/public-api/object/weak-handle.h>
@@ -1358,6 +1359,11 @@ private: // Implementation
    * @brief Emits AsyncHeightForWidthComputed signal.
    */
   void EmitAsyncHeightForWidthComputed(float width, float height);
+
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+public:
+  Integration::LayoutTestDiagnostics::TextSnapshot GetLayoutTestTextSnapshot() const;
+#endif
 
   // Properties
 public:

@@ -1246,6 +1246,9 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
 
 ViewDataImpl::~ViewDataImpl()
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  LayoutTestDiagnostics::UnregisterNode(&mViewImpl);
+#endif
   if(mVisualData)
   {
     mVisualData->ClearVisuals();
@@ -1348,6 +1351,7 @@ MeasuredSize ViewDataImpl::MeasureDefault(float widthConstraint, float heightCon
     float                 maxRight  = 0.0f;
     float                 maxBottom = 0.0f;
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
+    DALI_UI_LAYOUT_TEST_STORAGE(&mViewImpl, Integration::LayoutTestDiagnostics::StorageSite::VIEW_DEFAULT_MEASURE_CHILDREN, mChildren.Count(), sizeof(Ui::View));
     for(auto& childView : childSnapshot)
     {
       ViewImpl& childImpl = GetImpl(childView);
@@ -1463,6 +1467,7 @@ LayoutRect ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
     float visPadBottom = static_cast<float>(mPadding.bottom) * s;
 
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
+    DALI_UI_LAYOUT_TEST_STORAGE(&mViewImpl, Integration::LayoutTestDiagnostics::StorageSite::VIEW_DEFAULT_ARRANGE_CHILDREN, childSnapshot.size(), sizeof(Ui::View));
     for(auto& childView : childSnapshot)
     {
       ViewImpl& childImpl = GetImpl(childView);
@@ -2269,6 +2274,7 @@ float ViewDataImpl::GetEffectiveScale() const
 
 void ViewDataImpl::InvalidateMeasure()
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::INVALIDATE_MEASURE, &mViewImpl);
   // Invalidation ALWAYS propagates to the layout root and registers there --
   // there is deliberately no "already dirty, so return early" short-circuit.
   //
@@ -2327,6 +2333,7 @@ void ViewDataImpl::InvalidateMeasure()
     return;
   }
   mMeasureKeyOrPropagation.propagationGeneration = generation;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &mViewImpl, nullptr, 0u);
 
   // Layout boundary: a standalone view is excluded from its parent's
   // OnMeasure/OnArrange accumulation, so its measure result cannot change
@@ -2372,6 +2379,7 @@ void ViewDataImpl::InvalidateMeasure()
 
 void ViewDataImpl::InvalidateMeasureFromParentAdd(ViewDataImpl& parentData)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::INVALIDATE_MEASURE, &mViewImpl, &parentData.mViewImpl, 1u);
   // A literal mirror of InvalidateMeasure() above, with one substitution: the parent is
   // handed in rather than looked up. (The generic entry's parentless fallthrough to
   // RegisterWithLayoutController() drops out with it -- a caller-supplied parent can
@@ -2411,6 +2419,7 @@ void ViewDataImpl::InvalidateMeasureFromParentAdd(ViewDataImpl& parentData)
     return;
   }
   mMeasureKeyOrPropagation.propagationGeneration = generation;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &mViewImpl, &parentData.mViewImpl, 3u);
 
   if(IntegrationView::IsLayoutModeStandalone(mViewImpl))
   {
@@ -2427,6 +2436,7 @@ void ViewDataImpl::InvalidateMeasureFromParentAdd(ViewDataImpl& parentData)
 
 void ViewDataImpl::InvalidateArrange()
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::INVALIDATE_ARRANGE, &mViewImpl);
   // Mirrors InvalidateMeasure: invalidation ALWAYS propagates to the layout
   // root and registers there, with no "already dirty, so return early"
   // short-circuit. mArrangeDirty is cleared only by this view's own arrange
@@ -2453,6 +2463,7 @@ void ViewDataImpl::InvalidateArrange()
     return;
   }
   mArrangeKeyOrPropagation.propagationGeneration = generation;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &mViewImpl, nullptr, 1u);
 
   // Layout boundary: standalone child's arrange result does not feed back
   // into the parent's arrangement — stop here and self-register.
@@ -4537,6 +4548,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
   {
     ViewImpl&     nodeImpl = GetImpl(node);
     ViewDataImpl& nodeData = ViewDataImpl::Get(nodeImpl);
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &nodeImpl, &mViewImpl, 2u);
 
     // The owner test precedes (a), the safety-net stop and the clears on purpose:
     // the explicit owner must never be cleared. It is load-bearing for the RECYCLER
@@ -4544,6 +4556,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // be caught by the direct-parent safety-net stop below.
     if(&nodeImpl == owner)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 1u);
       break;
     }
 
@@ -4564,6 +4577,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // only their own direct children).
     if(nodeData.mMeasureInProgress)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 2u);
       break;
     }
 
@@ -4583,6 +4597,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // certification when an unowned measure rewrites a slot underneath it.
     if(isDirectParent && nodeData.mArrangeInProgress && !nodeData.mArrangeReplayInProgress)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 3u);
       break;
     }
     isDirectParent = false;
@@ -4614,6 +4629,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // bit -- see the self-standalone early return at the top of this function.)
     if(IntegrationView::IsLayoutModeStandalone(nodeImpl))
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 4u);
       break;
     }
 
@@ -4709,6 +4725,7 @@ void ViewDataImpl::InvalidateParentArrangeCacheForOutOfBandArrange(bool framewor
 
 MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_ENTER, &mViewImpl, nullptr, 0u, visualW, visualH);
   // Same-view re-entrancy is guarded in RELEASE, not just DEBUG: Measure() is
   // reachable from untrusted customization (MeasureCallback / OnMeasure /
   // LayoutManager) and from the public, nestable LayoutController::ProcessLayouts(),
@@ -4818,6 +4835,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
      FloatEqual(mLastMeasureConstraint.width, effNatW) &&
      FloatEqual(mLastMeasureConstraint.height, effNatH))
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_HIT, &mViewImpl);
     return mMeasuredSize;
   }
 
@@ -4839,6 +4857,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   float        effVisW = (effNatW >= 0.f) ? effNatW * s : effNatW;
   float        effVisH = (effNatH >= 0.f) ? effNatH * s : effNatH;
   MeasuredSize visual;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_PRODUCER, &mViewImpl);
   if(auto* callback = GetMeasureCallback())
   {
     Ui::View view = Ui::View::DownCast(mViewImpl.Self());
@@ -4860,6 +4879,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   // so it must reflect the work this pass just did regardless of cache state.
   mMeasuredSize.width  = visual.width;
   mMeasuredSize.height = visual.height;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_PUBLISH, &mViewImpl, nullptr, 0u, visual.width, visual.height);
 
   // The freshly written slot has not been consumed by this view's parent yet.
   // Set unconditionally, exactly like the publish above: only the standalone
@@ -5035,6 +5055,7 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
 
 void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::REPLAY_VISIT, &mViewImpl);
   // Corollary C, checked live and per node: a valid arrange cache implies a valid
   // cached effective scale, because every scale-context reset clears both for the WHOLE
   // subtree (ResetSubtreeScaleAndLayoutCaches). The replay skips the
@@ -5117,6 +5138,7 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, floa
       (mViewImpl.Self().GetEffectiveLayoutDirection() == Dali::LayoutDirection::RIGHT_TO_LEFT);
 
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
+    DALI_UI_LAYOUT_TEST_STORAGE(&mViewImpl, Integration::LayoutTestDiagnostics::StorageSite::VIEW_REPLAY_CHILDREN, mChildren.Count(), sizeof(Ui::View));
     for(auto& childView : childSnapshot)
     {
       ViewImpl&     childImpl = GetImpl(childView);
@@ -5167,6 +5189,7 @@ LayoutRect ViewDataImpl::ArrangeAsLayoutRoot(const LayoutRect& bounds)
 
 LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLayoutRootPass)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_ENTER, &mViewImpl, nullptr, 0u, bounds.width, bounds.height);
   // Validate first-party layout invariants in DEBUG only: this runs on the
   // per-frame, per-view layout hot path (including deep child recursion), so a
   // release-active assert/throw here would turn a manager/measure glitch into an
@@ -5323,6 +5346,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
     // logical bounds and the parent's ApplyLayoutDirection mirrors afterwards. Folding a
     // mirror in here would apply it twice.
     // UtcDaliViewArrangeCacheHitReAppliesLogicalBoundsUnderRtlP pins it.
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_HIT, &mViewImpl);
     ReplayArrangeSubtreeFromCache(false, 0.0f);
 
     // The cached rect, NOT `bounds`. The publishing pass returned its
@@ -5374,6 +5398,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   // input (as before this refactor), not stale prior-pass geometry.
   ApplySelfBoundsIfChanged(bounds);
 
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_PRODUCER, &mViewImpl);
   LayoutRect returnedBounds = bounds;
   if(auto* callback = GetArrangeCallback())
   {
@@ -5402,6 +5427,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   // resolver below.
   mArrangedBounds         = finalBounds;
   mArrangeResultAvailable = true; // A completed rect now exists for the re-entrancy fallback.
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_PUBLISH, &mViewImpl, nullptr, 0u, finalBounds.width, finalBounds.height);
 
   // Ensure standalone children are arranged even when OnArrange (e.g. in
   // leaf views like Label) does not iterate children.
@@ -6021,18 +6047,22 @@ void ViewDataImpl::ApplySelfBoundsIfChanged(const LayoutRect& bounds)
   // actor target must equal it exactly.
   if(self.GetProperty<float>(Actor::Property::POSITION_X) != bounds.x)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 0u, bounds.x);
     self.SetPositionX(bounds.x);
   }
   if(self.GetProperty<float>(Actor::Property::POSITION_Y) != bounds.y)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 1u, bounds.y);
     self.SetPositionY(bounds.y);
   }
   if(self.GetProperty<float>(Actor::Property::SIZE_WIDTH) != bounds.width)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 2u, bounds.width);
     self.SetSizeWidth(bounds.width);
   }
   if(self.GetProperty<float>(Actor::Property::SIZE_HEIGHT) != bounds.height)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 3u, bounds.height);
     self.SetSizeHeight(bounds.height);
   }
 
@@ -8853,3 +8883,335 @@ void ViewDataImpl::Process(bool postProcessor)
 } // namespace Ui
 
 } //namespace DALI_NAMESPACE
+
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+namespace DALI_NAMESPACE
+{
+namespace Ui
+{
+namespace Internal
+{
+namespace LayoutTestDiagnostics
+{
+namespace
+{
+constexpr std::size_t MAX_REGISTERED_NODES   = 8192u;
+constexpr std::size_t MAX_REGISTERED_WINDOWS = 64u;
+struct NodeRecord
+{
+  const ViewImpl* view{nullptr};
+  uint32_t        id{0};
+};
+NodeRecord    gNodes[MAX_REGISTERED_NODES];
+WindowReader  gWindows[MAX_REGISTERED_WINDOWS];
+Event*        gEvents{nullptr};
+CaptureResult gCapture;
+bool          gRegistryOverflow{false};
+} //namespace
+
+uint32_t NodeId(const ViewImpl* view)
+{
+  if(view)
+  {
+    for(const auto& entry : gNodes)
+    {
+      if(entry.view == view)
+      {
+        return entry.id;
+      }
+    }
+  }
+  return 0u;
+}
+
+void UnregisterNode(const ViewImpl* view)
+{
+  for(auto& entry : gNodes)
+  {
+    if(entry.view == view)
+    {
+      entry = {};
+      return;
+    }
+  }
+}
+
+void Record(EventKind kind, const ViewImpl* view, const ViewImpl* related, uint32_t detail, float value0, float value1, const void* window)
+{
+  if(!gCapture.active)
+  {
+    return;
+  }
+  ++gCapture.totalEvents;
+  if(gCapture.count == gCapture.capacity)
+  {
+    gCapture.overflow = true;
+    return;
+  }
+  Event& event        = gEvents[gCapture.count++];
+  event.epoch         = gCapture.epoch;
+  event.sequence      = gCapture.totalEvents;
+  event.kind          = kind;
+  event.nodeId        = NodeId(view);
+  event.relatedNodeId = NodeId(related);
+  event.windowToken   = reinterpret_cast<uintptr_t>(window);
+  event.generation    = LayoutInvalidation::CurrentGeneration();
+  event.detail        = detail;
+  event.value0        = value0;
+  event.value1        = value1;
+}
+
+void RegisterWindow(WindowReader reader)
+{
+  for(auto& entry : gWindows)
+  {
+    if(entry.context && entry.key == reader.key)
+    {
+      entry = reader;
+      return;
+    }
+  }
+  for(auto& entry : gWindows)
+  {
+    if(!entry.context)
+    {
+      entry = reader;
+      return;
+    }
+  }
+  gRegistryOverflow = true;
+  gCapture.overflow = true;
+}
+
+void UnregisterWindow(void* context)
+{
+  for(auto& entry : gWindows)
+  {
+    if(entry.context == context)
+    {
+      entry = {};
+    }
+  }
+}
+
+const WindowReader* FindWindow(const void* key)
+{
+  for(const auto& entry : gWindows)
+  {
+    if(entry.key == key && entry.context)
+    {
+      return &entry;
+    }
+  }
+  return nullptr;
+}
+} // namespace LayoutTestDiagnostics
+
+Integration::LayoutTestDiagnostics::ViewSnapshot ViewDataImpl::GetLayoutTestSnapshot() const
+{
+  Integration::LayoutTestDiagnostics::ViewSnapshot result;
+  result.valid                       = true;
+  result.nodeId                      = LayoutTestDiagnostics::NodeId(&mViewImpl);
+  result.generation                  = LayoutInvalidation::CurrentGeneration();
+  result.measureCacheValid           = mMeasureCacheValid;
+  result.arrangeCacheValid           = mArrangeCacheValid;
+  result.measureDirty                = mMeasureDirty;
+  result.arrangeDirty                = mArrangeDirty;
+  result.effectiveScaleValid         = mEffectiveScaleValid;
+  result.effectiveScaleActorSynced   = mEffectiveScaleActorSynced;
+  result.measureInProgress           = mMeasureInProgress;
+  result.arrangeInProgress           = mArrangeInProgress;
+  result.replayInProgress            = mArrangeReplayInProgress;
+  result.measurePoisoned             = mMeasurePassPoisoned;
+  result.arrangePoisoned             = mArrangePassPoisoned;
+  result.arrangePublishBlocked       = mArrangeCacheBlockedDuringPass;
+  result.measuredSlotUnconsumed      = mMeasuredSlotUnconsumed;
+  result.arrangedResultAvailable     = mArrangeResultAvailable;
+  result.arrangesIfChanged           = !mArrangeProducerAlways;
+  result.processing                  = IsLayoutPassOnStack();
+  result.completionEmitting          = LayoutInvalidation::IsLayoutFinishedEmitInProgress();
+  result.measuredSize                = mMeasuredSize;
+  result.normalizedConstraint        = mLastMeasureConstraint;
+  result.arrangedBounds              = mArrangedBounds;
+  result.effectiveScale              = mEffectiveScaleValid ? mEffectiveScale : 0.0f;
+  result.effectiveScalePropertyIndex = VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX;
+  result.actorEffectiveScale         = mViewImpl.Self().GetProperty<float>(VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX);
+  if(mMeasureCacheValid)
+  {
+    result.measureScaleKey = mMeasureKeyOrPropagation.scaleKey;
+  }
+  else
+  {
+    result.measurePropagationGeneration = mMeasureKeyOrPropagation.propagationGeneration;
+  }
+  if(mArrangeCacheValid)
+  {
+    result.arrangeInput = mArrangeKeyOrPropagation.inputKey;
+  }
+  else
+  {
+    result.arrangePropagationGeneration = mArrangeKeyOrPropagation.propagationGeneration;
+  }
+  if(const auto* owner = LayoutDependency::Top())
+  {
+    result.dependencyOwnerId   = LayoutTestDiagnostics::NodeId(owner->owner);
+    result.dependencyOwnerKind = owner->kind == LayoutDependency::OwnerKind::ARRANGE ? 1u : 2u;
+  }
+  return result;
+}
+} // namespace Internal
+
+namespace Integration
+{
+namespace LayoutTestDiagnostics
+{
+bool RegisterNode(Ui::View view, uint32_t id)
+{
+  if(!view || id == 0u || Internal::LayoutTestDiagnostics::gCapture.active)
+  {
+    return false;
+  }
+  const ViewImpl* object = &GetImpl(view);
+  for(const auto& entry : Internal::LayoutTestDiagnostics::gNodes)
+  {
+    if(entry.id == id && entry.view != object)
+    {
+      return false;
+    }
+  }
+  for(auto& entry : Internal::LayoutTestDiagnostics::gNodes)
+  {
+    if(entry.view == object)
+    {
+      entry.id = id;
+      return true;
+    }
+  }
+  for(auto& entry : Internal::LayoutTestDiagnostics::gNodes)
+  {
+    if(!entry.view)
+    {
+      entry = {object, id};
+      return true;
+    }
+  }
+  return false;
+}
+
+void ClearRegisteredNodes()
+{
+  if(Internal::LayoutTestDiagnostics::gCapture.active)
+  {
+    Internal::LayoutTestDiagnostics::gCapture.overflow = true;
+    return;
+  }
+  for(auto& entry : Internal::LayoutTestDiagnostics::gNodes)
+  {
+    entry = {};
+  }
+}
+
+bool BeginCapture(Event* buffer, std::size_t capacity, uint64_t epoch)
+{
+  auto& state = Internal::LayoutTestDiagnostics::gCapture;
+  if(state.active || !buffer || capacity == 0u || epoch == 0u || Internal::LayoutTestDiagnostics::gRegistryOverflow)
+  {
+    return false;
+  }
+  Internal::LayoutTestDiagnostics::gEvents = buffer;
+  state                                    = {};
+  state.capacity                           = capacity;
+  state.epoch                              = epoch;
+  state.active                             = true;
+  return true;
+}
+
+CaptureResult EndCapture()
+{
+  Internal::LayoutTestDiagnostics::gCapture.active = false;
+  Internal::LayoutTestDiagnostics::gEvents         = nullptr;
+  return Internal::LayoutTestDiagnostics::gCapture;
+}
+
+CaptureResult GetCaptureStatus()
+{
+  return Internal::LayoutTestDiagnostics::gCapture;
+}
+
+ViewSnapshot GetViewSnapshot(Ui::View view)
+{
+  return view ? Internal::ViewDataImpl::Get(GetImpl(view)).GetLayoutTestSnapshot() : ViewSnapshot{};
+}
+
+WindowSnapshot GetWindowSnapshot(Window window)
+{
+  if(window)
+  {
+    if(const auto* reader = Internal::LayoutTestDiagnostics::FindWindow(window.GetObjectPtr()))
+    {
+      return reader->snapshot(reader->context);
+    }
+  }
+  return {};
+}
+
+TransitionSnapshot GetTransitionSnapshot(Ui::View view)
+{
+  if(view)
+  {
+    Window window = Window::Get(view);
+    if(window)
+    {
+      if(const auto* reader = Internal::LayoutTestDiagnostics::FindWindow(window.GetObjectPtr()))
+      {
+        return reader->transition(reader->context, view);
+      }
+    }
+  }
+  return {};
+}
+
+Animation GetSpecAnimation(Ui::View view)
+{
+  if(view)
+  {
+    Window window = Window::Get(view);
+    if(window)
+    {
+      if(const auto* reader = Internal::LayoutTestDiagnostics::FindWindow(window.GetObjectPtr()))
+      {
+        return reader->animation(reader->context, view);
+      }
+    }
+  }
+  return {};
+}
+
+bool TickAnimatorsForTesting(Window window, float elapsedSeconds)
+{
+  if(window && std::isfinite(elapsedSeconds) && elapsedSeconds >= 0.0f)
+  {
+    if(const auto* reader = Internal::LayoutTestDiagnostics::FindWindow(window.GetObjectPtr()))
+    {
+      return reader->tick(reader->context, elapsedSeconds);
+    }
+  }
+  return false;
+}
+
+bool SetManualAnimatorTicks(Window window, bool enabled)
+{
+  if(window)
+  {
+    if(const auto* reader = Internal::LayoutTestDiagnostics::FindWindow(window.GetObjectPtr()))
+    {
+      return reader->manualTicks(reader->context, enabled);
+    }
+  }
+  return false;
+}
+} // namespace LayoutTestDiagnostics
+} // namespace Integration
+} // namespace Ui
+} // namespace DALI_NAMESPACE
+#endif

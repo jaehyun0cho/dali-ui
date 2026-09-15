@@ -35,6 +35,7 @@
 #include <dali-ui-foundation/integration-api/view-accessible.h>
 #include <dali-ui-foundation/integration-api/view-integ.h>
 #include <dali-ui-foundation/integration-api/visuals/visual-properties-integ.h>
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/internal/render-effects/offscreen-rendering-impl.h>
 #include <dali-ui-foundation/internal/render-effects/render-effect-impl.h>
 #include <dali-ui-foundation/internal/visuals/visual-base-impl.h>
@@ -139,6 +140,9 @@ public:
   ~ViewDataImpl();
 
   bool AreVisualsEnabled() const;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  Integration::LayoutTestDiagnostics::ViewSnapshot GetLayoutTestSnapshot() const;
+#endif
 
   MeasuredSize Measure(float visualWidth, float visualHeight);
   LayoutRect   Arrange(const LayoutRect& bounds);

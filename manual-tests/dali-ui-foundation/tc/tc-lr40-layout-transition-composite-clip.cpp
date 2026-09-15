@@ -1,0 +1,95 @@
+/* Copyright (c) 2026 Samsung Electronics Co., Ltd.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include "layout-validation-transition-fixtures.h"
+using namespace LayoutValidation;
+using namespace LayoutValidation::TransitionFixtures;
+class TcLr40 : public Case
+{
+public:
+  TcLr40()
+  : Case("LR40", "Transition composition and clipping")
+  {
+  }
+  std::vector<Scenario> BuildScenarios() override
+  {
+    std::vector<Scenario> cases;
+    for(unsigned clip = 0; clip < 3; ++clip)
+      for(bool size : {false, true})
+      {
+        cases.push_back({"TR06.clip-" + std::to_string(clip) + (size ? "-size" : "-offset"), "Composite max duration and transient clipping restoration", {{"mount", 4, [](Run& r)
+        { Mount(r, NewState(r)); }},
+                                                                                                                                                           {"start-composite", 5, [clip, size](Run& r)
+        {
+          if(!r.RequireDiagnostics()) return;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+          auto s = r.State<State>();
+          s->root.Remove(s->child, RemovePolicy::IMMEDIATE);
+          s->child.SetProperty(Actor::Property::CLIPPING_MODE, ClippingMode::DISABLED);
+          s->child.SetProperty(Actor::Property::OPACITY, 0.f);
+          s->Bind(LayoutTransition::New());
+          auto effect = LayoutBoundsEffect().SetTiming(Timing(.2f, .1f)).SetClipMode(static_cast<LayoutBoundsClipMode>(clip));
+          if(size)
+            effect.SetSizeFactor(.5f, .5f);
+          else
+            effect.SetOffset(LayoutBoundsLength::Pixel(20), LayoutBoundsLength::Pixel(0));
+          auto visual = ViewAnimationSpec::New();
+          visual.Opacity(1, Duration(.5f), AlphaFunction(AlphaFunction::LINEAR));
+          s->transition.SetEnterVisualSpec(visual).SetEnterBoundsEffect(effect).ClearChangeTiming();
+          s->root.SetLayoutTransition(s->transition);
+          s->root.Add(s->child);
+          LayoutController::Get(s->window).ProcessLayouts();
+          s->animation = Diagnostics::GetSpecAnimation(s->child);
+          r.Truth("composite.active", static_cast<bool>(s->animation));
+          if(!s->animation) return;
+          s->animation.Pause();
+          r.Near("composite.max-duration", s->animation.GetDuration(), .5);
+          r.Equal("composite.start.once", s->starts[0], 1);
+          const bool clipping = clip == 2 || (clip == 0 && size);
+          r.Equal("composite.transient.clip", s->child.GetProperty<int>(Actor::Property::CLIPPING_MODE),
+                  clipping ? ClippingMode::CLIP_TO_BOUNDING_BOX : ClippingMode::DISABLED);
+          r.Equal("composite.finish.pending", s->finishes[0], 0);
+#endif
+        }},
+                                                                                                                                                           {"natural-finish", 8, [](Run& r)
+        {
+          auto s = r.State<State>();
+          if(!s->animation)
+          {
+            r.Fail("composite.missing", "No actual Animation to resume");
+            return;
+          }
+          s->animation.Play();
+          r.Delay(1000, [s](Run& v)
+          {
+            v.Rect("composite.final.bounds", Current(s->child), {40, 30, 80, 40}, .01);
+            v.Near("composite.final.opacity", s->child.GetCurrentProperty<float>(Actor::Property::OPACITY), 1, .001);
+            v.Equal("composite.finish.once", s->finishes[0], 1);
+            v.Equal("composite.clip.restored", s->child.GetProperty<int>(Actor::Property::CLIPPING_MODE), ClippingMode::DISABLED);
+            v.Equal("composite.start.still.once", s->starts[0], 1);
+          });
+        }}}});
+      }
+    cases.push_back({"TR06.noop-and-instant", "Identity and duration-zero effects do not allocate a timed transition", {{"mount", 4, [](Run& r)
+    { Mount(r, NewState(r)); }},
+                                                                                                                        {"instant-enter", 8, [](Run& r)
+    {
+      auto s = r.State<State>();
+      s->root.Remove(s->child, RemovePolicy::IMMEDIATE);
+      s->Bind(LayoutTransition::New());
+      s->transition.SetEnterBoundsEffect(LayoutBoundsEffect().SetTiming(Timing(0, 10)).SetSizeFactor(0, 0));
+      s->root.SetLayoutTransition(s->transition);
+      s->root.Add(s->child);
+      LayoutController::Get(s->window).ProcessLayouts();
+      r.Rect("instant.enter.endpoint", LayoutValidation::Bounds(s->child), {40, 30, 80, 40});
+      r.Equal("instant.enter.start", s->starts[0], 0);
+      r.Equal("instant.enter.finish", s->finishes[0], 0);
+      s->transition.SetExitVisualSpec(ViewAnimationSpec::New()).SetExitBoundsEffect(LayoutBoundsEffect());
+      s->root.Remove(s->child, RemovePolicy::ANIMATE_EXIT);
+      r.Truth("empty.exit.immediate", !s->child.GetParent());
+      r.Equal("empty.exit.start", s->starts[1], 0);
+    }}}});
+    return cases;
+  }
+};
+REGISTER_MANUAL_TEST(TcLr40)

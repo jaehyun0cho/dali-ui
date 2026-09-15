@@ -1,0 +1,175 @@
+/* Copyright (c) 2026 Samsung Electronics Co., Ltd.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <limits>
+#include "layout-validation-transition-fixtures.h"
+using namespace LayoutValidation;
+using namespace LayoutValidation::TransitionFixtures;
+
+class TcLr35 : public Case
+{
+public:
+  TcLr35()
+  : Case("LR35", "Transition configuration and validation")
+  {
+  }
+  std::vector<Scenario> BuildScenarios() override
+  {
+    std::vector<Scenario> cases;
+    cases.push_back(Single("TR01.defaults-values", "Timing, bounds descriptor, handle roles and idempotent clearing", 20, [](Run& r)
+    {
+      LayoutTransitionTiming spec;
+      LayoutAnimatorTiming   animator;
+      r.Near("spec.default.duration", spec.duration.InSeconds(), .3);
+      r.Near("spec.default.delay", spec.delay.InSeconds(), 0);
+      r.Near("animator.default.duration", animator.duration.InSeconds(), .3);
+      r.Near("animator.default.delay", animator.delay.InSeconds(), 0);
+      LayoutBoundsEffect effect;
+      r.Truth("effect.offset.absent", !effect.hasOffset);
+      r.Truth("effect.size.absent", !effect.hasSizeFactor);
+      r.Near("effect.size.x", effect.sizeFactorX, 1);
+      r.Near("effect.size.y", effect.sizeFactorY, 1);
+      r.Near("effect.anchor.x", effect.anchorX, .5);
+      r.Near("effect.anchor.y", effect.anchorY, .5);
+      effect.SetOffset(LayoutBoundsLength::Pixel(-4), LayoutBoundsLength::SelfFraction(.5)).SetSizeFactor(.5, 2).ClearOffset().ClearSizeFactor();
+      r.Truth("clear.offset", !effect.hasOffset);
+      r.Truth("clear.size", !effect.hasSizeFactor);
+      r.Near("clear.offset.x", effect.offset.x.value, 0);
+      r.Near("clear.size.x", effect.sizeFactorX, 1);
+      auto a          = Leaf(1, 1);
+      auto b          = Leaf(1, 1);
+      auto transition = LayoutTransition::New();
+      a.SetLayoutTransition(transition);
+      b.SetSelfLayoutTransition(transition);
+      r.Truth("handle.children_role", a.GetLayoutTransition() == transition);
+      r.Truth("handle.self_role", b.GetSelfLayoutTransition() == transition);
+      a.SetLayoutTransition({});
+      b.SetSelfLayoutTransition({});
+      r.Truth("clear.children_role", !a.GetLayoutTransition());
+      r.Truth("clear.self_role", !b.GetSelfLayoutTransition());
+      transition.ClearEnterVisualSpec().ClearExitVisualSpec().ClearEnterBoundsEffect().ClearExitBoundsEffect().ClearEnterAnimator().ClearExitAnimator().ClearChangeAnimator().ClearChangeTiming();
+      r.Truth("handle.downcast", static_cast<bool>(LayoutTransition::DownCast(transition)));
+      r.Truth("handle.invalid_downcast", !LayoutTransition::DownCast(a));
+    }));
+    cases.push_back(Single("TR13.registration-rejection", "Rejected values throw the documented exception without poisoning reuse", 33, [](Run& r)
+    {
+      auto                  transition = LayoutTransition::New();
+      constexpr const char* reverse    = "AlphaFunction::REVERSE is not supported by LayoutTransition";
+      constexpr const char* terminal   = "AlphaFunction must end at the target value for LayoutTransition bounds animation";
+      for(auto alpha : {AlphaFunction::REVERSE, AlphaFunction::BOUNCE, AlphaFunction::SIN})
+      {
+        const std::string alphaName = alpha == AlphaFunction::REVERSE ? "reverse" : alpha == AlphaFunction::BOUNCE ? "bounce"
+                                                                                                                   : "sin";
+        auto              timing    = Timing();
+        timing.alpha                = AlphaFunction(alpha);
+        ExpectException(r, ("change.alpha." + alphaName).c_str(), alpha == AlphaFunction::REVERSE ? reverse : terminal,
+                        [&]
+        { transition.SetChangeTiming(timing); });
+        auto effect = LayoutBoundsEffect().SetTiming(timing);
+        ExpectException(r, ("bounds.alpha." + alphaName).c_str(), alpha == AlphaFunction::REVERSE ? reverse : terminal,
+                        [&]
+        { transition.SetEnterBoundsEffect(effect); });
+      }
+      for(int axis = 0; axis < 2; ++axis)
+      {
+        auto effect = LayoutBoundsEffect().SetSizeFactor(axis == 0 ? -1.f : 1.f, axis == 1 ? -1.f : 1.f);
+        ExpectException(r, axis == 0 ? "bounds.negative-size.x" : "bounds.negative-size.y", "LayoutBoundsEffect sizeFactor must be non-negative",
+                        [&]
+        { transition.SetExitBoundsEffect(effect); });
+      }
+      unsigned anchorIndex = 0;
+      for(auto anchor : {Vector2(-.1f, .5f), Vector2(1.1f, .5f), Vector2(.5f, -.1f), Vector2(.5f, 1.1f)})
+      {
+        auto effect = LayoutBoundsEffect().SetAnchor(anchor.x, anchor.y);
+        ExpectException(r, Id("bounds.anchor", anchorIndex++).c_str(), "LayoutBoundsEffect anchor must be in [0, 1]",
+                        [&]
+        { transition.SetEnterBoundsEffect(effect); });
+      }
+      auto spec = ViewAnimationSpec::New();
+      spec.Opacity(1, Duration(.2f), AlphaFunction(AlphaFunction::REVERSE));
+      ExpectException(r, "visual.reverse", reverse, [&]
+      { transition.SetEnterVisualSpec(spec); });
+      auto boundsSpec = ViewAnimationSpec::New();
+      boundsSpec.PositionX(10, Duration(.2f));
+      ExpectException(r, "visual.bounds", "LayoutTransition visual spec entries must not target layout-owned bounds properties (POSITION_X/Y, SIZE_WIDTH/HEIGHT); use the bounds-effect channel",
+                      [&]
+      { transition.SetExitVisualSpec(boundsSpec); });
+      auto state           = NewState(r);
+      auto animatorTiming  = AnimatorTiming();
+      animatorTiming.alpha = AlphaFunction(AlphaFunction::REVERSE);
+      ExpectException(r, "animator.reverse", reverse, [&]
+      {
+        transition.SetChangeAnimator(LayoutAnimatorCallback::New(state.get(), &State::OnAnimator), animatorTiming);
+      });
+      for(auto cause : {LayoutChangeCause::SIBLING_ADDED, LayoutChangeCause::SIBLING_REMOVED,
+                        LayoutChangeCause::REORDERED, LayoutChangeCause::WINDOW_RESIZED, LayoutChangeCause::OTHER})
+        transition.SetChangeTiming(cause, Timing()).ClearChangeTiming(cause);
+      transition.SetChangeTiming(Timing()).SetEnterBoundsEffect(LayoutBoundsEffect().SetSizeFactor(2, 0).SetAnchor(0, 1));
+      r.Truth("registration.valid-after-rejection", static_cast<bool>(transition));
+      r.Size("reuse.measure", state->child.Measure(300, 200), {80, 40});
+    }));
+    cases.push_back(Single("TR05.factory-values", "Factory aliases, default distance and anchor endpoints", 64, [](Run& r)
+    {
+      const float x[]  = {0, 0, -1, 1};
+      const float y[]  = {-1, 1, 0, 0};
+      const float sx[] = {1, 1, 0, 0};
+      const float sy[] = {0, 0, 1, 1};
+      const float ax[] = {.5f, .5f, 0, 1};
+      const float ay[] = {0, 1, .5f, .5f};
+      for(unsigned edge = 0; edge < 4; ++edge)
+      {
+        unsigned slideAlias = 0;
+        for(auto effect : {LayoutBoundsEffects::SlideFrom(static_cast<LayoutBoundsEdge>(edge), Timing()),
+                           LayoutBoundsEffects::SlideTo(static_cast<LayoutBoundsEdge>(edge), Timing())})
+        {
+          const std::string prefix = "factory.slide.e" + std::to_string(edge) + (slideAlias++ == 0 ? ".from" : ".to");
+          r.Near((prefix + ".x").c_str(), effect.offset.x.value, x[edge]);
+          r.Near((prefix + ".y").c_str(), effect.offset.y.value, y[edge]);
+          r.Truth((prefix + ".present").c_str(), effect.hasOffset);
+          r.Equal((prefix + ".unit").c_str(), static_cast<int>(edge < 2 ? effect.offset.y.unit : effect.offset.x.unit), static_cast<int>(LayoutBoundsUnit::SELF_FRACTION));
+        }
+        unsigned sizeAlias = 0;
+        for(auto effect : {LayoutBoundsEffects::ExpandFrom(static_cast<LayoutBoundsEdge>(edge), Timing()),
+                           LayoutBoundsEffects::ShrinkTo(static_cast<LayoutBoundsEdge>(edge), Timing())})
+        {
+          const std::string prefix = "factory.size.e" + std::to_string(edge) + (sizeAlias++ == 0 ? ".expand" : ".shrink");
+          r.Near((prefix + ".x").c_str(), effect.sizeFactorX, sx[edge]);
+          r.Near((prefix + ".y").c_str(), effect.sizeFactorY, sy[edge]);
+          r.Near((prefix + ".anchor.x").c_str(), effect.anchorX, ax[edge]);
+          r.Near((prefix + ".anchor.y").c_str(), effect.anchorY, ay[edge]);
+        }
+      }
+    }));
+    cases.push_back(Single("TR13.nonfinite-robustness", "Non-finite descriptors must not silently become accepted layout geometry", 12, [](Run& r)
+    {
+      const char* fields[] = {"size-x", "size-y", "anchor-x", "anchor-y", "offset-x", "duration"};
+      for(float invalid : {std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::infinity()})
+      {
+        for(unsigned field = 0; field < 6; ++field)
+        {
+          auto transition = LayoutTransition::New();
+          auto effect     = LayoutBoundsEffect().SetTiming(Timing());
+          if(field == 0) effect.SetSizeFactor(invalid, 1);
+          if(field == 1) effect.SetSizeFactor(1, invalid);
+          if(field == 2) effect.SetAnchor(invalid, .5f);
+          if(field == 3) effect.SetAnchor(.5f, invalid);
+          if(field == 4) effect.SetOffset(LayoutBoundsLength::Pixel(invalid), LayoutBoundsLength::Pixel(0));
+          if(field == 5) effect.timing.duration = Duration(invalid);
+          bool rejected = false;
+          try
+          {
+            transition.SetEnterBoundsEffect(effect);
+          }
+          catch(const DaliException&)
+          {
+            rejected = true;
+          }
+          const std::string id = std::string("robustness.nonfinite.") + (std::isnan(invalid) ? "nan." : "positive-infinity.") + fields[field] + ".rejected";
+          r.Truth(id.c_str(), rejected);
+        }
+      }
+    }));
+    return cases;
+  }
+};
+REGISTER_MANUAL_TEST(TcLr35)

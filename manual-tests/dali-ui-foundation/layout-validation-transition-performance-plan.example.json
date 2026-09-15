@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "regression_margin": 0,
+  "alpha": 0.05,
+  "looks": [
+    31,
+    62,
+    93
+  ],
+  "seed": 91273,
+  "bootstrap_draws": 200000,
+  "precision": 0.01,
+  "mde": 0.02,
+  "timer_floor_ns": 10000,
+  "metrics": [
+    "LR63.mode0.n1.update.ns",
+    "LR63.mode0.n32.update.ns",
+    "LR63.mode0.n128.update.ns",
+    "LR63.mode1.n1.dormant.ns",
+    "LR63.mode1.n32.dormant.ns",
+    "LR63.mode1.n128.dormant.ns",
+    "LR63.mode2.n1.update.ns",
+    "LR63.mode2.n32.update.ns",
+    "LR63.mode2.n128.update.ns",
+    "LR63.mode3.n1.update.ns",
+    "LR63.mode3.n32.update.ns",
+    "LR63.mode3.n128.update.ns",
+    "LR63.mode4.n1.update.ns",
+    "LR63.mode4.n32.update.ns",
+    "LR63.mode4.n128.update.ns"
+  ],
+  "plan_note": "Example only: measure timer resolution and approve precision before collecting candidate samples; do not tune after observing candidate.",
+  "contract_manifest": "layout-validation-manifest.json",
+  "contract_manifest_sha256": "0cc97dedfa4413d2a803f2e4d24cfced3776523de932c355a5066bb017e4a91f"
+}

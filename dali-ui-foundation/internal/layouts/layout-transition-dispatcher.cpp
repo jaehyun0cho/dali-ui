@@ -65,6 +65,41 @@ Dali::Integration::Log::Filter* gLayoutTransitionLogFilter =
   Dali::Integration::Log::Filter::New(Debug::NoLogging, false, "LOG_LAYOUT_TRANSITION");
 #endif
 
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+Integration::LayoutTestDiagnostics::TransitionSnapshot ObserveSelectedTransition(ViewImpl* child, const Ui::LayoutTransition& transition)
+{
+  Integration::LayoutTestDiagnostics::TransitionSnapshot result;
+  if(!child)
+  {
+    return result;
+  }
+  result.valid    = true;
+  result.nodeId   = LayoutTestDiagnostics::NodeId(child);
+  Ui::View parent = ViewDataImpl::Get(*child).GetParentView();
+  result.parentId = parent ? LayoutTestDiagnostics::NodeId(&GetImpl(parent)) : 0u;
+  if(child->GetSelfLayoutTransition() == transition)
+  {
+    result.ownerId = result.nodeId;
+    result.role    = static_cast<uint32_t>(LayoutTransitionRole::SELF);
+    return result;
+  }
+  bool direct = true;
+  while(parent)
+  {
+    auto& parentImpl = GetImpl(parent);
+    if(parentImpl.GetLayoutTransition() == transition)
+    {
+      result.ownerId = LayoutTestDiagnostics::NodeId(&parentImpl);
+      result.role    = static_cast<uint32_t>(direct ? LayoutTransitionRole::DIRECT_PARENT : LayoutTransitionRole::INHERITED_SUBTREE);
+      break;
+    }
+    direct = false;
+    parent = ViewDataImpl::Get(parentImpl).GetParentView();
+  }
+  return result;
+}
+#endif
+
 constexpr float BOUNDS_EPSILON = 0.5f;
 
 bool BoundsApproxEqual(const LayoutRect& a, const LayoutRect& b)
@@ -1464,6 +1499,9 @@ void LayoutTransitionDispatcher::StartChangeTransition(ViewImpl*             chi
                                                        Ui::LayoutTransition& transition,
                                                        LayoutChangeCause     cause)
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  const auto testObservation = ObserveSelectedTransition(child, transition);
+#endif
   // CHANGE timing lookup: cause-specific override > default-if-enabled.
   // If neither is set the dispatcher snaps to the new bounds without
   // animation (matches the documented opt-out path).
@@ -1550,7 +1588,16 @@ void LayoutTransitionDispatcher::StartChangeTransition(ViewImpl*             chi
   entry.animation          = anim;
   entry.transition         = transition;
   entry.slot               = LayoutTransitionSlot::CHANGE;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  entry.testObservation          = testObservation;
+  entry.testObservation.from     = effectiveFrom;
+  entry.testObservation.to       = to;
+  entry.testObservation.cause    = static_cast<uint32_t>(cause);
+  entry.testObservation.duration = durationSec;
+  entry.testObservation.delay    = delaySec;
+#endif
   mActiveAnimations[child] = std::move(entry);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_BEGIN, child, nullptr, static_cast<uint32_t>(mActiveAnimations[child].slot));
 
   EmitLifecycle(GetImpl(transition).GetOnStartCallback(),
                 Ui::View::DownCast(child->Self()),
@@ -1559,6 +1606,9 @@ void LayoutTransitionDispatcher::StartChangeTransition(ViewImpl*             chi
 
 void LayoutTransitionDispatcher::StartEnterTransition(ViewImpl* child, Ui::LayoutTransition& transition)
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  const auto testObservation = ObserveSelectedTransition(child, transition);
+#endif
   Ui::ViewAnimationSpec     spec        = GetImpl(transition).GetEnterVisualSpec();
   const bool                hasSpec     = static_cast<bool>(spec);
   const bool                isEffectSet = GetImpl(transition).IsEnterBoundsEffectSet();
@@ -1666,7 +1716,14 @@ void LayoutTransitionDispatcher::StartEnterTransition(ViewImpl* child, Ui::Layou
   entry.transition         = transition;
   entry.slot               = LayoutTransitionSlot::ENTER;
   entry.transientState     = transientState;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  entry.testObservation          = testObservation;
+  entry.testObservation.from     = fromBounds;
+  entry.testObservation.to       = toBounds;
+  entry.testObservation.duration = anim.GetDuration();
+#endif
   mActiveAnimations[child] = std::move(entry);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_BEGIN, child, nullptr, static_cast<uint32_t>(mActiveAnimations[child].slot));
 
   EmitLifecycle(GetImpl(transition).GetOnStartCallback(),
                 childHandle,
@@ -1769,6 +1826,7 @@ void LayoutTransitionDispatcher::CancelActiveAnimation(ViewImpl* child, SpecCanc
   {
     RestoreTransientActorState(child->Self(), it->second.transientState);
   }
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_CANCEL, child, nullptr, static_cast<uint32_t>(it->second.slot));
   mActiveAnimations.erase(it);
 }
 
@@ -1787,6 +1845,7 @@ void LayoutTransitionDispatcher::CancelPendingExit(ViewImpl* child)
   // interaction state we disabled at EXIT entry.
   RestoreGhostInteraction(it->second.child, it->second.savedInteraction);
   RestoreTransientActorState(it->second.child, it->second.transientState);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_CANCEL, child, nullptr, static_cast<uint32_t>(LayoutTransitionSlot::EXIT));
   mPendingExits.erase(it);
 }
 
@@ -1803,11 +1862,15 @@ void LayoutTransitionDispatcher::CancelActiveAnimator(ViewImpl* child)
   {
     RestoreGhostInteraction(it->second.childRef, it->second.savedInteraction);
   }
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_CANCEL, child, nullptr, static_cast<uint32_t>(it->second.slot));
   mActiveAnimators.erase(it);
 }
 
 void LayoutTransitionDispatcher::StartAnimatorChange(ViewImpl* child, const LayoutRect& from, const LayoutRect& to, Ui::LayoutTransition& transition, LayoutChangeCause cause)
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  const auto testObservation = ObserveSelectedTransition(child, transition);
+#endif
   // Acquire the actor BEFORE cancellation so the spec-mode continuity path
   // can sample its currently rendered properties via GetCurrentProperty.
   Actor actor = child->Self();
@@ -1872,7 +1935,11 @@ void LayoutTransitionDispatcher::StartAnimatorChange(ViewImpl* child, const Layo
   state.transition        = transition;
   state.finished          = false;
   state.freshlyCreated    = true;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  state.testObservation = testObservation;
+#endif
   mActiveAnimators[child] = std::move(state);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_BEGIN, child, nullptr, static_cast<uint32_t>(mActiveAnimators[child].slot));
   EnsureAnimatorTicking();
   EmitLifecycle(GetImpl(transition).GetOnStartCallback(),
                 Ui::View::DownCast(child->Self()),
@@ -1881,6 +1948,9 @@ void LayoutTransitionDispatcher::StartAnimatorChange(ViewImpl* child, const Layo
 
 void LayoutTransitionDispatcher::StartAnimatorEnter(ViewImpl* child, const LayoutRect& bounds, Ui::LayoutTransition& transition)
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  const auto testObservation = ObserveSelectedTransition(child, transition);
+#endif
   CancelActiveAnimation(child);
   CancelActiveAnimator(child);
   // Re-add of a child whose EXIT spec is still in flight.
@@ -1906,7 +1976,11 @@ void LayoutTransitionDispatcher::StartAnimatorEnter(ViewImpl* child, const Layou
   state.transition        = transition;
   state.finished          = false;
   state.freshlyCreated    = true;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  state.testObservation = testObservation;
+#endif
   mActiveAnimators[child] = std::move(state);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_BEGIN, child, nullptr, static_cast<uint32_t>(mActiveAnimators[child].slot));
   EnsureAnimatorTicking();
   EmitLifecycle(GetImpl(transition).GetOnStartCallback(),
                 Ui::View::DownCast(child->Self()),
@@ -1917,6 +1991,9 @@ void LayoutTransitionDispatcher::StartAnimatorExit(ViewImpl*             parent,
                                                    Ui::View              child,
                                                    Ui::LayoutTransition& transition)
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  const auto testObservation = ObserveSelectedTransition(child ? &GetImpl(child) : nullptr, transition);
+#endif
   if(!parent || !child)
   {
     return;
@@ -1963,7 +2040,11 @@ void LayoutTransitionDispatcher::StartAnimatorExit(ViewImpl*             parent,
   state.finished              = false;
   state.freshlyCreated        = true;
   state.savedInteraction      = SaveAndDisableGhostInteraction(child);
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  state.testObservation = testObservation;
+#endif
   mActiveAnimators[childImpl] = std::move(state);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_BEGIN, childImpl, nullptr, static_cast<uint32_t>(mActiveAnimators[childImpl].slot));
 
   // Clear focus AFTER registration so the synchronous FocusChangedSignal
   // re-entry (reparent of the ghost child to a new parent) reaches
@@ -2030,6 +2111,7 @@ void LayoutTransitionDispatcher::DispatchOneTick(ViewImpl* child)
   ctx.rawProgress = rawProgress;
   ctx.fromBounds  = state.fromBounds;
   ctx.toBounds    = state.toBounds;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_TICK, child, nullptr, static_cast<uint32_t>(state.slot), rawProgress, progress);
 
   Internal::LayoutTransitionImpl& impl = GetImpl(state.transition);
   LayoutAnimatorCallback*         cb   = nullptr;
@@ -2069,6 +2151,7 @@ void LayoutTransitionDispatcher::FinalizeAnimator(ViewImpl* child)
 
   Ui::LayoutTransition transition = it->second.transition;
   LayoutTransitionSlot slot       = it->second.slot;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_END, child, nullptr, static_cast<uint32_t>(slot));
   Ui::View             viewArg;
   Ui::View             parentHandle;
   Ui::View             childHandle;
@@ -2125,6 +2208,12 @@ void LayoutTransitionDispatcher::NotifyWindowResize()
 
 void LayoutTransitionDispatcher::TickAnimators()
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  if(mLayoutTestManualTicks && !mLayoutTestTickActive)
+  {
+    return;
+  }
+#endif
   // Compute deltaSec from the dispatcher's wall clock so the per-frame
   // ProcessEvents path and the periodic mTickTimer share a single time
   // source. The first tick after the active set drained reads no real
@@ -2133,6 +2222,12 @@ void LayoutTransitionDispatcher::TickAnimators()
   float      deltaSec =
     std::chrono::duration<float>(now - mLastTickTime).count();
   mLastTickTime = now;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  if(mLayoutTestTickActive)
+  {
+    deltaSec = mLayoutTestDelta;
+  }
+#endif
 
   // Cap deltaSec so an idle interval (during which neither
   // ProcessEvents nor the timer ran and mLastTickTime grew stale)
@@ -2151,6 +2246,7 @@ void LayoutTransitionDispatcher::TickAnimators()
   // cap above guards already-running animators against the same idle jump.
   std::vector<ViewImpl*> toDispatch;
   toDispatch.reserve(mActiveAnimators.size());
+  DALI_UI_LAYOUT_TEST_STORAGE(nullptr, Integration::LayoutTestDiagnostics::StorageSite::TRANSITION_TICK_DISPATCH, mActiveAnimators.size(), sizeof(ViewImpl*));
   for(auto& entry : mActiveAnimators)
   {
     if(entry.second.freshlyCreated)
@@ -2231,6 +2327,12 @@ void LayoutTransitionDispatcher::TickAnimators()
 
 void LayoutTransitionDispatcher::EnsureAnimatorTicking()
 {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  if(mLayoutTestManualTicks)
+  {
+    return;
+  }
+#endif
   if(!mTickTimer)
   {
     // First-time creation: build the timer and connect the slot once.
@@ -2457,7 +2559,17 @@ void LayoutTransitionDispatcher::ScheduleExit(ViewImpl* parent, Ui::View child, 
   // LayoutTransition handle is NOT a cancellation — see header.
   ghost.savedInteraction   = SaveAndDisableGhostInteraction(child);
   ghost.transientState     = transientState;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  ghost.testObservation          = GetLayoutTestSnapshot(child);
+  ghost.testObservation.from     = currentBounds;
+  ghost.testObservation.to       = toBounds;
+  ghost.testObservation.duration = anim.GetDuration();
+  auto testSelected              = ObserveSelectedTransition(childImpl, transition);
+  ghost.testObservation.ownerId  = testSelected.ownerId;
+  ghost.testObservation.role     = testSelected.role;
+#endif
   mPendingExits[childImpl] = std::move(ghost);
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_BEGIN, childImpl, parent, static_cast<uint32_t>(LayoutTransitionSlot::EXIT));
 
   // Clear focus AFTER registration. See StartAnimatorExit for rationale:
   // the synchronous FocusChangedSignal re-entry can reparent the ghost
@@ -2624,6 +2736,7 @@ void LayoutTransitionDispatcher::OnAnimationFinished(Animation finished)
     Ui::LayoutTransition transition     = it->second.transition;
     LayoutTransitionSlot slot           = it->second.slot;
     TransientActorState  transientState = it->second.transientState;
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_END, child, nullptr, static_cast<uint32_t>(slot));
     mActiveAnimations.erase(it);
 
     // Restore transient properties (clipping) before firing OnFinished so
@@ -2659,6 +2772,7 @@ void LayoutTransitionDispatcher::OnAnimationFinished(Animation finished)
     Ui::LayoutTransition transition       = it->second.transition;
     InteractionSnapshot  savedInteraction = it->second.savedInteraction;
     TransientActorState  transientState   = it->second.transientState;
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::TRANSITION_END, child, nullptr, static_cast<uint32_t>(LayoutTransitionSlot::EXIT));
     mPendingExits.erase(it); // erase before parent.Remove to avoid
                              // re-entrant erase via OnSceneDisconnection.
 
@@ -2690,3 +2804,147 @@ void LayoutTransitionDispatcher::OnAnimationFinished(Animation finished)
 } // namespace Internal
 } // namespace Ui
 } //namespace DALI_NAMESPACE
+
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+namespace DALI_NAMESPACE
+{
+namespace Ui
+{
+namespace Internal
+{
+Integration::LayoutTestDiagnostics::TransitionSnapshot LayoutTransitionDispatcher::GetLayoutTestSnapshot(Ui::View view) const
+{
+  Integration::LayoutTestDiagnostics::TransitionSnapshot result;
+  if(!view)
+  {
+    return result;
+  }
+  auto* child     = &GetImpl(view);
+  result.valid    = true;
+  result.nodeId   = LayoutTestDiagnostics::NodeId(child);
+  Ui::View parent = ViewDataImpl::Get(*child).GetParentView();
+  if(parent)
+  {
+    result.parentId = LayoutTestDiagnostics::NodeId(&GetImpl(parent));
+    auto selected   = ResolveGoverningTransition(child, &GetImpl(parent), ReflowSlot::ENTER);
+    result.ownerId  = LayoutTestDiagnostics::NodeId(selected.owner);
+    result.role     = static_cast<uint32_t>(selected.role);
+  }
+  auto spec = mActiveAnimations.find(child);
+  if(spec != mActiveAnimations.end())
+  {
+    result                    = spec->second.testObservation;
+    result.specActive         = true;
+    result.slot               = static_cast<uint32_t>(spec->second.slot);
+    result.savedClipAvailable = spec->second.transientState.hasClippingMode;
+    result.savedClip          = spec->second.transientState.clippingMode;
+  }
+  auto exit = mPendingExits.find(child);
+  if(exit != mPendingExits.end())
+  {
+    result                           = exit->second.testObservation;
+    result.specActive                = true;
+    result.exitActive                = true;
+    result.slot                      = static_cast<uint32_t>(LayoutTransitionSlot::EXIT);
+    result.savedInteractionAvailable = true;
+    result.savedSensitive            = exit->second.savedInteraction.sensitive;
+    result.savedKeyboardFocusable    = exit->second.savedInteraction.keyboardFocusable;
+    result.savedTouchFocusable       = exit->second.savedInteraction.touchFocusable;
+    result.savedClipAvailable        = exit->second.transientState.hasClippingMode;
+    result.savedClip                 = exit->second.transientState.clippingMode;
+  }
+  auto animator = mActiveAnimators.find(child);
+  if(animator != mActiveAnimators.end())
+  {
+    const auto& state       = animator->second;
+    result                  = state.testObservation;
+    result.animatorActive   = true;
+    result.exitActive       = state.slot == LayoutTransitionSlot::EXIT;
+    result.freshAnimator    = state.freshlyCreated;
+    result.animatorFinished = state.finished;
+    result.slot             = static_cast<uint32_t>(state.slot);
+    result.cause            = static_cast<uint32_t>(state.cause);
+    result.elapsed          = state.elapsed;
+    result.duration         = state.timing.duration.InSeconds();
+    result.delay            = state.timing.delay.InSeconds();
+    result.from             = state.fromBounds;
+    result.to               = state.toBounds;
+    result.lastLerped       = state.lastLerped;
+    if(result.exitActive)
+    {
+      result.savedInteractionAvailable = true;
+      result.savedSensitive            = state.savedInteraction.sensitive;
+      result.savedKeyboardFocusable    = state.savedInteraction.keyboardFocusable;
+      result.savedTouchFocusable       = state.savedInteraction.touchFocusable;
+    }
+  }
+  result.currentClip = view.GetProperty<int>(Actor::Property::CLIPPING_MODE);
+  return result;
+}
+
+Animation LayoutTransitionDispatcher::GetLayoutTestAnimation(Ui::View view) const
+{
+  if(view)
+  {
+    auto* child = &GetImpl(view);
+    auto  spec  = mActiveAnimations.find(child);
+    if(spec != mActiveAnimations.end())
+    {
+      return spec->second.animation;
+    }
+    auto exit = mPendingExits.find(child);
+    if(exit != mPendingExits.end())
+    {
+      return exit->second.animation;
+    }
+  }
+  return {};
+}
+
+void LayoutTransitionDispatcher::GetLayoutTestCounts(Integration::LayoutTestDiagnostics::WindowSnapshot& result) const
+{
+  result.activeSpecs     = mActiveAnimations.size();
+  result.activeAnimators = mActiveAnimators.size();
+  result.pendingExits    = mPendingExits.size();
+}
+
+bool LayoutTransitionDispatcher::SetLayoutTestManualTicks(bool enabled)
+{
+  mLayoutTestManualTicks = enabled;
+  if(enabled)
+  {
+    if(mTickTimer)
+    {
+      mTickTimer.Stop();
+    }
+  }
+  else if(!mActiveAnimators.empty())
+  {
+    EnsureAnimatorTicking();
+  }
+  return true;
+}
+
+bool LayoutTransitionDispatcher::TickLayoutTestAnimators(float elapsedSeconds)
+{
+  if(!mLayoutTestManualTicks || mLayoutTestTickActive || !std::isfinite(elapsedSeconds) || elapsedSeconds < 0.0f)
+  {
+    return false;
+  }
+  struct Restore
+  {
+    bool& active;
+    ~Restore()
+    {
+      active = false;
+    }
+  } restore{mLayoutTestTickActive};
+  mLayoutTestTickActive = true;
+  mLayoutTestDelta      = elapsedSeconds;
+  TickAnimators();
+  return true;
+}
+} // namespace Internal
+} // namespace Ui
+} // namespace DALI_NAMESPACE
+#endif

@@ -16,6 +16,7 @@
  */
 
 // CLASS HEADER
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/public-api/layouts/stack-layout-manager.h>
 
 // EXTERNAL INCLUDES
@@ -240,6 +241,7 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
   const uint32_t    count = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(count);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_MEASURE_CHILDREN, count, sizeof(View));
   for(uint32_t i = 0; i < count; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -249,6 +251,7 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
   // distribution writes allocation values here without persisting on the
   // child, so repeated layout passes do not accumulate.
   std::vector<MeasuredSize> workingSizes(children.size());
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_MEASURE_WORK, children.size(), sizeof(MeasuredSize));
 
   StackMeasureFirstPassResult first = MeasureStackNonWeightChildren(
     children, workingSizes, widthConstraint, heightConstraint, impl->mOrientation);
@@ -364,6 +367,7 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   const uint32_t    count = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(count);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_ARRANGE_CHILDREN, count, sizeof(View));
   for(uint32_t i = 0; i < count; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -376,6 +380,7 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
 
   // Local allocation buffer: seeded from each child's current measured size.
   std::vector<MeasuredSize> allocations(children.size());
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_ARRANGE_WORK, children.size(), sizeof(MeasuredSize));
   for(uint32_t i = 0; i < children.size(); ++i)
   {
     allocations[i] = GetImpl(children[i]).GetMeasuredSize();

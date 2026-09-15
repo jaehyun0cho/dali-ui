@@ -19,6 +19,7 @@
 #include <dali-ui-foundation/public-api/layouts/layout-controller.h>
 
 // EXTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali/integration-api/adaptor-framework/adaptor.h>
 #include <dali/integration-api/debug.h>
 #include <dali/integration-api/processor-interface.h>
@@ -406,6 +407,7 @@ public:
             Internal::ViewDataImpl::Get(*view).RearmLayoutDirtyForAbortedPass();
           }
 
+          DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ROLLBACK_ROOT, view);
           mSelf.RetainLayoutRootWithoutWake(view);
         }
       }
@@ -439,6 +441,27 @@ public:
   /**
    * @brief Constructor.
    */
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+  Integration::LayoutTestDiagnostics::WindowSnapshot GetLayoutTestSnapshot() const
+  {
+    Integration::LayoutTestDiagnostics::WindowSnapshot result;
+    result.valid              = true;
+    result.windowToken        = reinterpret_cast<uintptr_t>(mWindowObjectPtr);
+    result.detached           = mDetached;
+    result.destroyPending     = mDestroyPending;
+    result.wakeArmed          = mIdleWakeArmed;
+    result.dirtySinceEmit     = mLayoutDirtySinceEmit;
+    result.manualProcessing   = mManualProcessInvocation;
+    result.processDepth       = static_cast<uint32_t>(mProcessDepth);
+    result.generation         = Internal::LayoutInvalidation::CurrentGeneration();
+    result.pendingRoots       = mPendingViews.size();
+    result.registeredRoots    = mAllLayoutRoots.size();
+    result.pendingCompletions = mPendingViewLayoutFinishedEvents.size();
+    mTransitionDispatcher->GetLayoutTestCounts(result);
+    return result;
+  }
+#endif
+
   explicit LayoutControllerImpl(Window window)
   : mWindow(window),
     mTransitionDispatcher(new Internal::LayoutTransitionDispatcher()),
@@ -464,6 +487,19 @@ public:
       // Connect to window resize signal
       window.ResizedSignal().Connect(this, &LayoutControllerImpl::OnWindowResized);
     }
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+    Internal::LayoutTestDiagnostics::RegisterWindow({window.GetObjectPtr(), this,
+                                                     [](void* p)
+    { return static_cast<LayoutControllerImpl*>(p)->GetLayoutTestSnapshot(); },
+                                                     [](void* p, Ui::View v)
+    { return static_cast<LayoutControllerImpl*>(p)->mTransitionDispatcher->GetLayoutTestSnapshot(v); },
+                                                     [](void* p, Ui::View v)
+    { return static_cast<LayoutControllerImpl*>(p)->mTransitionDispatcher->GetLayoutTestAnimation(v); },
+                                                     [](void* p, float delta)
+    { return static_cast<LayoutControllerImpl*>(p)->mTransitionDispatcher->TickLayoutTestAnimators(delta); },
+                                                     [](void* p, bool enabled)
+    { return static_cast<LayoutControllerImpl*>(p)->mTransitionDispatcher->SetLayoutTestManualTicks(enabled); }});
+#endif
   }
 
   /**
@@ -496,6 +532,9 @@ public:
       return;
     }
     mDetached = true;
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+    Internal::LayoutTestDiagnostics::UnregisterWindow(this);
+#endif
 
     // Unregister from adaptor (both the pre and post registrations)
     if(DALI_LIKELY(Adaptor::IsAvailable()))
@@ -587,6 +626,7 @@ public:
 
     // Add to pending (dirty) set
     mPendingViews.insert(view);
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ROOT_QUEUED, view);
 
     // Real layout work has been requested since the last LayoutFinished emit;
     // arm the settled latch so the next drain-to-empty fires the signal.
@@ -1087,6 +1127,7 @@ public:
       {
         continue; // unsubscribed since snapshot
       }
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::COMPLETION, &viewImpl, nullptr, 1u);
       viewDataImpl.EmitLayoutFinishedSignal(event.bounds);
     }
   }
@@ -1116,12 +1157,14 @@ private:
       {
         gDeferredLayoutRequestDuringProcess = true;
       }
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::PARKED_REQUEST, nullptr, nullptr, 0u, 0.0f, 0.0f, mWindowObjectPtr);
       return;
     }
 
     if(!mIdleWakeArmed && DALI_LIKELY(Adaptor::IsAvailable()))
     {
       mIdleWakeArmed = true;
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::WAKE_REQUEST, nullptr, nullptr, 0u, 0.0f, 0.0f, mWindowObjectPtr);
       Adaptor::Get().RequestProcessEventsOnIdle();
     }
   }
@@ -1178,6 +1221,18 @@ private:
    */
   void ProcessLayouts(Dali::Window window)
   {
+#if defined(DALI_UI_LAYOUT_TEST_DIAGNOSTICS)
+    struct EndObservation
+    {
+      const void* window;
+      ~EndObservation()
+      {
+        DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::PROCESS_END, nullptr, nullptr, 0u, 0.0f, 0.0f, window);
+      }
+    } endObservation{mWindowObjectPtr};
+#endif
+
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::PROCESS_BEGIN, nullptr, nullptr, 0u, 0.0f, 0.0f, mWindowObjectPtr);
     // Begins the dispatcher's batch here and ends it at EVERY exit -- the early return
     // just below, the normal end, and an exception out of any producer or lifecycle
     // callback. The early return still drains per-pass dispatcher state (e.g.
@@ -1294,6 +1349,7 @@ private:
         std::unordered_set<ViewImpl*> arrangedSet;
         {
           ActiveLayoutFinishedScope scope(*this, view, arrangedViews, arrangedSet);
+          DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ROOT_DRAIN, view, nullptr, 0u, widthConstraint, heightConstraint);
           ProcessLayoutRoot(view, widthConstraint, heightConstraint);
         }
 
