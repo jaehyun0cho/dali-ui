@@ -1242,6 +1242,7 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
 
 ViewDataImpl::~ViewDataImpl()
 {
+  LayoutTestDiagnostics::UnregisterNode(&mViewImpl);
   if(mVisualData)
   {
     mVisualData->ClearVisuals();
@@ -1349,6 +1350,7 @@ MeasuredSize ViewDataImpl::MeasureDefault(float widthConstraint, float heightCon
     float                 maxRight  = 0.0f;
     float                 maxBottom = 0.0f;
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
+    DALI_UI_LAYOUT_TEST_STORAGE(&mViewImpl, Integration::LayoutTestDiagnostics::StorageSite::VIEW_DEFAULT_MEASURE_CHILDREN, mChildren.Count(), sizeof(Ui::View));
     for(auto& childView : childSnapshot)
     {
       ViewImpl& childImpl = GetImpl(childView);
@@ -1464,6 +1466,7 @@ LayoutRect ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
     float visPadBottom = static_cast<float>(mPadding.bottom) * s;
 
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
+    DALI_UI_LAYOUT_TEST_STORAGE(&mViewImpl, Integration::LayoutTestDiagnostics::StorageSite::VIEW_DEFAULT_ARRANGE_CHILDREN, childSnapshot.size(), sizeof(Ui::View));
     for(auto& childView : childSnapshot)
     {
       ViewImpl& childImpl = GetImpl(childView);
@@ -2270,6 +2273,7 @@ float ViewDataImpl::GetEffectiveScale() const
 
 void ViewDataImpl::InvalidateMeasure()
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::INVALIDATE_MEASURE, &mViewImpl);
   // Invalidation ALWAYS propagates to the layout root and registers there --
   // there is deliberately no "already dirty, so return early" short-circuit.
   //
@@ -2328,6 +2332,7 @@ void ViewDataImpl::InvalidateMeasure()
     return;
   }
   mMeasureKeyOrPropagation.propagationGeneration = generation;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &mViewImpl, nullptr, 0u);
 
   // Layout boundary: a standalone view is excluded from its parent's
   // OnMeasure/OnArrange accumulation, so its measure result cannot change
@@ -2373,6 +2378,7 @@ void ViewDataImpl::InvalidateMeasure()
 
 void ViewDataImpl::InvalidateMeasureFromParentAdd(ViewDataImpl& parentData)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::INVALIDATE_MEASURE, &mViewImpl, &parentData.mViewImpl, 1u);
   // A literal mirror of InvalidateMeasure() above, with one substitution: the parent is
   // handed in rather than looked up. (The generic entry's parentless fallthrough to
   // RegisterWithLayoutController() drops out with it -- a caller-supplied parent can
@@ -2412,6 +2418,7 @@ void ViewDataImpl::InvalidateMeasureFromParentAdd(ViewDataImpl& parentData)
     return;
   }
   mMeasureKeyOrPropagation.propagationGeneration = generation;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &mViewImpl, &parentData.mViewImpl, 3u);
 
   if(IntegrationView::IsLayoutModeStandalone(mViewImpl))
   {
@@ -2428,6 +2435,7 @@ void ViewDataImpl::InvalidateMeasureFromParentAdd(ViewDataImpl& parentData)
 
 void ViewDataImpl::InvalidateArrange()
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::INVALIDATE_ARRANGE, &mViewImpl);
   // Mirrors InvalidateMeasure: invalidation ALWAYS propagates to the layout
   // root and registers there, with no "already dirty, so return early"
   // short-circuit. mArrangeDirty is cleared only by this view's own arrange
@@ -2454,6 +2462,7 @@ void ViewDataImpl::InvalidateArrange()
     return;
   }
   mArrangeKeyOrPropagation.propagationGeneration = generation;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &mViewImpl, nullptr, 1u);
 
   // Layout boundary: standalone child's arrange result does not feed back
   // into the parent's arrangement — stop here and self-register.
@@ -4544,6 +4553,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
   {
     ViewImpl&     nodeImpl = GetImpl(node);
     ViewDataImpl& nodeData = ViewDataImpl::Get(nodeImpl);
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_VISIT, &nodeImpl, &mViewImpl, 2u);
 
     // The owner test precedes (a), the safety-net stop and the clears on purpose:
     // the explicit owner must never be cleared. It is load-bearing for the RECYCLER
@@ -4551,6 +4561,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // be caught by the direct-parent safety-net stop below.
     if(&nodeImpl == owner)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 1u);
       break;
     }
 
@@ -4571,6 +4582,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // only their own direct children).
     if(nodeData.mMeasureInProgress)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 2u);
       break;
     }
 
@@ -4590,6 +4602,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // certification when an unowned measure rewrites a slot underneath it.
     if(isDirectParent && nodeData.mArrangeInProgress && !nodeData.mArrangeReplayInProgress)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 3u);
       break;
     }
     isDirectParent = false;
@@ -4621,6 +4634,7 @@ void ViewDataImpl::InvalidateAncestorLayoutCachesForMeasureMiss()
     // bit -- see the self-standalone early return at the top of this function.)
     if(IntegrationView::IsLayoutModeStandalone(nodeImpl))
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ANCESTOR_STOP, &nodeImpl, &mViewImpl, 4u);
       break;
     }
 
@@ -4716,6 +4730,7 @@ void ViewDataImpl::InvalidateParentArrangeCacheForOutOfBandArrange(bool framewor
 
 MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_ENTER, &mViewImpl, nullptr, 0u, visualW, visualH);
   // Same-view re-entrancy is guarded in RELEASE, not just DEBUG: Measure() is
   // reachable from untrusted customization (MeasureCallback / OnMeasure /
   // LayoutManager) and from the public, nestable LayoutController::ProcessLayouts(),
@@ -4825,6 +4840,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
      FloatEqual(mLastMeasureConstraint.width, effNatW) &&
      FloatEqual(mLastMeasureConstraint.height, effNatH))
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_HIT, &mViewImpl);
     return mMeasuredSize;
   }
 
@@ -4846,6 +4862,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   float        effVisW = (effNatW >= 0.f) ? effNatW * s : effNatW;
   float        effVisH = (effNatH >= 0.f) ? effNatH * s : effNatH;
   MeasuredSize visual;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_PRODUCER, &mViewImpl);
   if(auto* callback = GetMeasureCallback())
   {
     Ui::View view = Ui::View::DownCast(mViewImpl.Self());
@@ -4867,6 +4884,7 @@ MeasuredSize ViewDataImpl::Measure(float visualW, float visualH)
   // so it must reflect the work this pass just did regardless of cache state.
   mMeasuredSize.width  = visual.width;
   mMeasuredSize.height = visual.height;
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::MEASURE_PUBLISH, &mViewImpl, nullptr, 0u, visual.width, visual.height);
 
   // The freshly written slot has not been consumed by this view's parent yet.
   // Set unconditionally, exactly like the publish above: only the standalone
@@ -5040,8 +5058,9 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
   return true;
 }
 
-void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth)
+void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth, const ViewImpl* mirrorParent)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::REPLAY_VISIT, &mViewImpl);
   // Corollary C, checked live and per node: a valid arrange cache implies a valid
   // cached effective scale, because every scale-context reset clears both for the WHOLE
   // subtree (ResetSubtreeScaleAndLayoutCaches). The replay skips the
@@ -5091,7 +5110,7 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, floa
   {
     applied.x = MirrorX(parentArrangedWidth, cached.x, cached.width);
   }
-  ApplySelfBoundsIfChanged(applied);
+  ApplySelfBoundsIfChanged(applied, mirrorUnderParentRtl ? mirrorParent : nullptr);
 
   // 2. Descendants, in mChildren order -- the order ArrangeDefault's snapshot preserves,
   //    and the order every layout manager iterates.
@@ -5124,6 +5143,7 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, floa
       (mViewImpl.Self().GetEffectiveLayoutDirection() == Dali::LayoutDirection::RIGHT_TO_LEFT);
 
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
+    DALI_UI_LAYOUT_TEST_STORAGE(&mViewImpl, Integration::LayoutTestDiagnostics::StorageSite::VIEW_REPLAY_CHILDREN, mChildren.Count(), sizeof(Ui::View));
     for(auto& childView : childSnapshot)
     {
       ViewImpl&     childImpl = GetImpl(childView);
@@ -5143,7 +5163,7 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, floa
       const bool mirrorChild =
         selfIsRightToLeft && !IntegrationView::IsLayoutModeStandalone(childImpl);
 
-      childData.ReplayArrangeSubtreeFromCache(mirrorChild, cached.width);
+      childData.ReplayArrangeSubtreeFromCache(mirrorChild, cached.width, &mViewImpl);
     }
   }
 
@@ -5174,6 +5194,7 @@ LayoutRect ViewDataImpl::ArrangeAsLayoutRoot(const LayoutRect& bounds)
 
 LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLayoutRootPass)
 {
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_ENTER, &mViewImpl, nullptr, 0u, bounds.width, bounds.height);
   // Validate first-party layout invariants in DEBUG only: this runs on the
   // per-frame, per-view layout hot path (including deep child recursion), so a
   // release-active assert/throw here would turn a manager/measure glitch into an
@@ -5330,7 +5351,8 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
     // logical bounds and the parent's ApplyLayoutDirection mirrors afterwards. Folding a
     // mirror in here would apply it twice.
     // UtcDaliViewArrangeCacheHitReAppliesLogicalBoundsUnderRtlP pins it.
-    ReplayArrangeSubtreeFromCache(false, 0.0f);
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_HIT, &mViewImpl);
+    ReplayArrangeSubtreeFromCache(false, 0.0f, nullptr);
 
     // The cached rect, NOT `bounds`. The publishing pass returned its
     // ResolveReturnedBounds() result, which an arrange customization may have
@@ -5381,6 +5403,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   // input (as before this refactor), not stale prior-pass geometry.
   ApplySelfBoundsIfChanged(bounds);
 
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_PRODUCER, &mViewImpl);
   LayoutRect returnedBounds = bounds;
   if(auto* callback = GetArrangeCallback())
   {
@@ -5409,6 +5432,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   // resolver below.
   mArrangedBounds         = finalBounds;
   mArrangeResultAvailable = true; // A completed rect now exists for the re-entrancy fallback.
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::ARRANGE_PUBLISH, &mViewImpl, nullptr, 0u, finalBounds.width, finalBounds.height);
 
   // Ensure standalone children are arranged even when OnArrange (e.g. in
   // leaf views like Label) does not iterate children.
@@ -5620,6 +5644,7 @@ void ViewDataImpl::ApplyLayoutDirection(float parentWidth)
     // value and is still repaired.
     if(child.GetProperty<float>(Actor::Property::POSITION_X) != mirrored)
     {
+      DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &childData.mViewImpl, &mViewImpl, 0u, mirrored);
       child.SetPositionX(mirrored);
     }
   }
@@ -6017,7 +6042,7 @@ LayoutRect ViewDataImpl::DispatchArrangeWithCallback(ArrangeCallback* callback, 
   return callback->Invoke(view, visualBounds);
 }
 
-void ViewDataImpl::ApplySelfBoundsIfChanged(const LayoutRect& bounds)
+void ViewDataImpl::ApplySelfBoundsIfChanged(const LayoutRect& bounds, const ViewImpl* mirrorSource)
 {
   Actor self = mViewImpl.Self();
 
@@ -6026,20 +6051,28 @@ void ViewDataImpl::ApplySelfBoundsIfChanged(const LayoutRect& bounds)
   // geometry -- the MISS path's final bounds, or a cache-hit replay's physical
   // resolution of them (the same rect with x mirrored about the parent width) -- and the
   // actor target must equal it exactly.
+  //
+  // @p mirrorSource is the parent whose right-to-left mirror is fused into the x below, or
+  // nullptr when x is plain logical geometry. It only attributes the observation: the MISS
+  // path's separate mirror write names the same parent, so a reader sees one shape either way.
   if(self.GetProperty<float>(Actor::Property::POSITION_X) != bounds.x)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, mirrorSource, 0u, bounds.x);
     self.SetPositionX(bounds.x);
   }
   if(self.GetProperty<float>(Actor::Property::POSITION_Y) != bounds.y)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 1u, bounds.y);
     self.SetPositionY(bounds.y);
   }
   if(self.GetProperty<float>(Actor::Property::SIZE_WIDTH) != bounds.width)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 2u, bounds.width);
     self.SetSizeWidth(bounds.width);
   }
   if(self.GetProperty<float>(Actor::Property::SIZE_HEIGHT) != bounds.height)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GEOMETRY_WRITE, &mViewImpl, nullptr, 3u, bounds.height);
     self.SetSizeHeight(bounds.height);
   }
 
@@ -8851,3 +8884,65 @@ void ViewDataImpl::Process(bool postProcessor)
 } // namespace Ui
 
 } //namespace DALI_NAMESPACE
+
+namespace DALI_NAMESPACE
+{
+namespace Ui
+{
+namespace Internal
+{
+Integration::LayoutTestDiagnostics::ViewSnapshot ViewDataImpl::GetLayoutTestSnapshot() const
+{
+  Integration::LayoutTestDiagnostics::ViewSnapshot result;
+  result.valid                       = true;
+  result.nodeId                      = LayoutTestDiagnostics::NodeId(&mViewImpl);
+  result.generation                  = LayoutInvalidation::CurrentGeneration();
+  result.measureCacheValid           = mMeasureCacheValid;
+  result.arrangeCacheValid           = mArrangeCacheValid;
+  result.measureDirty                = mMeasureDirty;
+  result.arrangeDirty                = mArrangeDirty;
+  result.effectiveScaleValid         = mEffectiveScaleValid;
+  result.effectiveScaleActorSynced   = mEffectiveScaleActorSynced;
+  result.measureInProgress           = mMeasureInProgress;
+  result.arrangeInProgress           = mArrangeInProgress;
+  result.replayInProgress            = mArrangeReplayInProgress;
+  result.measurePoisoned             = mMeasurePassPoisoned;
+  result.arrangePoisoned             = mArrangePassPoisoned;
+  result.arrangePublishBlocked       = mArrangeCacheBlockedDuringPass;
+  result.measuredSlotUnconsumed      = mMeasuredSlotUnconsumed;
+  result.arrangedResultAvailable     = mArrangeResultAvailable;
+  result.arrangesIfChanged           = !mArrangeProducerAlways;
+  result.processing                  = IsLayoutPassOnStack();
+  result.completionEmitting          = LayoutInvalidation::IsLayoutFinishedEmitInProgress();
+  result.measuredSize                = mMeasuredSize;
+  result.normalizedConstraint        = mLastMeasureConstraint;
+  result.arrangedBounds              = mArrangedBounds;
+  result.effectiveScale              = mEffectiveScaleValid ? mEffectiveScale : 0.0f;
+  result.effectiveScalePropertyIndex = VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX;
+  result.actorEffectiveScale         = mViewImpl.Self().GetProperty<float>(VIEW_EFFECTIVE_SCALE_PROPERTY_INDEX);
+  if(mMeasureCacheValid)
+  {
+    result.measureScaleKey = mMeasureKeyOrPropagation.scaleKey;
+  }
+  else
+  {
+    result.measurePropagationGeneration = mMeasureKeyOrPropagation.propagationGeneration;
+  }
+  if(mArrangeCacheValid)
+  {
+    result.arrangeInput = mArrangeKeyOrPropagation.inputKey;
+  }
+  else
+  {
+    result.arrangePropagationGeneration = mArrangeKeyOrPropagation.propagationGeneration;
+  }
+  if(const auto* owner = LayoutDependency::Top())
+  {
+    result.dependencyOwnerId   = LayoutTestDiagnostics::NodeId(owner->owner);
+    result.dependencyOwnerKind = owner->kind == LayoutDependency::OwnerKind::ARRANGE ? 1u : 2u;
+  }
+  return result;
+}
+} // namespace Internal
+} // namespace Ui
+} // namespace DALI_NAMESPACE
