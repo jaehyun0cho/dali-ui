@@ -27,6 +27,7 @@
 #include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/internal/layouts/measure-mode.h>
 #include <dali-ui-foundation/internal/layouts/stack-layout-params-impl.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
@@ -436,6 +437,7 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
   const uint32_t    count = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(count);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_MEASURE_CHILDREN, count, sizeof(View));
   for(uint32_t i = 0; i < count; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -445,6 +447,7 @@ MeasuredSize StackLayoutManager::Measure(ViewImpl* view, float widthConstraint, 
   // distribution writes allocation values here without persisting on the
   // child, so repeated layout passes do not accumulate.
   std::vector<MeasuredSize> workingSizes(children.size());
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_MEASURE_WORK, children.size(), sizeof(MeasuredSize));
 
   // Measure modes: only a view whose producer is exactly this manager is mode-aware (a
   // subclass or a view with a layout callback passes the custom-parent modes in one step).
@@ -651,6 +654,7 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   const uint32_t    count = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(count);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_ARRANGE_CHILDREN, count, sizeof(View));
   for(uint32_t i = 0; i < count; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -667,6 +671,7 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
 
   // Local allocation buffer: seeded from each child's current measured size.
   std::vector<MeasuredSize> allocations(children.size());
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::STACK_ARRANGE_WORK, children.size(), sizeof(MeasuredSize));
   for(uint32_t i = 0; i < children.size(); ++i)
   {
     allocations[i] = GetImpl(children[i]).GetMeasuredSize();

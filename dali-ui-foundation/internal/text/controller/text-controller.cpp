@@ -1919,7 +1919,7 @@ bool Controller::HasDefaultColorCharacters(bool ignoreGradientSpans) const
   return false;
 }
 
-const ModelInterface* Controller::GetRenderTextModel() const
+const Model* Controller::SelectRenderModel() const
 {
   const ReplacementRenderState* replacement = mImpl->GetReplacementRenderStatePtr();
   if(replacement && replacement->processingModel && replacement->projection.HasReplacements())
@@ -1927,6 +1927,17 @@ const ModelInterface* Controller::GetRenderTextModel() const
     return replacement->processingModel.Get();
   }
   return mImpl->mModel.Get();
+}
+
+const ModelInterface* Controller::GetRenderTextModel() const
+{
+  return SelectRenderModel();
+}
+
+Length Controller::GetNumberOfRenderGlyphPositions() const
+{
+  const Model* model = SelectRenderModel();
+  return model ? static_cast<Length>(model->mVisualModel->mGlyphPositions.Count()) : 0u;
 }
 
 bool Controller::HasValidReplacementSource() const
