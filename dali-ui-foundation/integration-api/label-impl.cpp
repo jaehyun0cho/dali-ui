@@ -43,6 +43,7 @@
 #include <dali-ui-foundation/internal/text/anchor/anchor-interaction-data.h>
 #include <dali-ui-foundation/internal/text/async-text/async-text-loader.h>
 #include <dali-ui-foundation/internal/text/font-variation/font-variation-property-data.h>
+#include <dali-ui-foundation/internal/text/line-helper-functions.h>
 #include <dali-ui-foundation/internal/text/marquee/marquee-builder.h>
 #include <dali-ui-foundation/internal/text/marquee/marquee-start-geometry.h>
 #include <dali-ui-foundation/internal/text/replacement/inline-replacement-data.h>
@@ -4526,3 +4527,111 @@ Dali::Property::Value LabelImpl::GetProperty(BaseObject* object, Dali::Property:
 } // namespace Ui
 
 } //namespace DALI_NAMESPACE
+
+namespace DALI_NAMESPACE
+{
+namespace Ui
+{
+namespace Integration
+{
+LayoutTestDiagnostics::TextSnapshot LabelImpl::GetLayoutTestTextSnapshot() const
+{
+  LayoutTestDiagnostics::TextSnapshot result;
+  result.valid = true;
+  if(!mController)
+  {
+    return result;
+  }
+  // ModelInterface readers return existing storage. Do not use Text::View::GetGlyphs,
+  // which may resolve elision and allocate even though that API is const-qualified.
+  const Ui::Text::ModelInterface* model = mController->GetRenderTextModel();
+  if(!model)
+  {
+    return result;
+  }
+  const auto& layout     = model->GetLayoutSize();
+  const auto& control    = model->GetControlSize();
+  const auto  offset     = mController->GetLayoutOffsetWithPadding();
+  result.layoutWidth     = layout.width;
+  result.layoutHeight    = layout.height;
+  result.controlWidth    = control.width;
+  result.controlHeight   = control.height;
+  result.renderedOffsetX = offset.x;
+  result.renderedOffsetY = offset.y;
+  result.lineCount       = model->GetNumberOfLines();
+  result.glyphCount      = model->GetNumberOfGlyphs();
+  const auto& viewData   = Internal::ViewDataImpl::Get(*this);
+  // "Ready" means the reported line/glyph/baseline values describe the model the next render
+  // will use. Layout dirtiness is not sufficient on its own: a refresh can be pending with
+  // both layout caches valid (a content-layout or renderer update latched by a setter, the
+  // measure invalidation latch that only OnMeasure releases, a requested marquee stop), and in
+  // asynchronous mode the model IS the measure-time layout -- OnRelayout hands the work to the
+  // loader without running Controller::Relayout -- so a request or a manual render still in
+  // flight means the values are the previous model's. mIsAsyncRenderRequested is also set by
+  // setters in synchronous mode and only cleared on dispatch, hence the IsAsyncRendering gate.
+  const bool refreshPending = mIsContentLayoutDirty || mRendererUpdateNeeded || mMeasureInvalidated ||
+                              (mTextScroller && mTextScroller->IsStopRequested()) ||
+                              (mController->IsAsyncRendering() && (mIsAsyncRenderRequested || mIsManualRenderInProgress));
+  if(viewData.IsMeasureDirty() || viewData.IsArrangeDirty() || refreshPending)
+  {
+    return result;
+  }
+  const auto* lines     = model->GetLines();
+  const auto* glyphs    = model->GetGlyphs();
+  const auto* positions = model->GetLayout();
+  if(result.lineCount == 0u || !lines)
+  {
+    return result;
+  }
+  const auto& first         = lines[0];
+  result.firstLineAvailable = true;
+  result.firstAscender      = first.ascender;
+  result.firstDescender     = first.descender;
+  result.firstLineWidth     = first.width;
+  result.firstLineSpacing   = first.lineSpacing;
+  const uint32_t begin      = first.glyphRun.glyphIndex;
+  // Bound the run by BOTH buffers: a relayout against a zero-sized control clears the glyph
+  // positions without clearing the glyphs, so the position buffer can be the shorter one and
+  // every read below pairs glyphs[i] with positions[i].
+  const uint32_t storedPositions = mController->GetNumberOfRenderGlyphPositions();
+  const uint32_t paired          = std::min<uint32_t>(result.glyphCount, storedPositions);
+  const uint32_t available       = begin < paired ? paired - begin : 0u;
+  const uint32_t count           = std::min<uint32_t>(first.glyphRun.numberOfGlyphs, available);
+  if(count == 0u || !glyphs || !positions)
+  {
+    return result;
+  }
+  result.firstGlyphFontId  = glyphs[begin].fontId;
+  result.firstGlyphIndex   = glyphs[begin].index;
+  result.firstGlyphAdvance = glyphs[begin].advance;
+  float baseline           = positions[begin].y + glyphs[begin].yBearing;
+  for(uint32_t index = begin + 1u; index < begin + count; ++index)
+  {
+    baseline = std::max(baseline, positions[index].y + glyphs[index].yBearing);
+  }
+  // Model::GetLayout returns line-local glyph positions. The renderer obtains
+  // View glyphs by adding the first line's ascender and vertical-line pre-offset
+  // (Text::View::GetGlyphsUncached); raw y + yBearing alone is usually zero.
+  // Apply that same coordinate conversion to the already-computed POD values,
+  // without invoking GetGlyphs or any elision/atlas materialization.
+  const float lineBaseline = first.ascender + Ui::Text::GetPreOffsetVerticalLineAlignment(first, model->GetVerticalLineAlignment());
+  result.firstBaseline     = offset.y + lineBaseline + baseline;
+  result.ready             = true;
+  return result;
+}
+
+namespace LayoutTestDiagnostics
+{
+TextSnapshot GetTextSnapshot(Ui::Label label)
+{
+  if(!label)
+  {
+    return {};
+  }
+  Dali::CustomActorImpl& implementation = label.GetImplementation();
+  return static_cast<LabelImpl&>(implementation).GetLayoutTestTextSnapshot();
+}
+} // namespace LayoutTestDiagnostics
+} // namespace Integration
+} // namespace Ui
+} // namespace DALI_NAMESPACE

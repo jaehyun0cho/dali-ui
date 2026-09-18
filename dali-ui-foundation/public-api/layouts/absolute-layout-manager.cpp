@@ -26,6 +26,7 @@
 #include <dali-ui-foundation/internal/layouts/absolute-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
 namespace DALI_NAMESPACE
@@ -84,6 +85,7 @@ MeasuredSize AbsoluteLayoutManager::Measure(ViewImpl* view, float widthConstrain
   // sibling mid-pass, which would invalidate a cached-index live traversal.
   std::vector<View> children;
   children.reserve(count);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::ABSOLUTE_MEASURE_CHILDREN, count, sizeof(View));
   for(uint32_t i = 0; i < count; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -244,6 +246,7 @@ void AbsoluteLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   // sibling mid-pass, which would invalidate a cached-index live traversal.
   std::vector<View> children;
   children.reserve(count);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::ABSOLUTE_ARRANGE_CHILDREN, count, sizeof(View));
   for(uint32_t i = 0; i < count; ++i)
   {
     children.push_back(GetChildViewAt(view, i));

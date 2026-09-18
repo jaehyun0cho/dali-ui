@@ -26,6 +26,7 @@
 #include <string>
 
 // INTERNAL INCLUDES
+#include <dali-ui-foundation/integration-api/layout-test-diagnostics.h>
 #include <dali-ui-foundation/integration-api/size-negotiated-view-impl.h>
 #include <dali-ui-foundation/integration-api/text/async-text-interface.h>
 #include <dali-ui-foundation/integration-api/text/text-anchor-control-interface.h>
@@ -1364,6 +1365,9 @@ private: // Implementation
    * @brief Emits AsyncHeightForWidthComputed signal.
    */
   void EmitAsyncHeightForWidthComputed(float width, float height);
+
+public:
+  Integration::LayoutTestDiagnostics::TextSnapshot GetLayoutTestTextSnapshot() const;
 
   // Properties
 public:

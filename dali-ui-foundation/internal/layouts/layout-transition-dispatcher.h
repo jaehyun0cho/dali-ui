@@ -31,6 +31,7 @@
 #include <dali-ui-foundation/public-api/views/view.h>
 
 // INTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/public-api/dali-ui-common.h>
 #include <dali-ui-foundation/public-api/layouts/layout-transition-types.h>
 #include <dali-ui-foundation/public-api/layouts/layout-transition.h>
@@ -271,6 +272,13 @@ public:
    * the first root and misclassify subsequent roots.
    */
   void EndLayoutPass();
+  /// Layout test observation. DALI_INTERNAL keeps these hidden: the class is DALI_UI_API but
+  /// this header is internal and never installed, so they must not enter the export table.
+  DALI_INTERNAL Integration::LayoutTestDiagnostics::TransitionSnapshot GetLayoutTestSnapshot(Ui::View view) const;
+  DALI_INTERNAL Animation                                              GetLayoutTestAnimation(Ui::View view) const;
+  DALI_INTERNAL void                                                   GetLayoutTestCounts(Integration::LayoutTestDiagnostics::WindowSnapshot& result) const;
+  DALI_INTERNAL bool                                                   TickLayoutTestAnimators(float elapsedSeconds);
+  DALI_INTERNAL bool                                                   SetLayoutTestManualTicks(bool enabled);
 
 public:
   /// Captures actor properties that the dispatcher mutates transiently for
@@ -457,6 +465,15 @@ private:
   /// correct arguments.
   struct ActiveSpecAnimation
   {
+    // Retain only historical values that cannot be reconstructed from the live entry.
+    // Geometry remains available to readers that register after the transition starts.
+    LayoutRect           observedFrom{};
+    LayoutRect           observedTo{};
+    float                observedDuration{0.0f};
+    float                observedDelay{0.0f};
+    uint32_t             observedCause{0u};
+    uint32_t             observedOwnerId{0u};
+    uint32_t             observedRole{0u};
     Animation            animation;
     Ui::LayoutTransition transition;
     LayoutTransitionSlot slot;
@@ -468,6 +485,11 @@ private:
   /// finishes.
   struct GhostExit
   {
+    LayoutRect           observedFrom{};
+    LayoutRect           observedTo{};
+    float                observedDuration{0.0f};
+    uint32_t             observedOwnerId{0u};
+    uint32_t             observedRole{0u};
     WeakHandle<Ui::View> parent;
     Ui::View             child; ///< Strong reference; prevents destruction during EXIT
     Animation            animation;
@@ -485,6 +507,10 @@ private:
   /// unparented when progress reaches 1.0.
   struct AnimatorState
   {
+    // The animator already stores geometry, timing and progress below. Only ownership
+    // at start needs additional storage; node and parent identities are read live.
+    uint32_t             observedOwnerId{0u};
+    uint32_t             observedRole{0u};
     LayoutTransitionSlot slot;
     LayoutChangeCause    cause;
     LayoutAnimatorTiming timing;
@@ -582,6 +608,9 @@ private:
   /// whenever the active set transitions from empty to non-empty so a long
   /// idle interval cannot collapse the next tick into a single jump.
   std::chrono::steady_clock::time_point mLastTickTime;
+  bool                                  mLayoutTestManualTicks{false};
+  bool                                  mLayoutTestTickActive{false};
+  float                                 mLayoutTestDelta{0.0f};
 
   bool OnTickTimer();
 

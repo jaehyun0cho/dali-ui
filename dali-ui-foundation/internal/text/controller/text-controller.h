@@ -47,6 +47,7 @@
 namespace DALI_NAMESPACE::Ui::Text
 {
 class Controller;
+class Model;
 struct MarqueeStartAnchor;
 class StyledText;
 class View;
@@ -2069,6 +2070,19 @@ public: // Queries & retrieves.
   const ModelInterface* GetRenderTextModel() const;
 
   /**
+   * @brief Retrieves how many glyph POSITIONS the render-domain model currently stores.
+   *
+   * Deliberately separate from ModelInterface::GetNumberOfGlyphs(): a relayout against a
+   * zero-sized control clears the position buffer without clearing the glyph buffer, so the
+   * two counts can disagree and the smaller one bounds any paired read of glyphs[i] and
+   * positions[i]. Reported by the Controller rather than the interface because only the
+   * Controller knows which concrete model GetRenderTextModel() selected.
+   *
+   * @return The number of stored glyph positions of the model GetRenderTextModel() returns.
+   */
+  Length GetNumberOfRenderGlyphPositions() const;
+
+  /**
    * @brief Checks whether valid replacement source data is present.
    *
    * @return true if replacement processing is required.
@@ -2800,6 +2814,17 @@ protected: // Inherit from Dali::Integration::Processor
   {
     return "Text::Controller";
   }
+
+private:
+  /**
+   * @brief Selects the concrete render-domain model, as GetRenderTextModel() reports it.
+   *
+   * The one place that decision is made, so a reader of the model and a reader of one of its
+   * buffer lengths can never disagree about which model they described.
+   *
+   * @return The selected model, or nullptr when the controller holds none.
+   */
+  const Model* SelectRenderModel() const;
 
 private: // Private contructors & copy operator.
   /**
