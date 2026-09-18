@@ -22,6 +22,7 @@
 #include <dali-ui-foundation/public-api/layouts/layout-transition.h>
 #include <dali-ui-foundation/public-api/layouts/layout-transition-types.h>
 #include <dali/devel-api/actors/actor-devel.h>
+#include <limits>
 #include <set>
 
 using namespace Dali;
@@ -6622,5 +6623,23 @@ int UtcDaliLayoutTransitionSelfStandaloneWindowResizeFallbackP(void)
   DALI_TEST_CHECK(aY < aFrom - 1.0f && aY > 1.0f);
   // b opted out of that same cause and landed on its new bounds without animating.
   DALI_TEST_EQUALS(b.GetCurrentProperty<float>(Actor::Property::POSITION_Y), bFinal, 0.5f, TEST_LOCATION);
+  END_TEST;
+}
+
+// Non-finite timings must be rejected at the setter, not divided into a progress value
+// or handed to Animation::New. Both timed channels are checked: the declarative CHANGE
+// timing and the imperative animator timing.
+int UtcDaliLayoutTransitionNonFiniteTimingRejectedN(void)
+{
+  UiTestApplication application;
+  LayoutTransition  transition = LayoutTransition::New();
+
+  LayoutTransitionTiming timing;
+  timing.duration = Duration(std::numeric_limits<float>::quiet_NaN());
+  DALI_TEST_ASSERTION(transition.SetChangeTiming(timing), "must be finite");
+
+  LayoutAnimatorTiming animatorTiming;
+  animatorTiming.duration = Duration(std::numeric_limits<float>::infinity());
+  DALI_TEST_ASSERTION(transition.SetChangeAnimator(LayoutAnimatorCallback::New(&NoopAnimator), animatorTiming), "must be finite");
   END_TEST;
 }
