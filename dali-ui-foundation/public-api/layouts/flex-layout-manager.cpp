@@ -28,6 +28,7 @@
 #include <dali-ui-foundation/internal/layouts/flex-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/internal/layouts/measure-mode.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
@@ -876,6 +877,7 @@ MeasuredSize FlexLayoutManager::Measure(ViewImpl* view, float widthConstraint, f
   const uint32_t    childCount = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(childCount);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::FLEX_MEASURE_CHILDREN, childCount, sizeof(View));
   for(uint32_t i = 0; i < childCount; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -1067,6 +1069,7 @@ void FlexLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   const uint32_t    childCount = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(childCount);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::FLEX_ARRANGE_CHILDREN, childCount, sizeof(View));
   for(uint32_t i = 0; i < childCount; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -1078,6 +1081,7 @@ void FlexLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
 
   // Local working buffer: seeded from each child's current measured size.
   std::vector<MeasuredSize> workingSizes(children.size());
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::FLEX_ARRANGE_WORK, children.size(), sizeof(MeasuredSize));
   for(uint32_t i = 0; i < children.size(); ++i)
   {
     workingSizes[i] = GetImpl(children[i]).GetMeasuredSize();

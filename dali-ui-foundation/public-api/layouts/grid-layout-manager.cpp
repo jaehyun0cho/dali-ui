@@ -35,6 +35,7 @@
 #include <dali-ui-foundation/internal/layouts/grid-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/internal/layouts/measure-mode.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
@@ -1147,6 +1148,7 @@ MeasuredSize GridLayoutManager::Measure(ViewImpl* view, float widthConstraint, f
   const uint32_t    childCount = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(childCount);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::GRID_MEASURE_CHILDREN, childCount, sizeof(View));
   for(uint32_t i = 0; i < childCount; ++i)
   {
     children.push_back(GetChildViewAt(view, i));
@@ -1155,7 +1157,9 @@ MeasuredSize GridLayoutManager::Measure(ViewImpl* view, float widthConstraint, f
   uint32_t           rowCount = std::max(1u, static_cast<uint32_t>(impl->mRowDefinitions.Size()));
   uint32_t           colCount = std::max(1u, static_cast<uint32_t>(impl->mColumnDefinitions.Size()));
   std::vector<float> rowHeights(rowCount, 0.0f);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::GRID_MEASURE_ROWS, rowCount, sizeof(float));
   std::vector<float> colWidths(colCount, 0.0f);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::GRID_MEASURE_COLUMNS, colCount, sizeof(float));
 
   // Measure modes: only a view whose producer is exactly this manager is mode-aware; anything
   // else (a subclass, a layout callback) measures every child below with the custom-parent modes
@@ -1240,6 +1244,7 @@ void GridLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   const uint32_t    childCount = GetChildViewCount(view);
   std::vector<View> children;
   children.reserve(childCount);
+  DALI_UI_LAYOUT_TEST_STORAGE(view, Integration::LayoutTestDiagnostics::StorageSite::GRID_ARRANGE_CHILDREN, childCount, sizeof(View));
   for(uint32_t i = 0; i < childCount; ++i)
   {
     children.push_back(GetChildViewAt(view, i));

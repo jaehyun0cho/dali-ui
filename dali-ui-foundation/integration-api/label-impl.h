@@ -26,6 +26,7 @@
 #include <string>
 
 // INTERNAL INCLUDES
+#include <dali-ui-foundation/integration-api/layout-test-diagnostics.h>
 #include <dali-ui-foundation/integration-api/size-negotiated-view-impl.h>
 #include <dali-ui-foundation/integration-api/text/async-text-interface.h>
 #include <dali-ui-foundation/integration-api/text/marquee-start-geometry-types.h>
@@ -1365,6 +1366,21 @@ private: // Implementation
    * @brief Emits AsyncHeightForWidthComputed signal.
    */
   void EmitAsyncHeightForWidthComputed(float width, float height);
+
+public: // Not intended for application developers
+  /// @cond internal
+  /**
+   * @brief Returns a read-only snapshot of this label's text model for layout tests.
+   *
+   * Integration::LayoutTestDiagnostics::GetTextSnapshot() is the supported entry point and
+   * forwards here. Reads the stored model only; never relayouts, elides or materializes glyphs.
+   *
+   * @return The snapshot; @c ready is true only when its line and glyph values describe the
+   * model the next render uses
+   * @note Internal: for use by this library only.
+   */
+  DALI_INTERNAL Integration::LayoutTestDiagnostics::TextSnapshot GetLayoutTestTextSnapshot() const;
+  /// @endcond
 
   // Properties
 public:
