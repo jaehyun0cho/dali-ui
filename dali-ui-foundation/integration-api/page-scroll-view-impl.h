@@ -163,9 +163,27 @@ protected:
    * @brief Overrides ScrollViewImpl hook to detect when the layout pass first sets
    *        accurate viewport / scrollable-area dimensions.
    *
-   * Emits PageChangedSignal when the layout-derived page count differs from the
-   * last emitted count — most importantly on the very first layout pass when
-   * PageIndicator::Bind() was called before layout ran.
+   * Emits PageChangedSignal whenever the layout-derived count changes, and whenever the
+   * reported page changes. The reported page is re-derived from the scroll position - the
+   * animation target while a scroll or a snap is in flight, so it is the page the scroll
+   * is heading to - except when a page selected by NotifyPagesInserted /
+   * NotifyPagesRemoved has just been applied: that selection is the newer intent and is
+   * kept. A changed viewport that leaves the count alone re-derives only on a settled
+   * view, so a snap target that is still valid is never replaced by the nearest page.
+   * Repeated callbacks for the same geometry emit nothing.
+   *
+   * This is also where a page SELECTED before the first layout is applied: with a zero
+   * page length ScrollToPage could only record the page, so the first call that has real
+   * dimensions scrolls to it while preserving the selected page. A
+   * pre-layout user ScrollTo after that selection releases the pre-layout state through
+   * OnScrollFinished and is therefore not covered.
+   *
+   * @note That apply calls ScrollToPage, which emits ScrollStarted / Scrolling /
+   * ScrollFinished SYNCHRONOUSLY from inside the layout pass. Two mechanisms bound the
+   * re-entrancy: mExpectedPageCount is reset BEFORE ScrollToPage runs, so a handler that
+   * triggers another pass finds no override and this block does not run again; and the
+   * apply holds the notify-in-progress flag for its duration (restored by a scope guard,
+   * including on an exception), so the nested ScrollFinished cannot demote the selection.
    *
    * @note ABI note: do NOT reorder or remove after first publication.
    */
