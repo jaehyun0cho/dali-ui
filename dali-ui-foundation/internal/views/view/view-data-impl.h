@@ -35,6 +35,7 @@
 #include <dali-ui-foundation/integration-api/view-accessible.h>
 #include <dali-ui-foundation/integration-api/view-integ.h>
 #include <dali-ui-foundation/integration-api/visuals/visual-properties-integ.h>
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
 #include <dali-ui-foundation/internal/render-effects/offscreen-rendering-impl.h>
 #include <dali-ui-foundation/internal/render-effects/render-effect-impl.h>
 #include <dali-ui-foundation/internal/visuals/visual-base-impl.h>
@@ -138,7 +139,8 @@ public:
    */
   ~ViewDataImpl();
 
-  bool AreVisualsEnabled() const;
+  bool                                             AreVisualsEnabled() const;
+  Integration::LayoutTestDiagnostics::ViewSnapshot GetLayoutTestSnapshot() const;
 
   /**
    * @brief Whether a visual MUTATION may proceed on this view right now.
@@ -1574,12 +1576,15 @@ private:
    * @param[in] parentArrangedWidth The caller's cached arranged width, i.e. the value the
    *            MISS path passes to ApplyLayoutDirection. Read only when
    *            @p mirrorUnderParentRtl is true.
+   * @param[in] mirrorParent The caller, i.e. the view that owns the mirror. Read only when
+   *            @p mirrorUnderParentRtl is true, and only to attribute the fused write to the
+   *            same parent the MISS path's separate mirror write names.
    *
    * @pre CanServeArrangeFromCache() holds for this view and, unless it is childless,
    *      CanReplayArrangeSubtreeFromCache() does too.
    * @pre A ReplayPassScope is on the stack (constructed at the hit site).
    */
-  void ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth);
+  void ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth, const ViewImpl* mirrorParent);
 
   MeasuredSize ApplyConstraints(const MeasuredSize& size) const;
   void         MeasureStandaloneChildren(float effectiveWidth, float effectiveHeight);
@@ -1588,7 +1593,7 @@ private:
   MeasuredSize DispatchMeasureWithLayoutManager(LayoutManager* manager, float widthConstraint, float heightConstraint);
   void         DispatchArrangeWithLayoutManager(LayoutManager* manager, const LayoutRect& bounds);
   LayoutRect   DispatchArrangeWithCallback(ArrangeCallback* callback, const LayoutRect& bounds);
-  void         ApplySelfBoundsIfChanged(const LayoutRect& bounds);
+  void         ApplySelfBoundsIfChanged(const LayoutRect& bounds, const ViewImpl* mirrorSource = nullptr);
   void         OnColorTableChanged();
 
   /**

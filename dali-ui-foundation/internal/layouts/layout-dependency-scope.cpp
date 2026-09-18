@@ -18,6 +18,9 @@
 // CLASS HEADER
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 
+// INTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
+
 namespace DALI_NAMESPACE
 {
 namespace Ui
@@ -51,6 +54,7 @@ ArrangeOwnedMeasureScope::ArrangeOwnedMeasureScope(ViewImpl* owner)
   if(owner)
   {
     gLayoutOwnerTop = &mFrame;
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::OWNER_PUSH, mFrame.owner, mFrame.previous ? mFrame.previous->owner : nullptr, static_cast<uint32_t>(mFrame.kind) + 1u);
   }
 }
 
@@ -60,6 +64,7 @@ ArrangeOwnedMeasureScope::~ArrangeOwnedMeasureScope()
   // must also be correct while unwinding. Never touch LayoutController from here.
   if(mFrame.owner)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::OWNER_POP, mFrame.owner, mFrame.previous ? mFrame.previous->owner : nullptr, static_cast<uint32_t>(mFrame.kind) + 1u);
     gLayoutOwnerTop = mFrame.previous;
   }
 }
@@ -70,6 +75,7 @@ RecyclerLayoutOwnerScope::RecyclerLayoutOwnerScope(ViewImpl* recycler, const voi
   if(recycler)
   {
     gLayoutOwnerTop = &mFrame;
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::OWNER_PUSH, mFrame.owner, mFrame.previous ? mFrame.previous->owner : nullptr, static_cast<uint32_t>(mFrame.kind) + 1u);
   }
 }
 
@@ -77,6 +83,7 @@ RecyclerLayoutOwnerScope::~RecyclerLayoutOwnerScope()
 {
   if(mFrame.owner)
   {
+    DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::OWNER_POP, mFrame.owner, mFrame.previous ? mFrame.previous->owner : nullptr, static_cast<uint32_t>(mFrame.kind) + 1u);
     gLayoutOwnerTop = mFrame.previous;
   }
 }

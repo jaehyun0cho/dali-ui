@@ -18,6 +18,9 @@
 // CLASS HEADER
 #include <dali-ui-foundation/internal/layouts/layout-invalidation-generation.h>
 
+// INTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/layout-test-diagnostics.h>
+
 namespace DALI_NAMESPACE
 {
 namespace Ui
@@ -65,6 +68,7 @@ void AdvanceGeneration()
   {
     gGeneration = 1u;
   }
+  DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::GENERATION_ADVANCE);
 }
 
 bool IsLayoutFinishedEmitInProgress()

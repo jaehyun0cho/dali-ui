@@ -56,6 +56,9 @@ namespace LayoutDependency
 {
 /**
  * @brief Which kind of producer owns the frame.
+ *
+ * @note The observation wire value is the enumerator + 1, so that 0 stays free to mean
+ * "no owner" (see the OWNER_PUSH detail and ViewSnapshot::dependencyOwnerKind contracts).
  */
 enum class OwnerKind : uint8_t
 {
