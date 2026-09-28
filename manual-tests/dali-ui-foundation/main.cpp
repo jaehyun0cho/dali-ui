@@ -21,9 +21,12 @@
 #include <dali/devel-api/animation/animation-devel.h>
 #include <unistd.h>
 #include <algorithm>
+#include <climits>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <utility>
 
 using namespace Dali;
 using namespace Dali::Ui;
@@ -79,6 +82,16 @@ std::string MakeSearchKey(const Dali::String& text)
     }
   }
   return key;
+}
+
+// Sort key of a TC name: the first number in it ("01. ...", "TC100. ..."), then the
+// name itself. A name without a number sorts after the numbered ones.
+std::pair<unsigned long, std::string> MakeSortKey(const Dali::String& name)
+{
+  std::string         text   = ToStdString(name);
+  const std::size_t   digit  = text.find_first_of("0123456789");
+  const unsigned long number = (digit == std::string::npos) ? ULONG_MAX : std::strtoul(text.c_str() + digit, nullptr, 10);
+  return {number, std::move(text)};
 }
 
 bool ContainsSearchKey(const std::string& textKey, const std::string& searchKey)
@@ -200,9 +213,9 @@ private:
 
     mTestCases = ManualTest::Registry::Get().CreateAll();
     // Registration order is link order; the list must follow the TC numbers
-    // in the names ("01. ...", zero-padded so lexicographic == numeric).
+    // in the names ("01. ...", "TC100. ..."), compared as numbers.
     std::sort(mTestCases.begin(), mTestCases.end(), [](const auto& a, const auto& b)
-    { return ToStdString(a->GetName()) < ToStdString(b->GetName()); });
+    { return MakeSortKey(a->GetName()) < MakeSortKey(b->GetName()); });
     mSearchCache.reserve(mTestCases.size());
     for(const auto& tc : mTestCases)
     {
@@ -510,6 +523,12 @@ private:
 
 int DALI_EXPORT_API main(int argc, char** argv)
 {
+  // The layout validation suite asserts the bundled font files (TC143/TC157). fontconfig
+  // reads FONTCONFIG_FILE when the font client loads its configuration, which happens after
+  // this point, so the bundled configuration is the default; an operator's own setting wins.
+  setenv("FONTCONFIG_FILE", TEST_RESOURCE_DIR "/layout-validation/fonts.conf", /*overwrite=*/0);
+  std::printf("manual-test fonts: FONTCONFIG_FILE=%s\n", std::getenv("FONTCONFIG_FILE"));
+
   Application application = Application::New(&argc, &argv);
   UiConfig    config      = UiConfig::New();
   config.SetDefaultStateEffectForInteractive(OverlayEffect::Plain());
