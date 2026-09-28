@@ -1,0 +1,16 @@
+{
+  "DejaVuSans.ttf": {
+    "unitsPerEm": 2048,
+    "ascender": 1901,
+    "descender": -483,
+    "lineGap": 0,
+    "units": "font design units; not rendered Label pixels"
+  },
+  "NanumGothic.ttf": {
+    "unitsPerEm": 1000,
+    "ascender": 920,
+    "descender": -230,
+    "lineGap": 0,
+    "units": "font design units; not rendered Label pixels"
+  }
+}
