@@ -21,6 +21,7 @@
 #include <dali/devel-api/animation/animation-devel.h>
 #include <unistd.h>
 #include <algorithm>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -489,6 +490,12 @@ private:
 
 int DALI_EXPORT_API main(int argc, char** argv)
 {
+  // The layout validation suite asserts the bundled font files (LR50/LR64). fontconfig
+  // reads FONTCONFIG_FILE when the font client loads its configuration, which happens after
+  // this point, so the bundled configuration is the default; an operator's own setting wins.
+  setenv("FONTCONFIG_FILE", TEST_RESOURCE_DIR "/layout-validation/fonts.conf", /*overwrite=*/0);
+  std::printf("manual-test fonts: FONTCONFIG_FILE=%s\n", std::getenv("FONTCONFIG_FILE"));
+
   Application application = Application::New(&argc, &argv);
   UiConfig    config      = UiConfig::New();
   config.SetDefaultStateEffectForInteractive(OverlayEffect::Plain());
