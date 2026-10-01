@@ -227,36 +227,28 @@ public: // Measure / Arrange API
    * This propagates to the parent layout while one exists,
    * until the layout root is reached (no parent Layout).
    *
-   * @note Calling this DURING layout processing -- from inside any Measure/Arrange
-   * implementation (OnMeasure, OnArrange, a measure/arrange callback, a LayoutManager
-   * producer), or from a LayoutFinishedSignal slot -- is a contract violation and is
-   * logged once for this View. The invalidation is retained, not ignored: the relevant
-   * caches are revoked, dirty state propagates to the layout root, and that root remains
-   * pending. To prevent a self-sustaining layout pump, it does not request an idle
-   * ProcessEvents wake. A not-yet-started turn for that root in the current batch may
-   * consume the work immediately; otherwise a later independently triggered
-   * ProcessEvents, an explicit LayoutController::ProcessLayouts(), or an
-   * out-of-processing request drains or wakes it. Such an out-of-processing request
-   * arms at most one coalesced outstanding wake. Until that pass runs, the last
-   * completed measured or arranged geometry may remain observable. On a quiescent
-   * application (no input, animation or timer) that next cycle may be INDEFINITELY
-   * later. In-processing invalidation is prohibited in principle and honoured only
-   * best-effort -- mirroring dali-core's relayout policy -- so never rely on it for
-   * the correctness of the current frame. Change state and invalidate at event time
-   * when prompt relayout is required.
+   * Requests from a Measure/Arrange producer or LayoutFinished callback are
+   * supported. They revoke affected caches, propagate dirty state, and retain the
+   * root for another pass if the current batch cannot consume the request.
+   * LayoutController automatically schedules remaining work with a monotonic
+   * deadline, using 60fps as the initial frame-rate reference and allowing rest
+   * after expensive calculation or completion callbacks. No extra application
+   * input is required while the adaptor continues processing events.
+   *
+   * This does not synchronously recompute geometry, guarantee VSYNC alignment,
+   * or make an unconditionally invalidating producer converge. Use conditional
+   * invalidation. Explicit LayoutController::ProcessLayouts() remains available
+   * for synchronous calculation and is outside automatic pacing.
    */
   void InvalidateMeasure();
 
   /**
    * @brief Invalidates the arrange of this view.
    *
-   * @note Calling this DURING layout processing (any Measure/Arrange pass, or a
-   * LayoutFinishedSignal slot) has the same retained-but-parked semantics as
-   * InvalidateMeasure(): it is a contract violation and is logged once, the arrange
-   * invalidation propagates and remains pending, but it does not request its own idle
-   * ProcessEvents wake. The last completed geometry may remain observable until an
-   * independently triggered ProcessEvents, an explicit LayoutController::ProcessLayouts(),
-   * or an out-of-processing request drains or wakes the pending work.
+   * @note Requests during Measure/Arrange or LayoutFinished delivery have the
+   * same retained and automatically paced continuation semantics as
+   * InvalidateMeasure(). Existing geometry remains observable until the pending
+   * calculation executes; completion signals continue to identify each pass.
    */
   void InvalidateArrange();
 
@@ -1653,16 +1645,14 @@ public: // State API (non-chaining)
    * deliver its partial snapshots. Direct manual
    * View::Arrange() does not create a controller pass or emit this signal.
    *
-   * A slot may NOT invalidate layout. The existing retained-but-parked rule
-   * applies: affected caches and ancestors are invalidated and roots remain
-   * pending, but the callback does not request an idle ProcessEvents wake.
-   * Further calculation requires an independent processing cycle, explicit
-   * LayoutController::ProcessLayouts(), or a request outside layout processing.
-   * New requests do not cancel the completed pass's remaining notifications.
-   * Property changes and tree mutations follow the same scheduling rule.
+   * A slot may conditionally invalidate layout or mutate properties and the
+   * tree. The controller preserves the request and schedules a paced continuation
+   * without recursively calculating inside the callback. New requests do not
+   * cancel this pass's remaining notifications. An unconditional mutation may
+   * continue producing passes indefinitely; pacing does not guarantee convergence.
    *
    * A manual ProcessLayouts() in a slot calculates synchronously, but its
-   * notifications wait for a later automatic pre phase, core Relayout and post.
+   * notifications wait for a later permitted automatic pre, core Relayout and post.
    * If a slot throws, its already started signal is not replayed; remaining
    * notifications are preserved for a later post-process invocation. Removing
    * the controller stops all remaining notifications immediately.

@@ -1,33 +1,16 @@
-# 77. Layout Invalidation: Park
+# TC77 — In-pass text 변경의 자동 continuation
 
-Layout pass 안에서 발생한 invalidation은 pending으로 보존하고, 정상적으로 끝난 pass의 `LayoutFinished`는 post-process에서 전달하는 계약을 검증합니다. 이 TC는 외부 처리 기회를 기다리는 scheduling 정책을 대상으로 합니다.
+실행 대상은 서버가 제공한 현재 revision의 manual-tests binary입니다. 이 문서에는 빌드 단계가 없습니다. stdout/stderr를 모두 보존하십시오.
 
-## 실행 준비
+1. launcher 목록에서 `77. Layout Invalidation: Automatic Continuation`을 선택합니다. 이름 검색이나 목록 탐색을 사용하십시오.
+2. 화면 진입 이후 touch·키·resize를 추가하지 마십시오. 앱 내부 timer·polling·animation을 추가하거나 `ProcessLayouts()`를 호출하지 마십시오.
+3. 외부 도구의 timeout 15초 동안 `TC77_ARRANGE count=N mutating=1`과 `TC77_PASS finished=F arrange=N mutating=M`을 수집합니다.
+4. `count=30`과 producer 중단 로그, 이후 `mutating=0`인 완료 알림을 관측하십시오. `mutating=1`인 완료 알림도 그 전에 존재해야 합니다.
+5. resource 관련 startup event가 끝난 뒤 3초 이상 `TC77_ARRANGE`/`TC77_PASS`가 증가하지 않는지 외부 로그로 확인하십시오. 15초 내 quiet 구간이 없으면 실패 근거로 남기고 별도 TC95를 수행하십시오.
+6. 뒤로 이동했다가 재진입하여 arrange 및 finished 번호가 1부터 다시 시작하는지 확인하십시오.
 
-- 서버가 해당 commit에서 준비한 `manual-test-dali-ui-foundation` 실행 파일을 사용합니다. 이 문서의 실행 과정에서 빌드하지 않습니다.
-- stdout/stderr를 파일로 수집하며 앱을 실행하고 목록에서 `77. Layout Invalidation: Park`를 선택합니다. 목록 검색 기능을 사용할 수 있습니다.
-- 화면에는 arrange 횟수 라벨과 파란 box가 표시됩니다. 진입 완료 뒤에는 지시된 입력 외의 터치·키·window 이동·크기 변경을 하지 않습니다.
-- 서버에서 timeout과 로그를 관측합니다. 앱 내부 polling timer, 자동 클릭, 수동 `ProcessLayouts()` 호출을 추가하지 않습니다.
-
-## 관측값
-
-- `TC77_ARRANGE count=N mutating=1`: box Arrange에서 라벨을 변경했습니다. 이후 재계산할 작업이 남을 수 있습니다.
-- `TC77_PASS finished=F arrange=N mutating=M`: 정상 window pass의 post-process 알림입니다. `F`는 전달 순번이며 `M=1`이면 producer가 계속 변경하도록 설정되어 있습니다.
-- `producer stopped mutating`: 30번째 변경 후 producer가 추가 변경을 중단했습니다.
-- signal handler는 로그만 기록합니다. 신호 자체를 최종 geometry 또는 rendering 완료로 해석하지 않습니다.
-
-## 실행 절차와 판정
-
-1. TC 진입 직후 로그를 수집합니다. `0 < arrange < 30`, `mutating=1`인 `TC77_PASS`가 있어야 합니다. 변경이 계속 설정된 상태에서도 pass 알림이 발생하는 것이 핵심 조건입니다.
-2. 마지막 초기 로그 이후 3초 동안 입력을 중단합니다. 초기 자원 처리 중 로그가 더 생겼다면 마지막 로그부터 다시 관측합니다. quiet 구간에서 arrange가 자율적으로 계속 증가하면 이 commit의 park 정책에 대해 FAIL입니다. 10초 내 quiet 구간을 확보하지 못하면 환경의 추가 이벤트 여부를 기록하고 재실행합니다.
-3. 파란 box를 한 번 터치한 뒤 로그를 읽습니다. 이전보다 arrange 횟수가 증가하고, 그 결과에 해당하는 `TC77_PASS`가 뒤따라야 합니다. 하나의 터치가 여러 platform 이벤트를 만들 수 있으므로 터치 수와 pass 수가 정확히 같아야 한다는 조건은 사용하지 않습니다.
-4. 입력 사이에 quiet 구간을 두면서 3번을 반복합니다. `finished`는 관측된 `TC77_PASS`마다 정확히 1 증가하고 `arrange`는 감소하지 않아야 합니다. `mutating=1`인 알림을 최소 두 번 확인합니다.
-5. `producer stopped mutating`을 관측한 뒤 한 번 더 입력합니다. 남은 계산이 처리된 pass 알림을 확인하고, 다시 3초 동안 로그가 더 증가하지 않는지 확인합니다.
-6. Back으로 나갔다가 재진입합니다. 로그 순번이 초기화되고 같은 절차가 가능해야 합니다.
-
-## PASS / FAIL
-
-- PASS: 변경 중인 정상 pass에서도 알림이 발생하고, 외부 이벤트로 후속 계산이 진행하며, 변경 중단 후 조용한 상태가 유지됩니다.
-- FAIL: `LayoutFinished`가 변경 중단 때까지 억제되거나, 로그 순번이 누락·역행하거나, producer 실행 뒤 완료 알림이 누락되거나, 조용한 상태에서 계산/알림이 계속 증가하거나, 이탈·재진입 중 crash가 발생합니다.
-- 최초 진입 후 자원 처리나 서버의 반복 입력이 지속되어 park 관측 조건을 만들지 못한 실행을 PASS로 처리하지 않습니다. 실행 조건과 원본 로그를 함께 보존합니다.
-- CPU 수치는 보조 관측값입니다. PC별 고정 CPU 백분율을 기능 PASS / FAIL 기준으로 사용하지 않습니다.
+- PASS: 입력 없이 30번의 mutation에 도달하고, pending이 있던 pass도 완료 알림을 전달하며, mutation 중단 뒤 최종 처리를 거쳐 quiet 상태에 도달합니다.
+- FAIL: 외부 입력을 추가해야 진행되거나, 정상 pass의 완료 알림이 mutation 중단까지 억제되거나, mutation 종료 뒤에도 계산/알림이 계속 반복되거나, 재진입 시 counter가 초기화되지 않거나 crash가 발생합니다.
+- `finished`는 1씩 증가해야 하고 `arrange`는 역행하면 안 됩니다. resource 및 platform event가 추가 pass를 만들 수 있으므로 모든 PC에서 고정된 전체 완료 횟수를 강제하지 마십시오. `count=30` 이후 최종 geometry를 처리하는 pass는 허용합니다.
+- 이 TC는 text resource 경로도 사용합니다. 독립 event가 scheduling 유실을 숨길 수 있으므로 자동 진행 보장의 최종 판정에는 TC95 quiet 시나리오도 필요합니다.
+- CPU는 보조 관측값입니다. 프로세스 전체 CPU에 고정 임계값을 적용하거나 `LayoutFinished`만으로 안정화·화면 표시 완료를 단정하지 마십시오.

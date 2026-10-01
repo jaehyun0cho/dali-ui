@@ -119,13 +119,11 @@ MeasuredSize MeasureReloadProbeViewImpl::OnMeasurePass(View /*self*/, float widt
     // default mode, and it is what an application that re-applies its state every pass
     // now gets.
     //
-    // Reload() is the explicit reload. It marks the child's visual dirty and calls
-    // InvalidateMeasure() from inside a Measure pass, which is the contract violation
-    // under test: the work is RETAINED and PARKED (no idle wake of its own), the visual
-    // is rebuilt at the child's Measure() further down in this same callback, and the
-    // re-dirtying happens while this view's own producer is still running, so this view
-    // declines to publish its measure cache and this callback runs again next pass. The
-    // child's public InvalidateMeasure() path logs that violation once per view.
+    // Reload() marks the child dirty during this producer. The child's Measure
+    // below rebuilds its visual, while the parent's in-progress cache publication
+    // is withheld. Any remaining invalidation receives an automatic continuation
+    // subject to the controller's deadline. Repeating this unconditionally keeps
+    // creating work; the same-URL path avoids that work entirely.
     if(mExplicitReload)
     {
       mLottie.Reload();

@@ -24,62 +24,35 @@
 // SetResourceUrl() carrying the url the child already has, or with Reload().
 //
 // What to observe on a device:
-//  1. In the DEFAULT mode the callback issues SetResourceUrl() with the current url,
-//     which is a NO-OP: the child is not dirtied, the layout settles, "LayoutFinished"
-//     prints once, and the application goes idle. CPU for this process in `top` should
-//     fall back to the idle baseline and the per-pass lines should stop.
-//  2. Press 5 to switch the callback to Reload(). That is the explicit reload, and it
-//     rebuilds the child's visual on every pass. The passes, the CPU reading and the
-//     framework diagnostics below are what this probe exists to show.
-//  3. CPU for this process in `top` while nothing is touched. Press 3 first: the per-pass
-//     console line is the largest cost in the loop and would otherwise dominate the
-//     reading.
-//  4. The console "[rate]" lines. They report wall-clock time per 25 measure passes, so
-//     they show the pass rate directly. With per-pass logging on they are a LOWER bound.
-//  5. Whether passes keep arriving with NO input at all. That is the actual question:
-//     an idle application prints nothing.
-//  6. With per-pass logging enabled, "LayoutFinished" reports each completed window
-//     pass, including a pass that leaves another reload pending. It does not indicate
-//     stable geometry. Press 1 to stop the producer, or 5 to return to the no-op call;
-//     a subsequent processing opportunity drains the remaining work.
-//  7. In Reload() mode two framework diagnostics are expected and are not defects: one
-//     'View::InvalidateMeasure() called ... while a Measure/Arrange pass is running'
-//     error line per view (the Lottie child's in-pass invalidation), and one
-//     LayoutController 'layout root(s) ... remain pending' line per parked episode.
+//  1. DEFAULT mode applies the current URL, which is a no-op. After resource
+//     readiness completes, measure and completion counts should stop increasing.
+//  2. Press 5 for explicit Reload() on every measure. This intentionally produces
+//     continuous work. Layout continuations are scheduled automatically and paced;
+//     each successful pass still reports LayoutFinished when logging is enabled.
+//  3. Press 3 before comparing CPU cost: logging itself adds event-thread work.
+//     Rate lines report wall time for 25 measures; no fixed cross-device CPU cap
+//     or exact 60 Hz rate is implied.
+//  4. Press 1 to disable the producer or 5 to restore same-URL no-op behavior.
+//     Retained requests should drain without another user action, then stop.
 //
 // Keys:
-//  1 - toggle the in-measure call (the pattern under test); on by default
-//  2 - print the current counters
-//  3 - toggle the one-line-per-pass console trace; on by default
-//  4 - play / pause the Lottie animation; paused by default
-//  5 - toggle explicit Reload() instead of the same-url SetResourceUrl(); off by default
+//  1 - toggle the in-measure call; on by default
+//  2 - print current counters
+//  3 - toggle per-pass trace; on by default
+//  4 - play / pause the animation; paused by default
+//  5 - toggle explicit Reload(); off by default
 //  Escape / Back - quit
 //
-// Mechanism, stated factually:
-//  - SetResourceUrl() with the url that is already set is a NO-OP since this change: the
-//    Lottie view leaves its visual clean and raises no InvalidateMeasure(), so a pass that
-//    only re-applies the current url converges.
-//  - Reload() is the explicit reload. It marks the visual dirty and calls
-//    InvalidateMeasure(). Raised from inside a Measure pass that is a contract violation:
-//    it is RETAINED and PARKED -- caches are revoked and the layout root stays pending,
-//    but it requests no idle ProcessEvents wake. It also re-dirties the probe while the
-//    probe's own producer is running, so the probe declines to publish its measure cache
-//    and its callback runs again on the next pass.
-//  - The child's Measure() in the same callback rebuilds the vector visual, because the
-//    dirty flag is consumed there.
-//  - The animated vector image visual parks ITS main loop wake too while a
-//    Measure/Arrange pass is on the stack: it still registers its once post-processor, it
-//    just no longer calls RequestProcessEventsAndUpdate() from inside the pass.
-//  - What remains is asynchronous. Each rebuilt visual loads on its own, and when it
-//    reaches READY the Lottie view requests a re-layout AT EVENT TIME, which is a legal
-//    wake. Whether that closes the loop into a self-sustaining main loop on real hardware
-//    is exactly what this sample is here to show. This file asserts no result.
+// Reload invalidates the child while its parent's measure is in progress. The
+// dirty/cache state is retained, and the parent's in-progress cache publication
+// is withheld. Remaining work receives a paced continuation. The child can rebuild
+// its visual in the current measure, while asynchronous resource readiness can
+// generate independent events; those events do not bypass a pending continuation
+// deadline. Same-URL SetResourceUrl leaves the visual clean and remains a no-op.
 //
-// NOTE: this is a DIAGNOSTIC reproducer of a contract violation, not a pattern to copy.
-// Mutating a view from inside a measure pass is precisely what the measure contract
-// forbids: a measure implementation must be a pure function of its constraints, the
-// view's effective scale, its own layout-tracked state, the effective layout direction
-// and its children's measured sizes.
+// This deliberately unconditional producer diagnoses repeated work. Prefer state
+// setters and conditional invalidation in applications. A pass completion signal
+// does not imply stable geometry or resource/presentation completion.
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali-ui-foundation/public-api/layouts/layout-controller.h>

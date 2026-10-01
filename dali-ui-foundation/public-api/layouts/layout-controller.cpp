@@ -23,6 +23,7 @@
 #include <dali/integration-api/debug.h>
 #include <dali/integration-api/processor-interface.h>
 #include <dali/public-api/actors/actor.h>
+#include <dali/public-api/adaptor-framework/timer.h>
 #include <dali/public-api/object/weak-handle.h>
 #include <dali/public-api/signals/callback.h>
 #include <dali/public-api/signals/connection-tracker.h>
@@ -35,6 +36,7 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/internal/layouts/layout-invalidation-generation.h>
+#include <dali-ui-foundation/internal/layouts/layout-scheduling-policy.h>
 #include <dali-ui-foundation/internal/layouts/layout-transition-dispatcher.h>
 #include <dali-ui-foundation/internal/layouts/standalone-bounds-utils.h>
 #include <dali-ui-foundation/internal/views/view/view-data-impl.h>
@@ -78,12 +80,11 @@ std::vector<std::unique_ptr<LayoutController>> gDetachedLayoutControllers;
 // re-arms instead of freeing while layout processing is on the stack.
 int32_t gGlobalProcessDepth{0};
 
-// True when a no-self-wake layout request was recorded while a
-// LayoutController::Process() frame was on the stack. Such work stays in the
-// controller's pending set but deliberately does not request another idle
-// ProcessEvents cycle. When the outermost frame unwinds, end the propagation
-// generation so a later event-time invalidation can walk to the root again and
-// upgrade that parked work into a real idle wake request.
+// Includes transition setup at the end of a batch, but excludes TickAnimators.
+int32_t gLayoutBatchProcessingDepth{0};
+
+// Finish the propagation generation after a processing-time registration so a
+// later independent request can reach a root again, including fault recovery.
 bool gDeferredLayoutRequestDuringProcess{false};
 
 /**
@@ -163,6 +164,29 @@ void ScheduleReapDetachedLayoutControllers()
 }
 } // namespace
 
+namespace Internal
+{
+namespace LayoutScheduling
+{
+namespace
+{
+NowFunction gNowFunction{nullptr};
+}
+
+TimePoint Now()
+{
+  return gNowFunction ? gNowFunction() : Clock::now();
+}
+
+NowFunction SetNowFunctionForTesting(NowFunction provider)
+{
+  NowFunction previous = gNowFunction;
+  gNowFunction         = provider;
+  return previous;
+}
+} // namespace LayoutScheduling
+} // namespace Internal
+
 namespace Integration
 {
 
@@ -175,6 +199,39 @@ namespace Integration
 class LayoutControllerImpl : public Dali::Integration::Processor, public ConnectionTracker
 {
 public:
+  using SchedulingTime     = Internal::LayoutScheduling::TimePoint;
+  using SchedulingDuration = Internal::LayoutScheduling::Duration;
+
+  /**
+   * @brief Measures actual layout or signal work once across nested calls.
+   *
+   * A manual pass from TickAnimators has no enclosing measured work scope, so
+   * it contributes here even though its Process depth is greater than one.
+   */
+  struct WorkMeasurementScope
+  {
+    explicit WorkMeasurementScope(LayoutControllerImpl& self)
+    : mSelf(self),
+      mStarted(self.mWorkMeasurementDepth == 0u ? Internal::LayoutScheduling::Now() : SchedulingTime{})
+    {
+      ++mSelf.mWorkMeasurementDepth;
+    }
+
+    ~WorkMeasurementScope()
+    {
+      if(--mSelf.mWorkMeasurementDepth == 0u)
+      {
+        mSelf.mInvocationWorkCost += std::max(SchedulingDuration::zero(), Internal::LayoutScheduling::Now() - mStarted);
+      }
+    }
+
+    WorkMeasurementScope(const WorkMeasurementScope&)            = delete;
+    WorkMeasurementScope& operator=(const WorkMeasurementScope&) = delete;
+
+    LayoutControllerImpl& mSelf;
+    SchedulingTime        mStarted;
+  };
+
   /**
    * @brief Data for a tracked layout root.
    *
@@ -343,6 +400,7 @@ public:
         // window-resize-driven pass.
         mDispatcher->BeginLayoutPass();
       }
+      ++gLayoutBatchProcessingDepth;
     }
     ~LayoutPassScope()
     {
@@ -352,6 +410,7 @@ public:
         // after the first root and misclassify the rest.
         mDispatcher->EndLayoutPass();
       }
+      --gLayoutBatchProcessingDepth;
     }
     LayoutPassScope(const LayoutPassScope&)            = delete;
     LayoutPassScope& operator=(const LayoutPassScope&) = delete;
@@ -529,6 +588,8 @@ public:
       return;
     }
     mDetached = true;
+    StopRetryTimer();
+    mAutomaticTurnActive = false;
 
     // Unregister from adaptor (both the pre and post registrations)
     if(DALI_LIKELY(Adaptor::IsAvailable()))
@@ -600,10 +661,9 @@ public:
    * The registration half of RequestLayout. Split out for PendingBatchRollbackScope,
    * which runs while an exception is propagating out of a layout pass. A wake there
    * would re-drive the producer that has just thrown, and a deterministically throwing
-   * producer would then spin the main loop at full rate -- the same failure the in-pass
-   * park rule exists to prevent for invalidation. Note that the pass guards have already
-   * unwound by the time the rollback runs, so RequestIdleWakeIfAllowed() would NOT park
-   * the request of its own accord: not calling it is the mechanism, not an optimisation.
+   * producer must not be treated like a normal continuation. The enclosing
+   * processor marks failed roots as faulted after this rollback has completed;
+   * a fresh external request or explicit manual retry is required to resume them.
    *
    * @return True when the view was retained
    */
@@ -633,7 +693,7 @@ public:
   {
     if(RetainLayoutRootWithoutWake(view))
     {
-      RequestIdleWakeIfAllowed();
+      ScheduleLayoutRequest();
     }
   }
 
@@ -742,6 +802,13 @@ public:
     {
       mTransitionDispatcher->OnViewDestroyed(view);
     }
+    if(mProcessDepth == 0 && !HasOutstandingWork())
+    {
+      // Teardown must not allocate a timer or request more work. Dropping the
+      // last request also releases its old continuation deadline.
+      StopRetryTimer();
+      mSchedulingPolicy.Reset();
+    }
   }
 
   /**
@@ -827,12 +894,10 @@ public:
       Internal::LayoutInvalidation::AdvanceGeneration();
     }
 
-    // Preserve the resize wake even when there are no live roots, but coalesce
-    // it with any wake already requested by the invalidation walk above. If a
-    // resize is delivered re-entrantly from Measure/Arrange or LayoutFinished,
-    // its work is parked under the same no-self-wake rule as every other layout
-    // request in that window.
-    RequestIdleWakeIfAllowed();
+    // An empty resize still needs a processor opportunity to clear the
+    // dispatcher's resize state, without inventing a completed layout pass.
+    mResizePending = true;
+    ScheduleLayoutRequest();
   }
   /**
    * @brief Processes all pending views with layout capability.
@@ -860,73 +925,169 @@ public:
    */
   void ProcessImpl(bool postProcess, bool manualInvocation)
   {
-    if(DALI_UNLIKELY(mDetached))
+    if(mDetached)
     {
-      // Detached but not yet freed. Both registrations are already gone, so this
-      // can only be a stale call; do nothing.
       return;
     }
 
     ProcessDepthScope       depthScope(*this);
     GlobalProcessDepthScope globalDepthScope;
+    const bool              outermost    = mProcessDepth == 1;
+    const auto              started      = Internal::LayoutScheduling::Now();
+    bool                    measuredWork = false;
+    bool                    startedTurn  = false;
+    if(outermost)
+    {
+      mInvocationWorkCost = SchedulingDuration::zero();
+    }
+    auto measureWork = [this](auto&& work)
+    {
+      WorkMeasurementScope scope(*this);
+      work();
+    };
+
+    // Consuming an automatic entry must clear this even when its calculation
+    // gate is closed; otherwise the retry timer could never request another idle.
+    if(!postProcess && !manualInvocation)
+    {
+      mIdleWakeArmed = false;
+    }
 
     Dali::Window window = mWindow.GetHandle();
-    if(DALI_UNLIKELY(!window))
+    if(!window)
     {
-      // The window is gone. Defer self-destruct to the outermost Process frame
-      // (handled below) so a re-entrant Process/emit frame is never left
-      // running on a destroyed controller.
       mDestroyPending = true;
+      return;
     }
-    else if(!postProcess)
+
+    try
     {
-      ProcessLayouts(window, manualInvocation);
-
-      if(!mDestroyPending && mTransitionDispatcher)
+      if(!postProcess)
       {
-        // The dispatcher computes deltaSec from its own wall clock and,
-        // once an animator becomes active, also drives a periodic tick
-        // timer so subsequent ticks fire even when no other event wakes
-        // the event thread.
-        mTransitionDispatcher->TickAnimators();
-      }
-
-      if(mProcessDepth == 1)
-      {
-        if(!manualInvocation && !mDestroyPending)
+        if(manualInvocation)
         {
-          // The following core Relayout covers every record completed so far.
-          // Manual passes from a later post callback remain in the pending queue,
-          // even if this controller's post processor has not run yet.
+          // Explicit retries may recover failed roots. A nested successful
+          // call must not hide a later failure from another nested batch.
+          mLayoutFaulted = false;
+          if(IsContinuationContext())
+          {
+            mSchedulingPolicy.BeginContinuation(started);
+          }
+        }
+        else if(outermost)
+        {
+          if(mAutomaticTurnActive)
+          {
+            // An earlier outer pre did not reach this controller's post before
+            // another cycle started. Close its accounting and pass through the
+            // normal gate; never leave an orphan token as a permanent bypass.
+            FinishAutomaticTurn(started);
+          }
+          if(mSchedulingPolicy.CanRun(started) && HasRunnableWork())
+          {
+            mAutomaticTurnActive = true;
+            mAutomaticTurnCost   = SchedulingDuration::zero();
+            startedTurn          = true;
+            StopRetryTimer();
+          }
+        }
+
+        if((manualInvocation || startedTurn) && !mLayoutFaulted)
+        {
+          measuredWork   = !mPendingViews.empty() || mResizePending;
+          mResizePending = false;
+          try
+          {
+            measureWork([&]
+            { ProcessLayouts(window); });
+          }
+          catch(...)
+          {
+            // The batch rollback has retained its unprocessed roots. Do not
+            // automatically repeat a producer or transition setup that threw.
+            mLayoutFaulted = true;
+            Internal::LayoutInvalidation::AdvanceGeneration();
+            throw;
+          }
+        }
+
+        // Pacing only gates layout work. Normal animation completion callbacks
+        // retain their independent event-time request semantics.
+        if(!mDestroyPending && mTransitionDispatcher)
+        {
+          mTransitionDispatcher->TickAnimators();
+        }
+
+        if(startedTurn && !mDestroyPending)
+        {
+          measuredWork = measuredWork || !mPendingPassCompletions.empty();
           mReadyPassCompletions.splice(mReadyPassCompletions.end(), mPendingPassCompletions);
         }
-        if(mPendingViews.empty())
-        {
-          mParkedWorkLogged = false;
-        }
-        else
-        {
-          LogParkedWorkOnce();
-        }
+      }
+      else if(outermost && mAutomaticTurnActive && !mReadyPassCompletions.empty())
+      {
+        // A previously interrupted cohort needs a newly permitted automatic
+        // turn. Merely encountering another processor post cannot bypass pacing.
+        measuredWork = true;
+        Internal::LayoutInvalidation::ScopedLayoutFinishedEmit emitScope;
+        measureWork([&]
+        { EmitLayoutFinishedSignals(window); });
       }
     }
-    else if(mProcessDepth == 1 && !mReadyPassCompletions.empty())
+    catch(...)
     {
-      // Preserve the existing no-self-wake policy across both View and Window
-      // callbacks. Pending work does not cancel a successfully completed pass.
-      Internal::LayoutInvalidation::ScopedLayoutFinishedEmit emitScope;
-      EmitLayoutFinishedSignals(window);
-      if(!mDestroyPending)
+      if(outermost && !mDestroyPending)
       {
-        if(mPendingViews.empty())
+        const auto ended = Internal::LayoutScheduling::Now();
+        const auto cost  = mInvocationWorkCost;
+        if(mAutomaticTurnActive)
         {
-          mParkedWorkLogged = false;
+          mAutomaticTurnCost += cost;
+          mSchedulingPolicy.BeginContinuation(ended);
+          FinishAutomaticTurn(ended);
         }
-        else
+        else if(measuredWork || cost != SchedulingDuration::zero())
         {
-          LogParkedWorkOnce();
+          mSchedulingPolicy.FinishTurn(ended, cost, HasOutstandingWork());
+        }
+        else if(HasOutstandingWork())
+        {
+          // An unrelated animator exception with no measured work must not
+          // shorten or extend an existing continuation's deadline.
+          mSchedulingPolicy.BeginContinuation(ended);
+        }
+        // Preserve the original application exception if allocating or starting
+        // a recovery timer itself fails. Pending roots and records stay intact.
+        try
+        {
+          ReconcileScheduling();
+        }
+        catch(...)
+        {
+          DALI_LOG_ERROR("LayoutController: could not reserve processing after an exception.\n");
         }
       }
+      throw;
+    }
+
+    if(outermost && !mDestroyPending)
+    {
+      const auto ended = Internal::LayoutScheduling::Now();
+      const auto cost  = mInvocationWorkCost;
+      if(mAutomaticTurnActive)
+      {
+        mAutomaticTurnCost += cost;
+        // This also closes a successful pass with no signal subscribers.
+        if(postProcess)
+        {
+          FinishAutomaticTurn(ended);
+        }
+      }
+      else if((measuredWork || cost != SchedulingDuration::zero()) && mSchedulingPolicy.IsContinuation())
+      {
+        mSchedulingPolicy.FinishTurn(ended, cost, HasOutstandingWork());
+      }
+      ReconcileScheduling();
     }
   }
 
@@ -1088,91 +1249,169 @@ public:
   }
 
 private:
-  /**
-   * @brief Requests one coalesced idle wake outside the no-self-wake layout window.
-   *
-   * Pending work and wake state are intentionally independent. A request made
-   * from Measure/Arrange or LayoutFinished is retained in mPendingViews but
-   * cannot make the current layout episode perpetually wake the event loop.
-   * Outside that window -- including LayoutTransition lifecycle callbacks after
-   * the layout pass -- the first request arms one idle wake; duplicates coalesce
-   * until pre-processing consumes that wake.
-   */
-  void RequestIdleWakeIfAllowed()
+  bool IsContinuationContext() const
   {
-    if(mDetached || mDestroyPending)
-    {
-      return;
-    }
+    return gLayoutBatchProcessingDepth != 0 ||
+           Internal::ViewDataImpl::IsLayoutPassOnStack() ||
+           Internal::LayoutInvalidation::IsLayoutFinishedEmitInProgress();
+  }
 
-    if(Internal::ViewDataImpl::IsLayoutPassOnStack() ||
-       Internal::LayoutInvalidation::IsLayoutFinishedEmitInProgress())
-    {
-      if(gGlobalProcessDepth != 0)
-      {
-        gDeferredLayoutRequestDuringProcess = true;
-      }
-      return;
-    }
+  bool HasOutstandingWork() const
+  {
+    return mResizePending || !mPendingViews.empty() ||
+           !mPendingPassCompletions.empty() || !mReadyPassCompletions.empty();
+  }
 
-    if(!mIdleWakeArmed && DALI_LIKELY(Adaptor::IsAvailable()))
+  bool HasRunnableWork() const
+  {
+    return (!mLayoutFaulted && (mResizePending || !mPendingViews.empty())) ||
+           !mPendingPassCompletions.empty() || !mReadyPassCompletions.empty();
+  }
+
+  void QueueIdleWake()
+  {
+    if(!mIdleWakeArmed && !mDetached && !mDestroyPending && Adaptor::IsAvailable())
     {
       mIdleWakeArmed = true;
       Adaptor::Get().RequestProcessEventsOnIdle();
     }
   }
 
-  /**
-   * @brief Logs, once per parked episode, that layout work stayed pending with no wake.
-   *
-   * The per-view diagnostic in ViewDataImpl covers only the public entry points; work
-   * parked through framework-internal paths (a child added from OnArrange, a resource
-   * callback landing mid-pass) would otherwise defer silently. This is the field-side
-   * trace for "why does this view update only on the next touch". One line per episode:
-   * the latch resets when the pending set drains, so a persistently diverging producer
-   * cannot flood the log at event rate. Skipped while an idle wake is outstanding --
-   * such work is about to be serviced and is not at risk of going stale.
-   */
-  void LogParkedWorkOnce()
+  void StopRetryTimer()
   {
-    if(mParkedWorkLogged || mPendingViews.empty() || mIdleWakeArmed)
+    if(mRetryTimer && mRetryTimerArmed)
+    {
+      mRetryTimer.Stop();
+    }
+    mRetryTimerArmed = false;
+  }
+
+  void ArmRetryTimer(SchedulingTime due)
+  {
+    if(mRetryTimerArmed && mRetryTimerDue == due)
     {
       return;
     }
-    mParkedWorkLogged = true;
-
-    // Identify one pending root as helpfully as the handle allows (same ladder as
-    // ViewDataImpl::LogInPassInvalidation; this runs at most once per episode).
-    Dali::String rootName;
-    if(ViewImpl* sample = *mPendingViews.begin())
+    StopRetryTimer();
+    const uint32_t interval = Internal::LayoutScheduling::TimerDelayMilliseconds(due, Internal::LayoutScheduling::Now());
+    if(!mRetryTimer)
     {
-      Dali::CustomActor self = sample->Self();
-      if(self)
+      mRetryTimer = Dali::Timer::New(interval);
+      mRetryTimer.TickSignal().Connect(this, &LayoutControllerImpl::OnRetryTimer);
+    }
+    else
+    {
+      mRetryTimer.SetInterval(interval, false);
+    }
+    mRetryTimerDue   = due;
+    mRetryTimerArmed = true;
+    mRetryTimer.Start();
+  }
+
+  bool OnRetryTimer()
+  {
+    if(!mRetryTimerArmed)
+    {
+      return false;
+    }
+    mRetryTimerArmed = false;
+    if(!mDetached && !mDestroyPending && HasRunnableWork())
+    {
+      // Never process layout or re-arm this timer inside its callback: timer
+      // backends stop it after a false return. Automatic pre checks the deadline
+      // again, including a spuriously early tick, and arms a new timer if needed.
+      QueueIdleWake();
+    }
+    return false;
+  }
+
+  void ReconcileScheduling()
+  {
+    if(mDetached || mDestroyPending || !Adaptor::IsAvailable())
+    {
+      StopRetryTimer();
+      return;
+    }
+    if(!HasOutstandingWork())
+    {
+      StopRetryTimer();
+      mSchedulingPolicy.Reset();
+      return;
+    }
+    if(!HasRunnableWork())
+    {
+      // Faulted roots do not drive retries, but successful completion records
+      // remain independently runnable if any are present.
+      StopRetryTimer();
+      return;
+    }
+    if(mAutomaticTurnActive)
+    {
+      // The matching core post owns this turn and makes the final reservation.
+      // Do not start and stop a backend timer for every successful layout pass.
+      // Exceptions in this controller close the turn before reserving recovery.
+      return;
+    }
+    if(mSchedulingPolicy.CanRun(Internal::LayoutScheduling::Now()))
+    {
+      StopRetryTimer();
+      QueueIdleWake();
+    }
+    else
+    {
+      ArmRetryTimer(mSchedulingPolicy.NotBefore());
+    }
+  }
+
+  void ScheduleLayoutRequest()
+  {
+    if(mDetached || mDestroyPending)
+    {
+      return;
+    }
+    if(IsContinuationContext())
+    {
+      mSchedulingPolicy.BeginContinuation(Internal::LayoutScheduling::Now());
+      if(gGlobalProcessDepth != 0)
       {
-        rootName = self.GetProperty<Dali::String>(Dali::Actor::Property::NAME);
-        if(rootName.Empty())
-        {
-          rootName = self.GetTypeName();
-        }
+        gDeferredLayoutRequestDuringProcess = true;
       }
     }
+    else
+    {
+      // A fresh event-time request is an explicit opportunity to recover a
+      // previously failed root; rollback itself never calls this function.
+      mLayoutFaulted = false;
+      if(!mSchedulingPolicy.IsContinuation())
+      {
+        QueueIdleWake();
+      }
+    }
+    if(mProcessDepth == 0)
+    {
+      // A request from another window's layout still owns its own future ticket.
+      ReconcileScheduling();
+    }
+  }
 
-    DALI_LOG_ERROR(
-      "LayoutController: %zu layout root(s) (e.g. '%s') remain pending after layout "
-      "processing, with no idle wake: invalidating layout during Measure/Arrange or "
-      "LayoutFinished is prohibited in principle and only honoured best-effort, so such "
-      "work never wakes the event loop itself. It is serviced by the next externally "
-      "triggered ProcessEvents cycle, which on a quiescent application may be "
-      "indefinitely later. LayoutFinished reports completed passes even while this "
-      "work remains pending. Defer invalidation to event time for prompt processing.\n",
-      mPendingViews.size(),
-      rootName.Empty() ? "View" : rootName.CStr());
+  void FinishAutomaticTurn(SchedulingTime ended)
+  {
+    mAutomaticTurnActive = false;
+    if(mSchedulingPolicy.IsContinuation())
+    {
+      mSchedulingPolicy.FinishTurn(ended, mAutomaticTurnCost, HasOutstandingWork());
+    }
+    else if(!HasOutstandingWork())
+    {
+      mSchedulingPolicy.Reset();
+    }
+    mAutomaticTurnCost = SchedulingDuration::zero();
   }
 
   /**
    * @brief Processes all pending views with layout capability.
    */
-  void ProcessLayouts(Dali::Window window, bool manualInvocation)
+  void ProcessLayouts(Dali::Window window)
   {
     // Begins the dispatcher's batch here and ends it at EVERY exit -- the early return
     // just below, the normal end, and an exception out of any producer or lifecycle
@@ -1183,24 +1422,12 @@ private:
 
     if(mPendingViews.empty())
     {
-      // This pre-process invocation consumes any outstanding idle wake, even
-      // when its pending root disappeared before the pass. A manual ProcessLayouts
-      // call does not consume the already-queued platform callback.
-      if(!manualInvocation)
-      {
-        mIdleWakeArmed = false;
-      }
       return;
     }
 
     // Copy pending views and clear (in case new views are added during processing)
     decltype(mPendingViews) viewsSet;
     viewsSet.swap(mPendingViews);
-    if(!manualInvocation)
-    {
-      mIdleWakeArmed = false;
-    }
-
     // Every pending registration has just been consumed, so no view's recorded
     // propagation generation describes a live registration any more: end the generation here,
     // at the swap, and the next invalidation on any view walks its ancestor chain and
@@ -1210,7 +1437,7 @@ private:
     // An invalidation raised DURING the drain lands in the now-empty mPendingViews.
     // If its target root has not started its turn in this batch, the registration
     // is consumed immediately before that turn; otherwise it remains pending for
-    // a later independently driven pass. Its record is written against the new
+    // a later scheduled pass. Its record is written against the new
     // generation either way.
     Internal::LayoutInvalidation::AdvanceGeneration();
 
@@ -1290,7 +1517,7 @@ private:
         // the batch swap. Because this root has not begun its own pass yet, the
         // pass below observes and consumes that work; remove only that pre-turn
         // duplicate. Any invalidation raised from Measure/Arrange itself lands
-        // after this erase and therefore remains parked for a later pass.
+        // after this erase and therefore remains pending for a later pass.
         mPendingViews.erase(view);
 
         // Collect subscribed Views arranged under this root into STACK-LOCAL
@@ -1458,9 +1685,18 @@ private:
   std::unordered_set<ViewImpl*>                         mPendingViews;   ///< Dirty layout roots needing processing
   int32_t                                               mWindowWidth;
   int32_t                                               mWindowHeight;
-  void*                                                 mWindowObjectPtr;                ///< For self-destruct case.
-  bool                                                  mIdleWakeArmed;                  ///< True only while one idle ProcessEvents wake is outstanding
-  bool                                                  mParkedWorkLogged{false};        ///< One diagnostic per parked episode
+  void*                                                 mWindowObjectPtr; ///< For self-destruct case.
+  bool                                                  mIdleWakeArmed;   ///< True only while one idle ProcessEvents wake is outstanding
+  Dali::Timer                                           mRetryTimer;
+  Internal::LayoutScheduling::Policy                    mSchedulingPolicy;
+  SchedulingTime                                        mRetryTimerDue{};
+  SchedulingDuration                                    mAutomaticTurnCost{SchedulingDuration::zero()};
+  SchedulingDuration                                    mInvocationWorkCost{SchedulingDuration::zero()};
+  uint32_t                                              mWorkMeasurementDepth{0u};
+  bool                                                  mRetryTimerArmed{false};
+  bool                                                  mAutomaticTurnActive{false};
+  bool                                                  mLayoutFaulted{false};
+  bool                                                  mResizePending{false};
   LayoutController::LayoutFinishedSignalType            mLayoutFinishedSignal;           ///< Emitted for successful layout passes
   int                                                   mProcessDepth{0};                ///< Re-entrancy depth and deferred-destroy safe point
   bool                                                  mDestroyPending{false};          ///< Deferred self-destruct requested during processing
@@ -1549,16 +1785,6 @@ LayoutController::~LayoutController()
 
 void LayoutController::RequestLayout(ViewImpl* view)
 {
-  // Keep the diagnostic on the application-facing entry point, but never drop
-  // the request. LayoutControllerImpl records it in the pending set and applies
-  // the centralized no-self-wake policy to both public and internal paths.
-  if(view != nullptr &&
-     (Internal::ViewDataImpl::IsLayoutPassOnStack() ||
-      Internal::LayoutInvalidation::IsLayoutFinishedEmitInProgress()))
-  {
-    Internal::ViewDataImpl::Get(*view).LogInPassInvalidation("LayoutController::RequestLayout");
-  }
-
   mImpl->RequestLayout(view);
 }
 

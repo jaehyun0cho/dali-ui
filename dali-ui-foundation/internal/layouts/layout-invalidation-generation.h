@@ -47,10 +47,10 @@ namespace Internal
  * records the generation in which its walk completed; a later invalidation may skip the
  * marking/registration walk only while that record still matches the current generation,
  * which is exactly the window in which "the root is registered and has not been processed
- * yet" holds. A no-self-wake registration must end that generation when its outer
- * processing frame finishes. Consequently a later out-of-processing invalidation cannot
- * be coalesced away:
- * it walks to the already-pending root again and can arm one coalesced outstanding wake.
+ * yet" holds. A processing-time registration ends that generation when its outer
+ * frame finishes, allowing a later independent request to reach the root again.
+ * Failed batches also end the generation so an explicit recovery request is not
+ * coalesced away by an earlier registration.
  *
  * @note This deliberately does NOT reintroduce the dirty-flag short-circuit that used
  * to live in InvalidateMeasure(). That one asked "is this view already dirty?", which
@@ -80,8 +80,8 @@ DALI_UI_API uint32_t CurrentGeneration();
  *  - by the LayoutController when a pass drains the pending set, and when a root is
  *    dropped from it without being processed (the REGISTRATION half of the record's
  *    claim stops holding);
- *  - by the LayoutController after a processing frame records a no-self-wake request, so
- *    a later out-of-processing invalidation must walk to the root and can arm a wake;
+ *  - by the LayoutController after processing-time registration or a failed batch,
+ *    so a later independent request reaches the root and can recover failed work;
  *  - by the outermost Measure/Arrange pass guard on exit (the MARKING half: a pass is
  *    the only consumer of dirty bits, and a manual Measure()/Arrange() on an ancestor
  *    -- both public API -- can consume a walked chain's dirty without any drain).
@@ -107,21 +107,17 @@ DALI_UI_API void AdvanceGeneration();
  * ancestor chain is walked, in-progress producers are prevented from publishing a valid
  * cache entry, and the layout root remains pending.
  *
- * The window controls only the wake side of registration. Pending work raised from
- * inside it may not request an idle ProcessEvents wake, preventing layout processing
- * from creating a self-sustaining layout/emit cycle. A root turn already in the current
- * batch but not yet started may consume the request immediately; work left after the
- * batch is PARKED and is drained by a later independently triggered ProcessEvents or an
- * explicit ProcessLayouts(). An out-of-processing request wakes it by arming at most one
- * coalesced outstanding wake. This policy is independent of call route. Public APIs may
- * diagnose a contract violation, but framework walks, tree mutations, property setters
- * and resource paths receive no scheduling exemption.
+ * This context classifies a request as a continuation. The controller preserves
+ * it and schedules a paced event-thread processing opportunity. A root turn
+ * already in the current batch but not yet started can consume the request;
+ * otherwise it remains pending for a subsequent pass. Public APIs, property
+ * changes, tree mutations, resource callbacks and internal walks use the same
+ * scheduling policy. Neither pacing nor signal delivery clears dirty state.
  *
- * The emit half is a separate counter rather than a bump of the pass depth because a
- * slot runs at pass depth 0 by design: the emit happens in the post-process phase,
- * after every Measure/Arrange guard has unwound. Parked work remains pending,
- * but does not suppress notifications for successfully completed layout passes.
- * A later pass still requires an independent processing opportunity.
+ * The emit half is a separate counter because callbacks run after the
+ * Measure/Arrange guards unwind and after core Relayout. Pending work does not
+ * suppress notification of a successfully completed pass. Callback requests and
+ * manual passes cannot bypass the next automatic notification cohort's deadline.
  *
  * @return True while a LayoutFinished emit is in progress
  */

@@ -75,17 +75,25 @@ public:
    * Outside layout processing, the controller batches these requests and arms one
    * coalesced outstanding ProcessEvents wake for a following processing cycle.
    *
-   * @note Calling this DURING layout processing -- from inside any Measure/Arrange
-   * implementation, or from a LayoutFinishedSignal slot (either this controller's or a
-   * View's) -- is a contract violation and is logged once for the view. The request is
-   * retained in the pending set, but it does not request an idle ProcessEvents wake. A
-   * not-yet-started turn for that root in the current batch may consume it immediately;
-   * otherwise the request remains PARKED until a later independently triggered
-   * ProcessEvents, an explicit ProcessLayouts(), or an out-of-processing request drains
-   * or wakes it. The latter arms at most one coalesced outstanding wake. On a quiescent
-   * application that can be indefinitely later: in-processing scheduling is prohibited
-   * in principle and honoured only best-effort, mirroring dali-core's relayout policy.
-   * Defer the request to event time when a prompt layout pass is required.
+   * Requests made during Measure/Arrange, transition setup in the root batch,
+   * or LayoutFinished delivery are retained and coalesced for an automatically
+   * scheduled continuation. A not-yet-started root in the current batch may
+   * consume the request immediately. Remaining work needs no additional input
+   * from the application while the adaptor continues processing events.
+   *
+   * Automatic continuations are paced on the event thread using a monotonic
+   * deadline, initially based on 60fps. The delay after a turn is at least one
+   * frame period and at least that turn's layout and completion-callback cost.
+   * This is rate limiting, not VSYNC synchronization or a frame deadline promise.
+   * Other event processing cannot bypass an active continuation's deadline.
+   * Normal requests outside layout processing retain their low-latency idle wake.
+   * In particular, animation completion from TickAnimators is outside the batch;
+   * transition OnStart callbacks inside the batch create paced continuations.
+   *
+   * A producer or transition-setup exception retains failed work without
+   * automatically retrying it. A fresh request outside layout processing or
+   * explicit ProcessLayouts() allows another attempt. Completion records from
+   * earlier successful passes remain independent of those failed roots.
    *
    * @param[in] view The view with layout capability to schedule
    */
@@ -97,7 +105,7 @@ public:
    * @note For internal framework use only; applications must use RequestLayout().
    * This is the registration path taken by the invalidation walk itself. "Internal"
    * describes API visibility only: it is subject to the same processing-window wake
-   * policy as RequestLayout(), so framework routing cannot bypass PARK semantics.
+   * policy as RequestLayout(), so framework routing cannot bypass continuation pacing.
    *
    * @param[in] view The view with layout capability to schedule
    */
@@ -188,13 +196,16 @@ public:
    * - Reflects calculation completion only, not presentation or the end of
    *   layout transition animations. Earlier pass results need not match live
    *   Actor properties when several passes are delivered together.
-   * - A slot may NOT invalidate layout. Such work remains subject to the
-   *   existing retained-but-parked scheduling rule: cache and pending state are
-   *   updated, but no idle ProcessEvents wake is requested from the callback.
-   *   The completed pass is still reported. Further calculation needs an
-   *   independent processing cycle, explicit ProcessLayouts(), or a request
-   *   outside layout processing. Property changes and tree mutations follow
-   *   the same rule, including framework-internal invalidation paths.
+   * - A slot may invalidate layout, change properties, or mutate the tree.
+   *   The work is retained and automatically scheduled as a paced continuation;
+   *   it does not cancel this pass's remaining notifications. Use conditional
+   *   changes: unconditional invalidation can produce an unending sequence of
+   *   passes even though execution is rate limited.
+   * - Explicit ProcessLayouts() remains synchronous and bypasses automatic
+   *   calculation pacing. Its notifications still wait for a permitted automatic
+   *   pre/core Relayout/post cycle; calling it from a slot cannot create an
+   *   unbounded automatic notification loop. Repeated explicit manual calls are
+   *   the caller's responsibility.
    * - If a callback throws, the exception propagates. The signal whose delivery
    *   started is not replayed; remaining View and Window notifications are kept
    *   for a later post-process invocation. Earlier successful passes remain

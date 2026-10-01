@@ -29,6 +29,7 @@
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 #include <dali-ui-foundation/public-api/visuals/text-visual.h>
 #include <dali-ui-test-suite-utils.h>
+#include <dali-ui/layout-scheduling-test-clock.h>
 #include <dali.h>
 #include <vector>
 
@@ -792,7 +793,8 @@ struct FittingBoundsPanel
 
 int UtcDaliViewLayoutFinishedFittingUsesFinalBoundsAndCache(void)
 {
-  UiTestApplication application;
+  Test::ScopedLayoutClock clock;
+  UiTestApplication       application;
   using VisualType = Dali::Ui::Integration::InternalVisualType;
   View root        = View::New();
   View view        = View::New();
@@ -831,6 +833,7 @@ int UtcDaliViewLayoutFinishedFittingUsesFinalBoundsAndCache(void)
       // Re-run only the parent: the child's unchanged input must hit its cache.
       Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(root)).InvalidateArrange();
     }
+    clock.AdvanceFrame();
     application.SendNotification();
 
     DALI_TEST_EQUALS(panel.arrangeCalls, pass + 1, TEST_LOCATION);
@@ -856,6 +859,7 @@ int UtcDaliViewLayoutFinishedFittingUsesFinalBoundsAndCache(void)
   }
 
   // Event processing without another layout request must not repeat fitting.
+  clock.AdvanceFrame();
   application.SendNotification();
   DALI_TEST_EQUALS(panel.arrangeCalls, 2, TEST_LOCATION);
   DALI_TEST_EQUALS(producer.calls, 1, TEST_LOCATION);
@@ -925,9 +929,10 @@ int UtcDaliViewFittingModeQueuedPassUsesLatestTarget(void)
 
 int UtcDaliViewFittingModeNestedPassUsesLatestTarget(void)
 {
-  UiTestApplication application;
-  Window            window = application.GetWindow();
-  View              root   = View::New();
+  Test::ScopedLayoutClock clock;
+  UiTestApplication       application;
+  Window                  window = application.GetWindow();
+  View                    root   = View::New();
   root.SetRequestedWidth(400.0f);
   root.SetRequestedHeight(100.0f);
   View earlier = View::New();
@@ -971,6 +976,7 @@ int UtcDaliViewFittingModeNestedPassUsesLatestTarget(void)
 
   // The earlier sibling recalculates both children before the later sibling's
   // original completion is delivered in the same post cohort.
+  clock.AdvanceFrame();
   application.SendNotification();
   DALI_TEST_CHECK(changed);
   DALI_TEST_EQUALS(publicWidths.size(), 1u, TEST_LOCATION);
@@ -980,6 +986,7 @@ int UtcDaliViewFittingModeNestedPassUsesLatestTarget(void)
     DALI_TEST_EQUALS(imageSizes[0], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
     DALI_TEST_EQUALS(svgSizes[0], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
   }
+  clock.AdvanceFrame();
   application.SendNotification();
   DALI_TEST_EQUALS(publicWidths.size(), 2u, TEST_LOCATION);
   if(publicWidths.size() == 2u)

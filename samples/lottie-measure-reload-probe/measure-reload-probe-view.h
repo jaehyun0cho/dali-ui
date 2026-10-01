@@ -36,13 +36,12 @@ class MeasureReloadProbeViewImpl;
  * child already has, which is a NO-OP, or Reload(), which is the explicit reload and
  * rebuilds the child's visual. SetExplicitReload() selects between them.
  *
- * This is a reproducer for a contract violation, not a pattern to copy. A measure
- * implementation must be a pure function of its inputs.
+ * The explicit reload mode deliberately repeats work to diagnose continuation
+ * scheduling. Prefer conditional state changes outside producers in applications.
  */
 class MeasureReloadProbeView : public View
 {
 public:
-
   static MeasureReloadProbeView New();
   static MeasureReloadProbeView DownCast(BaseHandle handle);
 
@@ -54,7 +53,7 @@ public:
 
   ~MeasureReloadProbeView();
 
-  MeasureReloadProbeView& operator=(const MeasureReloadProbeView& handle) = default;
+  MeasureReloadProbeView& operator=(const MeasureReloadProbeView& handle)  = default;
   MeasureReloadProbeView& operator=(MeasureReloadProbeView&& rhs) noexcept = default;
 
   /**

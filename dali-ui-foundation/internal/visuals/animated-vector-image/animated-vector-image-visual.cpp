@@ -1083,7 +1083,7 @@ void AnimatedVectorImageVisual::TriggerVectorRasterization()
     auto& vectorAnimationManager = mFactoryCache.GetVectorAnimationManager();
     vectorAnimationManager.RegisterEventCallback(mEventCallback);
 
-    // LAYOUT PROCESSING WINDOW, pass half. This method is reachable from inside a
+    // Resource wake coalescing during the pass half. This is reachable inside a
     // Measure/Arrange pass -- a visual created from a view's OnMeasure, a fitting-mode
     // transform applied from its OnArrange, or any DoAction on this visual -- and an
     // unconditional main-loop wake there lets a per-pass producer drive ProcessEvents
@@ -1094,9 +1094,9 @@ void AnimatedVectorImageVisual::TriggerVectorRasterization()
     //    cycle, so the animation data still reaches the task this frame;
     //  - the rasterized frame comes back on the vector animation thread's own event-thread
     //    trigger, which wakes the main loop independently of this request.
-    // A pass driven by an explicit View::Measure()/Arrange() outside ProcessEvents parks
-    // like every other in-window request: retained, and serviced by the next independently
-    // triggered cycle (docs/layout-structure.md, "The layout processing window").
+    // A direct View::Measure()/Arrange() outside ProcessEvents does not establish
+    // a controller turn; this resource-only registration still needs a processing
+    // cycle. Managed pending Layout work has its own automatic continuation ticket.
     // The LayoutFinished half is deliberately NOT gated: a slot runs in the post phase,
     // after the once-post bucket has been swapped and drained, so its registration lands in
     // the next cycle and this wake is the only thing that can service it. The framework's

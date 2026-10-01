@@ -14,41 +14,11 @@
  * limitations under the License.
  */
 
-// Demonstrates the PARK contract for layout invalidation raised DURING layout
-// processing: the work is fully retained (dirty + pending layout root) but it
-// never wakes the event loop by itself.
-//
-// The box view below carries an ArrangeCallback that changes a Label's TEXT on
-// every arrange. Changing the text invalidates the label's measure -- from
-// INSIDE the arrange pass -- so that invalidation is parked: it stays pending,
-// requests no idle ProcessEvents wake, and is serviced only by the NEXT
-// externally triggered event.
-//
-// What to observe:
-//  1. Once startup events stop, pass counts stop even though retained work
-//     remains. CPU readings are supplementary and depend on the platform.
-//  2. Each external processing opportunity can consume the retained work.
-//     A touch or key may produce several platform events; do not require one
-//     pass per gesture. The label's SIZE also lags its text by one event --
-//     the newest string renders inside the previous measure, which is the
-//     "dirty but not yet laid out" state made visible.
-//  3. The LayoutController logs one parked-episode diagnostic (DALI_LOG_ERROR).
-//     No per-View warning appears: SetText() invalidates through the
-//     framework-internal path, and the park policy is route-independent.
-//  4. Every completed window pass prints TC77_PASS, including passes that leave
-//     the next invalidation parked. The signal is a pass observation, not a
-//     promise that the next pass will produce the same geometry.
-//     After ARRANGE_LIMIT the producer stops; one more processing opportunity
-//     consumes the last retained request.
-//
-//
-// NOTE: this is a DIAGNOSTIC reproducer, not a pattern to copy. Two things about it are
-// deliberately wrong for production code: the arrange callback mutates another view from
-// inside a layout pass, which is exactly the contract violation the PARK rule exists to
-// contain; and it selects ArrangePolicy::ALWAYS so the callback is guaranteed to run on
-// every pass. Under the default IF_CHANGED the box is the LAST child of a vertical stack,
-// so once the labels above it stop changing height its slot stops changing too and its
-// producer is served from the arrange cache -- the reproducer would stop reproducing.
+// Exercises a finite in-pass text mutation chain. Each successful pass emits
+// LayoutFinished while retained invalidation receives an automatic, paced retry.
+// No application timer or event pump assists the controller. Resource processing
+// can also trigger events; TC95 separately isolates a quiet, resource-free producer.
+// ArrangePolicy::ALWAYS keeps this deliberate producer active despite equal bounds.
 
 #include "manual-test-case.h"
 
@@ -66,7 +36,7 @@ using namespace Dali::Ui;
 
 namespace
 {
-constexpr int ARRANGE_LIMIT = 30; ///< Mutation stops here so the settle path is observable too.
+constexpr int ARRANGE_LIMIT = 30; ///< Mutation stops here so quiet completion is observable too.
 
 int   gArrangeCount  = 0;
 int   gFinishedCount = 0;
@@ -85,21 +55,21 @@ Label MakeLabel(const Dali::String& text, float fontSize, uint32_t color)
 
 // The in-pass producer. Runs inside the box's arrange; the SetText() below
 // invalidates the label's measure while the pass is on the stack, so the
-// resulting layout work is PARKED (retained, no self wake).
+// resulting layout work is retained for an automatically scheduled continuation.
 LayoutRect BoxArrange(View /*view*/, const LayoutRect& bounds)
 {
   ++gArrangeCount;
   if(gMutating && gCounterLabel)
   {
     const std::string text = "arrange #" + std::to_string(gArrangeCount) +
-                             " - parked; touch to run the next pass";
+                             " - automatic continuation";
     gCounterLabel.SetText(Dali::String(text.c_str()));
     std::cout << "TC77_ARRANGE count=" << gArrangeCount
               << " mutating=1" << std::endl;
     if(gArrangeCount >= ARRANGE_LIMIT)
     {
       gMutating = false;
-      std::cout << "producer stopped mutating; the next event settles the layout" << std::endl;
+      std::cout << "producer stopped mutating; the final retained request will run automatically" << std::endl;
     }
   }
   return bounds;
@@ -111,12 +81,12 @@ class TcLayoutInvalidationPark : public ManualTest::TestCase, public ConnectionT
 public:
   Dali::String GetName() const override
   {
-    return "77. Layout Invalidation: Park";
+    return "77. Layout Invalidation: Automatic Continuation";
   }
 
   Dali::String GetDescription() const override
   {
-    return "Verify in-pass invalidation parks until an external event";
+    return "Verify finite in-pass text changes progress automatically";
   }
 
   void OnEnter(View contentArea) override
@@ -133,9 +103,9 @@ public:
     root.SetSpacing(12.0f);
     root.SetPadding(Insets(24.0f, 24.0f, 24.0f, 24.0f));
 
-    root.Add(MakeLabel("Parked in-pass invalidation", 24.0f, 0x202124u));
+    root.Add(MakeLabel("Automatic in-pass continuation", 24.0f, 0x202124u));
     root.Add(MakeLabel("Every arrange rewrites the label below from OnArrange.", 14.0f, 0x5F6368u));
-    root.Add(MakeLabel("Watch: pass counts stop when external events stop.", 14.0f, 0x5F6368u));
+    root.Add(MakeLabel("Watch: counts advance automatically, then stop.", 14.0f, 0x5F6368u));
 
     gCounterLabel = MakeLabel("arrange #0 - waiting for the first pass", 18.0f, 0x0B57D0u);
     root.Add(gCounterLabel);

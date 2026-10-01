@@ -1029,10 +1029,9 @@ struct ViewDataImpl::ArrangePassGuard
  *  - the replay WRITES actor properties (ApplySelfBoundsIfChanged), and every such write
  *    goes Actor::SetPositionX/SetWidth -> Object::SetProperty -> OnPropertySet plus a
  *    synchronous PropertySetSignal emit, so arbitrary application code runs inside it;
- *  - an invalidation raised by that code must therefore be PARKED, not allowed to arm an
- *    idle wake. LayoutController::RequestIdleWakeIfAllowed reads exactly this depth
- *    (ViewDataImpl::IsLayoutPassOnStack). Before this scope existed the hit path ran with
- *    depth 0 and such an invalidation woke the loop from inside layout processing;
+ *  - an invalidation raised by that code is a paced continuation. LayoutController
+ *    reads this depth (ViewDataImpl::IsLayoutPassOnStack) so cache-hit replay cannot
+ *    bypass the same scheduling rule used by a producer-executing arrange pass;
  *  - the same depth disables the propagation-generation short-circuit in
  *    InvalidateMeasure/InvalidateArrange, so a mid-replay invalidation walks its ancestor
  *    chain IN FULL and poisons every in-progress ancestor rather than trusting a
@@ -1230,7 +1229,6 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   mFittingModeLayoutFinishedSignalConnected(false),
   mDefaultFocusIndicatorSuppressedByStateEffect(false),
   mLayoutDirectionSignalConnected(false),
-  mInPassInvalidationWarned(false),
   mChildOrderSignalConnected(false),
   // Pure cache key; its initial value is never consulted because
   // mArrangeCacheValid starts false.
@@ -2486,16 +2484,10 @@ void ViewDataImpl::InvalidateMeasureFromPublicApi()
   InvalidateMeasureFromPublicApi("View::InvalidateMeasure");
 }
 
-void ViewDataImpl::InvalidateMeasureFromPublicApi(const char* apiName)
+void ViewDataImpl::InvalidateMeasureFromPublicApi(const char* /*apiName*/)
 {
-  if(gActiveLayoutPassDepth != 0u || LayoutInvalidation::IsLayoutFinishedEmitInProgress())
-  {
-    LogInPassInvalidation(apiName);
-  }
-
-  // Always execute the complete invalidation transaction. During layout
-  // processing the controller retains the propagated root as pending but
-  // suppresses only the idle wake, matching dali-core's relayout policy.
+  // Preserve the complete invalidation transaction. The controller coalesces
+  // processing-time requests and schedules a paced continuation automatically.
   InvalidateMeasure();
 }
 
@@ -2504,16 +2496,10 @@ void ViewDataImpl::InvalidateArrangeFromPublicApi()
   InvalidateArrangeFromPublicApi("View::InvalidateArrange");
 }
 
-void ViewDataImpl::InvalidateArrangeFromPublicApi(const char* apiName)
+void ViewDataImpl::InvalidateArrangeFromPublicApi(const char* /*apiName*/)
 {
-  if(gActiveLayoutPassDepth != 0u || LayoutInvalidation::IsLayoutFinishedEmitInProgress())
-  {
-    LogInPassInvalidation(apiName);
-  }
-
-  // See InvalidateMeasureFromPublicApi(): dirtying, cache invalidation,
-  // pass-poisoning, ancestor propagation, and root registration all remain
-  // intact; only the controller's self-wake is suppressed.
+  // Cache invalidation, pass poisoning, and ancestor propagation are independent
+  // of the deadline used to schedule another controller pass.
   InvalidateArrange();
 }
 
@@ -2521,54 +2507,6 @@ void ViewDataImpl::RearmLayoutDirtyForAbortedPass()
 {
   mMeasureDirty = true;
   mArrangeDirty = true;
-}
-
-void ViewDataImpl::LogInPassInvalidation(const char* apiName)
-{
-  // Per-view latch, deliberately never cleared. A call from inside layout processing is
-  // a code defect at a fixed call site, not a runtime condition, so one diagnostic per
-  // View says everything the developer needs; repeating it every frame would bury the
-  // rest of the log. There is no global cap on top of the latch: a global cap would
-  // leave a later offending View undiagnosed, which is the worse failure.
-  if(mInPassInvalidationWarned)
-  {
-    return;
-  }
-  mInPassInvalidationWarned = true;
-
-  // Identify the view as helpfully as the handle allows. The latch means this runs at
-  // most once per View, so neither property read is on any hot path. Self() can still
-  // hand back an EMPTY handle (a derived constructor invalidating before the
-  // CustomActor exists), and reading a property off an empty handle aborts, so the
-  // handle test comes first and "View" is the last-resort label.
-  Dali::CustomActor self = mViewImpl.Self();
-  Dali::String      viewName;
-  if(self)
-  {
-    viewName = self.GetProperty<Dali::String>(Dali::Actor::Property::NAME);
-    if(viewName.Empty())
-    {
-      viewName = self.GetTypeName();
-    }
-  }
-  const char* name = viewName.Empty() ? "View" : viewName.CStr();
-
-  // Which half of the layout processing window was open. A pass on the stack shadows
-  // the emit half: an emit that re-entered a pass is reported as the pass it is in.
-  const char* context = gActiveLayoutPassDepth != 0u
-                          ? "while a Measure/Arrange pass is running"
-                          : "from a LayoutFinished signal handler";
-
-  DALI_LOG_ERROR(
-    "%s() called on '%s' %s. The requested layout work was retained rather than "
-    "discarded, but layout processing does not request another idle ProcessEvents cycle "
-    "for work it produces itself. The work remains pending until an independently "
-    "triggered ProcessEvents cycle services it. LayoutFinished still reports each "
-    "successfully completed pass. "
-    "Avoid unconditional invalidation from layout callbacks.\n",
-    apiName,
-    name,
-    context);
 }
 
 MeasuredSize ViewDataImpl::GetMeasuredSize() const
@@ -5312,7 +5250,7 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
 
     // Open the replay TRANSACTION for the whole subtree. See ReplayPassScope: the replay
     // writes actor properties and therefore runs application code, so it has to be inside
-    // the layout processing window (park an invalidation raised from it, and make the
+    // the layout processing window (pace an invalidation raised from it, and make the
     // per-node re-entrancy guard reachable). It is NOT ArrangePassGuard, whose entry would
     // consume mArrangeDirty and clear the very mArrangeCacheValid this hit is serving.
     ReplayPassScope replayPass;

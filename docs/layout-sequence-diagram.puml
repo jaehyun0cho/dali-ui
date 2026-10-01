@@ -22,6 +22,8 @@ note right: Layout roots are registered\nwhen they need a layout pass.
 Adaptor -> LC : Process(postProcess=false)\n(automatic pre-process)
 activate LC
 
+LC -> LC : Admit automatic turn only when\ndeadline permits; otherwise retain work
+note right: New calculations and completion cohorts\nshare the continuation gate.
 LC -> LC : ProcessLayouts()
 note right: Iterate over mPendingViews\n(layout roots for this window)
 
@@ -115,6 +117,10 @@ loop each post-ready completed pass
   LC -> App : LayoutFinished(window)
   note right: Pending work does not suppress\nthe completed pass's signal.
 end
+LC -> LC : Finish turn; measure calculation + delivery cost
+opt runnable continuation remains
+  LC -> LC : Reserve one-shot timer at\nworkEnd + max(framePeriod, cost)
+end
 deactivate LC
 
 == Invalidation flow (when layout must be recomputed) ==
@@ -124,7 +130,8 @@ note over Root, Child
   2) Propagate to the parent view, a Layout included (GetParentView().InvalidateMeasure())
   3) At layout root: RegisterWithLayoutController()
   4) LayoutControllerImpl::RequestLayout(ViewImpl*) adds root to mPendingViews
-  5) A processing opportunity runs Process() -> ProcessLayouts() as above
+  5) Coalesced idle / one-shot timer requests a processing opportunity
+  6) The eligible automatic turn runs Process() -> ProcessLayouts() as above
 end note
 
 @enduml

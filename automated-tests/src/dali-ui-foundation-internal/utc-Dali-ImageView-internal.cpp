@@ -24,6 +24,7 @@
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 #include <dali-ui-foundation/public-api/visuals/visual-types.h>
 #include <dali-ui-test-suite-utils.h>
+#include <dali-ui/layout-scheduling-test-clock.h>
 #include <dali.h>
 #include <ui-event-thread-callback.h>
 
@@ -320,9 +321,10 @@ struct ArrangeSvgPanel : ConnectionTracker
 // remains pending, independently of whether a follow-up idle wake is requested.
 int UtcDaliImageViewSvgReadyWhileLayoutPending(void)
 {
-  UiTestApplication application;
-  ArrangeSvgPanel   panel;
-  View              root = View::New();
+  Test::ScopedLayoutClock clock;
+  UiTestApplication       application;
+  ArrangeSvgPanel         panel;
+  View                    root = View::New();
   root.SetRequestedWidth(100.0f);
   root.SetRequestedHeight(100.0f);
   root.SetMeasureCallback(MeasureCallback::New(&panel, &ArrangeSvgPanel::Measure));
@@ -335,6 +337,7 @@ int UtcDaliImageViewSvgReadyWhileLayoutPending(void)
 
   for(int i = 0; i < 8 && (!panel.arrow || !panel.arrow.IsResourceReady()); ++i)
   {
+    clock.AdvanceFrame();
     application.SendNotification();
     application.Render();
     if(!panel.arrow.IsResourceReady())
@@ -362,6 +365,7 @@ int UtcDaliImageViewSvgReadyWhileLayoutPending(void)
   Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(root)).InvalidateMeasure();
   for(int i = 0; i < 5 && panel.finishes == finishesBefore; ++i)
   {
+    clock.AdvanceFrame();
     application.SendNotification();
     application.Render();
   }

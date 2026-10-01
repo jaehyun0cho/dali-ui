@@ -123,7 +123,13 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
 
 ### Layout root
 
-A **layout root** is a top-level View in the layout hierarchy (its parent is not a layout). When `InvalidateMeasure()` or `InvalidateArrange()` is called, the full invalidation propagates up to the layout root, which registers with the LayoutController via `RequestLayoutInternal(ViewImpl*)`. Outside the layout processing window defined below, registration arms one coalesced outstanding ProcessEvents wake so the root is processed on the next frame. Inside that window, the root is still registered but its own invalidation does not arm an idle wake. A not-yet-started turn for that root in the current batch may consume it immediately; otherwise it remains pending until a later independently triggered ProcessEvents or an explicit `ProcessLayouts()` drains it. The *Internal* entry point is an API-layering detail, not an exemption from this wake policy.
+A **layout root** is a top-level View in the layout hierarchy (its parent is not a layout).
+Invalidation propagates to it and registers it through `RequestLayoutInternal(ViewImpl*)`.
+A fresh outside request arms a coalesced idle wake. During Layout processing, a
+not-yet-started root in the current batch may consume the request immediately;
+remaining work receives an automatic paced continuation. An existing continuation
+keeps its deadline even when more outside requests arrive. The internal entry point
+uses the same scheduling policy as the public API.
 
 ### Two-phase layout: Measure and Arrange
 
@@ -260,9 +266,8 @@ marked — a further invalidation on the same axis skips the walk. The generatio
 whenever the controller drains its pending set and whenever an outermost
 Measure/Arrange pass completes (a pass is the only consumer of dirty bits, and a manual
 `Measure()`/`Arrange()` call is a pass too), so the next invalidation walks again.
-The controller also ends the generation after a processing frame records a no-self-wake
-request. This ensures a later out-of-processing invalidation cannot be coalesced away: it
-walks to the already-pending root and can arm the coalesced wake. While any pass is on
+The controller also ends the generation after processing-created requests and failed
+batches, so an outside recovery request can propagate to an already-pending root. While any pass is on
 the stack the skip is disabled outright for every invalidation, because a mid-pass walk
 also poisons in-progress ancestors. Coalescing changes only how often the ancestor chain
 is traversed; it never distinguishes public from framework-internal origins.
@@ -271,69 +276,84 @@ The measure and arrange records are independent, because an arrange walk leaves
 the ancestors' measure caches valid and an ancestor measure hit does not
 re-measure its children.
 
-#### The layout processing window
+#### The layout processing window and automatic continuation
 
-The **layout processing window** is open while either a Measure/Arrange pass is on the
-stack or a `LayoutFinished` emit is in progress. A direct public invalidation from that
-window is a contract violation and is logged once per View (`DALI_LOG_ERROR`, latched so
-a repeating call site cannot flood the log), but the invalidation is **retained rather
-than ignored**:
+The **layout processing window** is open while a Measure/Arrange pass or a
+`LayoutFinished` callback is on the stack. Invalidation in this window preserves
+all correctness state: affected caches are revoked, dirty and in-progress poison
+state is recorded, ancestors are visited, and the root remains pending. A root
+whose turn has not started in the current batch can consume the request there.
+Remaining work receives an automatic follow-up opportunity, without requiring
+input, an application timer, animation, or an explicit `ProcessLayouts()` call.
+This policy applies to public APIs, properties, tree mutations and resource paths.
 
-- relevant cache-valid state is revoked, dirty state and in-progress-pass poison are
-  recorded where required, and the ancestor chain is walked;
-- the layout root is registered and remains in the controller's pending set;
-- registration is **PARKED** and does not request an idle ProcessEvents wake.
+A new external request uses one coalesced idle wake. A continuation uses a per-window
+one-shot timer and a monotonic deadline. The deadline is checked at automatic pre
+processing as well as at timer scheduling, so unrelated events cannot bypass it.
+The timer callback requests idle processing; it never calculates or flushes the
+core synchronously. Duplicate requests share the existing reservation and do not
+move its deadline. When runnable work drains, the continuation timer is stopped.
 
-If the current layout batch already contains a turn for that root and the turn has not
-started, that turn may consume the pending state in the same batch. Work not consumed
-by the current batch remains PARKED without arming a wake.
+After a turn produces more work, the next automatic turn is allowed at:
 
-This separates correctness state from main-loop scheduling. A self-invalidating
-producer cannot create an endless pass -> emit -> idle-wake cycle, but its pending work
-is still processed by a later independently triggered ProcessEvents or an explicit
-`LayoutController::ProcessLayouts()`. An out-of-processing event-time request walks to
-the root and arms at most one coalesced outstanding wake, draining any work that was
-already parked. After a processing frame records a no-self-wake request, it ends the
-invalidation generation so that this event-time walk cannot be skipped by generation
-coalescing.
+```
+workEnd + max(framePeriod, measuredPreCalculationAndPostDeliveryCost)
+```
 
-Layout-transition lifecycle callbacks run after the Measure/Arrange pass and outside
-this window. Their documented mutation and transition-chaining paths therefore remain
-wakeable and use the same coalesced outstanding wake.
+The initial frame period is `1 second / 60`, isolated for a future FPS getter.
+Only the timer interval is rounded up to integer milliseconds, with a minimum of
+1 ms. This is a rate-limiting fallback, not VSYNC synchronization. A late timer
+never catches up by running multiple missed ticks. The end-based delay means the
+actual continuation frequency is lower than 60 Hz, especially for costly passes.
+A window's measured cost includes its calculation and completion callbacks, not
+all wall time between pre and post while other windows run.
 
-The scheduling rule applies to every origin. Property setters, resource paths and tree
-mutations (`Add()` / `Remove()`) use the same PARK behavior when they run inside the
-window; `ViewDataImpl` and `LayoutController::RequestLayoutInternal()` are not exempt.
-Defer layout-affecting state changes to event time, or arrange an independent idle/timer
-wake, when prompt follow-up is required.
+Both root calculation and promotion of a new completion cohort use this gate.
+A manual `ProcessLayouts()` remains synchronous, including inside a callback, but
+its resulting notifications wait for a later eligible pre/core Relayout/post
+turn. This prevents a completion-only chain from repeatedly waking the event loop
+when a callback manually consumes all roots. The already admitted cohort is
+reported in the same turn's post phase. Transition animator lifecycle requests outside
+Layout processing retain their normal idle scheduling unless a continuation deadline
+is already active. A pass without signal subscribers still
+contributes its calculation cost and must close its scheduling turn.
 
-Framework-internal main-loop wakes follow the same rule. The animated vector image
-visual arms its rasterization by registering a once post-processor and waking the main
-loop; while a Measure/Arrange pass is on the stack it registers but does not wake,
-because a once post-processor registered during the pre phase is drained later in the
-SAME ProcessEvents cycle and the rasterized frame arrives on the vector animation
-thread's own event-thread trigger. That gate covers the pass half only: a
-`LayoutFinished` slot runs during the post phase, after the once post-processor bucket
-has already been swapped and drained, so a wake raised there is the only thing that can
-service the work and is deliberately kept.
+New requests cannot bypass an existing continuation deadline. Cross-window requests
+made during processing receive a deferred reservation on their target controller.
+Unregistering or removing a controller stops its timer and disconnects callbacks.
+No new pause policy is imposed: event delivery remains subject to the adaptor's
+lifecycle and main-loop availability. A timer is an eventual processing opportunity,
+not a hard upper bound on latency under OS load or a blocked event thread.
 
-Revoking a cache entry prevents it from satisfying a later cache hit; it does not
-immediately replace the last completed result. Until parked work is drained,
-`GetMeasuredSize()` or actor geometry may therefore still expose the previous completed
-pass.
+A failed root batch keeps its pending rollback but suppresses automatic root retry.
+Earlier successful completion records remain eligible for delivery. An explicit
+manual calculation or a fresh request outside processing can recover the fault;
+rollback and timer activity cannot silently clear it. Invalidation generation is
+advanced on fault so a recovery request is not swallowed by propagation coalescing.
+Other processing exceptions must also release turn ownership and preserve unfinished
+completion records. The controller's record preservation does not guarantee that
+core itself can resume after an escaping application exception; that recovery path
+requires separate core-level verification.
 
-**The contract, stated plainly.** Invalidating layout during layout processing is
-prohibited in principle and honoured only best-effort — exactly dali-core's relayout
-policy, where `RequestRelayout()` raised while `ProcessEvents` runs is retained but
-requests no wake. Parked work is serviced by the NEXT externally triggered
-ProcessEvents cycle; on a quiescent application (no input, animation or timer) that
-next cycle may be indefinitely later. The completed pass still delivers
-`LayoutFinished` in post-process; that signal does not drain its pending work.
-Components and applications must therefore never rely on in-processing invalidation
-for the correctness of the CURRENT frame. When a processing frame ends with parked
-work and no outstanding wake, the controller logs one `DALI_LOG_ERROR` per parked
-episode (covering framework-internal origins the per-View diagnostic cannot see);
-the episode latch resets when the pending set drains.
+Finite conditional invalidation is supported. An unconditional producer still cannot
+converge, and the scheduler cannot preempt a callback that never returns. Per-window
+cooldown is not a process-wide CPU cap: other windows, transitions and application
+work can run during the delay. In particular, a zero-duration transition whose
+OnFinished callback repeatedly creates a new transition is outside the protected
+producer/completion context and can keep requesting immediate processing. Components must not depend on a new in-pass request
+being reflected in the currently executing pass. `LayoutFinished` observes the
+completed pass even when a follow-up remains pending; it is not a stabilization test.
+
+The animated vector image visual has its own resource scheduling: during a
+Measure/Arrange pass it registers a once post-processor without another immediate
+wake, since that work can be consumed later in the same event cycle. A request
+created in a post callback can still require its resource wake. Such independent
+activity does not bypass the controller's continuation deadline.
+
+Revoking a cache does not replace the last completed result immediately.
+`GetMeasuredSize()` and actor bounds can expose that result until the follow-up
+runs. Keep state setters and conditional invalidation explicit; do not use producer
+callbacks as general per-frame tick handlers.
 
 **`LayoutManager` state.** A manager that keeps state of its own — an
 orientation, a spacing, a set of row definitions — is outside every cache key,
@@ -587,8 +607,8 @@ When layout must be recomputed (e.g. size or child change):
   the next ProcessEvents runs Measure/Arrange in the pre-process phase and delivers
   each successful pass's `LayoutFinished` signals in post-process;
 - inside the window, the same full invalidation and pending registration occur but no
-  self idle wake is requested. The next independently triggered ProcessEvents or an
-  explicit `ProcessLayouts()` drains the parked work. A successful pass records its
+  immediate self idle wake is requested. The controller reserves an automatic
+  continuation and admits it after its deadline. A successful pass records its
   completion regardless of remaining pending roots; manual completion delivery waits
   for a later automatic pre/Relayout/post cycle.
 
@@ -610,5 +630,5 @@ Two PlantUML diagram SOURCE files live beside this document in the repository. T
 | Area | Description |
 |------|-------------|
 | Public child API | Child add/remove/insert/bulk-remove uses Actor::Add/Remove/InsertAbove/InsertBelow/RemoveAll. View provides Remove(View, RemovePolicy) and RemoveAll(RemovePolicy). GetChildCount/GetChildAt are inherited from Actor (actor tree, ghost-inclusive); the logical layout child list is exposed via GetChildViewCount, GetChildViewAt and IndexOfChildView. |
-| Layout processing | LayoutController collects layout roots per window and runs Measure then Arrange once per frame. |
+| Layout processing | LayoutController batches roots per window and runs Measure then Arrange at admitted event-processing opportunities. |
 | Implementation | ViewImpl holds children and can attach a LayoutManager as a Trait via `View::AttachLayoutManager()`. Applications can customize measure/arrange via `SetMeasureCallback()`/`SetArrangeCallback()`. |
