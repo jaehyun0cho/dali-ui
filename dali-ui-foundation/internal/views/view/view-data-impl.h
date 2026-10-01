@@ -1134,8 +1134,7 @@ public:
   enum class FittingModeUpdate
   {
     SIZE_OR_SCALE,   ///< Apply fitting to all eligible visuals.
-    ARRANGE,         ///< Deliver final bounds early to SVG visuals only.
-    LAYOUT_FINISHED, ///< Apply fitting to non-text visuals after layout settles.
+    LAYOUT_FINISHED, ///< Apply fitting to non-text visuals after a layout pass.
   };
 
   /**

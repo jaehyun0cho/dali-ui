@@ -15,11 +15,11 @@ participant "ViewImpl\n(layout root)" as Root
 participant "LayoutManager" as LM
 participant "ViewImpl\n(child)" as Child
 
-== Per-frame: Process layout roots ==
+== Event processing: Process layout roots ==
 App -> App : InvalidateMeasure() or\nRegisterWithLayoutController()
 note right: Layout roots are registered\nwhen they need a layout pass.
 
-Adaptor -> LC : Process(postProcess=false)\n(called once per frame)
+Adaptor -> LC : Process(postProcess=false)\n(automatic pre-process)
 activate LC
 
 LC -> LC : ProcessLayouts()
@@ -103,8 +103,19 @@ loop for each layout root
   deactivate Root
 
 end
+LC -> LC : Record successful batch and View snapshots
+LC -> LC : Promote completed records to post-ready cohort
 deactivate LC
 Adaptor <-- LC : return
+Adaptor -> Adaptor : Core Relayout
+Adaptor -> LC : Process(postProcess=true)
+activate LC
+loop each post-ready completed pass
+  LC -> Child : LayoutFinished(snapshot)\nfor each subscribed arranged View
+  LC -> App : LayoutFinished(window)
+  note right: Pending work does not suppress\nthe completed pass's signal.
+end
+deactivate LC
 
 == Invalidation flow (when layout must be recomputed) ==
 note over Root, Child
@@ -113,7 +124,7 @@ note over Root, Child
   2) Propagate to the parent view, a Layout included (GetParentView().InvalidateMeasure())
   3) At layout root: RegisterWithLayoutController()
   4) LayoutControllerImpl::RequestLayout(ViewImpl*) adds root to mPendingViews
-  5) Next frame: Adaptor calls Process() -> ProcessLayouts() as above
+  5) A processing opportunity runs Process() -> ProcessLayouts() as above
 end note
 
 @enduml

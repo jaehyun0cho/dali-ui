@@ -1098,7 +1098,7 @@ struct ViewDataImpl::ReplayPassScope
  * scope's flags instead of clearing them, so the outer replay's re-entrancy protection
  * survives its own inner one, and the writes themselves are same-value applies against
  * the same cached geometry -- idempotent by construction. This is also the shape
- * ManualProcessScope and ActiveLayoutFinishedScope use in LayoutController.
+ * ProcessDepthScope and ActiveLayoutFinishedScope use in LayoutController.
  */
 struct ViewDataImpl::ReplayNodeScope
 {
@@ -2562,8 +2562,9 @@ void ViewDataImpl::LogInPassInvalidation(const char* apiName)
   DALI_LOG_ERROR(
     "%s() called on '%s' %s. The requested layout work was retained rather than "
     "discarded, but layout processing does not request another idle ProcessEvents cycle "
-    "for work it produces itself. The work remains pending and LayoutFinished remains "
-    "deferred until a later independently triggered ProcessEvents cycle services it. "
+    "for work it produces itself. The work remains pending until an independently "
+    "triggered ProcessEvents cycle services it. LayoutFinished still reports each "
+    "successfully completed pass. "
     "Avoid unconditional invalidation from layout callbacks.\n",
     apiName,
     name,
@@ -5088,14 +5089,6 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, floa
   }
   ApplySelfBoundsIfChanged(applied);
 
-  // Replay must deliver the same final SVG visual size as an ordinary Arrange,
-  // even while pending layout prevents LayoutFinished from being emitted.
-  const Vector2 finalSize(cached.width, cached.height);
-  if(mSize != finalSize)
-  {
-    ApplyFittingMode(finalSize, FittingModeUpdate::ARRANGE);
-  }
-
   // 2. Descendants, in mChildren order -- the order ArrangeDefault's snapshot preserves,
   //    and the order every layout manager iterates.
   //
@@ -5412,17 +5405,6 @@ LayoutRect ViewDataImpl::ArrangeImpl(const LayoutRect& bounds, bool frameworkLay
   // resolver below.
   mArrangedBounds         = finalBounds;
   mArrangeResultAvailable = true; // A completed rect now exists for the re-entrancy fallback.
-
-  // Per-axis actor size writes bypass OnSizeSet. Deliver the final size to
-  // SVG visuals now: LayoutFinished may be deferred by another dirty view,
-  // and SVG rasterization cannot start until its visual size is known. Publish
-  // the bounds first because fitting can synchronously notify resource readiness.
-  // Keep mSize owned by OnSizeSet; visuals handle unchanged rasterization sizes.
-  const Vector2 finalSize(finalBounds.width, finalBounds.height);
-  if(mSize != finalSize)
-  {
-    ApplyFittingMode(finalSize, FittingModeUpdate::ARRANGE);
-  }
 
   // Ensure standalone children are arranged even when OnArrange (e.g. in
   // leaf views like Label) does not iterate children.
@@ -6061,9 +6043,9 @@ void ViewDataImpl::ApplySelfBoundsIfChanged(const LayoutRect& bounds)
   // does not route through Actor::OnSizeSet (only Actor::SetSize does). Drive
   // the same render-effect refresh OnSizeSet would, so render effects (e.g.
   // blur) that read the final layout size refresh for layout-sized views that never
-  // receive an explicit SetSize. SVG fitting is applied separately after final
-  // Arrange bounds are published; applying it here could use provisional bounds.
-  // Other visuals retain their existing fitting update paths.
+  // receive an explicit SetSize. Fitting uses the final arranged bounds in the
+  // post-process LayoutFinished handler; applying it here could use provisional
+  // bounds and duplicate the fitting update for the pass.
   // Track against a dedicated field rather than mSize: Arrange() can run with
   // provisional/degenerate bounds for views outside real layout measurement
   // (e.g. a plain View given an explicit Actor size but never measured by a
@@ -8218,7 +8200,12 @@ void ViewDataImpl::EnsureFittingModeLayoutFinishedSignalConnected()
 
 void ViewDataImpl::OnLayoutFinished(Ui::View view, LayoutRect bounds)
 {
-  ApplyFittingMode(Vector2(bounds.width, bounds.height), FittingModeUpdate::LAYOUT_FINISHED);
+  // Public notifications retain every pass's snapshot. A preceding slot may
+  // already have completed a newer manual pass, so fitting must use the latest
+  // arranged target rather than restore an older snapshot's visual size. The
+  // logical target's size is unchanged by RTL and is not an animated size.
+  const LayoutRect& target = mArrangeResultAvailable ? mArrangedBounds : bounds;
+  ApplyFittingMode(Vector2(target.width, target.height), FittingModeUpdate::LAYOUT_FINISHED);
 }
 
 void ViewDataImpl::SetBackground(const Property::Map& map)

@@ -1631,47 +1631,49 @@ public: // State API (non-chaining)
   StateChangedSignalType& StateChangedSignal();
 
   /**
-   * @brief Emitted when this View's layout has fully settled.
+   * @brief Emitted after a successful layout pass that arranged this View.
    *
-   * Fires once per dirty-to-settled layout episode of this View's window, after
-   * all Measure/Arrange work for the window has drained (same settle point as
-   * LayoutController::LayoutFinishedSignal). Emitted during the post-process
-   * phase, i.e. AFTER DALi core size negotiation (Relayout); Measure/Arrange
-   * still run in the pre-process phase and only the emit is deferred. The
-   * callback receives this View and its arranged target as a LayoutRect in
-   * PARENT-relative, visual (scale-applied) units. Under RIGHT_TO_LEFT the x is
-   * the mirrored (final) position. The bounds are the PRE-transition target,
-   * snapshotted during arrange, not intermediate animated values.
+   * Delivery occurs in post-process, AFTER DALi core size negotiation (Relayout),
+   * before that pass's LayoutController::LayoutFinishedSignal. Further layout
+   * requests may remain pending: this signal reports pass completion, not
+   * stabilization. Several completed passes retain separate notifications and
+   * are delivered in completion order, including nested or manual passes.
    *
-   * Recurs: the signal fires again on a later settled pass whenever this View is
-   * re-arranged. Connecting after a layout pass does not replay the previous result.
+   * The callback receives this View and its arranged target as a LayoutRect in
+   * PARENT-relative, visual (scale-applied) units. Under RIGHT_TO_LEFT, x is the
+   * mirrored final position. Bounds are captured after the root's Arrange and
+   * before transition setup; they are not intermediate animated values. If the
+   * View is arranged repeatedly within one pass, its latest captured bounds in
+   * that pass are reported once. Later passes never replace an earlier pass's
+   * snapshot, so a queued snapshot need not match live Actor properties.
    *
-   * A slot may NOT invalidate layout. The emit runs inside the layout processing
-   * window, so a direct InvalidateMeasure() / InvalidateArrange() call is a contract
-   * violation and is logged once for that View. The invalidation is nevertheless
-   * retained in full: affected caches and ancestors are invalidated and the layout root
-   * remains pending. It is PARKED rather than allowed to request an idle ProcessEvents
-   * wake, which prevents a dirty->settled->emit loop from keeping the main loop awake.
-   * Parked work counts as pending, so no later completion notification is emitted until
-   * an independently triggered ProcessEvents, an explicit LayoutController::ProcessLayouts(),
-   * or an out-of-processing request drains it. The callback already being delivered
-   * cannot be withdrawn. Property changes and tree mutations from a slot (Add / Remove)
-   * follow the same scheduling rule; framework-internal routing is not an exemption.
-   * Defer layout-affecting work to event time when a prompt follow-up is required.
+   * A snapshot is recorded only while the signal has a connection. Delivery
+   * uses the connections still present at emit time. Scene disconnection or
+   * destruction cancels that View's queued snapshots. A failed batch does not
+   * deliver its partial snapshots. Direct manual
+   * View::Arrange() does not create a controller pass or emit this signal.
    *
-   * @warning This signal fires whenever the View is (re-)arranged in a settled pass,
-   * INCLUDING when its bounds did NOT change (e.g. it was re-arranged only because a
-   * sibling or ancestor changed) -- do NOT assume "signal fired" means "this View's
-   * geometry changed". Guard any layout-affecting work in the slot behind a real
-   * condition, e.g. compare @p bounds against a value you cached from the previous emit
-   * and act only on an actual change, or use a one-shot flag.
+   * A slot may NOT invalidate layout. The existing retained-but-parked rule
+   * applies: affected caches and ancestors are invalidated and roots remain
+   * pending, but the callback does not request an idle ProcessEvents wake.
+   * Further calculation requires an independent processing cycle, explicit
+   * LayoutController::ProcessLayouts(), or a request outside layout processing.
+   * New requests do not cancel the completed pass's remaining notifications.
+   * Property changes and tree mutations follow the same scheduling rule.
    *
-   * @note Fires only for a View whose own Arrange() runs during the pass. All
-   * built-in LayoutManagers and the default arrange route through child.Arrange().
-   * A custom parent ArrangeCallback that positions a non-standalone child by
-   * writing Actor properties directly, without calling that child's Arrange(),
-   * will NOT fire the child's signal. This is not a completion callback for a
-   * manual View::Arrange().
+   * A manual ProcessLayouts() in a slot calculates synchronously, but its
+   * notifications wait for a later automatic pre phase, core Relayout and post.
+   * If a slot throws, its already started signal is not replayed; remaining
+   * notifications are preserved for a later post-process invocation. Removing
+   * the controller stops all remaining notifications immediately.
+   *
+   * @warning The signal also fires when bounds did NOT change, including a
+   * cache-served arrangement. Do not interpret it as a geometry-change signal.
+   *
+   * @note Fires only when this View's Arrange() is processed in a controller
+   * pass. Built-in LayoutManagers and the default route arrange children through
+   * child.Arrange(). A custom parent callback that only writes a non-standalone
+   * child's Actor properties does not generate that child's notification.
    *
    * @return The layout-finished signal
    */

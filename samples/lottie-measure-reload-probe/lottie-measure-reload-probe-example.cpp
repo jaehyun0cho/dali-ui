@@ -38,10 +38,10 @@
 //     they show the pass rate directly. With per-pass logging on they are a LOWER bound.
 //  5. Whether passes keep arriving with NO input at all. That is the actual question:
 //     an idle application prints nothing.
-//  6. "LayoutFinished" is printed only when layout really settles. In Reload() mode the
-//     producer keeps re-invalidating and it stays starved; press 1 to stop the producer,
-//     or 5 to go back to the no-op call, and the next event should drain the pending work
-//     and settle.
+//  6. With per-pass logging enabled, "LayoutFinished" reports each completed window
+//     pass, including a pass that leaves another reload pending. It does not indicate
+//     stable geometry. Press 1 to stop the producer, or 5 to return to the no-op call;
+//     a subsequent processing opportunity drains the remaining work.
 //  7. In Reload() mode two framework diagnostics are expected and are not defects: one
 //     'View::InvalidateMeasure() called ... while a Measure/Arrange pass is running'
 //     error line per view (the Lottie child's in-pass invalidation), and one
@@ -148,9 +148,11 @@ public:
 
   void OnLayoutFinished(Window /*window*/)
   {
-    // Starved while the producer keeps re-invalidating; fires once layout finally settles.
-    std::cout << "LayoutFinished: settled after " << mProbe.GetMeasureCount()
-              << " measure passes, " << mProbe.GetReloadCount() << " in-pass calls" << std::endl;
+    if(mProbe.IsPerPassLogging())
+    {
+      std::cout << "LayoutFinished: window pass completed; measures=" << mProbe.GetMeasureCount()
+                << ", in-pass calls=" << mProbe.GetReloadCount() << std::endl;
+    }
   }
 
   void OnKeyEvent(Window /*window*/, KeyEvent event)

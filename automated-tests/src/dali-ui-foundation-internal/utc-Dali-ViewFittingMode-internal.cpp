@@ -762,64 +762,231 @@ struct FinalFittingBounds
     return LayoutRect(4.0f, 4.0f, 40.0f, 20.0f);
   }
 };
+
+struct FittingBoundsPanel
+{
+  View                                    child;
+  std::vector<FittingModeTestVisual::Ptr> visuals;
+  std::vector<int>                        countsAfterArrange;
+  int                                     arrangeCalls{0};
+
+  MeasuredSize Measure(View, float, float)
+  {
+    child.Measure(100.0f, 50.0f);
+    return MeasuredSize(100.0f, 50.0f);
+  }
+
+  LayoutRect Arrange(View, const LayoutRect& bounds)
+  {
+    ++arrangeCalls;
+    child.Arrange(LayoutRect(0.0f, 0.0f, 100.0f, 50.0f));
+    countsAfterArrange.clear();
+    for(const auto& visual : visuals)
+    {
+      countsAfterArrange.push_back(visual->applyCount);
+    }
+    return bounds;
+  }
+};
 } //namespace
 
-int UtcDaliViewArrangeFittingUsesFinalBoundsAndCacheSvgOnly(void)
+int UtcDaliViewLayoutFinishedFittingUsesFinalBoundsAndCache(void)
 {
   UiTestApplication application;
-  using VisualType                            = Dali::Ui::Integration::InternalVisualType;
-  View                                view    = View::New();
-  auto                                factory = Dali::Ui::Integration::VisualFactory::Get();
-  auto&                               cache   = Dali::Ui::GetImplementation(factory).GetFactoryCache();
-  auto                                svg     = FittingModeTestVisual::New(cache, VisualType::SVG);
-  auto&                               data    = Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(view));
-  Dali::Ui::Integration::Visual::Base svgVisual(svg.Get());
-  data.RegisterVisual(Dali::Ui::Integration::View::Property::BACKGROUND, svgVisual);
+  using VisualType = Dali::Ui::Integration::InternalVisualType;
+  View root        = View::New();
+  View view        = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(50.0f);
+  root.Add(view);
 
-  std::vector<FittingModeTestVisual::Ptr> otherVisuals;
-  Property::Index                         index = 10000;
-  for(auto type : {VisualType::COLOR, VisualType::IMAGE, VisualType::ANIMATED_IMAGE,
+  auto               factory = Dali::Ui::Integration::VisualFactory::Get();
+  auto&              cache   = Dali::Ui::GetImplementation(factory).GetFactoryCache();
+  auto&              data    = Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(view));
+  FittingBoundsPanel panel;
+  panel.child           = view;
+  Property::Index index = 10000;
+  for(auto type : {VisualType::SVG, VisualType::COLOR, VisualType::IMAGE, VisualType::ANIMATED_IMAGE,
                    VisualType::N_PATCH, VisualType::LOTTIE_ANIMATION, VisualType::TEXT})
   {
     auto                                visual = FittingModeTestVisual::New(cache, type);
     Dali::Ui::Integration::Visual::Base handle(visual.Get());
     data.RegisterVisual(index++, handle);
-    otherVisuals.push_back(visual);
+    panel.visuals.push_back(visual);
   }
 
   FinalFittingBounds producer;
   view.SetArrangeCallback(ArrangeCallback::New(&producer, &FinalFittingBounds::Arrange));
-  view.Measure(100.0f, 50.0f);
-  const LayoutRect input(0.0f, 0.0f, 100.0f, 50.0f);
-  view.Arrange(input);
-  DALI_TEST_EQUALS(svg->applyCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(svg->lastControlSize, Vector2(40.0f, 20.0f), 0.01f, TEST_LOCATION);
-  for(const auto& visual : otherVisuals)
+  root.SetMeasureCallback(MeasureCallback::New(&panel, &FittingBoundsPanel::Measure));
+  root.SetArrangeCallback(ArrangeCallback::New(&panel, &FittingBoundsPanel::Arrange));
+  int finishes = 0;
+  view.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect)
+  { ++finishes; });
+  application.GetWindow().Add(root);
+
+  for(int pass = 0; pass < 2; ++pass)
   {
-    DALI_TEST_EQUALS(visual->applyCount, 0, TEST_LOCATION);
-  }
-  // A cache hit must deliver the final size without running the producer again.
-  svg->lastControlSize = Vector2::ZERO;
-  view.Arrange(input);
-  DALI_TEST_EQUALS(producer.calls, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(svg->applyCount, 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(svg->lastControlSize, Vector2(40.0f, 20.0f), 0.01f, TEST_LOCATION);
-  for(const auto& visual : otherVisuals)
-  {
-    DALI_TEST_EQUALS(visual->applyCount, 0, TEST_LOCATION);
+    if(pass > 0)
+    {
+      // Re-run only the parent: the child's unchanged input must hit its cache.
+      Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(root)).InvalidateArrange();
+    }
+    application.SendNotification();
+
+    DALI_TEST_EQUALS(panel.arrangeCalls, pass + 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(producer.calls, 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(finishes, pass + 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(panel.countsAfterArrange.size(), panel.visuals.size(), TEST_LOCATION);
+    if(panel.countsAfterArrange.size() == panel.visuals.size())
+    {
+      for(std::size_t i = 0; i < panel.visuals.size(); ++i)
+      {
+        const auto& visual = panel.visuals[i];
+        const bool  isText = visual->GetType() == VisualType::TEXT;
+        // Neither a normal Arrange nor cache replay may perform early fitting.
+        DALI_TEST_EQUALS(panel.countsAfterArrange[i], isText ? 0 : pass, TEST_LOCATION);
+        DALI_TEST_EQUALS(visual->applyCount, isText ? 0 : pass + 1, TEST_LOCATION);
+        if(!isText)
+        {
+          // Fitting must use the producer's final size, not its 100x50 input.
+          DALI_TEST_EQUALS(visual->lastControlSize, Vector2(40.0f, 20.0f), 0.01f, TEST_LOCATION);
+        }
+      }
+    }
   }
 
-  // LayoutFinished still fits every eligible non-text visual, including SVG.
-  data.EmitLayoutFinishedSignal(LayoutRect(4.0f, 4.0f, 40.0f, 20.0f));
-  DALI_TEST_EQUALS(svg->applyCount, 3, TEST_LOCATION);
-  for(const auto& visual : otherVisuals)
+  // Event processing without another layout request must not repeat fitting.
+  application.SendNotification();
+  DALI_TEST_EQUALS(panel.arrangeCalls, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(producer.calls, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(finishes, 2, TEST_LOCATION);
+  for(const auto& visual : panel.visuals)
   {
-    const int expectedCount = visual->GetType() == VisualType::TEXT ? 0 : 1;
-    DALI_TEST_EQUALS(visual->applyCount, expectedCount, TEST_LOCATION);
-    if(expectedCount)
+    DALI_TEST_EQUALS(visual->applyCount, visual->GetType() == VisualType::TEXT ? 0 : 2, TEST_LOCATION);
+  }
+  END_TEST;
+}
+
+int UtcDaliViewFittingModeQueuedPassUsesLatestTarget(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  View              view   = View::New();
+  view.SetRequestedWidth(100.0f);
+  view.SetRequestedHeight(50.0f);
+  auto  factory = Dali::Ui::Integration::VisualFactory::Get();
+  auto& cache   = Dali::Ui::GetImplementation(factory).GetFactoryCache();
+  auto  image   = FittingModeTestVisual::New(cache);
+  auto  svg     = FittingModeTestVisual::New(cache, Dali::Ui::Integration::InternalVisualType::SVG);
+  auto& data    = Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(view));
+  Dali::Ui::Integration::Visual::Base imageVisual(image.Get());
+  Dali::Ui::Integration::Visual::Base svgVisual(svg.Get());
+  data.RegisterVisual(Dali::Ui::Integration::View::Property::BACKGROUND, imageVisual);
+  data.RegisterVisual(Dali::Ui::Integration::View::Property::SHADOW, svgVisual);
+  std::vector<float>   publicWidths;
+  std::vector<Vector2> imageSizes;
+  std::vector<Vector2> svgSizes;
+  // RegisterVisual connected the internal fitting consumer before this observer.
+  view.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  {
+    publicWidths.push_back(bounds.width);
+    imageSizes.push_back(image->lastControlSize);
+    svgSizes.push_back(svg->lastControlSize);
+  });
+  window.Add(view);
+  LayoutController& controller = LayoutController::Get(window);
+  controller.ProcessLayouts();
+  view.SetRequestedWidth(200.0f);
+  controller.ProcessLayouts();
+  DALI_TEST_CHECK(publicWidths.empty());
+  DALI_TEST_EQUALS(image->applyCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(svg->applyCount, 0, TEST_LOCATION);
+
+  application.SendNotification();
+  DALI_TEST_EQUALS(publicWidths.size(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(imageSizes.size(), 2u, TEST_LOCATION);
+  DALI_TEST_EQUALS(svgSizes.size(), 2u, TEST_LOCATION);
+  if(publicWidths.size() == 2u && imageSizes.size() == 2u && svgSizes.size() == 2u)
+  {
+    // The old public snapshot remains observable. It must not rewind either
+    // visual from the current target to the geometry of that earlier pass.
+    DALI_TEST_EQUALS(publicWidths[0], 100.0f, 0.01f, TEST_LOCATION);
+    DALI_TEST_EQUALS(publicWidths[1], 200.0f, 0.01f, TEST_LOCATION);
+    for(std::size_t i = 0; i < 2u; ++i)
     {
-      DALI_TEST_EQUALS(visual->lastControlSize, Vector2(40.0f, 20.0f), 0.01f, TEST_LOCATION);
+      DALI_TEST_EQUALS(imageSizes[i], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
+      DALI_TEST_EQUALS(svgSizes[i], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
     }
+  }
+  application.SendNotification();
+  DALI_TEST_EQUALS(publicWidths.size(), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliViewFittingModeNestedPassUsesLatestTarget(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  View              root   = View::New();
+  root.SetRequestedWidth(400.0f);
+  root.SetRequestedHeight(100.0f);
+  View earlier = View::New();
+  earlier.SetRequestedWidth(40.0f);
+  earlier.SetRequestedHeight(50.0f);
+  View later = View::New();
+  later.SetRequestedWidth(100.0f);
+  later.SetRequestedHeight(50.0f);
+  root.Add(earlier);
+  root.Add(later);
+  auto  factory = Dali::Ui::Integration::VisualFactory::Get();
+  auto& cache   = Dali::Ui::GetImplementation(factory).GetFactoryCache();
+  auto  image   = FittingModeTestVisual::New(cache);
+  auto  svg     = FittingModeTestVisual::New(cache, Dali::Ui::Integration::InternalVisualType::SVG);
+  auto& data    = Dali::Ui::Internal::ViewDataImpl::Get(GetImpl(later));
+  Dali::Ui::Integration::Visual::Base imageVisual(image.Get());
+  Dali::Ui::Integration::Visual::Base svgVisual(svg.Get());
+  data.RegisterVisual(Dali::Ui::Integration::View::Property::BACKGROUND, imageVisual);
+  data.RegisterVisual(Dali::Ui::Integration::View::Property::SHADOW, svgVisual);
+  window.Add(root);
+  LayoutController&    controller = LayoutController::Get(window);
+  bool                 changed    = false;
+  std::vector<float>   publicWidths;
+  std::vector<Vector2> imageSizes;
+  std::vector<Vector2> svgSizes;
+  earlier.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect)
+  {
+    if(!changed)
+    {
+      changed = true;
+      later.SetRequestedWidth(200.0f);
+      controller.ProcessLayouts();
+    }
+  });
+  later.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  {
+    publicWidths.push_back(bounds.width);
+    imageSizes.push_back(image->lastControlSize);
+    svgSizes.push_back(svg->lastControlSize);
+  });
+
+  // The earlier sibling recalculates both children before the later sibling's
+  // original completion is delivered in the same post cohort.
+  application.SendNotification();
+  DALI_TEST_CHECK(changed);
+  DALI_TEST_EQUALS(publicWidths.size(), 1u, TEST_LOCATION);
+  if(publicWidths.size() == 1u)
+  {
+    DALI_TEST_EQUALS(publicWidths[0], 100.0f, 0.01f, TEST_LOCATION);
+    DALI_TEST_EQUALS(imageSizes[0], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
+    DALI_TEST_EQUALS(svgSizes[0], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
+  }
+  application.SendNotification();
+  DALI_TEST_EQUALS(publicWidths.size(), 2u, TEST_LOCATION);
+  if(publicWidths.size() == 2u)
+  {
+    DALI_TEST_EQUALS(publicWidths[1], 200.0f, 0.01f, TEST_LOCATION);
+    DALI_TEST_EQUALS(imageSizes[1], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
+    DALI_TEST_EQUALS(svgSizes[1], Vector2(200.0f, 50.0f), 0.01f, TEST_LOCATION);
   }
   END_TEST;
 }

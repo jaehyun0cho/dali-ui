@@ -25,20 +25,21 @@
 // externally triggered event.
 //
 // What to observe:
-//  1. After launch the app goes IDLE (CPU ~0 in top) even though every arrange
-//     re-invalidates the label. Under the old behaviour this exact producer
-//     kept the main loop spinning at 100% CPU.
-//  2. The console prints one "arrange #N" line per EXTERNAL event (touch, key):
-//     each event drains the parked work once, the callback re-parks, and the
-//     loop sleeps again. The label's SIZE also lags its text by one event --
+//  1. Once startup events stop, pass counts stop even though retained work
+//     remains. CPU readings are supplementary and depend on the platform.
+//  2. Each external processing opportunity can consume the retained work.
+//     A touch or key may produce several platform events; do not require one
+//     pass per gesture. The label's SIZE also lags its text by one event --
 //     the newest string renders inside the previous measure, which is the
 //     "dirty but not yet laid out" state made visible.
 //  3. The LayoutController logs one parked-episode diagnostic (DALI_LOG_ERROR).
 //     No per-View warning appears: SetText() invalidates through the
 //     framework-internal path, and the park policy is route-independent.
-//  4. LayoutFinished stays deferred while the producer keeps re-invalidating.
-//     After ARRANGE_LIMIT arranges the callback stops mutating; the next event
-//     drains, the layout finally settles, and "LayoutFinished" is printed.
+//  4. Every completed window pass prints TC77_PASS, including passes that leave
+//     the next invalidation parked. The signal is a pass observation, not a
+//     promise that the next pass will produce the same geometry.
+//     After ARRANGE_LIMIT the producer stops; one more processing opportunity
+//     consumes the last retained request.
 //
 //
 // NOTE: this is a DIAGNOSTIC reproducer, not a pattern to copy. Two things about it are
@@ -67,8 +68,9 @@ namespace
 {
 constexpr int ARRANGE_LIMIT = 30; ///< Mutation stops here so the settle path is observable too.
 
-int   gArrangeCount = 0;
-bool  gMutating     = true;
+int   gArrangeCount  = 0;
+int   gFinishedCount = 0;
+bool  gMutating      = true;
 Label gCounterLabel; ///< The label whose text is rewritten from inside the arrange pass.
 
 Label MakeLabel(const Dali::String& text, float fontSize, uint32_t color)
@@ -92,8 +94,8 @@ LayoutRect BoxArrange(View /*view*/, const LayoutRect& bounds)
     const std::string text = "arrange #" + std::to_string(gArrangeCount) +
                              " - parked; touch to run the next pass";
     gCounterLabel.SetText(Dali::String(text.c_str()));
-    std::cout << "arrange #" << gArrangeCount
-              << ": label text changed in-pass -> invalidation parked, no idle wake" << std::endl;
+    std::cout << "TC77_ARRANGE count=" << gArrangeCount
+              << " mutating=1" << std::endl;
     if(gArrangeCount >= ARRANGE_LIMIT)
     {
       gMutating = false;
@@ -119,8 +121,9 @@ public:
 
   void OnEnter(View contentArea) override
   {
-    gArrangeCount = 0;
-    gMutating = true;
+    gArrangeCount  = 0;
+    gFinishedCount = 0;
+    gMutating      = true;
 
     Window window = UiContext::Get().GetDefaultWindow();
 
@@ -132,7 +135,7 @@ public:
 
     root.Add(MakeLabel("Parked in-pass invalidation", 24.0f, 0x202124u));
     root.Add(MakeLabel("Every arrange rewrites the label below from OnArrange.", 14.0f, 0x5F6368u));
-    root.Add(MakeLabel("Watch: app idles between touches; one pass per touch.", 14.0f, 0x5F6368u));
+    root.Add(MakeLabel("Watch: pass counts stop when external events stop.", 14.0f, 0x5F6368u));
 
     gCounterLabel = MakeLabel("arrange #0 - waiting for the first pass", 18.0f, 0x0B57D0u);
     root.Add(gCounterLabel);
@@ -154,17 +157,19 @@ public:
 
   void OnLayoutFinished(Window /*window*/)
   {
-    // Starved while the producer kept re-invalidating; fires once the layout
-    // finally settles (after the mutation stops and one more event drains).
-    std::cout << "LayoutFinished: layout settled after " << gArrangeCount << " arranges" << std::endl;
+    // Observation only: logging must not invalidate layout or request another pass.
+    std::cout << "TC77_PASS finished=" << ++gFinishedCount
+              << " arrange=" << gArrangeCount
+              << " mutating=" << (gMutating ? 1 : 0) << std::endl;
   }
 
   void OnExit() override
   {
     DisconnectAll();
     gCounterLabel.Reset();
-    gArrangeCount = 0;
-    gMutating = true;
+    gArrangeCount  = 0;
+    gFinishedCount = 0;
+    gMutating      = true;
   }
 };
 

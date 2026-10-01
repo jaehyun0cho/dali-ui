@@ -18,6 +18,7 @@
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
+#include <vector>
 
 using namespace Dali;
 using namespace Dali::Ui;
@@ -124,8 +125,8 @@ struct ViewLayoutFinishedSignalFunctor
   ViewLayoutFinishedSignalData& d;
 };
 
-// Changes a layout PROPERTY on `target` once, on the first emit (window-suppress
-// test). Both this framework-internal route and the public invalidation functor
+// Changes a layout PROPERTY on `target` once, on the first emit. The completed
+// pass still emits its Window signal. This route and the public invalidation functor
 // below fully retain another pass from inside the emit; neither may request an
 // idle ProcessEvents wake from that processing episode.
 struct ChangeWidthOnceFunctor
@@ -190,7 +191,7 @@ MeasuredSize RequestLayoutDuringMeasure(View, float, float)
 
 // On first emit, changes a layout property on `target` (a framework-internal
 // invalidation subject to the same PARK policy) and RE-ENTERS ProcessLayouts
-// explicitly (b1 stale-skip regression guard).
+// explicitly. Both passes must retain their own completion snapshots.
 struct ReenterProcessLayoutsFunctor
 {
   ReenterProcessLayoutsFunctor(LayoutController& c, View target, int& count, bool& done)
@@ -394,8 +395,7 @@ int UtcDaliLayoutControllerLayoutFinishedSignalNoSpuriousEmitP(void)
   application.SendNotification();
   DALI_TEST_EQUALS(data.count, 1, TEST_LOCATION);
 
-  // Subsequent cycles with nothing pending must NOT re-fire (latch cleared;
-  // the post phase sees no scheduled emit).
+  // Subsequent cycles with no completed pass must not create another event.
   application.SendNotification();
   application.SendNotification();
   DALI_TEST_EQUALS(data.count, 1, TEST_LOCATION);
@@ -421,7 +421,7 @@ int UtcDaliLayoutControllerLayoutFinishedSignalRefiresP(void)
   application.SendNotification();
   DALI_TEST_EQUALS(data.count, 1, TEST_LOCATION);
 
-  // Invalidate again: a new dirty->quiescent transition fires the signal again.
+  // Invalidate again: the next completed pass fires the signal again.
   root.SetRequestedWidth(200.0f);
   application.SendNotification();
   DALI_TEST_EQUALS(data.count, 2, TEST_LOCATION);
@@ -586,11 +586,9 @@ int UtcDaliViewLayoutFinishedSignalRtlTargetBoundsP(void)
   END_TEST;
 }
 
-// A View slot that re-schedules layout through a layout property setter starts a
-// new episode from inside the emit, so the window signal is deferred. The new
-// episode remains pending but does not arm RequestProcessEventsOnIdle; a later
-// independent ProcessEvents trigger drains it.
-int UtcDaliViewLayoutFinishedSignalSuppressWindowSignalWhenSlotChangesPropertyP(void)
+// A View slot can leave another pass pending without cancelling the completed
+// pass's Window signal. Scheduling remains parked until an independent event.
+int UtcDaliViewLayoutFinishedSignalKeepsWindowSignalWhenSlotChangesPropertyP(void)
 {
   UiTestApplication application;
   Window            window = application.GetWindow();
@@ -609,24 +607,24 @@ int UtcDaliViewLayoutFinishedSignalSuppressWindowSignalWhenSlotChangesPropertyP(
   ChangeWidthOnceFunctor viewFunctor(root, viewEmitCount, didChange);
   root.LayoutFinishedSignal().Connect(&application, viewFunctor);
 
-  // Post phase emits the View signal; its slot changes a layout property, so the
-  // window signal is suppressed and the resulting pass is parked without a wake.
+  // The View slot changes a property, but the Window signal still completes this
+  // pass. The new calculation is retained without an idle wake.
   SendRequestedProcessEvents(application);
-  DALI_TEST_EQUALS(winData.count, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(winData.count, 1, TEST_LOCATION);
   DALI_TEST_EQUALS(viewEmitCount, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   SendIndependentProcessEvents(application);
-  DALI_TEST_EQUALS(winData.count, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(winData.count, 2, TEST_LOCATION);
   DALI_TEST_EQUALS(viewEmitCount, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
   END_TEST;
 }
 
 // A slot that unconditionally calls View::InvalidateMeasure() on every emit. The
-// call is PARKED, never ignored: it is fully propagated and retained, so the window
-// signal stays suppressed, but it cannot wake another idle ProcessEvents cycle by
-// itself. The second half also pins
+// call is PARKED, never ignored: it is fully propagated and retained, but it does
+// not cancel the completed pass's Window signal or wake another idle cycle.
+// The second half also pins
 // deferred->wakeable upgrade: a later event-time invalidation must reach the root
 // and arm a wake even though an equivalent parked registration already exists.
 int UtcDaliViewLayoutFinishedSlotInvalidationParkedN(void)
@@ -649,7 +647,7 @@ int UtcDaliViewLayoutFinishedSlotInvalidationParkedN(void)
 
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(viewEmitCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(winData.count, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(winData.count, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // The slot left the root parked. An equivalent invalidation at event time must
@@ -660,7 +658,7 @@ int UtcDaliViewLayoutFinishedSlotInvalidationParkedN(void)
 
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(viewEmitCount, 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(winData.count, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(winData.count, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
   END_TEST;
 }
@@ -693,15 +691,15 @@ int UtcDaliLayoutControllerRequestLayoutDuringPassParkedN(void)
 
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(gRequestLayoutProducerCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(data.count, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(data.count, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // The explicit trigger consumes the retained registration. Because RequestLayout
   // alone did not dirty the view, its measure cache hits and the producer does not
-  // re-request; the episode settles without arming another wake.
+  // re-request. Its Arrange replay still completes another managed pass.
   SendIndependentProcessEvents(application);
   DALI_TEST_EQUALS(gRequestLayoutProducerCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(data.count, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(data.count, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   gRequestLayoutTarget.Reset();
@@ -726,34 +724,230 @@ int UtcDaliViewLayoutFinishedSignalSlotReentersProcessLayoutsP(void)
   root.Add(b);
   window.Add(root);
 
-  LayoutController& controller = LayoutController::Get(window);
-
-  ViewLayoutFinishedSignalData    bData;
-  ViewLayoutFinishedSignalFunctor bFunctor(bData);
-  b.LayoutFinishedSignal().Connect(&application, bFunctor);
-
+  LayoutController&            controller = LayoutController::Get(window);
+  std::vector<float>           widths;
+  std::vector<int>             order;
   int                          aCount = 0;
   bool                         done   = false;
-  ReenterProcessLayoutsFunctor aFunctor(controller, b, aCount, done);
-  a.LayoutFinishedSignal().Connect(&application, aFunctor);
+  ReenterProcessLayoutsFunctor reenter(controller, b, aCount, done);
+  a.LayoutFinishedSignal().Connect(&application, [&](View view, LayoutRect bounds)
+  {
+    order.push_back(1);
+    reenter(view, bounds);
+  });
+  b.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  {
+    order.push_back(2);
+    widths.push_back(bounds.width);
+  });
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { order.push_back(3); });
 
-  // The slot re-enters ProcessLayouts() during the post-phase emit; drive
-  // several full cycles so the re-scheduled + re-entered episode settles and
-  // b's final (width 120) bounds are delivered.
+  // A's callback completes a second pass synchronously. B must still receive its
+  // original snapshot, followed by the original Window event in this post phase.
   application.SendNotification();
-  application.SendNotification();
-  application.SendNotification();
-  application.SendNotification();
+  DALI_TEST_EQUALS(aCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 1u, TEST_LOCATION);
+  DALI_TEST_CHECK(order == std::vector<int>({1, 2, 3}));
+  if(widths.size() == 1u)
+  {
+    DALI_TEST_EQUALS(widths[0], 60.0f, 0.01f, TEST_LOCATION);
+  }
+  DALI_TEST_EQUALS(b.GetProperty<float>(Actor::Property::SIZE_WIDTH), 120.0f, 0.01f, TEST_LOCATION);
 
-  // The slot's framework-internal property invalidation is retained and parked
-  // under the same policy as a public invalidation. Its explicit re-entrant
-  // ProcessLayouts call drains that work and starts a new dirty->settled episode,
-  // so exact emit counts are implementation-defined (a view may legitimately
-  // recur per episode). The guaranteed invariants are: no crash / no permanent
-  // stranding, and b's LAST delivered bounds reflect its final width-120 layout.
-  DALI_TEST_CHECK(aCount >= 1);
-  DALI_TEST_CHECK(bData.count >= 1);
-  DALI_TEST_EQUALS(bData.bounds.width, b.GetProperty<float>(Actor::Property::SIZE_WIDTH), 0.01f, TEST_LOCATION);
+  // The nested pass must cross another pre/core-relayout/post boundary before
+  // its separate snapshot is delivered. It may not replace the earlier event.
+  application.SendNotification();
+  DALI_TEST_EQUALS(aCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 2u, TEST_LOCATION);
+  DALI_TEST_CHECK(order == std::vector<int>({1, 2, 3, 1, 2, 3}));
+  if(widths.size() == 2u)
+  {
+    DALI_TEST_EQUALS(widths[1], 120.0f, 0.01f, TEST_LOCATION);
+  }
+  application.SendNotification();
+  DALI_TEST_EQUALS(aCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerManualPassesKeepSeparateSnapshotsP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  View              root   = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(60.0f);
+  window.Add(root);
+  LayoutController&  controller = LayoutController::Get(window);
+  std::vector<float> widths;
+  std::vector<int>   order;
+  root.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  {
+    widths.push_back(bounds.width);
+    order.push_back(1);
+  });
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { order.push_back(2); });
+
+  controller.ProcessLayouts();
+  root.SetRequestedWidth(180.0f);
+  controller.ProcessLayouts();
+  DALI_TEST_CHECK(widths.empty());
+  DALI_TEST_CHECK(order.empty());
+  DALI_TEST_EQUALS(root.GetProperty<float>(Actor::Property::SIZE_WIDTH), 180.0f, 0.01f, TEST_LOCATION);
+
+  application.SendNotification();
+  DALI_TEST_EQUALS(widths.size(), 2u, TEST_LOCATION);
+  DALI_TEST_CHECK(order == std::vector<int>({1, 2, 1, 2}));
+  if(widths.size() == 2u)
+  {
+    DALI_TEST_EQUALS(widths[0], 100.0f, 0.01f, TEST_LOCATION);
+    DALI_TEST_EQUALS(widths[1], 180.0f, 0.01f, TEST_LOCATION);
+  }
+  application.SendNotification();
+  DALI_TEST_EQUALS(widths.size(), 2u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerCrossWindowPostRequiresNewBoundaryP(void)
+{
+  UiTestApplication application;
+  Window            first            = application.GetWindow();
+  LayoutController& firstController  = LayoutController::Get(first);
+  Window            second           = Window::New(PositionSize(0, 0, 320, 240), "layout-pass-second");
+  LayoutController& secondController = LayoutController::Get(second);
+  View              source           = View::New();
+  source.SetRequestedWidth(100.0f);
+  source.SetRequestedHeight(60.0f);
+  View target = View::New();
+  target.SetRequestedWidth(80.0f);
+  target.SetRequestedHeight(50.0f);
+  first.Add(source);
+  second.Add(target);
+
+  std::vector<float> widths;
+  int                firstCount  = 0;
+  int                secondCount = 0;
+  target.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  { widths.push_back(bounds.width); });
+  firstController.LayoutFinishedSignal().Connect(&application, [&](Window)
+  {
+    ++firstCount;
+    target.SetRequestedWidth(160.0f);
+    secondController.ProcessLayouts();
+  });
+  secondController.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++secondCount; });
+
+  // First's post callback calculates a NEW second-window pass after core Relayout.
+  // Second's later post callback may emit only the pass eligible at its pre phase.
+  application.SendNotification();
+  DALI_TEST_EQUALS(firstCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(secondCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 1u, TEST_LOCATION);
+  if(widths.size() == 1u)
+  {
+    DALI_TEST_EQUALS(widths[0], 80.0f, 0.01f, TEST_LOCATION);
+  }
+  DALI_TEST_EQUALS(target.GetProperty<float>(Actor::Property::SIZE_WIDTH), 160.0f, 0.01f, TEST_LOCATION);
+
+  application.SendNotification();
+  DALI_TEST_EQUALS(firstCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(secondCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 2u, TEST_LOCATION);
+  if(widths.size() == 2u)
+  {
+    DALI_TEST_EQUALS(widths[1], 160.0f, 0.01f, TEST_LOCATION);
+  }
+  LayoutController::Remove(second);
+  application.RunIdles();
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerRemovedPendingRootDoesNotFinishP(void)
+{
+  UiTestApplication application;
+  Window            window     = application.GetWindow();
+  LayoutController& controller = LayoutController::Get(window);
+  int               finishes   = 0;
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++finishes; });
+  View root = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(60.0f);
+  window.Add(root);
+  window.Remove(root);
+  root.Reset();
+
+  // A dirty registration whose root died never completed a pass.
+  controller.ProcessLayouts();
+  application.SendNotification();
+  DALI_TEST_EQUALS(finishes, 0, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerRemoveStopsRemainingPassEventsP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  View              root   = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(60.0f);
+  window.Add(root);
+  LayoutController& controller = LayoutController::Get(window);
+  int               views      = 0;
+  int               windows    = 0;
+  root.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect)
+  { ++views; });
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window emittedWindow)
+  {
+    ++windows;
+    LayoutController::Remove(emittedWindow);
+  });
+  controller.ProcessLayouts();
+  root.SetRequestedWidth(180.0f);
+  controller.ProcessLayouts();
+  application.SendNotification();
+  DALI_TEST_EQUALS(views, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(windows, 1, TEST_LOCATION);
+  application.RunIdles();
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerRemoveInViewStopsCurrentCohortP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  View              root   = View::New();
+  root.SetRequestedWidth(200.0f);
+  root.SetRequestedHeight(100.0f);
+  View first = View::New();
+  first.SetRequestedWidth(40.0f);
+  first.SetRequestedHeight(30.0f);
+  View second = View::New();
+  second.SetRequestedWidth(50.0f);
+  second.SetRequestedHeight(30.0f);
+  root.Add(first);
+  root.Add(second);
+  window.Add(root);
+  int firstCount  = 0;
+  int secondCount = 0;
+  int windowCount = 0;
+  first.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect)
+  {
+    ++firstCount;
+    LayoutController::Remove(window);
+  });
+  second.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect)
+  { ++secondCount; });
+  LayoutController::Get(window).LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++windowCount; });
+  application.SendNotification();
+  DALI_TEST_EQUALS(firstCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(secondCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(windowCount, 0, TEST_LOCATION);
+  application.RunIdles();
   END_TEST;
 }
 
@@ -1146,7 +1340,7 @@ int UtcDaliLayoutControllerBatchSurvivesProducerExceptionP(void)
   window.Add(targetHost);
   targetHost.Add(target);
 
-  // A normal batch first. It settles, emits once, and the slot then arms the throw and
+  // A normal batch first. It completes, emits once, and the slot then arms the throw and
   // parks a fresh dirty state on both roots without requesting a wake.
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
@@ -1180,7 +1374,7 @@ int UtcDaliLayoutControllerBatchSurvivesProducerExceptionP(void)
   DALI_TEST_EQUALS(gExceptionTargetCount, 2, TEST_LOCATION);
   DALI_TEST_EQUALS(gThrowingMeasureCount, 3, TEST_LOCATION);
 
-  // 4. ...and that pass settled, so LayoutFinished emitted again.
+  // 4. The successful retry produces another pass completion event.
   DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
 
   // Steady state: nothing re-schedules itself.
@@ -1189,5 +1383,176 @@ int UtcDaliLayoutControllerBatchSurvivesProducerExceptionP(void)
   DALI_TEST_EQUALS(gThrowingMeasureCount, 3, TEST_LOCATION);
   DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
 
+  END_TEST;
+}
+
+// Catch producer failures through the manual entry point so Core::ProcessEvents'
+// non-RAII reentrancy latch is not left set by the injected exception.
+int UtcDaliLayoutControllerFailedBatchDropsPartialCompletionP(void)
+{
+  UiTestApplication application;
+  Window            window     = application.GetWindow();
+  LayoutController& controller = LayoutController::Get(window);
+  gThrowingMeasureCount        = 0;
+  gThrowingMeasureArmed        = false;
+
+  View first = View::New();
+  first.SetRequestedWidth(100.0f);
+  first.SetRequestedHeight(60.0f);
+  Actor host     = Actor::New();
+  View  throwing = View::New();
+  throwing.SetRequestedWidth(80.0f);
+  throwing.SetRequestedHeight(50.0f);
+  throwing.SetMeasureCallback(MeasureCallback::New(&ThrowWhenArmedMeasure));
+  window.Add(first);
+  window.Add(host);
+  host.Add(throwing);
+
+  std::vector<float> widths;
+  int                finishes = 0;
+  first.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  { widths.push_back(bounds.width); });
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++finishes; });
+
+  // Keep the first successful batch queued without delivering it yet.
+  controller.ProcessLayouts();
+  DALI_TEST_EQUALS(gThrowingMeasureCount, 1, TEST_LOCATION);
+  first.SetRequestedWidth(140.0f);
+  throwing.InvalidateMeasure();
+  gThrowingMeasureArmed = true;
+  bool caught           = false;
+  try
+  {
+    // The shallower root produces a width-140 snapshot before the later root throws.
+    controller.ProcessLayouts();
+  }
+  catch(const Dali::DaliException&)
+  {
+    caught = true;
+  }
+  DALI_TEST_CHECK(caught);
+  DALI_TEST_EQUALS(gThrowingMeasureCount, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(first.GetProperty<float>(Actor::Property::SIZE_WIDTH), 140.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_CHECK(widths.empty());
+  DALI_TEST_EQUALS(finishes, 0, TEST_LOCATION);
+
+  // Remove the failed root so the next pre phase cannot manufacture a successful
+  // retry that would hide an erroneous partial completion record.
+  host.Remove(throwing);
+  throwing.Reset();
+  window.Remove(host);
+  host.Reset();
+  application.SendNotification();
+  DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 1u, TEST_LOCATION);
+  if(widths.size() == 1u)
+  {
+    DALI_TEST_EQUALS(widths[0], 100.0f, 0.01f, TEST_LOCATION);
+  }
+  application.SendNotification();
+  DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 1u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerLateConnectionDoesNotReplayPassP(void)
+{
+  UiTestApplication application;
+  Window            window     = application.GetWindow();
+  LayoutController& controller = LayoutController::Get(window);
+  View              root       = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(60.0f);
+  window.Add(root);
+  int views   = 0;
+  int windows = 0;
+  root.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect)
+  { ++views; });
+  controller.ProcessLayouts();
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++windows; });
+  application.SendNotification();
+  DALI_TEST_EQUALS(views, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(windows, 0, TEST_LOCATION);
+
+  root.SetRequestedWidth(120.0f);
+  application.SendNotification();
+  DALI_TEST_EQUALS(views, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(windows, 1, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerOffsceneViewCancelsQueuedSnapshotP(void)
+{
+  UiTestApplication application;
+  Window            window     = application.GetWindow();
+  LayoutController& controller = LayoutController::Get(window);
+  View              root       = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(60.0f);
+  window.Add(root);
+  std::vector<float> widths;
+  int                windows = 0;
+  root.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  { widths.push_back(bounds.width); });
+  controller.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++windows; });
+  controller.ProcessLayouts();
+  window.Remove(root);
+  DALI_TEST_CHECK(root); // Keep the handle alive: expiration alone cannot cancel it.
+  application.SendNotification();
+  DALI_TEST_CHECK(widths.empty());
+  DALI_TEST_EQUALS(windows, 1, TEST_LOCATION);
+
+  root.SetRequestedWidth(180.0f);
+  window.Add(root);
+  application.SendNotification();
+  DALI_TEST_EQUALS(widths.size(), 1u, TEST_LOCATION);
+  if(widths.size() == 1u)
+  {
+    DALI_TEST_EQUALS(widths[0], 180.0f, 0.01f, TEST_LOCATION);
+  }
+  DALI_TEST_EQUALS(windows, 2, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLayoutControllerReparentCancelsPreviousWindowSnapshotP(void)
+{
+  UiTestApplication application;
+  Window            first            = application.GetWindow();
+  LayoutController& firstController  = LayoutController::Get(first);
+  Window            second           = Window::New(PositionSize(0, 0, 320, 240), "layout-pass-reparent");
+  LayoutController& secondController = LayoutController::Get(second);
+  View              root             = View::New();
+  root.SetRequestedWidth(100.0f);
+  root.SetRequestedHeight(60.0f);
+  first.Add(root);
+  std::vector<float> widths;
+  int                firstWindows  = 0;
+  int                secondWindows = 0;
+  root.LayoutFinishedSignal().Connect(&application, [&](View, LayoutRect bounds)
+  { widths.push_back(bounds.width); });
+  firstController.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++firstWindows; });
+  secondController.LayoutFinishedSignal().Connect(&application, [&](Window)
+  { ++secondWindows; });
+  firstController.ProcessLayouts();
+
+  // The same live View moves to another window before its old snapshot is emitted.
+  first.Remove(root);
+  second.Add(root);
+  root.SetRequestedWidth(220.0f);
+  secondController.ProcessLayouts();
+  application.SendNotification();
+  DALI_TEST_EQUALS(firstWindows, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(secondWindows, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(widths.size(), 1u, TEST_LOCATION);
+  if(widths.size() == 1u)
+  {
+    DALI_TEST_EQUALS(widths[0], 220.0f, 0.01f, TEST_LOCATION);
+  }
+  LayoutController::Remove(second);
+  application.RunIdles();
   END_TEST;
 }

@@ -119,9 +119,9 @@ DALI_UI_API void AdvanceGeneration();
  *
  * The emit half is a separate counter rather than a bump of the pass depth because a
  * slot runs at pass depth 0 by design: the emit happens in the post-process phase,
- * after every Measure/Arrange guard has unwound. Parked work still counts as pending,
- * so a later LayoutFinished notification is withheld until another processing cycle
- * drains it.
+ * after every Measure/Arrange guard has unwound. Parked work remains pending,
+ * but does not suppress notifications for successfully completed layout passes.
+ * A later pass still requires an independent processing opportunity.
  *
  * @return True while a LayoutFinished emit is in progress
  */
@@ -131,7 +131,7 @@ DALI_UI_API bool IsLayoutFinishedEmitInProgress();
  * @brief Opens the LayoutFinished half of the layout processing window.
  *
  * Nests: the counter it increments allows a re-entrant emit (a slot that drives a
- * nested settle) to keep the window open until the OUTERMOST emit unwinds.
+ * nested delivery) to keep the window open until the OUTERMOST emit unwinds.
  *
  * Prefer ScopedLayoutFinishedEmit over calling this directly, so that an exception
  * or an early return out of a slot cannot leave the window stuck open.

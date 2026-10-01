@@ -73,8 +73,7 @@ public:
    * Layout roots are views that have a LayoutManager and are at the top
    * of the layout hierarchy (e.g. directly under the window).
    * Outside layout processing, the controller batches these requests and arms one
-   * coalesced outstanding ProcessEvents wake so they are processed during the next
-   * frame.
+   * coalesced outstanding ProcessEvents wake for a following processing cycle.
    *
    * @note Calling this DURING layout processing -- from inside any Measure/Arrange
    * implementation, or from a LayoutFinishedSignal slot (either this controller's or a
@@ -147,8 +146,10 @@ public:
   /**
    * @brief Processes all pending layout requests immediately.
    *
-   * This is called automatically by the system once per frame,
-   * but can be called manually if immediate layout is needed.
+   * The system processes layout automatically during event processing. This
+   * method may be called manually when immediate calculation is needed; its
+   * completion signals are deferred until an automatic pre phase and the
+   * following core Relayout and post-process phase.
    */
   void ProcessLayouts();
 
@@ -158,9 +159,11 @@ public:
   using LayoutFinishedSignalType = Signal<void(Dali::Window)>;
 
   /**
-   * @brief This signal is emitted when this window's layout calculation has
-   * fully settled: every layout root's Measure and Arrange for the window
-   * have completed and no further Measure/Arrange work is pending.
+   * @brief Emitted after a layout pass for this window completes successfully.
+   *
+   * A pass processes the batch of pending layout roots taken at its start.
+   * Further requests may remain pending when this signal fires; it does not
+   * indicate that the window's layout has stabilized.
    *
    * A slot connects with the signature:
    * @code
@@ -168,43 +171,41 @@ public:
    * @endcode
    *
    * Semantics:
-   * - Fires once per "dirty -> quiescent" transition, i.e. each time pending
-   *   layout work drains to nothing. Parked work is still pending even though it has
-   *   not armed an idle wake, so it delays this signal until a later processing cycle
-   *   drains it -- on a quiescent application, indefinitely. The signal recurs whenever layout is invalidated and settles again; it
-   *   is not a one-shot for the application lifetime.
-   * - Emitted during the post-process phase, i.e. AFTER DALi core size
-   *   negotiation (Relayout) for the frame in which layout settled. Measure and
-   *   Arrange still run in the pre-process phase; only the emit is deferred to
-   *   post-process. A manual ProcessLayouts() therefore performs layout
-   *   synchronously but does NOT emit this signal in the same call; the emit
-   *   fires on the next post-process pass (e.g. after the next ProcessEvents).
-   * - Reflects Measure/Arrange completion ONLY. It does NOT wait for layout
-   *   transition animations to finish; use a transition-finished callback if
-   *   post-animation geometry is required.
-   * - A slot may NOT invalidate layout. The emit runs inside the layout processing
-   *   window, so a direct View::InvalidateMeasure() / View::InvalidateArrange() /
-   *   LayoutController::RequestLayout() call is a contract violation and is logged
-   *   once for that view. The work is retained, but it is PARKED and does not request
-   *   an idle ProcessEvents wake. The callback already being delivered cannot be
-   *   withdrawn; the parked work begins or extends a dirty episode whose next
-   *   completion signal is delayed until an independently triggered ProcessEvents, an
-   *   explicit ProcessLayouts(), or an out-of-processing request drains it. Defer
-   *   layout-affecting work to event time when prompt processing is required.
-   * - Property changes and tree mutations from a slot (Add / Remove) follow the same
-   *   scheduling rule. A framework-internal invalidation path is not an exemption.
-   * - Destroying this controller from within the slot (LayoutController::Remove)
-   *   is supported. The controller is detached immediately - it stops processing
-   *   and emitting at once - but the object is not freed until the event loop
-   *   next goes idle, because DALi core still holds a processor pointer to it
-   *   for the remainder of the current processing pass.
+   * - Fires once for each successful pass that processes at least one live
+   *   root, including a pass that leaves pending requests or unchanged bounds.
+   *   Empty processing and batches interrupted by an exception do not fire it.
+   * - Emitted during post-process, AFTER DALi core size negotiation (Relayout).
+   *   Measure and Arrange run before core Relayout. A manual ProcessLayouts()
+   *   calculates synchronously but does not emit synchronously: its completion
+   *   waits for an automatic pre phase and the following core Relayout and post.
+   * - Multiple completed passes are delivered in completion order, without
+   *   merging their notifications. Each pass's subscribed View signals precede
+   *   its Window signal. A View callback's new requests do not cancel that
+   *   Window signal. Passes completed during delivery wait for a later cycle.
+   * - A Window notification is recorded only if this signal has a connection
+   *   when the pass completes. Delivery uses the connections present at emit
+   *   time; connecting does not replay passes for which none was recorded.
+   * - Reflects calculation completion only, not presentation or the end of
+   *   layout transition animations. Earlier pass results need not match live
+   *   Actor properties when several passes are delivered together.
+   * - A slot may NOT invalidate layout. Such work remains subject to the
+   *   existing retained-but-parked scheduling rule: cache and pending state are
+   *   updated, but no idle ProcessEvents wake is requested from the callback.
+   *   The completed pass is still reported. Further calculation needs an
+   *   independent processing cycle, explicit ProcessLayouts(), or a request
+   *   outside layout processing. Property changes and tree mutations follow
+   *   the same rule, including framework-internal invalidation paths.
+   * - If a callback throws, the exception propagates. The signal whose delivery
+   *   started is not replayed; remaining View and Window notifications are kept
+   *   for a later post-process invocation. Earlier successful passes remain
+   *   reportable even if a later layout batch fails.
+   * - LayoutController::Remove() inside a callback immediately stops further
+   *   delivery and detaches the controller. Destruction waits until idle so
+   *   DALi core cannot dereference a freed processor.
    *
    * @return The layout-finished signal
-   * @note The @c Dali::Window is passed (not the LayoutController) because the
-   * controller is a non-copyable, per-window infrastructure object; the window
-   * identifies which controller settled and the controller can be re-obtained
-   * via Get(). Adding parameters later would require migrating to a struct
-   * argument.
+   * @note The Window identifies the controller whose pass completed. The
+   * controller can be obtained again with Get().
    */
   LayoutFinishedSignalType& LayoutFinishedSignal();
 

@@ -8696,8 +8696,8 @@ int UtcDaliViewBackgroundChangeAfterSettleUpdatesArrangedSizeP(void)
 //   NO WAKE   -- processing-created work never calls RequestProcessEventsOnIdle,
 //                so an unconditional callback cannot keep the main loop busy.
 //
-// LayoutFinished stays deferred while parked work exists. Tests therefore inspect
-// TestRenderController directly, then use an explicit independent SendNotification
+// LayoutFinished reports each successful pass even while parked work exists.
+// Tests inspect TestRenderController directly, then use an independent notification
 // to prove that parked work remains serviceable. The warning text itself is not
 // asserted (DALI_LOG_ERROR goes to stderr, which this harness does not capture).
 // ---------------------------------------------------------------------------
@@ -8726,14 +8726,14 @@ int UtcDaliViewInvalidateMeasureDuringMeasurePassParkedAndIdleN(void)
   // retains another dirty pass but must not wake ProcessEvents again.
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(gAlwaysInvalidatingMeasureCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // A separately triggered ProcessEvents services exactly one parked pass. The
   // unconditional producer parks itself again, still without arming an idle wake.
   SendIndependentProcessEvents(application);
   DALI_TEST_EQUALS(gAlwaysInvalidatingMeasureCount, 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // The pass still did its work: the measured RESULT is published
@@ -8768,12 +8768,12 @@ int UtcDaliViewInvalidateArrangeDuringArrangePassParkedAndIdleN(void)
 
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(gAlwaysInvalidatingArrangeCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   SendIndependentProcessEvents(application);
   DALI_TEST_EQUALS(gAlwaysInvalidatingArrangeCount, 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // The arranged RESULT is published unconditionally too, so the producer's
@@ -8812,7 +8812,7 @@ int UtcDaliViewInvalidateOtherViewDuringPassConsumedByItsTurnN(void)
   // B is under a non-View actor (depth 2), so it is still an independent View
   // layout root but sorting guarantees A precedes it in the same local batch.
   Actor targetHost = Actor::New();
-  View target = View::New();
+  View  target     = View::New();
   target.SetRequestedWidth(100.0f);
   target.SetRequestedHeight(50.0f);
   target.SetMeasureCallback(MeasureCallback::New(&CrossInvalidationTargetMeasure));
@@ -8829,8 +8829,8 @@ int UtcDaliViewInvalidateOtherViewDuringPassConsumedByItsTurnN(void)
   DALI_TEST_EQUALS(gCrossInvalidationSourceCount, 1, TEST_LOCATION);
   DALI_TEST_EQUALS(gCrossInvalidationTargetCount, 1, TEST_LOCATION);
 
-  // No duplicate remains parked and no self-wake was armed: the same batch is
-  // genuinely settled and may emit LayoutFinished.
+  // This successful batch emits once. The following no-op cycle additionally
+  // verifies that no duplicate remained parked and no self-wake was armed.
   DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
@@ -8870,16 +8870,18 @@ int UtcDaliViewParkedInPassInvalidationStillDropsCacheP(void)
   window.Add(view);
   SendRequestedProcessEvents(application);
 
-  // The first pass was invalidated after entry, so it cannot publish or settle.
+  // The first pass was invalidated after entry: its cache entry is withheld,
+  // but the normally completed pass still emits LayoutFinished.
   DALI_TEST_EQUALS(gCacheDropMeasureCount, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // PARK retains the root. An independent ProcessEvents services it; this
-  // producer disarms after its first call, so the second pass publishes/settles.
+  // producer disarms after its first call, so the second pass publishes its cache
+  // and produces a second completion event.
   SendIndependentProcessEvents(application);
   DALI_TEST_EQUALS(gCacheDropMeasureCount, 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   // Re-issue the framework's OWN constraint, captured by the producer, so what
@@ -8898,7 +8900,7 @@ int UtcDaliViewParkedInPassInvalidationStillDropsCacheP(void)
 
   SendIndependentProcessEvents(application);
   DALI_TEST_EQUALS(gCacheDropMeasureCount, 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
 
   gCacheDropView.Reset();
   END_TEST;
@@ -8926,7 +8928,7 @@ int UtcDaliViewInternalInvalidationDuringPassStillSchedulesP(void)
 
   SendRequestedProcessEvents(application);
   DALI_TEST_EQUALS(impl->GetArrangeCallCount(), 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   SendIndependentProcessEvents(application);
@@ -8942,8 +8944,8 @@ int UtcDaliViewInternalInvalidationDuringPassStillSchedulesP(void)
   DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::SIZE_WIDTH), 20.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(child.GetProperty<float>(Actor::Property::SIZE_HEIGHT), 10.0f, TEST_LOCATION);
 
-  // ...and then the layout settled: one emit, once the follow-up had drained.
-  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
+  // Both the initial pass and its successful follow-up emitted once.
+  DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
 
   END_TEST;
 }
@@ -9002,27 +9004,26 @@ int UtcDaliViewLabelTextChangeDuringArrangeParkedP(void)
 
   // Pass 1 measured the label for "W"; the box's arrange then rewrote the text.
   // That in-pass invalidation is PARKED: the label keeps the short-text geometry,
-  // no idle wake was requested, and LayoutFinished stays deferred.
+  // no idle wake was requested, and LayoutFinished reports the completed pass.
   DALI_TEST_EQUALS(gLabelArrangeMutationCount, 1, TEST_LOCATION);
   const float staleWidth = label.GetProperty<float>(Actor::Property::SIZE_WIDTH);
   DALI_TEST_CHECK(staleWidth > 0.0f);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
-  DALI_TEST_EQUALS(emitCount, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
 
   // The next EXTERNAL event drains the parked work: the label is re-measured for
-  // the long text (strictly wider), the layout settles and emits exactly once,
-  // and processing still never woke itself. (The box may legitimately serve its
+  // the long text (strictly wider), and the second pass emits again without
+  // requesting its own wake. (The box may legitimately serve its
   // unchanged slot from the arrange cache, so its callback count is not pinned.)
   SendIndependentProcessEvents(application);
   const float grownWidth = label.GetProperty<float>(Actor::Property::SIZE_WIDTH);
   DALI_TEST_CHECK(grownWidth > staleWidth);
-  DALI_TEST_EQUALS(emitCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(emitCount, 2, TEST_LOCATION);
   DALI_TEST_CHECK(!WasProcessEventsOnIdleRequested(application));
 
   gLabelArrangeMutationTarget.Reset();
   END_TEST;
 }
-
 
 // Value guard, child-reorder half. OnChildOrderChanged rebuilds the View-ONLY child
 // sequence out of the actor order, so a reorder among the NON-View actor children

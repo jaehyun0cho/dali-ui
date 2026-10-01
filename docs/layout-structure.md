@@ -71,7 +71,7 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
 
 - **LayoutController**  
   - Singleton per window via `LayoutController::Get(Window)`.  
-  - When layout is invalidated, layout roots are registered; the Adaptor calls `Process()` once per frame. The controller registers for both the pre- and post-process phases: `ProcessLayouts()` runs in the pre-process phase to perform Measure and Arrange (before core size negotiation), and the `LayoutFinished` signals (LayoutController and View) are emitted in the post-process phase (after size negotiation).
+  - When layout is invalidated, layout roots are registered; the Adaptor calls `Process()` during event processing. The controller registers for both the pre- and post-process phases: `ProcessLayouts()` runs in the pre-process phase to perform Measure and Arrange (before core size negotiation), and the `LayoutFinished` signals (LayoutController and View) are emitted in the post-process phase (after size negotiation).
 
 ### 2. Integration API (Implementation)
 
@@ -95,7 +95,7 @@ Layout processing is driven by **LayoutController** per window. Each frame, it r
   - Each provides `Get(ViewImpl&)`, which returns nullptr if the parameters are not attached.
 
 - **LayoutControllerImpl**  
-  - Keeps layout roots in `mPendingViews`; `ProcessLayouts()` resolves constraints, then runs Measure and Arrange for each root during the pre-process phase. Once the pending work drains, it schedules the `LayoutFinished` emit for the post-process phase (after core size negotiation) rather than emitting inline.
+  - Keeps layout roots in `mPendingViews`; `ProcessLayouts()` resolves constraints, then runs Measure and Arrange for each root during the pre-process phase. Each successful nonempty root batch records its own `LayoutFinished` notifications for the post-process phase (after core size negotiation), even when further requests remain pending.
 
 ### 3. Layout Managers (Algorithms)
 
@@ -217,10 +217,35 @@ rather than re-run. The cost is the ancestor **path**, not every view below it.
 view was arranged in this pass, whether that pass ran the arrange implementation or
 served the cache. It is not a "bounds changed" notification.
 
-Delivery is nevertheless gated on the window reaching quiescence. A root retained in
-the pending set by an in-processing invalidation is still pending even though it did
-not arm an idle wake, so completion notification is delayed until another processing
-cycle drains that parked work.
+A window pass is one fixed batch of layout roots processed by the controller.
+Each successful batch that processes at least one live root records its own completion,
+including the final per-View bounds after RTL and before transitions. No-work calls,
+dead-root cleanup alone, and aborted batches do not record successful completion.
+Pending work, including work requested by a View signal handler, does not suppress the
+completed pass's Window signal.
+
+Signals are delivered in post-process, after core Relayout. Each pass delivers its
+subscribed View snapshots before its Window signal. Distinct manual or nested passes
+retain distinct records in completion order; their results are not merged into a
+single final snapshot. A snapshot describes that pass, so it can differ from live actor
+properties when a later pass has already executed. This signal does not assert that
+layout has stabilized, that an animation has ended, or that a frame has been rendered.
+
+Only an outermost automatic pre-process promotes completed records for delivery after
+core Relayout. A manual pass completed during a post callback therefore waits for a
+subsequent automatic pre/Relayout/post cycle, even if another window's post processor
+has not yet run. Manual `ProcessLayouts()` still calculates synchronously and does not
+emit inside that call. Follow-up processing retains the scheduling rules below.
+
+View candidates are collected only when their signal has subscribers. Window delivery
+is recorded only when its signal has subscribers at pass completion. Delivery uses
+the connections still present at emit time. A pass without either kind of subscriber
+needs no completion record. Controller removal cancels its remaining deliveries;
+destroyed or scene-disconnected Views lose their earlier snapshots, even if a live
+handle remains or the View reconnects. Internal visual fitting uses the latest arranged
+target size, so an older public snapshot cannot restore an obsolete visual size.
+If a subscriber throws, the exception propagates and a
+signal whose delivery has started is not retried; unstarted deliveries remain queued.
 
 ### Invalidation
 
@@ -302,7 +327,8 @@ prohibited in principle and honoured only best-effort — exactly dali-core's re
 policy, where `RequestRelayout()` raised while `ProcessEvents` runs is retained but
 requests no wake. Parked work is serviced by the NEXT externally triggered
 ProcessEvents cycle; on a quiescent application (no input, animation or timer) that
-next cycle may be indefinitely later, and `LayoutFinished` stays deferred with it.
+next cycle may be indefinitely later. The completed pass still delivers
+`LayoutFinished` in post-process; that signal does not drain its pending work.
 Components and applications must therefore never rely on in-processing invalidation
 for the correctness of the CURRENT frame. When a processing frame ends with parked
 work and no outstanding wake, the controller logs one `DALI_LOG_ERROR` per parked
@@ -558,12 +584,13 @@ When layout must be recomputed (e.g. size or child change):
 `ViewImpl::InvalidateMeasure()` or `InvalidateArrange()` → propagate to parent layout → at layout root, `RegisterWithLayoutController()` → `LayoutControllerImpl::RequestLayout(ViewImpl*)` adds the root to `mPendingViews`. From there scheduling has two branches:
 
 - outside the layout processing window, the request arms one coalesced outstanding wake;
-  the next ProcessEvents runs Measure/Arrange in the pre-process phase and emits settled
-  `LayoutFinished` signals in post-process;
+  the next ProcessEvents runs Measure/Arrange in the pre-process phase and delivers
+  each successful pass's `LayoutFinished` signals in post-process;
 - inside the window, the same full invalidation and pending registration occur but no
   self idle wake is requested. The next independently triggered ProcessEvents or an
-  explicit `ProcessLayouts()` drains the parked work, and `LayoutFinished` remains
-  delayed until the pending set is empty.
+  explicit `ProcessLayouts()` drains the parked work. A successful pass records its
+  completion regardless of remaining pending roots; manual completion delivery waits
+  for a later automatic pre/Relayout/post cycle.
 
 ---
 
