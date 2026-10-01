@@ -15,3 +15,4 @@ DALI_ADD_SAMPLE(layout-transition-reorder.example layout-transition-reorder-exam
 DALI_ADD_SAMPLE(layout-transition-subtree.example layout-transition-subtree-example.cpp)
 DALI_ADD_SAMPLE(layout-transition-self-override.example layout-transition-self-override-example.cpp)
 DALI_ADD_SAMPLE(layout-transition-grid-reorder.example layout-transition-grid-reorder-example.cpp)
+DALI_ADD_SAMPLE(layout-transition-fade-slide.example layout-transition-fade-slide-example.cpp)

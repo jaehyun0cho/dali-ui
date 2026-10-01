@@ -15,3 +15,4 @@ DALI_ADD_SAMPLE(stacklayout-margin-padding-nested.example stacklayout-margin-pad
 DALI_ADD_SAMPLE(stacklayout-horizontal.example stacklayout-horizontal-example.cpp)
 DALI_ADD_SAMPLE(stacklayout-wrapcontent-weight.example stacklayout-wrapcontent-weight-example.cpp)
 DALI_ADD_SAMPLE(stacklayout-layout-direction.example stacklayout-layout-direction-example.cpp)
+DALI_ADD_SAMPLE(stacklayout-layout-direction-signal.example stacklayout-layout-direction-signal-example.cpp)

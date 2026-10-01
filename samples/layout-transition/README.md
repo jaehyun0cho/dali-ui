@@ -6,6 +6,9 @@ bounds change.
 
 ## Examples
 
+- **layout-transition-fade-slide.example**: spec 기반으로 카드 하나에
+  fade와 아래쪽 80px 이동을 적용합니다. ENTER / EXIT 버튼과 Up / Down으로
+  반복 실행하며, `SetSelfLayoutTransition()` 적용 예제도 포함합니다.
 - **layout-transition-spec.example**: declarative spec mode. The
   framework drives interpolation; the application supplies a
   `ViewAnimationSpec` for ENTER / EXIT and a `LayoutTransitionTiming`
@@ -80,9 +83,11 @@ bounds change.
   example).
 - **Esc / Back**: quit.
 
-The remaining children also reflow on every add / remove; their
-position and size animate via the CHANGE slot. Both samples share a
-single 0.4s EASE_IN_OUT_SINE timing across all three slots.
+In the original spec and animator examples, the remaining children also
+reflow on every add / remove; their position and size animate via the CHANGE
+slot. Those two examples share a single 0.4s EASE_IN_OUT_SINE timing across
+all three slots. The fade-slide example instead disables CHANGE and uses
+0.3s EASE_IN_OUT for ENTER and EXIT.
 
 In the animator sample the application owns the properties written from
 callbacks. ENTER and EXIT both write opacity and height, while CHANGE
@@ -110,6 +115,7 @@ make -j
 Run:
 
 ```bash
+./bin/layout-transition-fade-slide.example
 ./bin/layout-transition-spec.example
 ./bin/layout-transition-animator.example
 ./bin/layout-transition-reorder.example
@@ -117,3 +123,43 @@ Run:
 ./bin/layout-transition-self-override.example
 ./bin/layout-transition-grid-reorder.example
 ```
+
+## Spec fade / slide sample
+
+`layout-transition-fade-slide-example.cpp`의 `CreateFadeSlideTransition()`은
+아래 효과를 하나의 spec 기반 transition으로 구성합니다.
+
+| Slot | Opacity | Y position |
+| --- | --- | --- |
+| ENTER | 0 → 1 | 최종 Y + 80px → 최종 Y |
+| EXIT | 1 → 0 | 최종 Y → 최종 Y + 80px |
+
+두 효과는 모두 0.3초 `EASE_IN_OUT`입니다. opacity는 `ViewAnimationSpec`,
+position은 `SlideFrom/SlideTo(BOTTOM, Pixel(80.0f), timing)`으로 선언합니다.
+프레임별 animator callback은 사용하지 않습니다. `ClearChangeTiming()`은
+기본 CHANGE를 끄며, ENTER/EXIT duration을 초기화하는 호출이 아닙니다.
+
+`Create()`에서 카드에 `SetSelfLayoutTransition()`을 적용하고, `Enter()`에서
+opacity를 0으로 설정한 뒤 host에 추가합니다. `Exit()`는
+`Remove(card, RemovePolicy::ANIMATE_EXIT)`로 완료 후 제거를 요청합니다.
+`OnTransitionFinished()`는 상태 표시만 갱신하며 보간을 수행하지 않습니다.
+
+### 조작 및 수동 확인
+
+1. 시작 화면의 host는 비어 있습니다. **ENTER** 버튼 또는 **Up**을 누르시면
+   카드가 아래쪽 80px 지점에서 올라오면서 나타납니다.
+2. `Present: press EXIT`가 표시된 뒤 **EXIT** 버튼 또는 **Down**을 누르시면
+   카드가 80px 내려가며 사라지고, 완료 후 host에서 제거됩니다.
+3. 전환 중 ENTER/EXIT를 빠르게 반복해서 누르셔도 추가 요청은 무시됩니다.
+   상태는 `ABSENT → ENTERING → PRESENT → EXITING → ABSENT` 순서입니다.
+4. EXIT 완료 후 ENTER를 다시 눌러 반복하실 수 있습니다. EXIT 중인 카드를
+   같은 host에 다시 추가하지 않습니다.
+5. 창 크기를 바꾸면서 ENTER/EXIT를 반복하여 상태가 계속 복귀하는지
+   확인하실 수 있습니다. root·host·card와 상태 표시 영역은 고정 크기를
+   사용하며, 360×400 이상의 창에서 전체 내용을 보실 수 있습니다.
+6. **Esc / Back**으로 종료합니다.
+
+`SetEnterOnInitialMount(true)`를 사용하므로 첫 layout 이전에 ENTER 입력을
+받아도 초기 ENTER가 생략되지 않습니다. controller 소멸 시에는 member
+lifecycle callback을 해제합니다. 기존 Tizen package manifest의 기본 실행
+대상은 변경하지 않으며, 위의 새 executable을 직접 실행하시면 됩니다.
