@@ -5661,10 +5661,14 @@ void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, floa
   // subtree (ResetSubtreeScaleAndLayoutCaches) -- a scale root leaving the scene included --
   // and an off-scene pass never publishes (the bit is set on scene only). The replay skips the
   // GetEffectiveLayoutScale() the MISS path performs at every level, so this assert is
-  // what makes the reliance visible. DEBUG-only, like every other first-party layout
-  // invariant on this hot path. It runs BEFORE the node scope below on purpose: it
-  // reads nothing the scope owns, and throwing out of it leaves no flag to restore.
-  DALI_ASSERT_DEBUG(mEffectiveScaleValid);
+  // what makes the reliance visible. The implication, not the bare bit: application code run
+  // by an earlier write of THIS replay may invalidate a node not visited yet. It is still
+  // replayed from its last result, then recomputed by the follow-up that invalidation parked
+  // or, if the code removed it or an ancestor, by the removed view's next add. DEBUG-only,
+  // like every other first-party layout invariant on this hot path. It runs BEFORE the node
+  // scope below on purpose: it reads nothing the scope owns, and throwing out of it leaves
+  // no flag to restore.
+  DALI_ASSERT_DEBUG(!mArrangeCacheValid || mEffectiveScaleValid);
 
   // A valid cache is published only at the end of a pass that also published
   // mArrangedBounds, so a result must exist to serve. For a descendant this is the
