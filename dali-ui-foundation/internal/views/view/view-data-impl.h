@@ -1471,8 +1471,9 @@ private:
    * arrangement is scale-applied). The invariant the arrange cache relies on --
    * "mArrangeCacheValid is true only while the effective scale is unchanged
    * since publish", which lets the arrange cache-HIT predicate omit a scale term
-   * (and assert mEffectiveScaleValid instead) -- holds ONLY because every caller
-   * that drops the scale ALSO calls InvalidateLayoutCaches() on the same view.
+   * (and assert !mArrangeCacheValid || mEffectiveScaleValid per replayed node
+   * instead) -- holds ONLY because every caller that drops the scale ALSO calls
+   * InvalidateLayoutCaches() on the same view.
    * Do NOT add a freshness-only caller of this alone: it would leave a valid
    * arrange cache computed against the old scale, served as a hit with no test
    * to catch it. Pair the two, or use ResetSubtreeScaleAndLayoutCaches() which
@@ -1580,8 +1581,12 @@ private:
    *            @p mirrorUnderParentRtl is true, and only to attribute the fused write to the
    *            same parent the MISS path's separate mirror write names.
    *
-   * @pre CanServeArrangeFromCache() holds for this view and, unless it is childless,
-   *      CanReplayArrangeSubtreeFromCache() does too.
+   * @pre When the hit is taken, CanServeArrangeFromCache() holds for the top-level view
+   *      and, unless it is childless, CanReplayArrangeSubtreeFromCache() does too; the
+   *      latter holds each descendant to the same node-local terms minus the key.
+   *      Application code run by the replay's own writes may still invalidate a descendant
+   *      before the replay reaches it; it is replayed all the same unless it was re-added
+   *      under a View, which clears its result (see the Corollary C check in the definition).
    * @pre A ReplayPassScope is on the stack (constructed at the hit site).
    */
   void ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth, const ViewImpl* mirrorParent);

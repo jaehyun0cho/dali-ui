@@ -18,6 +18,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <iostream>
+#include <string>
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali-ui-foundation/extension-api/view.h>
@@ -390,15 +391,16 @@ int UtcDaliArrangeCacheHitStaysValidAcrossAHitP(void)
 
 // Corollary C, from the outside: a live arrange cache implies a live effective-scale
 // sync bit, because every scale-context reset clears both. The hit body asserts this
-// in DEBUG (DALI_ASSERT_DEBUG(mEffectiveScaleValid)); this test states the same claim
-// as a normal assertion so it is checked in every build configuration, immediately
-// before a pass that will take the hit.
+// implication in DEBUG (DALI_ASSERT_DEBUG(!mArrangeCacheValid || mEffectiveScaleValid));
+// for a node whose entry is live that is exactly a check of the sync bit. This test
+// states the same claim as a normal assertion so it is checked in every build
+// configuration, immediately before a pass that will take the hit.
 //
 // Non-vacuity (verified by mutation): removing the InvalidateLayoutCaches() call from
 // ViewDataImpl::InvalidateMeasure breaks the pairing -- the arrange cache survives an
 // invalidation that dropped the cached effective scale, which the InvalidateMeasure
-// below catches directly (and which would make the hit's DEBUG assert fire on the
-// next identical pass).
+// below catches directly. The hit's DEBUG assert would not catch it: the same call
+// raises the arrange dirty bit, which refuses the hit.
 int UtcDaliArrangeCacheHitAssertsEffectiveScaleSyncP(void)
 {
   UiTestApplication application;
@@ -1141,9 +1143,11 @@ int UtcDaliArrangeCacheSubtreeHitEmitsLayoutFinishedForDescendantsP(void)
 // Corollary C, per node. The replay skips the GetEffectiveScale() that the miss path
 // performs at every level, so a whole SUBTREE now rests on "a valid arrange cache
 // implies a live effective-scale sync bit" rather than a single node doing so. The
-// asserts mEffectiveScaleValid at every node it visits (DEBUG); this states the same
-// claim as a normal assertion, so it is checked in every build configuration, and then
-// pins the pairing that makes it true.
+// replay asserts that implication at every node it visits (DEBUG) -- an implication and
+// not the bare sync bit, because application code run by the replay's own writes may
+// invalidate a node the replay has not visited yet (the UtcDaliArrangeCacheReplayUnvisited*
+// tests below pin that). This test states the same claim as a normal assertion, so it is
+// checked in every build configuration, and then pins the pairing that makes it true.
 //
 // Non-vacuity (verified by mutation): removing the InvalidateLayoutCaches() call from
 // ResetSubtreeScaleAndLayoutCaches leaves the subtree's arrange entries live after the
@@ -1201,6 +1205,383 @@ int UtcDaliArrangeCacheSubtreeHitAssertsEffectiveScaleSyncP(void)
   DALI_TEST_CHECK(DataOf(root).IsArrangeCacheValid() && DataOf(root).IsEffectiveScaleValid());
   DALI_TEST_CHECK(DataOf(mid).IsArrangeCacheValid() && DataOf(mid).IsEffectiveScaleValid());
   DALI_TEST_CHECK(DataOf(leaf).IsArrangeCacheValid() && DataOf(leaf).IsEffectiveScaleValid());
+
+  END_TEST;
+}
+
+// ---------------------------------------------------------------------------
+// Invalidation raised by the replay's OWN writes, on a node it has not visited yet.
+//
+// The hit gate certifies every node before the replay writes anything, but the replay
+// then WRITES actor properties, and dali-core emits PropertySetSignal synchronously from
+// each write. Application code run from an EARLIER sibling's write can therefore
+// invalidate a LATER sibling after it was certified. An invalidation that drops the
+// sibling's effective scale drops its arrange cache with it, so the sibling reaches the
+// replay's DEBUG Corollary C check with neither bit, which is why the check is the
+// implication !mArrangeCacheValid || mEffectiveScaleValid and not the bare sync bit. The
+// sibling is replayed from its last completed result and the replay consumes none of the
+// invalidation: the follow-up pass that invalidation parked recomputes a sibling that
+// stays attached, and one the code detached, by removing it or an ancestor, is re-derived
+// when the removed view is next added.
+//
+// This target compiles the library with DEBUG_ENABLED, so the check is live here; each
+// test drives a genuine cache-HIT replay (the root's producer count stays flat) and
+// catches any DaliException out of it so the failure names the assert.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+// Arranges `view` and returns the condition text of any DaliException the call threw,
+// or an empty string when it threw none.
+std::string ArrangeCatchingAssert(View view, const LayoutRect& bounds)
+{
+  try
+  {
+    view.Arrange(bounds);
+  }
+  catch(Dali::DaliException& e)
+  {
+    return e.condition ? std::string(e.condition) : std::string("(no condition)");
+  }
+  return std::string();
+}
+
+void CheckActorRect(View view, const LayoutRect& expected, const char* location)
+{
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::POSITION_X), expected.x, location);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::POSITION_Y), expected.y, location);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), expected.width, location);
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_HEIGHT), expected.height, location);
+}
+
+// A counting IF_CHANGED root holding three plain siblings a | b | c at x = 0, 40, 100.
+// The replay visits them in that order, so an action run from a's write reaches b and c
+// before the replay does.
+struct ReplaySiblings
+{
+  View root;
+  View a;
+  View b;
+  View c;
+};
+
+ReplaySiblings CreateReplaySiblings(UiTestApplication& application)
+{
+  ReplaySiblings s;
+  s.root = CreatePolicyCounterView(true);
+  s.root.SetRequestedWidth(200.0f);
+  s.root.SetRequestedHeight(100.0f);
+  application.GetScene().Add(s.root);
+
+  s.a = View::New();
+  s.a.SetRequestedX(0.0f);
+  s.a.SetRequestedWidth(30.0f);
+  s.a.SetRequestedHeight(20.0f);
+  s.root.Add(s.a);
+
+  s.b = View::New();
+  s.b.SetRequestedX(40.0f);
+  s.b.SetRequestedWidth(30.0f);
+  s.b.SetRequestedHeight(20.0f);
+  s.root.Add(s.b);
+
+  s.c = View::New();
+  s.c.SetRequestedX(100.0f);
+  s.c.SetRequestedWidth(20.0f);
+  s.c.SetRequestedHeight(20.0f);
+  s.root.Add(s.c);
+  return s;
+}
+
+// Part of what the hit gate certifies at every node it will replay (a live arrange entry,
+// no arrange dirty bit), plus the effective scale Corollary C ties to that entry.
+void CheckReplayable(View view, const char* location)
+{
+  DALI_TEST_EQUALS(DataOf(view).IsArrangeCacheValid(), true, location);
+  DALI_TEST_EQUALS(DataOf(view).IsEffectiveScaleValid(), true, location);
+  DALI_TEST_EQUALS(DataOf(view).IsArrangeDirty(), false, location);
+}
+
+// Moves all three siblings outside layout, through the escape hatch that invalidates
+// nothing, so the replay has to WRITE at each of them: a's write is what runs the action,
+// and b and c being repaired afterwards is what proves the replay visited them.
+void ClobberReplaySiblings(ReplaySiblings& s)
+{
+  Dali::Ui::Extension::View::SetPositionX(s.a, 999.0f);
+  Dali::Ui::Extension::View::SetPositionX(s.b, 999.0f);
+  Dali::Ui::Extension::View::SetPositionX(s.c, 999.0f);
+}
+
+// The mutation a test runs from inside the replay's write on a.
+using ReplayAction = void (*)(ReplaySiblings&);
+
+// Runs `action` from inside the FIRST POSITION_X notification a receives while ARMED, then
+// disarms. Arming is explicit so that neither the settle-time writes nor the clobbers
+// that make the replay write at all consume the shot.
+struct OneShotReplayAction : public Dali::ConnectionTracker
+{
+  OneShotReplayAction(ReplaySiblings& siblings, ReplayAction action)
+  : siblings(siblings),
+    action(action)
+  {
+    Dali::Handle handle = siblings.a;
+    handle.PropertySetSignal().Connect(this, &OneShotReplayAction::OnSet);
+  }
+
+  void OnSet(Dali::Handle, Dali::Property::Index index, const Dali::Property::Value&)
+  {
+    if(!armed || index != Actor::Property::POSITION_X)
+    {
+      return;
+    }
+    armed = false;
+    ++fireCount;
+    action(siblings);
+  }
+
+  ReplaySiblings& siblings;
+  ReplayAction    action;
+  bool            armed{false};
+  int             fireCount{0};
+};
+
+void SetNextSiblingMinimumWidth(ReplaySiblings& s)
+{
+  s.b.SetMinimumWidth(45.0f);
+}
+
+void RemoveNextSibling(ReplaySiblings& s)
+{
+  s.root.Remove(s.b);
+}
+
+void DisableReplayRootScaling(ReplaySiblings& s)
+{
+  s.root.SetUiScalePolicy(UiScalePolicy::DISABLED);
+}
+
+// UiScaleManager keeps the scale in a process-wide singleton. Restored on every exit
+// path, including a failed check (the DALI_TEST_* macros throw on failure).
+struct ScopedUiScale
+{
+  explicit ScopedUiScale(float scale)
+  : original(UiScaleManager::Get().GetScale())
+  {
+    UiScaleManager::Get().SetScale(scale);
+  }
+
+  ~ScopedUiScale()
+  {
+    UiScaleManager::Get().SetScale(original);
+  }
+
+  ScopedUiScale(const ScopedUiScale&)            = delete;
+  ScopedUiScale& operator=(const ScopedUiScale&) = delete;
+
+  float original;
+};
+} // namespace
+
+// The LR31 shape: a minimum width set on the NEXT sibling from inside the replay's write
+// on a. SetMinimumWidth invalidates b's measure, which drops b's effective scale together
+// with its arrange cache before the replay reaches b. b is replayed from its last completed
+// result, keeps its invalidation, and the follow-up settles it at the new width. A MISS of
+// this pass would place b there too: a minimum width only feeds measurement, and dropping
+// the caches leaves b's measured size in place for the root's producer to read.
+//
+// Non-vacuity (verified with an equivalent probe app against the pre-fix DEBUG library):
+// with the check written as the bare DALI_ASSERT_DEBUG(mEffectiveScaleValid) the Arrange
+// below throws "mEffectiveScaleValid" when the replay reaches b, and b and c keep their
+// clobbered positions.
+int UtcDaliArrangeCacheReplayUnvisitedSiblingMinimumWidthP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A replay reaches a sibling its own write invalidated (minimum width) without asserting");
+
+  ReplaySiblings s = CreateReplaySiblings(application);
+  Settle(application);
+
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.a, TEST_LOCATION);
+  CheckReplayable(s.b, TEST_LOCATION);
+  CheckReplayable(s.c, TEST_LOCATION);
+  CheckActorRect(s.b, LayoutRect(40.0f, 0.0f, 30.0f, 20.0f), TEST_LOCATION);
+
+  const LayoutRect rootSlot = SettledSlotOf(s.root);
+  const int        rootBase = PolicyCounterImplOf(s.root).GetArrangeCallCount();
+
+  ClobberReplaySiblings(s);
+  OneShotReplayAction mutate(s, &SetNextSiblingMinimumWidth);
+  mutate.armed = true;
+
+  DALI_TEST_EQUALS(ArrangeCatchingAssert(s.root, rootSlot), std::string(), TEST_LOCATION);
+
+  // A genuine hit, with the mutation inside it.
+  DALI_TEST_EQUALS(mutate.fireCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(s.root).GetArrangeCallCount(), rootBase, TEST_LOCATION);
+
+  // b was reached with neither bit and still reconciled to its last completed result;
+  // c after it was reconciled too.
+  DALI_TEST_CHECK(!DataOf(s.b).IsEffectiveScaleValid());
+  DALI_TEST_CHECK(!DataOf(s.b).IsArrangeCacheValid());
+  CheckActorRect(s.a, LayoutRect(0.0f, 0.0f, 30.0f, 20.0f), TEST_LOCATION);
+  CheckActorRect(s.b, LayoutRect(40.0f, 0.0f, 30.0f, 20.0f), TEST_LOCATION);
+  CheckActorRect(s.c, LayoutRect(100.0f, 0.0f, 20.0f, 20.0f), TEST_LOCATION);
+
+  // The replay consumed none of the invalidation.
+  DALI_TEST_CHECK(DataOf(s.b).IsMeasureDirty());
+  DALI_TEST_CHECK(DataOf(s.b).IsArrangeDirty());
+  DALI_TEST_CHECK(DataOf(s.root).IsArrangeDirty());
+  DALI_TEST_CHECK(!DataOf(s.root).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(s.root).GetLayoutTestSnapshot().arrangePoisoned);
+
+  // The follow-up settles b at its new minimum width.
+  Settle(application);
+  DALI_TEST_CHECK(PolicyCounterImplOf(s.root).GetArrangeCallCount() > rootBase);
+  CheckActorRect(s.b, LayoutRect(40.0f, 0.0f, 45.0f, 20.0f), TEST_LOCATION);
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.b, TEST_LOCATION);
+  DALI_TEST_CHECK(!DataOf(s.b).IsMeasureDirty());
+
+  END_TEST;
+}
+
+// The NEXT sibling removed from inside the replay's write on a. OnChildRemoved resets the
+// removed subtree's scale context, so b loses its scale and its arrange cache; the snapshot
+// walk still visits b (a removed child is visited, and its one write lands on the detached
+// actor) and then c. The follow-up re-lays out the root without b and leaves the detached b
+// as the removal left it; adding b back is what re-derives it.
+//
+// Non-vacuity (verified with an equivalent probe app against the pre-fix DEBUG library):
+// with the bare DALI_ASSERT_DEBUG(mEffectiveScaleValid) the Arrange below throws
+// "mEffectiveScaleValid" at b, and b and c keep their clobbered positions.
+int UtcDaliArrangeCacheReplayUnvisitedSiblingRemovedP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A replay reaches a sibling its own write removed without asserting");
+
+  ReplaySiblings s = CreateReplaySiblings(application);
+  Settle(application);
+
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.b, TEST_LOCATION);
+  CheckReplayable(s.c, TEST_LOCATION);
+
+  const LayoutRect rootSlot = SettledSlotOf(s.root);
+  const int        rootBase = PolicyCounterImplOf(s.root).GetArrangeCallCount();
+
+  ClobberReplaySiblings(s);
+  OneShotReplayAction remove(s, &RemoveNextSibling);
+  remove.armed = true;
+
+  DALI_TEST_EQUALS(ArrangeCatchingAssert(s.root, rootSlot), std::string(), TEST_LOCATION);
+
+  DALI_TEST_EQUALS(remove.fireCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(s.root).GetArrangeCallCount(), rootBase, TEST_LOCATION);
+
+  // b is detached, lost both bits, and was still visited from the snapshot; c after it
+  // was reconciled.
+  DALI_TEST_CHECK(!s.b.GetParent());
+  DALI_TEST_CHECK(!DataOf(s.b).IsEffectiveScaleValid());
+  DALI_TEST_CHECK(!DataOf(s.b).IsArrangeCacheValid());
+  CheckActorRect(s.b, LayoutRect(40.0f, 0.0f, 30.0f, 20.0f), TEST_LOCATION);
+  CheckActorRect(s.c, LayoutRect(100.0f, 0.0f, 20.0f, 20.0f), TEST_LOCATION);
+
+  // The root keeps the invalidation the removal raised.
+  DALI_TEST_CHECK(DataOf(s.root).IsArrangeDirty());
+  DALI_TEST_CHECK(!DataOf(s.root).IsArrangeCacheValid());
+  DALI_TEST_CHECK(DataOf(s.root).GetLayoutTestSnapshot().arrangePoisoned);
+
+  // The follow-up re-lays out the root without b.
+  Settle(application);
+  DALI_TEST_CHECK(PolicyCounterImplOf(s.root).GetArrangeCallCount() > rootBase);
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.c, TEST_LOCATION);
+  CheckActorRect(s.c, LayoutRect(100.0f, 0.0f, 20.0f, 20.0f), TEST_LOCATION);
+
+  // The detached b is not the follow-up's to recompute: it keeps the removal's
+  // invalidation, with neither bit, until it is added again.
+  DALI_TEST_CHECK(!s.b.GetParent());
+  DALI_TEST_CHECK(DataOf(s.b).IsMeasureDirty());
+  DALI_TEST_CHECK(DataOf(s.b).IsArrangeDirty());
+  DALI_TEST_CHECK(!DataOf(s.b).IsEffectiveScaleValid());
+  DALI_TEST_CHECK(!DataOf(s.b).IsArrangeCacheValid());
+
+  // Its next add re-derives it.
+  s.root.Add(s.b);
+  Settle(application);
+  CheckActorRect(s.b, LayoutRect(40.0f, 0.0f, 30.0f, 20.0f), TEST_LOCATION);
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.b, TEST_LOCATION);
+  DALI_TEST_CHECK(!DataOf(s.b).IsMeasureDirty());
+
+  END_TEST;
+}
+
+// A scale-policy change on the replay ROOT from inside the replay's write on a. The
+// recursive reset drops the scale and the caches of the whole subtree -- the node being
+// visited and the siblings not yet visited alike. Run at a global scale of 2, so the pass
+// visibly keeps the last completed (scaled) geometry and the follow-up visibly applies the
+// new policy.
+//
+// Non-vacuity (verified with an equivalent probe app against the pre-fix DEBUG library):
+// with the bare DALI_ASSERT_DEBUG(mEffectiveScaleValid) the Arrange below throws
+// "mEffectiveScaleValid" at b, and b and c keep their clobbered positions.
+int UtcDaliArrangeCacheReplayUnvisitedSubtreeScalePolicyResetP(void)
+{
+  UiTestApplication application;
+  tet_infoline("A replay reaches siblings whose scale context its own write reset without asserting");
+
+  ScopedUiScale scale(2.0f);
+
+  ReplaySiblings s = CreateReplaySiblings(application);
+  Settle(application);
+
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.b, TEST_LOCATION);
+  CheckReplayable(s.c, TEST_LOCATION);
+  CheckActorRect(s.b, LayoutRect(80.0f, 0.0f, 60.0f, 40.0f), TEST_LOCATION);
+
+  const LayoutRect rootSlot = SettledSlotOf(s.root);
+  const LayoutRect aSlot    = SettledSlotOf(s.a);
+  const LayoutRect bSlot    = SettledSlotOf(s.b);
+  const LayoutRect cSlot    = SettledSlotOf(s.c);
+  const int        rootBase = PolicyCounterImplOf(s.root).GetArrangeCallCount();
+
+  ClobberReplaySiblings(s);
+  OneShotReplayAction reset(s, &DisableReplayRootScaling);
+  reset.armed = true;
+
+  DALI_TEST_EQUALS(ArrangeCatchingAssert(s.root, rootSlot), std::string(), TEST_LOCATION);
+
+  DALI_TEST_EQUALS(reset.fireCount, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(PolicyCounterImplOf(s.root).GetArrangeCallCount(), rootBase, TEST_LOCATION);
+
+  // Every node lost both bits; every node kept the pass's (scaled) geometry.
+  DALI_TEST_CHECK(!DataOf(s.root).IsEffectiveScaleValid() && !DataOf(s.root).IsArrangeCacheValid());
+  DALI_TEST_CHECK(!DataOf(s.a).IsEffectiveScaleValid() && !DataOf(s.a).IsArrangeCacheValid());
+  DALI_TEST_CHECK(!DataOf(s.b).IsEffectiveScaleValid() && !DataOf(s.b).IsArrangeCacheValid());
+  DALI_TEST_CHECK(!DataOf(s.c).IsEffectiveScaleValid() && !DataOf(s.c).IsArrangeCacheValid());
+  CheckActorRect(s.a, aSlot, TEST_LOCATION);
+  CheckActorRect(s.b, bSlot, TEST_LOCATION);
+  CheckActorRect(s.c, cSlot, TEST_LOCATION);
+
+  // The root keeps the invalidation; the two nodes in progress when the reset landed
+  // (the root and a) keep their poison.
+  DALI_TEST_CHECK(DataOf(s.root).IsArrangeDirty());
+  DALI_TEST_CHECK(DataOf(s.root).GetLayoutTestSnapshot().arrangePoisoned);
+  DALI_TEST_CHECK(DataOf(s.a).GetLayoutTestSnapshot().arrangePoisoned);
+
+  // The follow-up applies the new policy: unscaled geometry, every entry live again.
+  Settle(application);
+  DALI_TEST_CHECK(PolicyCounterImplOf(s.root).GetArrangeCallCount() > rootBase);
+  CheckActorRect(s.root, LayoutRect(0.0f, 0.0f, 200.0f, 100.0f), TEST_LOCATION);
+  CheckActorRect(s.b, LayoutRect(40.0f, 0.0f, 30.0f, 20.0f), TEST_LOCATION);
+  CheckActorRect(s.c, LayoutRect(100.0f, 0.0f, 20.0f, 20.0f), TEST_LOCATION);
+  CheckReplayable(s.root, TEST_LOCATION);
+  CheckReplayable(s.a, TEST_LOCATION);
+  CheckReplayable(s.b, TEST_LOCATION);
+  CheckReplayable(s.c, TEST_LOCATION);
 
   END_TEST;
 }

@@ -5056,14 +5056,14 @@ bool ViewDataImpl::CanReplayArrangeSubtreeFromCache() const
 void ViewDataImpl::ReplayArrangeSubtreeFromCache(bool mirrorUnderParentRtl, float parentArrangedWidth, const ViewImpl* mirrorParent)
 {
   DALI_UI_LAYOUT_TEST_EVENT(Integration::LayoutTestDiagnostics::EventKind::REPLAY_VISIT, &mViewImpl);
-  // Corollary C, checked live and per node: a valid arrange cache implies a valid
-  // cached effective scale, because every scale-context reset clears both for the WHOLE
-  // subtree (ResetSubtreeScaleAndLayoutCaches). The replay skips the
-  // GetEffectiveScale() the MISS path performs at every level, so this assert is
-  // what makes the reliance visible. DEBUG-only, like every other first-party layout
-  // invariant on this hot path. It runs BEFORE the node scope below on purpose: it
-  // reads nothing the scope owns, and throwing out of it leaves no flag to restore.
-  DALI_ASSERT_DEBUG(mEffectiveScaleValid);
+  // Corollary C, checked live per node: a valid arrange cache implies a valid cached
+  // effective scale, as every scale drop also drops that view's layout caches; the replay
+  // skips the MISS path's GetEffectiveScale() and relies on it. The implication, not the
+  // bare bit: application code run by an earlier write of THIS replay may invalidate a node
+  // not visited yet. It is still replayed from its last result, then recomputed by the
+  // follow-up that invalidation parked or, if the code removed it or an ancestor, by the
+  // removed view's next add. Ahead of the node scope: a throw leaves no flag to restore.
+  DALI_ASSERT_DEBUG(!mArrangeCacheValid || mEffectiveScaleValid);
 
   // A valid cache is published only at the end of a pass that also published
   // mArrangedBounds, so a result must exist to serve. For a descendant this is the
