@@ -51,34 +51,50 @@ Label MakeLabel(const char* text, float width, float height)
   return label;
 }
 
+void UpdateObservedPosition(Label label, LayoutDirection::Type direction)
+{
+  // Both widths are fixed layout inputs, available before the first Arrange.
+  // STANDALONE positions are parent-local and are not automatically mirrored.
+  const View  parent = View::DownCast(label.GetParent());
+  const float x      = direction == LayoutDirection::RIGHT_TO_LEFT
+                         ? parent.GetRequestedWidth() - label.GetRequestedWidth() - 50.0f
+                         : 50.0f;
+  label.SetRequestedX(x);
+  label.SetRequestedY(12.0f);
+}
+
 void UpdateObservedLabel(Label label, LayoutDirection::Type direction)
 {
   const int count = label.GetProperty<int>(label.GetPropertyIndex(SIGNAL_COUNT_PROPERTY));
   char      text[256];
-  std::snprintf(text, sizeof(text), "%s\nPolicy: %s\nEffective: %s\nSignals: %d",
+  std::snprintf(text, sizeof(text), "%s\nPolicy: %s\nEffective: %s\nSignals: %d\nRequested: (%.0f, %.0f)",
                 label.GetName().CStr(), DirectionName(label.GetLayoutDirection()),
-                DirectionName(direction), count);
+                DirectionName(direction), count, label.GetRequestedX(), label.GetRequestedY());
   label.SetText(text);
 }
 
 void ObserveDirection(Label label)
 {
   // Unary + converts this captureless lambda to the signal's function pointer.
-  // All state belongs to the emitting actor, so no controller is captured.
+  // The emitting actor supplies the label and its parent; no controller is captured.
   label.LayoutDirectionChangedSignal().Connect(+[](Actor actor, LayoutDirection::Type direction)
   {
     Label                 target     = Label::DownCast(actor);
     const Property::Index countIndex = target.GetPropertyIndex(SIGNAL_COUNT_PROPERTY);
     const int             count      = target.GetProperty<int>(countIndex) + 1;
     target.SetProperty(countIndex, count);
+    UpdateObservedPosition(target, direction);
     UpdateObservedLabel(target, direction);
-    std::printf("LayoutDirectionChangedSignal: %s -> %s (count=%d)\n",
-                target.GetName().CStr(), DirectionName(direction), count);
+    std::printf("LayoutDirectionChangedSignal: %s -> %s (count=%d, requested x=%.0f, y=%.0f)\n",
+                target.GetName().CStr(), DirectionName(direction), count,
+                target.GetRequestedX(), target.GetRequestedY());
     std::fflush(stdout);
   });
 
   // Initial state is a query, not a synthetic signal emission.
-  UpdateObservedLabel(label, label.GetEffectiveLayoutDirection());
+  const LayoutDirection::Type direction = label.GetEffectiveLayoutDirection();
+  UpdateObservedPosition(label, direction);
+  UpdateObservedLabel(label, direction);
 }
 } // namespace
 
@@ -128,18 +144,15 @@ public:
     mParent.SetBackgroundColor(Color::LIGHT_GRAY);
     mParent.SetLayoutDirection(LayoutDirection::INHERIT);
 
-    Label inherited = MakeObservedLabel("Inherited child", LayoutDirection::INHERIT, Color::CYAN);
-    Label fixed     = MakeObservedLabel("Fixed LTR child", LayoutDirection::LEFT_TO_RIGHT, Color::YELLOW);
+    Label inherited = MakeObservedLabel();
     mParent.Add(inherited);
-    mParent.Add(fixed);
     outer.Add(mParent);
-    outer.Add(MakeLabel("Choose a parent direction.\nOnly effective changes emit a signal.\nINHERIT follows the system direction.\nEsc / Back: quit", 368.0f, 112.0f));
+    outer.Add(MakeLabel("STANDALONE child: x=50 in LTR.\nRTL: right edge is 50 from parent.\nINHERIT follows the system direction.\nEsc / Back: quit", 368.0f, 112.0f));
     window.Add(outer);
 
     // Observe only after mounting, so the initial inherited direction is not
     // counted as a user-triggered change, including on an RTL system.
     ObserveDirection(inherited);
-    ObserveDirection(fixed);
     mParent.LayoutDirectionChangedSignal().Connect(this, &StackLayoutDirectionSignalController::OnParentDirectionChanged);
     UpdateParentStatus();
     window.KeyEventSignal().Connect(this, &StackLayoutDirectionSignalController::OnKeyEvent);
@@ -164,12 +177,13 @@ private:
     return button;
   }
 
-  Label MakeObservedLabel(const char* name, LayoutDirection::Type direction, const Vector4& color)
+  Label MakeObservedLabel()
   {
     Label label = MakeLabel("", 166.0f, 120.0f);
-    label.SetName(name);
-    label.SetLayoutDirection(direction);
-    label.SetBackgroundColor(color);
+    label.SetName("Inherited child");
+    label.SetLayoutDirection(LayoutDirection::INHERIT);
+    label.SetLayoutMode(LayoutMode::STANDALONE);
+    label.SetBackgroundColor(Color::CYAN);
     label.RegisterProperty(SIGNAL_COUNT_PROPERTY, 0, Property::READ_WRITE);
     return label;
   }
