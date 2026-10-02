@@ -36,9 +36,11 @@
 //  3. The LayoutController logs one parked-episode diagnostic (DALI_LOG_ERROR).
 //     No per-View warning appears: SetText() invalidates through the
 //     framework-internal path, and the park policy is route-independent.
-//  4. LayoutFinished stays deferred while the producer keeps re-invalidating.
-//     After ARRANGE_LIMIT arranges the callback stops mutating; the next event
-//     drains, the layout finally settles, and "LayoutFinished" is printed.
+//  4. "LayoutFinished" is printed for EVERY pass, including the passes that leave the
+//     label's re-invalidation parked: parked work never suppresses or defers the
+//     notification of a completed pass. After ARRANGE_LIMIT arranges the callback stops
+//     mutating; the next event runs the last parked pass, which is reported too, and
+//     afterwards nothing is printed until something else invalidates layout.
 //
 //
 // NOTE: this is a DIAGNOSTIC reproducer, not a pattern to copy. Two things about it are
@@ -154,9 +156,10 @@ public:
 
   void OnLayoutFinished(Window /*window*/)
   {
-    // Starved while the producer kept re-invalidating; fires once the layout
-    // finally settles (after the mutation stops and one more event drains).
-    std::cout << "LayoutFinished: layout settled after " << gArrangeCount << " arranges" << std::endl;
+    // Reported for every completed pass, parked follow-up or not. Observation only: it must
+    // not invalidate layout itself.
+    std::cout << "LayoutFinished: pass completed after " << gArrangeCount << " arranges"
+              << (gMutating ? " (label re-invalidation parked)" : "") << std::endl;
   }
 
   void OnExit() override
