@@ -57,6 +57,25 @@ namespace
 Debug::Filter* gLogFilter = Debug::Filter::New(Debug::NoLogging, false, "LOG_SCROLLVIEW");
 #endif
 
+// View-owned storage preserves the published implementation object's size and vtable.
+const AttachmentId SCROLL_REQUEST_STATE = AttachmentId::Alloc();
+struct ScrollRequestState
+{
+  uint64_t serial{0u};
+};
+
+ScrollRequestState& GetScrollRequestState(Ui::View view)
+{
+  auto* state = view.GetAttachment<ScrollRequestState>(SCROLL_REQUEST_STATE);
+  if(!state)
+  {
+    view.SetAttachment(SCROLL_REQUEST_STATE, Dali::MakeUnique<ScrollRequestState>());
+    state = view.GetAttachment<ScrollRequestState>(SCROLL_REQUEST_STATE);
+  }
+  DALI_ASSERT_ALWAYS(state && "ScrollView request attachment creation failed");
+  return *state;
+}
+
 constexpr float WHEEL_SCROLL_STEP   = 120.0f; ///< Pixels scrolled per wheel notch
 constexpr float WHEEL_ANIM_SEC      = 0.2f;   ///< Duration of wheel scroll animation (seconds)
 constexpr float KEY_SCROLL_ANIM_SEC = 0.25f;  ///< Duration of key step-scroll animation (seconds)
@@ -462,9 +481,29 @@ void ScrollViewImpl::SetOverScrollMode(OverScrollMode mode)
   mOverScrollMode = mode;
 }
 
+uint64_t ScrollViewImpl::BeginScrollRequest()
+{
+  auto& serial = GetScrollRequestState(Ui::View::DownCast(Self())).serial;
+  if(++serial == 0u) ++serial;
+  return serial;
+}
+
+bool ScrollViewImpl::IsCurrentScrollRequest(uint64_t request)
+{
+  return GetScrollRequestState(Ui::View::DownCast(Self())).serial == request;
+}
+
 void ScrollViewImpl::ScrollTo(const Vector2& position, bool animation)
 {
+  const uint64_t request = BeginScrollRequest();
   CancelScrollAnimation();
+  if(!IsCurrentScrollRequest(request)) return;
+  ScrollToForRequest(position, animation, request);
+}
+
+void ScrollViewImpl::ScrollToForRequest(const Vector2& position, bool animation, uint64_t request)
+{
+  if(!IsCurrentScrollRequest(request) || !mContent) return;
 
   // Force immediate scroll if not ready for animation
   bool isVisible = Self().GetProperty<bool>(Actor::Property::VISIBLE);
@@ -481,11 +520,13 @@ void ScrollViewImpl::ScrollTo(const Vector2& position, bool animation)
   if(!animation)
   {
     SendScrollStarted();
+    if(!IsCurrentScrollRequest(request) || !mContent) return;
     ApplyScrollPosition(adjustedPosition);
     mCurrentPosition = Vector2(std::round(mContent.GetProperty<float>(Actor::Property::POSITION_X)),
                                std::round(mContent.GetProperty<float>(Actor::Property::POSITION_Y)));
     mScrollPosition  = ContentPositionToScrollPosition(mCurrentPosition);
     SendScrolling();
+    if(!IsCurrentScrollRequest(request)) return;
     SendScrollFinished();
   }
   else
@@ -523,6 +564,7 @@ void ScrollViewImpl::ScrollTo(const Vector2& position, bool animation)
     DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[ScrollView::ScrollTo] animation duration=%.3f sec (ratio=%.3f)\n", durationSec, ratio);
 #endif
     SendScrollStarted();
+    if(!IsCurrentScrollRequest(request) || !mContent) return;
 
     mScrollAnimation = Animation::New(durationSec);
     mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), targetPosX, AlphaFunction::EASE_OUT);
@@ -536,9 +578,15 @@ void ScrollViewImpl::ScrollTo(const Vector2& position, bool animation)
 
 void ScrollViewImpl::ScrollToWithDuration(const Vector2& position, float durationSec)
 {
+  const uint64_t request = BeginScrollRequest();
   CancelScrollAnimation();
+  if(!IsCurrentScrollRequest(request)) return;
+  ScrollToWithDurationForRequest(position, durationSec, request);
+}
 
-  if(!mContent)
+void ScrollViewImpl::ScrollToWithDurationForRequest(const Vector2& position, float durationSec, uint64_t request)
+{
+  if(!IsCurrentScrollRequest(request) || !mContent)
   {
     return;
   }
@@ -556,6 +604,7 @@ void ScrollViewImpl::ScrollToWithDuration(const Vector2& position, float duratio
   }
 
   SendScrollStarted();
+  if(!IsCurrentScrollRequest(request) || !mContent) return;
   mScrollAnimation = Animation::New(durationSec);
   mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), targetPosX, AlphaFunction::EASE_OUT);
   mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_Y), targetPosY, AlphaFunction::EASE_OUT);

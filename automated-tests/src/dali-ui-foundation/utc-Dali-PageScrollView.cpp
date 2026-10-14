@@ -683,6 +683,276 @@ void CheckEmptyContentWithoutNotify(ScrollDirection direction)
   }
 }
 
+// Partial pages separate the logical target from round(offset / pageLength):
+// with a 160-unit viewport over 500 units, page 3 rests at offset 340, near page 2.
+void SettlePageRequest(UiTestApplication& application)
+{
+  application.SendNotification();
+  application.Render(16);
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.SendNotification();
+}
+
+void CheckPartialPageSelection(PageScrollView pager, View content, bool vertical)
+{
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+  const Vector2 offset = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? offset.y : offset.x, 340.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(vertical ? offset.x : offset.y, 0.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -340.0f, 0.001f, TEST_LOCATION);
+}
+
+void CheckPartialPageRetarget(ScrollDirection direction)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, 160.0f);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+  pager.ScrollToPage(1, true);
+  application.SendNotification();
+  application.Render(16);
+  application.Render(100);
+  application.SendNotification();
+  DALI_TEST_CHECK(pager.IsScrolling());
+  DALI_TEST_CHECK(CurrentContentPositionAlong(content, vertical) < -1.0f);
+
+  pager.ScrollToPage(3, true);
+  // Cancelling the old snap consumes its own page 1, not the new target 3.
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].first, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].second, 4, TEST_LOCATION);
+  DALI_TEST_CHECK(pager.IsScrolling());
+
+  SettlePageRequest(application);
+  CheckPartialPageSelection(pager, content, vertical);
+  DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -340.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, 4, TEST_LOCATION);
+}
+
+void CheckPartialPageInstantSelection(ScrollDirection direction)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, 160.0f);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+  pager.ScrollToPage(3, false);
+  CheckPartialPageSelection(pager, content, vertical);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].first, 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].second, 4, TEST_LOCATION);
+
+  pager.ScrollToPage(3, false);
+  SettlePageRequest(application);
+  CheckPartialPageSelection(pager, content, vertical);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+}
+
+void CheckPartialPageNoOpRetarget(ScrollDirection direction)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, 160.0f);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(3, true);
+  SettlePageRequest(application);
+  CheckPartialPageSelection(pager, content, vertical);
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+  pager.ScrollToPage(1, true);
+  // No render intervenes: cancellation captures offset 340, so the new snap is a
+  // physical no-op but still has to replace the cancelled request's logical page.
+  pager.ScrollToPage(3, true);
+  CheckPartialPageSelection(pager, content, vertical);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].first, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, 3, TEST_LOCATION);
+  pager.ScrollToPage(3, true);
+  SettlePageRequest(application);
+  CheckPartialPageSelection(pager, content, vertical);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+}
+
+enum class PageRequestCallback
+{
+  Cancelled,
+  Started,
+  Scrolling
+};
+
+void CheckNewPageRequestFromCallback(ScrollDirection direction, PageRequestCallback callback, bool animate)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, 160.0f);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+
+  // Connect after starting the old snap so only its cancellation issues the new request.
+  if(callback == PageRequestCallback::Cancelled)
+  {
+    pager.ScrollToPage(1, true);
+    application.SendNotification();
+    application.Render(16);
+    application.Render(100);
+    application.SendNotification();
+    DALI_TEST_CHECK(pager.IsScrolling());
+  }
+
+  ConnectionTracker tracker;
+  bool              requested    = false;
+  auto              selectLatest = [&](ScrollView)
+  {
+    if(!requested)
+    {
+      requested = true;
+      pager.ScrollToPage(3, animate);
+    }
+  };
+  switch(callback)
+  {
+    case PageRequestCallback::Cancelled:
+      pager.ScrollFinishedSignal().Connect(&tracker, selectLatest);
+      break;
+    case PageRequestCallback::Started:
+      pager.ScrollStartedSignal().Connect(&tracker, selectLatest);
+      break;
+    case PageRequestCallback::Scrolling:
+      pager.ScrollingSignal().Connect(&tracker, selectLatest);
+      break;
+  }
+
+  pager.ScrollToPage(2, callback != PageRequestCallback::Scrolling);
+  DALI_TEST_CHECK(requested);
+  DALI_TEST_EQUALS(pager.IsScrolling(), animate, TEST_LOCATION);
+  if(!animate)
+  {
+    // Nested ScrollFinished emissions are suppressed. The latest instant page must
+    // nevertheless commit its own target synchronously, before the next layout.
+    CheckPartialPageSelection(pager, content, vertical);
+  }
+  SettlePageRequest(application);
+  CheckPartialPageSelection(pager, content, vertical);
+  DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -340.0f, 0.001f, TEST_LOCATION);
+}
+
+void CheckPageRetargetYieldsToFreeScroll(ScrollDirection direction, bool animate)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, 160.0f);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(1, true);
+  application.SendNotification();
+  application.Render(16);
+  application.Render(100);
+  application.SendNotification();
+
+  ConnectionTracker tracker;
+  bool              requested = false;
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(!requested)
+    {
+      requested = true;
+      pager.ScrollTo(vertical ? Vector2(0.0f, 240.0f) : Vector2(240.0f, 0.0f), animate);
+    }
+  });
+  pager.SetMinimumFlingDuration(300);
+  pager.SetMaximumFlingDuration(300);
+  pager.ScrollToPage(3, true);
+  DALI_TEST_CHECK(requested);
+  DALI_TEST_EQUALS(pager.IsScrolling(), animate, TEST_LOCATION);
+  if(!animate)
+  {
+    const Vector2 offset = pager.GetScrollPosition();
+    DALI_TEST_EQUALS(vertical ? offset.y : offset.x, 240.0f, 0.001f, TEST_LOCATION);
+  }
+  SettlePageRequest(application);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  const Vector2 offset = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? offset.y : offset.x, 240.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -240.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -240.0f, 0.001f, TEST_LOCATION);
+  // This checks shared ownership of motion. Page inference for a free instant
+  // scroll inside a suppressed Finished emission is a separate existing behavior.
+}
+
+void CheckNestedInstantPageReleasesExpectedCount(ScrollDirection direction)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, 160.0f);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(1, true);
+  application.SendNotification();
+  application.Render(16);
+  application.Render(100);
+  application.SendNotification();
+
+  ConnectionTracker tracker;
+  bool              requested = false;
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(!requested)
+    {
+      requested = true;
+      ResizeContentAlong(content, vertical, 800.0f);
+      pager.NotifyPagesInserted(4, 1);
+      pager.ScrollToPage(3, false);
+    }
+  });
+  pager.ScrollToPage(2, true);
+  DALI_TEST_CHECK(requested);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+  const Vector2 offset = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? offset.y : offset.x, 480.0f, 0.001f, TEST_LOCATION);
+
+  // Observe the released override BEFORE a layout can clear it for us. The notify
+  // already set extent 800; changing page length to 200 must expose count 4, not 5.
+  pager.SetPageSize(Vector2(200.0f, 200.0f));
+  DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+}
+
 } // namespace
 
 // A shrinking page count while a snap animation is in flight must report the page the
@@ -1129,5 +1399,149 @@ int UtcDaliPageScrollViewPreLayoutMixedReentrancyVertical10P(void)
 int UtcDaliPageScrollViewPreLayoutMixedReentrancyVertical00P(void)
 {
   CheckPreLayoutSelectionReentrancy(ScrollDirection::Vertical, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPartialPageRetargetHorizontalP(void)
+{
+  CheckPartialPageRetarget(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPartialPageInstantSelectionHorizontalP(void)
+{
+  CheckPartialPageInstantSelection(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPartialPageNoOpRetargetHorizontalP(void)
+{
+  CheckPartialPageNoOpRetarget(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewNestedInstantPageReleasesExpectedCountHorizontalP(void)
+{
+  CheckNestedInstantPageReleasesExpectedCount(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackSelectsInstantPageHorizontalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Horizontal, PageRequestCallback::Cancelled, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackSelectsAnimatedPageHorizontalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Horizontal, PageRequestCallback::Cancelled, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewStartedCallbackSelectsInstantPageHorizontalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Horizontal, PageRequestCallback::Started, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewStartedCallbackSelectsAnimatedPageHorizontalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Horizontal, PageRequestCallback::Started, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewScrollingCallbackSelectsInstantPageHorizontalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Horizontal, PageRequestCallback::Scrolling, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewScrollingCallbackSelectsAnimatedPageHorizontalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Horizontal, PageRequestCallback::Scrolling, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPartialPageRetargetVerticalP(void)
+{
+  CheckPartialPageRetarget(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPartialPageInstantSelectionVerticalP(void)
+{
+  CheckPartialPageInstantSelection(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPartialPageNoOpRetargetVerticalP(void)
+{
+  CheckPartialPageNoOpRetarget(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewNestedInstantPageReleasesExpectedCountVerticalP(void)
+{
+  CheckNestedInstantPageReleasesExpectedCount(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackSelectsInstantPageVerticalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Vertical, PageRequestCallback::Cancelled, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackSelectsAnimatedPageVerticalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Vertical, PageRequestCallback::Cancelled, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewStartedCallbackSelectsInstantPageVerticalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Vertical, PageRequestCallback::Started, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewStartedCallbackSelectsAnimatedPageVerticalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Vertical, PageRequestCallback::Started, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewScrollingCallbackSelectsInstantPageVerticalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Vertical, PageRequestCallback::Scrolling, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewScrollingCallbackSelectsAnimatedPageVerticalP(void)
+{
+  CheckNewPageRequestFromCallback(ScrollDirection::Vertical, PageRequestCallback::Scrolling, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackStartsInstantFreeScrollHorizontalP(void)
+{
+  CheckPageRetargetYieldsToFreeScroll(ScrollDirection::Horizontal, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackStartsAnimatedFreeScrollHorizontalP(void)
+{
+  CheckPageRetargetYieldsToFreeScroll(ScrollDirection::Horizontal, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackStartsInstantFreeScrollVerticalP(void)
+{
+  CheckPageRetargetYieldsToFreeScroll(ScrollDirection::Vertical, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewCancelledCallbackStartsAnimatedFreeScrollVerticalP(void)
+{
+  CheckPageRetargetYieldsToFreeScroll(ScrollDirection::Vertical, true);
   END_TEST;
 }

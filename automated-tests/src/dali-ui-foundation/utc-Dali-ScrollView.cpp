@@ -2281,3 +2281,123 @@ int UtcDaliScrollViewAnimationFinishClampsAfterRangeShrinkP(void)
   DALI_TEST_EQUALS(content.GetProperty<float>(Actor::Property::POSITION_Y), -100.0f, 0.001f, TEST_LOCATION);
   END_TEST;
 }
+
+namespace
+{
+enum class ScrollRequestCallback
+{
+  Cancelled,
+  Started,
+  Scrolling
+};
+
+void CheckNewScrollRequestFromCallback(ScrollRequestCallback callback, bool animate)
+{
+  UiTestApplication application;
+  ScrollView        scrollView = ScrollView::New();
+  scrollView.SetScrollDirection(ScrollDirection::Horizontal);
+  scrollView.SetRequestedWidth(100.0f);
+  scrollView.SetRequestedHeight(80.0f);
+  scrollView.SetMinimumFlingDuration(300);
+  scrollView.SetMaximumFlingDuration(300);
+  View content = View::New();
+  content.SetRequestedWidth(500.0f);
+  content.SetRequestedHeight(80.0f);
+  scrollView.SetContent(content);
+  application.GetWindow().Add(scrollView);
+  application.SendNotification();
+  application.Render();
+
+  if(callback == ScrollRequestCallback::Cancelled)
+  {
+    scrollView.ScrollTo(Vector2(100.0f, 0.0f), true);
+    application.SendNotification();
+    application.Render(16);
+    application.Render(100);
+    application.SendNotification();
+    DALI_TEST_CHECK(scrollView.IsScrolling());
+  }
+
+  ConnectionTracker tracker;
+  bool              requested    = false;
+  auto              scrollLatest = [&](ScrollView)
+  {
+    if(!requested)
+    {
+      requested = true;
+      scrollView.ScrollTo(Vector2(300.0f, 0.0f), animate);
+    }
+  };
+  switch(callback)
+  {
+    case ScrollRequestCallback::Cancelled:
+      scrollView.ScrollFinishedSignal().Connect(&tracker, scrollLatest);
+      break;
+    case ScrollRequestCallback::Started:
+      scrollView.ScrollStartedSignal().Connect(&tracker, scrollLatest);
+      break;
+    case ScrollRequestCallback::Scrolling:
+      scrollView.ScrollingSignal().Connect(&tracker, scrollLatest);
+      break;
+  }
+
+  scrollView.ScrollTo(Vector2(200.0f, 0.0f), callback != ScrollRequestCallback::Scrolling);
+  DALI_TEST_CHECK(requested);
+  // In particular, the outer instant request must not send Finished after a
+  // Scrolling handler has started a newer animation.
+  DALI_TEST_EQUALS(scrollView.IsScrolling(), animate, TEST_LOCATION);
+  if(!animate)
+  {
+    DALI_TEST_EQUALS(scrollView.GetScrollPosition().x, 300.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(content.GetProperty<float>(Actor::Property::POSITION_X), -300.0f, 0.001f, TEST_LOCATION);
+  }
+
+  application.SendNotification();
+  application.Render(16);
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.SendNotification();
+  DALI_TEST_CHECK(!scrollView.IsScrolling());
+  DALI_TEST_EQUALS(scrollView.GetScrollPosition().x, 300.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(content.GetProperty<float>(Actor::Property::POSITION_X), -300.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(content.GetCurrentProperty<float>(Actor::Property::POSITION_X), -300.0f, 0.001f, TEST_LOCATION);
+}
+} // namespace
+
+int UtcDaliScrollViewCancelledCallbackStartsInstantScrollP(void)
+{
+  CheckNewScrollRequestFromCallback(ScrollRequestCallback::Cancelled, false);
+  END_TEST;
+}
+
+int UtcDaliScrollViewCancelledCallbackStartsAnimatedScrollP(void)
+{
+  CheckNewScrollRequestFromCallback(ScrollRequestCallback::Cancelled, true);
+  END_TEST;
+}
+
+int UtcDaliScrollViewStartedCallbackStartsInstantScrollP(void)
+{
+  CheckNewScrollRequestFromCallback(ScrollRequestCallback::Started, false);
+  END_TEST;
+}
+
+int UtcDaliScrollViewStartedCallbackStartsAnimatedScrollP(void)
+{
+  CheckNewScrollRequestFromCallback(ScrollRequestCallback::Started, true);
+  END_TEST;
+}
+
+int UtcDaliScrollViewScrollingCallbackStartsInstantScrollP(void)
+{
+  CheckNewScrollRequestFromCallback(ScrollRequestCallback::Scrolling, false);
+  END_TEST;
+}
+
+int UtcDaliScrollViewScrollingCallbackStartsAnimatedScrollP(void)
+{
+  CheckNewScrollRequestFromCallback(ScrollRequestCallback::Scrolling, true);
+  END_TEST;
+}

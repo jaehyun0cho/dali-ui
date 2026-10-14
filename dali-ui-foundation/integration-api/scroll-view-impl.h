@@ -23,6 +23,7 @@
 #include <dali/public-api/events/wheel-event.h>
 #include <dali/public-api/math/vector2.h>
 #include <dali/public-api/object/property-notification.h>
+#include <cstdint>
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/public-api/layouts/scroll-view-layout-manager.h>
@@ -443,6 +444,18 @@ protected:
    * immediately with no animation.
    */
   void ScrollToWithDuration(const Vector2& position, float durationSec);
+
+  /** @brief Starts a request shared by page and free scrolling, without changing object layout. */
+  uint64_t BeginScrollRequest();
+
+  /** @brief Tests whether a synchronous handler has superseded this request. */
+  bool IsCurrentScrollRequest(uint64_t request);
+
+  /** @brief Runs an existing request after cancellation; does not issue a new token. */
+  void ScrollToForRequest(const Vector2& position, bool animation, uint64_t request);
+
+  /** @brief Runs an existing duration request after cancellation; does not issue a new token. */
+  void ScrollToWithDurationForRequest(const Vector2& position, float durationSec, uint64_t request);
 
   /**
    * @brief Called inside OnDragFinished just before the scroll/fling animation starts.

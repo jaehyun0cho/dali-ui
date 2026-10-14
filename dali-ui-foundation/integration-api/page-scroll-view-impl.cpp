@@ -195,10 +195,9 @@ int PageScrollViewImpl::GetPageCount() const
 
 void PageScrollViewImpl::ScrollToPage(int page, bool animate)
 {
-  int total  = GetPageCount();
-  int target = std::max(0, std::min(total - 1, page));
-
-  DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[PageScrollView] ScrollToPage %d/%d\n", target, total);
+  const uint64_t request = BeginScrollRequest();
+  int            total   = GetPageCount();
+  int            target  = std::max(0, std::min(total - 1, page));
 
   const Vector2 pageSize   = GetEffectivePageSize();
   const float   pageLength = GetScrollDirection() == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
@@ -211,32 +210,41 @@ void PageScrollViewImpl::ScrollToPage(int page, bool animate)
     return; // A PageChanged handler may have selected a newer page.
   }
 
-  Vector2 targetPos = ScrollPositionForPage(target);
+  // Finish the previous request before installing this target. Its synchronous
+  // handlers may issue a newer request or change the page count and geometry.
+  CancelScrollAnimation();
+  if(!IsCurrentScrollRequest(request)) return;
+  total                   = GetPageCount();
+  target                  = std::max(0, std::min(total - 1, page));
+  const Vector2 targetPos = ScrollPositionForPage(target);
+  mSnapTargetPage         = target;
+
+  DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[PageScrollView] ScrollToPage %d/%d\n", target, total);
 
   if(animate)
-  {
-    mSnapTargetPage = target;
-    ScrollToWithDuration(targetPos, PAGE_SNAP_DURATION);
-    // A target within half a unit of the current position, or a pager without content,
-    // finishes synchronously: no scroll starts (SendScrollStarted is what sets the
-    // scrolling state), so no OnScrollFinished will ever clear the target. Drop the
-    // inactive snap target, but preserve a pending count until layout can resolve it.
-    if(!IsScrolling())
-    {
-      const bool targetStillPending = (mSnapTargetPage == target);
-      mSnapTargetPage               = -1;
-      if(targetStillPending && mExpectedPageCount >= 0 && !mNotifyInProgress)
-      {
-        // A newer explicit request supersedes the NotifyPages* selection even when the
-        // unmeasured page length maps both to zero. A synchronous finish may already
-        // have consumed the target and installed a newer selection, which must survive.
-        // Clear the snap target before emitting: a handler may request another page.
-        CommitPage(target);
-      }
-    }
-  }
+    ScrollToWithDurationForRequest(targetPos, PAGE_SNAP_DURATION, request);
   else
-    ScrollTo(targetPos, false);
+    ScrollToForRequest(targetPos, false, request);
+
+  if(!IsCurrentScrollRequest(request) || IsScrolling() || mSnapTargetPage != target) return;
+
+  if(!animate)
+  {
+    // The signal system suppresses nested ScrollFinished emissions. Complete this
+    // instant request directly only if the normal handler has not consumed it.
+    OnScrollFinished(Ui::ScrollView::DownCast(Self()));
+    return;
+  }
+
+  // An animated no-op has no finish signal. Preserve its logical target even when
+  // the partial last page clamps to (almost) the same offset as another page.
+  // Clear before emitting, and retain a pending count until layout can resolve it.
+  mSnapTargetPage = -1;
+  if(!mNotifyInProgress)
+  {
+    total = GetPageCount();
+    CommitPage(total > 0 ? std::max(0, std::min(total - 1, target)) : 0);
+  }
 }
 
 PageScrollableInterface::PageChangedSignalType& PageScrollViewImpl::PageChangedSignal()
@@ -497,12 +505,12 @@ void PageScrollViewImpl::OnScrollFinished(Ui::ScrollView /*scrollView*/)
     return;
   }
 
-  // Layout has now updated — reset sentinel so GetPageCount() returns the
-  // authoritative layout-derived value.
+  // A completed scroll releases the NotifyPages* override so GetPageCount()
+  // uses the current scrollable extent and page size.
   mExpectedPageCount = -1;
 
-  // When a snap animation was in flight (mSnapTargetPage >= 0), use the intended
-  // target page rather than the current scroll position.  CancelScrollAnimation()
+  // An explicit page request keeps its target in both instant and animated modes,
+  // including a partial last page. CancelScrollAnimation()
   // calls SendScrollFinished() while content is mid-animation, so
   // PageForScrollPosition on the intermediate position would otherwise round
   // incorrectly (e.g. 0.5 → page 1 while actually heading back to page 0).

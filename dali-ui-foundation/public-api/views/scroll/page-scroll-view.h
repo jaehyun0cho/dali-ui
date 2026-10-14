@@ -155,6 +155,11 @@ public: // Page API
    * layout. This logical selection emits PageChangedSignal when changed, without
    * ScrollStartedSignal, ScrollingSignal or ScrollFinishedSignal.
    *
+   * An explicit target remains selected when the last page is only partially
+   * scrollable, in either mode. Replacing an active request cancels it before
+   * installing the new target. Newer page requests from synchronous scroll handlers
+   * take precedence over the request that invoked those handlers.
+   *
    * @param[in] page    Target page index, clamped to [0, GetPageCount()-1].
    * @param[in] animate True to animate, false for instant jump.
    */

@@ -232,6 +232,8 @@ private:
 
   /**
    * @brief Callback connected to ScrollFinishedSignal to keep mCurrentPage in sync.
+   * Also called directly when a current instant page request finishes inside a
+   * ScrollFinished handler, where the signal system suppresses nested emissions.
    */
   void OnScrollFinished(Ui::ScrollView scrollView);
 
@@ -245,7 +247,7 @@ private:
 private:
   Vector2                                        mPageSize{0.0f, 0.0f};      ///< Explicit page size; (0,0) = use viewport
   int                                            mCurrentPage{0};            ///< Settled page index
-  int                                            mSnapTargetPage{-1};        ///< Page targeted by the in-flight snap animation; -1 = not animating
+  int                                            mSnapTargetPage{-1};        ///< Logical target awaiting completion; -1 = no explicit target
   int                                            mExpectedPageCount{-1};     ///< >=0: overrides layout-based count; -1: use layout (sentinel)
   int                                            mLastNotifiedPageCount{-2}; ///< Page count last passed to PageChangedSignal; -2 = never emitted
   bool                                           mNotifyInProgress{false};   ///< Suppress OnScrollFinished re-derive during NotifyPages*
