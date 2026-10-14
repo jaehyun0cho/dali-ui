@@ -19,6 +19,7 @@
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
 #include <stdlib.h>
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -234,6 +235,145 @@ void CheckPartialPageCountShrinkDuringSnap(ScrollDirection direction)
   DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
 }
 
+/// Resizes the CONTENT along the scroll axis: that changes the page count, not the page
+/// length.
+void ResizeContentAlong(View content, bool vertical, float length)
+{
+  if(vertical)
+  {
+    content.SetRequestedHeight(length);
+  }
+  else
+  {
+    content.SetRequestedWidth(length);
+  }
+}
+
+// A NotifyPages* selection stays pending until a layout pass with a NEW geometry or a
+// settled scroll releases it: post-layout the notify method already set the extent of the
+// count it announced, so the pass that follows finds nothing changed and never reaches
+// OnScrollableAreaChanged. A scroll started in that window is a newer intent than the
+// recorded selection. When a count change arrives while that scroll is in flight, the
+// pager must report the page the scroll owns - the live position for a free scroll, the
+// clamped snap target for a snap - and not the page the stale selection recorded.
+//
+// `removed` picks the notify that leaves the selection pending. An insert appends a sixth
+// page and the scroll then heads for page 4 while the content grows to seven pages; a
+// removal drops the fifth page and the scroll heads for page 3 while the content grows to
+// five pages. Both resize the content to exactly pageLength * newTotal BEFORE announcing
+// the change, because that is what makes the next layout pass measure the extent the
+// notify already set and so keeps the selection pending across it.
+void CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection direction, bool snap, bool removed)
+{
+  UiTestApplication application;
+  Window            window   = application.GetWindow();
+  const bool        vertical = (direction == ScrollDirection::Vertical);
+
+  // The count the notify announces and the extent that spans; the last page of that count,
+  // which the scroll heads for, and its offset; the extent the unannounced resize grows the
+  // content to, half a page past the notified one, and the count the layout derives from it.
+  const int   notifiedCount     = removed ? 4 : 6;
+  const float notifiedExtent    = removed ? 400.0f : 600.0f;
+  const int   destinationPage   = removed ? 3 : 4;
+  const float destinationOffset = removed ? 300.0f : 400.0f;
+  const float grownExtent       = removed ? 450.0f : 650.0f;
+  const int   grownCount        = removed ? 5 : 7;
+
+  View           content;
+  PageScrollView pager = BuildPagerAlong(direction, content);
+  window.Add(pager);
+
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 0, TEST_LOCATION);
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+
+  // The count changes past the current page: a sixth page is appended, or the fifth one is
+  // removed. The content takes the extent of the new count and the change is announced.
+  // The page stays 0 and (0, notifiedCount) is reported.
+  ResizeContentAlong(content, vertical, notifiedExtent);
+  if(removed)
+  {
+    pager.NotifyPagesRemoved(4, 1);
+  }
+  else
+  {
+    pager.NotifyPagesInserted(5, 1);
+  }
+  DALI_TEST_EQUALS(pager.GetPageCount(), notifiedCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].first, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[0].second, notifiedCount, TEST_LOCATION);
+
+  // The layout pass that follows measures exactly the extent the notify already set, so
+  // it reports nothing and leaves the notify's selection pending.
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(pager.GetPageCount(), notifiedCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+
+  // A 300 ms scroll towards the last notified page starts: a free scroll with no snap
+  // target, or a snap whose target is that page.
+  if(snap)
+  {
+    pager.ScrollToPage(destinationPage, true);
+  }
+  else
+  {
+    pager.SetMinimumFlingDuration(300);
+    pager.SetMaximumFlingDuration(300);
+    pager.ScrollTo(vertical ? Vector2(0.0f, destinationOffset) : Vector2(destinationOffset, 0.0f), true);
+  }
+  application.SendNotification();
+  application.Render(16);
+  application.SendNotification();
+  application.Render(100);
+  application.SendNotification();
+
+  // Mid-flight, with the live position delivered: strictly between page 0 and the
+  // destination, so the page it names differs from both the stale selection and the
+  // destination.
+  DALI_TEST_CHECK(pager.IsScrolling());
+  const Vector2 live     = pager.GetScrollPosition();
+  const float   liveAxis = vertical ? live.y : live.x;
+  const int     livePage = static_cast<int>(std::round(liveAxis / PAGER_WIDTH));
+  DALI_TEST_CHECK(livePage > 0 && livePage < destinationPage);
+
+  // The content grows by half a page WITHOUT an announcement: the layout pass reports the
+  // new count, and the page it reports must be the one the scroll owns.
+  ResizeContentAlong(content, vertical, grownExtent);
+  application.SendNotification();
+
+  const int expectedTransient = snap ? destinationPage : livePage;
+  DALI_TEST_EQUALS(pager.GetPageCount(), grownCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[1].first, expectedTransient, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals[1].second, grownCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), expectedTransient, TEST_LOCATION);
+
+  // The scroll settles on the destination: a snap already reported it, a free scroll
+  // reports it now.
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.SendNotification();
+
+  const Vector2 settled = pager.GetScrollPosition();
+
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(vertical ? settled.y : settled.x, destinationOffset, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(vertical ? settled.x : settled.y, 0.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), destinationPage, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), grownCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), snap ? 2 : 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, destinationPage, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, grownCount, TEST_LOCATION);
+}
+
 } // namespace
 
 // A shrinking page count while a snap animation is in flight must report the page the
@@ -436,5 +576,57 @@ int UtcDaliPageScrollViewAnimatedScrollToCurrentPageClearsSnapTargetP(void)
   DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
   DALI_TEST_EQUALS(recorder.signals.back().first, 1, TEST_LOCATION);
   DALI_TEST_EQUALS(recorder.signals.back().second, 4, TEST_LOCATION);
+  END_TEST;
+}
+
+// A pending NotifyPages* selection must not outrank a scroll started after it: a count
+// change that arrives while that scroll is in flight reports the page the scroll owns.
+int UtcDaliPageScrollViewPendingSelectionYieldsToFreeScrollHorizontalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Horizontal, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingSelectionYieldsToFreeScrollVerticalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Vertical, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingSelectionYieldsToSnapHorizontalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Horizontal, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingSelectionYieldsToSnapVerticalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Vertical, true, false);
+  END_TEST;
+}
+
+// The same yield when the pending selection was left by NotifyPagesRemoved: the count
+// shrinks to four, and the scroll heads for the new last page while a fifth grows back.
+int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToFreeScrollHorizontalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Horizontal, false, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToFreeScrollVerticalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Vertical, false, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToSnapHorizontalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Horizontal, true, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToSnapVerticalP(void)
+{
+  CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Vertical, true, true);
   END_TEST;
 }
