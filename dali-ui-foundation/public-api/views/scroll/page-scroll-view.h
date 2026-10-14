@@ -141,8 +141,9 @@ public: // Page API
   /**
    * @brief Returns the total number of pages derived from content / page size.
    *
-   * Returns 0 when the view has no content pages (empty state after
-   * NotifyPagesRemoved removes all pages).
+   * Returns 0 when measured content has no pages or NotifyPagesRemoved removes
+   * all pages. Before the page size is available, a NotifyPages* count takes
+   * precedence; otherwise the conservative count is 1.
    */
   int GetPageCount() const override;
 
@@ -155,7 +156,12 @@ public: // Page API
   void ScrollToPage(int page, bool animate = true) override;
 
   /**
-   * @brief Signal emitted when the active page changes.
+   * @brief Signal emitted when the active page or page count changes.
+   *
+   * After valid page geometry has been observed in the current direction,
+   * empty content reports (-1, 0). Content becoming nonempty reports the new
+   * page and count, even without NotifyPages* calls. Repeated layout callbacks
+   * that leave both values unchanged emit nothing.
    *
    * Signature: void(int currentPage, int pageCount)
    */

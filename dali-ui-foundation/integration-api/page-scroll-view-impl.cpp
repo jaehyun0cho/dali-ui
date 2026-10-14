@@ -208,11 +208,20 @@ void PageScrollViewImpl::ScrollToPage(int page, bool animate)
     ScrollToWithDuration(targetPos, PAGE_SNAP_DURATION);
     // A target within half a unit of the current position, or a pager without content,
     // finishes synchronously: no scroll starts (SendScrollStarted is what sets the
-    // scrolling state), so no OnScrollFinished will ever clear the target. Nothing is in
-    // flight, so nothing may stay pending.
+    // scrolling state), so no OnScrollFinished will ever clear the target. Drop the
+    // inactive snap target, but preserve a pending count until layout can resolve it.
     if(!IsScrolling())
     {
-      mSnapTargetPage = -1;
+      const bool targetStillPending = (mSnapTargetPage == target);
+      mSnapTargetPage               = -1;
+      if(targetStillPending && mExpectedPageCount >= 0 && !mNotifyInProgress)
+      {
+        // A newer explicit request supersedes the NotifyPages* selection even when the
+        // unmeasured page length maps both to zero. A synchronous finish may already
+        // have consumed the target and installed a newer selection, which must survive.
+        // Clear the snap target before emitting: a handler may request another page.
+        CommitPage(target);
+      }
     }
   }
   else
@@ -361,18 +370,19 @@ void PageScrollViewImpl::OnScrollableAreaChanged()
 
   // LayoutManager calls SetScrollableWidth then SetScrollableHeight in separate
   // steps, and RefreshViewport adds a third call for a viewport-only resize; each
-  // triggers this callback.  Skip a call where the primary-axis scrollable dimension
-  // or the page length is not real yet, so we neither emit a page count derived from a
-  // partially-updated layout nor resolve a page position against a zero page length.
+  // triggers this callback. Skip an unmeasured page length and a near-zero primary
+  // dimension until valid geometry has been observed in this direction. This protects
+  // the first layout's intermediate cross-axis callback without hiding later empty
+  // layouts or positive fractional extents.
   //
-  // The guard runs BEFORE the override is released: a cross-axis call must leave the
-  // pre-layout state intact for the call that does have real dimensions.
+  // The guards run BEFORE the override is released, preserving pre-layout selections.
   const ScrollDirection dir      = GetScrollDirection();
   const Vector2         pageSize = GetEffectivePageSize();
   const float           primary  = (dir == ScrollDirection::Horizontal) ? GetScrollableWidth() : GetScrollableHeight();
   const float           pageLen  = (dir == ScrollDirection::Horizontal) ? pageSize.x : pageSize.y;
-  if(primary < 1.0f || pageLen < 1.0f) return;
+  if(pageLen < 1.0f) return;
   auto& geometry = LastPageGeometry(Ui::View::DownCast(Self()));
+  if(primary < 1.0f && (!geometry.valid || geometry.direction != dir)) return;
   // 0.01 is the tolerance ScrollViewImpl itself uses for these dimensions
   // (SetScrollableWidth, SetScrollableHeight, RefreshViewport).
   const bool geometryChanged = !geometry.valid || geometry.direction != dir ||

@@ -2326,6 +2326,10 @@ void ScrollViewImpl::UpdateScrollingProperties()
   if(!mScrollAnimation)
   {
     ApplyScrollPosition(mScrollPosition);
+    // Duration-based scrolling compares its target with this cache. Keep the applied
+    // float position, including padding, so a layout clamp cannot leave a stale origin.
+    mCurrentPosition = Vector2(mMaximumStartX - mScrollPosition.x,
+                               mMaximumStartY - mScrollPosition.y);
   }
 
 #ifdef DEBUG_SCROLL

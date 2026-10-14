@@ -374,6 +374,304 @@ void CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection direction, bool
   DALI_TEST_EQUALS(recorder.signals.back().second, grownCount, TEST_LOCATION);
 }
 
+// An animated request before layout cannot move yet, but it must replace an older
+// NotifyPages* selection without discarding the count needed to resolve that request.
+void CheckPreLayoutAnimatedSelection(ScrollDirection direction, int target, bool removed)
+{
+  UiTestApplication application;
+  Window            window   = application.GetWindow();
+  const bool        vertical = (direction == ScrollDirection::Vertical);
+
+  View           content;
+  PageScrollView pager = BuildPagerAlong(direction, content);
+  pager.NotifyPagesInserted(0, 3);
+  if(removed)
+  {
+    pager.NotifyPagesRemoved(0, 1);
+  }
+  const int pendingCount = removed ? 3 : 4;
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), pendingCount - 1, TEST_LOCATION);
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+
+  pager.ScrollToPage(target, true);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetPageCount(), pendingCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), target, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, target, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, pendingCount, TEST_LOCATION);
+
+  // Repeating the latest selection must not emit a duplicate page change.
+  pager.ScrollToPage(target, true);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+
+  window.Add(pager);
+  application.SendNotification();
+  application.Render();
+
+  const Vector2 position = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? position.y : position.x, target * PAGER_WIDTH, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -target * PAGER_WIDTH, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), target, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, target, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, 5, TEST_LOCATION);
+}
+
+struct ReentrantPageRequest : public ConnectionTracker
+{
+  explicit ReentrantPageRequest(PageScrollView view)
+  : pager(view)
+  {
+  }
+
+  void OnPageChanged(int page, int count)
+  {
+    if(!requested && page == 0 && count == 4)
+    {
+      requested = true;
+      pager.ScrollToPage(2, true);
+    }
+  }
+
+  PageScrollView pager;
+  bool           requested{false};
+};
+
+void CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection direction)
+{
+  UiTestApplication application;
+  Window            window   = application.GetWindow();
+  const bool        vertical = (direction == ScrollDirection::Vertical);
+
+  View           content;
+  PageScrollView pager = BuildPagerAlong(direction, content);
+  pager.NotifyPagesInserted(0, 3);
+
+  ReentrantPageRequest request(pager);
+  pager.PageChangedSignal().Connect(&request, &ReentrantPageRequest::OnPageChanged);
+  pager.ScrollToPage(0, true);
+
+  DALI_TEST_CHECK(request.requested);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+
+  window.Add(pager);
+  application.SendNotification();
+  application.Render();
+
+  const Vector2 position = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? position.y : position.x, 200.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+}
+
+// A notify can leave its count pending across an unchanged layout. A subsequent empty
+// or fractional extent is real geometry once the pager has measured this direction.
+void CheckPendingCountAfterContentShrink(ScrollDirection direction, float extent)
+{
+  UiTestApplication application;
+  Window            window   = application.GetWindow();
+  const bool        vertical = (direction == ScrollDirection::Vertical);
+
+  View           content;
+  PageScrollView pager = BuildPagerAlong(direction, content);
+  window.Add(pager);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(4, false);
+  application.SendNotification();
+  application.Render();
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+
+  ResizeContentAlong(content, vertical, 600.0f);
+  pager.NotifyPagesInserted(5, 1);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(pager.GetPageCount(), 6, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+
+  ResizeContentAlong(content, vertical, extent);
+  application.SendNotification();
+  application.Render();
+
+  const int expectedCount = extent > 0.0f ? 1 : 0;
+  const int expectedPage  = extent > 0.0f ? 0 : -1;
+  DALI_TEST_EQUALS(pager.GetPageCount(), expectedCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), expectedPage, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), 0.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, expectedPage, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, expectedCount, TEST_LOCATION);
+
+  if(extent == 0.0f)
+  {
+    // The last observed geometry is already empty. Notify sets the scrollable extent
+    // to 100, but the actual content becomes empty again before layout measures it.
+    ResizeContentAlong(content, vertical, 100.0f);
+    pager.NotifyPagesInserted(0, 1);
+    DALI_TEST_EQUALS(pager.GetPageCount(), 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), 0, TEST_LOCATION);
+    DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 3, TEST_LOCATION);
+
+    ResizeContentAlong(content, vertical, 0.0f);
+    application.SendNotification();
+    application.Render();
+
+    DALI_TEST_EQUALS(pager.GetPageCount(), 0, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), -1, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 4, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().first, -1, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().second, 0, TEST_LOCATION);
+  }
+}
+
+// Layout can clamp the actor without an animation. The next snap must compare with
+// that applied position, not the position cached before the viewport grew.
+void CheckSnapAfterViewportClamp(ScrollDirection direction)
+{
+  UiTestApplication application;
+  Window            window   = application.GetWindow();
+  const bool        vertical = (direction == ScrollDirection::Vertical);
+
+  View           content;
+  PageScrollView pager = BuildPagerAlong(direction, content);
+  window.Add(pager);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(4, false);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -400.0f, 0.001f, TEST_LOCATION);
+
+  ResizeAlong(pager, vertical, 250.0f);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -250.0f, 0.001f, TEST_LOCATION);
+
+  ResizeAlong(pager, vertical, 100.0f);
+  application.SendNotification();
+  application.Render();
+  const Vector2 clamped = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? clamped.y : clamped.x, 250.0f, 0.001f, TEST_LOCATION);
+
+  pager.ScrollToPage(4, true);
+  DALI_TEST_CHECK(pager.IsScrolling());
+  application.SendNotification();
+  application.Render(16);
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.Render(100);
+  application.SendNotification();
+
+  const Vector2 settled = pager.GetScrollPosition();
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(vertical ? settled.y : settled.x, 400.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -400.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -400.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+}
+
+// Keeping the clamp as a float matters near the no-op threshold: 399.4 to 399.8 is
+// less than half a unit, whereas rounding the cached 399.4 to 399 would start a snap.
+void CheckFractionalClampKeepsNoOpThreshold(ScrollDirection direction)
+{
+  UiTestApplication application;
+  Window            window   = application.GetWindow();
+  const bool        vertical = (direction == ScrollDirection::Vertical);
+
+  View           content;
+  PageScrollView pager = BuildPagerAlong(direction, content);
+  window.Add(pager);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(4, false);
+  application.SendNotification();
+  application.Render();
+
+  ResizeAlong(pager, vertical, 100.6f);
+  application.SendNotification();
+  application.Render();
+  ResizeAlong(pager, vertical, 99.95f);
+  application.SendNotification();
+  application.Render();
+
+  const Vector2 clamped = pager.GetScrollPosition();
+  DALI_TEST_EQUALS(vertical ? clamped.y : clamped.x, 399.4f, 0.001f, TEST_LOCATION);
+  pager.ScrollToPage(4, true);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetScrollPosition(), clamped, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -399.4f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -399.4f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 4, TEST_LOCATION);
+}
+
+// Empty transitions are layout notifications even when no NotifyPages* count is pending.
+void CheckEmptyContentWithoutNotify(ScrollDirection direction)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+  int signalCount = 0;
+  const float restoredExtents[] = {500.0f, 300.0f};
+  for(float extent : restoredExtents)
+  {
+    ResizeContentAlong(content, vertical, 0.0f);
+    application.SendNotification();
+    application.Render();
+    DALI_TEST_EQUALS(pager.GetPageCount(), 0, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), -1, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), 0.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), ++signalCount, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().first, -1, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().second, 0, TEST_LOCATION);
+
+    // A cross-axis viewport change produces another callback for the same page geometry.
+    if(vertical)
+      pager.SetRequestedWidth(PAGER_HEIGHT + signalCount);
+    else
+      pager.SetRequestedHeight(PAGER_HEIGHT + signalCount);
+    application.SendNotification();
+    application.Render();
+    DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), signalCount, TEST_LOCATION);
+
+    ResizeContentAlong(content, vertical, extent);
+    application.SendNotification();
+    application.Render();
+    const int count = static_cast<int>(extent / PAGER_WIDTH);
+    DALI_TEST_EQUALS(pager.GetPageCount(), count, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), 0, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), ++signalCount, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().first, 0, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().second, count, TEST_LOCATION);
+    application.SendNotification();
+    application.Render();
+    DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), signalCount, TEST_LOCATION);
+  }
+}
+
 } // namespace
 
 // A shrinking page count while a snap animation is in flight must report the page the
@@ -628,5 +926,113 @@ int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToSnapHorizontalP(voi
 int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToSnapVerticalP(void)
 {
   CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection::Vertical, true, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedSelectionHorizontalP(void)
+{
+  CheckPreLayoutAnimatedSelection(ScrollDirection::Horizontal, 0, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedSelectionVerticalP(void)
+{
+  CheckPreLayoutAnimatedSelection(ScrollDirection::Vertical, 0, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedNonzeroSelectionHorizontalP(void)
+{
+  CheckPreLayoutAnimatedSelection(ScrollDirection::Horizontal, 2, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedNonzeroSelectionVerticalP(void)
+{
+  CheckPreLayoutAnimatedSelection(ScrollDirection::Vertical, 2, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedSelectionAfterRemovalHorizontalP(void)
+{
+  CheckPreLayoutAnimatedSelection(ScrollDirection::Horizontal, 0, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedSelectionAfterRemovalVerticalP(void)
+{
+  CheckPreLayoutAnimatedSelection(ScrollDirection::Vertical, 0, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedSelectionReentrancyHorizontalP(void)
+{
+  CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutAnimatedSelectionReentrancyVerticalP(void)
+{
+  CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingCountClearsOnEmptyContentHorizontalP(void)
+{
+  CheckPendingCountAfterContentShrink(ScrollDirection::Horizontal, 0.0f);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingCountClearsOnEmptyContentVerticalP(void)
+{
+  CheckPendingCountAfterContentShrink(ScrollDirection::Vertical, 0.0f);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingCountUsesFractionalContentHorizontalP(void)
+{
+  CheckPendingCountAfterContentShrink(ScrollDirection::Horizontal, 0.5f);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPendingCountUsesFractionalContentVerticalP(void)
+{
+  CheckPendingCountAfterContentShrink(ScrollDirection::Vertical, 0.5f);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewSnapAfterViewportClampHorizontalP(void)
+{
+  CheckSnapAfterViewportClamp(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewSnapAfterViewportClampVerticalP(void)
+{
+  CheckSnapAfterViewportClamp(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewFractionalClampKeepsNoOpThresholdHorizontalP(void)
+{
+  CheckFractionalClampKeepsNoOpThreshold(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewFractionalClampKeepsNoOpThresholdVerticalP(void)
+{
+  CheckFractionalClampKeepsNoOpThreshold(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewEmptyContentWithoutNotifyHorizontalP(void)
+{
+  CheckEmptyContentWithoutNotify(ScrollDirection::Horizontal);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewEmptyContentWithoutNotifyVerticalP(void)
+{
+  CheckEmptyContentWithoutNotify(ScrollDirection::Vertical);
   END_TEST;
 }
