@@ -20,7 +20,7 @@
 | insert | 앞에 stable.8888 삽입, count13/range284 |9|
 | move | position0→2, count13/range284, 각 holder ID가 새 source 위치와 일치 |9|
 | remove | 첫 item 제거, count12/range262 |9|
-| size-change | 첫 height30, item0=(0,0,120,30), item1=(0,32,120,20), estimated range302 |9|
+| size-change | 첫 height30, item0=(0,0,120,30), item1=(0,32,120,20), estimated range272 |9|
 | full-data-empty | count0/range0/bound0, recycle 발생 |4|
 | replace-clear | 새 adapter2개/range42 → ClearAdapter/empty/range0 |4|
 | window-viewport / attach | 화면의 120×50 stage에 부착한 root(0,0,120,50), range262, first0/last2 |8|
@@ -28,7 +28,7 @@
 
 초기 item rect는 (0,22*i,120,20)입니다. 모든 bound holder의 NAME `stable.<id>`를 실제 adapter source와 비교하십시오. 위치만 맞고 다른 item ID가 표시되는 경우 FAIL입니다. content-only 변경은 크기를 재설정하지 않고 새 ID binding만 수행합니다. insert/move/remove는 같은 adapter 인스턴스에서 순서대로 실행하며 중간 Reset을 금지합니다.
 
-window-viewport는 실제 View/Window 완료 snapshot을 사용합니다. RecyclerView는 주어진 constraint를 그대로 채우므로 120×50 stage 아래에 부착하며, resize step은 stage와 target의 height를 함께 94로 바꿉니다. direct adapter-lifecycle의 동기 Arrange 반환으로 Window resize 검증을 대신하지 마십시오. RecyclerView의 estimated range는 이미 측정된 항목의 평균을 쓰므로 미측정 item의 실제 합을 expected로 가정하지 마십시오.
+window-viewport는 실제 View/Window 완료 snapshot을 사용합니다. RecyclerView는 주어진 constraint를 그대로 채우므로 120×50 stage 아래에 부착하며, resize step은 stage와 target의 height를 함께 94로 바꿉니다. direct adapter-lifecycle의 동기 Arrange 반환으로 Window resize 검증을 대신하지 마십시오. RecyclerView의 estimated range는 item offset과 같은 항목별 규칙(측정된 항목은 측정값, 미측정 항목은 SetItemExtent 추정값, 그리고 spacing)으로 계산하므로, 미측정 item의 실제 크기가 추정값과 다르면 실제 합과 다를 수 있습니다.
 
 
 ## 실제 position scroll과 focus/peek
@@ -76,7 +76,7 @@ position/offset 단계는 실제 render property 반영을 위해 100ms 후 관�
 
 `< Back`으로 나간 뒤 다시 진입하여 첫 step을 재실행하십시오. 이전 timer/callback/fixture/추가 Window가 남아 있으면 FAIL입니다. 결과에는 scenario/input/step, 실제값과 기대값, 최초 실패 행, 전체 stdout, artifact fingerprint를 첨부하십시오. `python3 layout-validation-tools.py check-log LOG --tc LR54`는 저장된 행의 누락과 수치를 다시 검사하는 보조 수단입니다. 이 도구는 앱을 실행하거나 서버의 UI 자동 조작을 대체하지 않습니다.
 
-size-change 직전 cached measurement는 item0/1/2의 20/20/20입니다. 변경 뒤 30/20/20, 평균 70/3을 12개에 적용하고 gap22를 더하므로 range=302입니다.
+size-change 직전 cached measurement는 item0/1/2의 20/20/20입니다. 변경 뒤 30/20/20이고 미측정 9개는 추정값 20이므로 70+9×20=250에 gap22를 더해 range=272입니다(실제 합과 같음).
 
 ## 단계 구성
 

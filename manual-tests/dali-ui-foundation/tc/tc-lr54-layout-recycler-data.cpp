@@ -249,7 +249,7 @@ public:
       AfterRelayout(r, s, [](Run& done, AdapterFixture& s) {
         done.Rendered("size.changed", s.bound.at(0), LayoutRect(0, 0, 120, 30));
         done.Rendered("size.next.offset", s.bound.at(1), LayoutRect(0, 32, 120, 20));
-        done.Near("size.range.estimated", s.layouter.ComputeScrollRange(), 302);
+        done.Near("size.range.estimated", s.layouter.ComputeScrollRange(), 272);
       });
     }},
                                                                                                                     {"full-data-empty", 4, [](Run& r)
