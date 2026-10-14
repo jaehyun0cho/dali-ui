@@ -200,6 +200,17 @@ void PageScrollViewImpl::ScrollToPage(int page, bool animate)
 
   DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[PageScrollView] ScrollToPage %d/%d\n", target, total);
 
+  const Vector2 pageSize   = GetEffectivePageSize();
+  const float   pageLength = GetScrollDirection() == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
+  if(!mNotifyInProgress && !IsScrolling() && mExpectedPageCount >= 0 && pageLength < 1.0f)
+  {
+    // No physical page position exists yet. Both request modes replace the pending
+    // selection without emitting a scroll lifecycle that would discard its count.
+    mSnapTargetPage = -1;
+    CommitPage(target);
+    return; // A PageChanged handler may have selected a newer page.
+  }
+
   Vector2 targetPos = ScrollPositionForPage(target);
 
   if(animate)

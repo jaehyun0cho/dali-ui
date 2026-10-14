@@ -178,9 +178,10 @@ protected:
    *
    * This is also where a page SELECTED before the first layout is applied: with a zero
    * page length ScrollToPage could only record the page, so the first call that has real
-   * dimensions scrolls to it while preserving the selected page. A later animated
-   * ScrollToPage that starts no scroll replaces the pending selection while retaining
-   * the expected count. A pre-layout user ScrollTo after that selection releases the
+   * dimensions scrolls to it while preserving the selected page. While the page length
+   * is unavailable and no scroll is active, either ScrollToPage mode replaces a pending
+   * NotifyPages* selection without a physical scroll lifecycle, retaining the expected
+   * count. A pre-layout user ScrollTo after that selection releases the
    * pre-layout state through OnScrollFinished and is therefore not covered.
    * Once valid geometry has been observed in the same direction, empty content reports
    * page -1 and count 0, with or without a NotifyPages* override. Content becoming nonempty

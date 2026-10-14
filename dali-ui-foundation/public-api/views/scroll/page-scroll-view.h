@@ -150,6 +150,11 @@ public: // Page API
   /**
    * @brief Animates or snaps to the given page.
    *
+   * Before the page size is available, if a NotifyPages* count is pending and no
+   * scroll is active, either mode records the requested page for the first valid
+   * layout. This logical selection emits PageChangedSignal when changed, without
+   * ScrollStartedSignal, ScrollingSignal or ScrollFinishedSignal.
+   *
    * @param[in] page    Target page index, clamped to [0, GetPageCount()-1].
    * @param[in] animate True to animate, false for instant jump.
    */

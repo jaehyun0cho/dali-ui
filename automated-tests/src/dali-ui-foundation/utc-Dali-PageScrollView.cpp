@@ -374,9 +374,9 @@ void CheckPendingSelectionYieldsToScrollInFlight(ScrollDirection direction, bool
   DALI_TEST_EQUALS(recorder.signals.back().second, grownCount, TEST_LOCATION);
 }
 
-// An animated request before layout cannot move yet, but it must replace an older
+// A page request before layout cannot move yet, but it must replace an older
 // NotifyPages* selection without discarding the count needed to resolve that request.
-void CheckPreLayoutAnimatedSelection(ScrollDirection direction, int target, bool removed)
+void CheckPreLayoutSelection(ScrollDirection direction, int target, bool removed, bool animate = true)
 {
   UiTestApplication application;
   Window            window   = application.GetWindow();
@@ -392,21 +392,30 @@ void CheckPreLayoutAnimatedSelection(ScrollDirection direction, int target, bool
   const int pendingCount = removed ? 3 : 4;
   DALI_TEST_EQUALS(pager.GetCurrentPage(), pendingCount - 1, TEST_LOCATION);
 
+  const int selectionSignals = target == pendingCount - 1 ? 0 : 1;
+  int scrollSignals = 0;
   PageSignalRecorder recorder;
   pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+  pager.ScrollStartedSignal().Connect(&recorder, [&](ScrollView) { ++scrollSignals; });
+  pager.ScrollingSignal().Connect(&recorder, [&](ScrollView) { ++scrollSignals; });
+  pager.ScrollFinishedSignal().Connect(&recorder, [&](ScrollView) { ++scrollSignals; });
 
-  pager.ScrollToPage(target, true);
+  pager.ScrollToPage(target, animate);
   DALI_TEST_CHECK(!pager.IsScrolling());
   DALI_TEST_EQUALS(pager.GetPageCount(), pendingCount, TEST_LOCATION);
   DALI_TEST_EQUALS(pager.GetCurrentPage(), target, TEST_LOCATION);
   DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(recorder.signals.back().first, target, TEST_LOCATION);
-  DALI_TEST_EQUALS(recorder.signals.back().second, pendingCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), selectionSignals, TEST_LOCATION);
+  if(selectionSignals)
+  {
+    DALI_TEST_EQUALS(recorder.signals.back().first, target, TEST_LOCATION);
+    DALI_TEST_EQUALS(recorder.signals.back().second, pendingCount, TEST_LOCATION);
+  }
 
   // Repeating the latest selection must not emit a duplicate page change.
-  pager.ScrollToPage(target, true);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+  pager.ScrollToPage(target, !animate);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), selectionSignals, TEST_LOCATION);
+  DALI_TEST_EQUALS(scrollSignals, 0, TEST_LOCATION);
 
   window.Add(pager);
   application.SendNotification();
@@ -417,15 +426,16 @@ void CheckPreLayoutAnimatedSelection(ScrollDirection direction, int target, bool
   DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -target * PAGER_WIDTH, 0.001f, TEST_LOCATION);
   DALI_TEST_EQUALS(pager.GetCurrentPage(), target, TEST_LOCATION);
   DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), selectionSignals + 1, TEST_LOCATION);
   DALI_TEST_EQUALS(recorder.signals.back().first, target, TEST_LOCATION);
   DALI_TEST_EQUALS(recorder.signals.back().second, 5, TEST_LOCATION);
 }
 
 struct ReentrantPageRequest : public ConnectionTracker
 {
-  explicit ReentrantPageRequest(PageScrollView view)
-  : pager(view)
+  explicit ReentrantPageRequest(PageScrollView view, bool animateRequest)
+  : pager(view),
+    animate(animateRequest)
   {
   }
 
@@ -434,15 +444,16 @@ struct ReentrantPageRequest : public ConnectionTracker
     if(!requested && page == 0 && count == 4)
     {
       requested = true;
-      pager.ScrollToPage(2, true);
+      pager.ScrollToPage(2, animate);
     }
   }
 
   PageScrollView pager;
+  bool           animate;
   bool           requested{false};
 };
 
-void CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection direction)
+void CheckPreLayoutSelectionReentrancy(ScrollDirection direction, bool outerAnimate = true, bool innerAnimate = true)
 {
   UiTestApplication application;
   Window            window   = application.GetWindow();
@@ -452,9 +463,9 @@ void CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection direction)
   PageScrollView pager = BuildPagerAlong(direction, content);
   pager.NotifyPagesInserted(0, 3);
 
-  ReentrantPageRequest request(pager);
+  ReentrantPageRequest request(pager, innerAnimate);
   pager.PageChangedSignal().Connect(&request, &ReentrantPageRequest::OnPageChanged);
-  pager.ScrollToPage(0, true);
+  pager.ScrollToPage(0, outerAnimate);
 
   DALI_TEST_CHECK(request.requested);
   DALI_TEST_CHECK(!pager.IsScrolling());
@@ -931,49 +942,49 @@ int UtcDaliPageScrollViewPendingSelectionAfterRemovalYieldsToSnapVerticalP(void)
 
 int UtcDaliPageScrollViewPreLayoutAnimatedSelectionHorizontalP(void)
 {
-  CheckPreLayoutAnimatedSelection(ScrollDirection::Horizontal, 0, false);
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 0, false);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedSelectionVerticalP(void)
 {
-  CheckPreLayoutAnimatedSelection(ScrollDirection::Vertical, 0, false);
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 0, false);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedNonzeroSelectionHorizontalP(void)
 {
-  CheckPreLayoutAnimatedSelection(ScrollDirection::Horizontal, 2, false);
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 2, false);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedNonzeroSelectionVerticalP(void)
 {
-  CheckPreLayoutAnimatedSelection(ScrollDirection::Vertical, 2, false);
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 2, false);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedSelectionAfterRemovalHorizontalP(void)
 {
-  CheckPreLayoutAnimatedSelection(ScrollDirection::Horizontal, 0, true);
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 0, true);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedSelectionAfterRemovalVerticalP(void)
 {
-  CheckPreLayoutAnimatedSelection(ScrollDirection::Vertical, 0, true);
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 0, true);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedSelectionReentrancyHorizontalP(void)
 {
-  CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection::Horizontal);
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Horizontal);
   END_TEST;
 }
 
 int UtcDaliPageScrollViewPreLayoutAnimatedSelectionReentrancyVerticalP(void)
 {
-  CheckPreLayoutAnimatedSelectionReentrancy(ScrollDirection::Vertical);
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Vertical);
   END_TEST;
 }
 
@@ -1034,5 +1045,89 @@ int UtcDaliPageScrollViewEmptyContentWithoutNotifyHorizontalP(void)
 int UtcDaliPageScrollViewEmptyContentWithoutNotifyVerticalP(void)
 {
   CheckEmptyContentWithoutNotify(ScrollDirection::Vertical);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionHorizontalAfterInsertion0P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 0, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionHorizontalAfterInsertion2P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 2, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionHorizontalAfterRemoval0P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 0, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionHorizontalAfterRemoval2P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Horizontal, 2, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutMixedReentrancyHorizontal01P(void)
+{
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Horizontal, false, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutMixedReentrancyHorizontal10P(void)
+{
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Horizontal, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutMixedReentrancyHorizontal00P(void)
+{
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Horizontal, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionVerticalAfterInsertion0P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 0, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionVerticalAfterInsertion2P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 2, false, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionVerticalAfterRemoval0P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 0, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutInstantSelectionVerticalAfterRemoval2P(void)
+{
+  CheckPreLayoutSelection(ScrollDirection::Vertical, 2, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutMixedReentrancyVertical01P(void)
+{
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Vertical, false, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutMixedReentrancyVertical10P(void)
+{
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Vertical, true, false);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewPreLayoutMixedReentrancyVertical00P(void)
+{
+  CheckPreLayoutSelectionReentrancy(ScrollDirection::Vertical, false, false);
   END_TEST;
 }
