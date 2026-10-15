@@ -160,40 +160,14 @@ protected:
   void OnBeforeScrollAnimation(Vector2& targetPosition, float& durationSec) override;
 
   /**
-   * @brief Overrides ScrollViewImpl hook to detect when the layout pass first sets
-   *        accurate viewport / scrollable-area dimensions.
+   * @brief Reconciles measured geometry with the latest scroll request.
    *
-   * Emits PageChangedSignal whenever the layout-derived count changes, and whenever the
-   * reported page changes. The reported page is the page the view will settle on: while a
-   * snap is in flight it is the snap target clamped to the new count, which is exactly what
-   * OnScrollFinished commits, so the transient and the settled notification agree even when
-   * the last page is partial. A free scroll (no snap target) or a settled view re-derives
-   * from the scroll position, which during an animated scroll is the LIVE current position,
-   * not the target. A page selected by NotifyPagesInserted / NotifyPagesRemoved that has
-   * just been applied is the newer intent and is kept. A changed viewport that leaves the
-   * count alone re-derives only on a settled view, so a snap target that is still valid is
-   * never replaced by the nearest page. ScrollToPage clears a target whose animated scroll
-   * never started, so an explicit page request that had nothing to scroll does not leave a
-   * stale target behind. Repeated callbacks for the same geometry emit nothing.
-   *
-   * This is also where a page SELECTED before the first layout is applied: with a zero
-   * page length ScrollToPage could only record the page, so the first call that has real
-   * dimensions scrolls to it while preserving the selected page. While the page length
-   * is unavailable and no scroll is active, either ScrollToPage mode replaces a pending
-   * NotifyPages* selection without a physical scroll lifecycle, retaining the expected
-   * count. A pre-layout user ScrollTo after that selection releases the
-   * pre-layout state through OnScrollFinished and is therefore not covered.
-   * Once valid geometry has been observed in the same direction, empty content reports
-   * page -1 and count 0, with or without a NotifyPages* override. Content becoming nonempty
-   * reports its new page and count. Empty content also releases any expected count;
-   * the first layout's intermediate zero is still ignored.
-   *
-   * @note That apply calls ScrollToPage, which emits ScrollStarted / Scrolling /
-   * ScrollFinished SYNCHRONOUSLY from inside the layout pass. Two mechanisms bound the
-   * re-entrancy: mExpectedPageCount is reset BEFORE ScrollToPage runs, so a handler that
-   * triggers another pass finds no override and this block does not run again; and the
-   * apply holds the notify-in-progress flag for its duration (restored by a scope guard,
-   * including on an exception), so the nested ScrollFinished cannot demote the selection.
+   * A pending NotifyPages selection is applied once usable geometry exists. The
+   * internal apply defers page publication only for its own request; a callback's
+   * newer request owns the resulting selection. Count changes during an active
+   * snap use its target, while active free scrolling uses the live position.
+   * Repeated geometry callbacks leave settled partial-page selections unchanged.
+   * Measured empty/nonempty transitions report (-1, 0) or the new page/count.
    *
    * @note ABI note: do NOT reorder or remove after first publication.
    */
@@ -223,18 +197,18 @@ private:
   void CommitPage(int newPage);
 
   /**
-   * @brief Emits PageChangedSignal and records the notified page count.
+   * @brief Queues a page/count snapshot, suppressing duplicate queued pairs.
    *
-   * All signal emissions must go through here so that mLastNotifiedPageCount
-   * stays in sync and OnScrollableAreaChanged can suppress redundant emissions.
+   * An aborted dispatch invalidates deduplication so a later request can resynchronize
+   * observers. mLastNotifiedPageCount records the latest queued count.
    */
   void EmitPageChanged(int currentPage, int pageCount);
 
-  /**
-   * @brief Callback connected to ScrollFinishedSignal to keep mCurrentPage in sync.
-   * Also called directly when a current instant page request finishes inside a
-   * ScrollFinished handler, where the signal system suppresses nested emissions.
-   */
+  uint64_t ScrollToPageRequest(int page, bool animate, bool deferNotification);
+  void     OnScrollCompleted(uint64_t request, ScrollCompletion reason);
+  void     PublishPageAfterNotify(uint64_t request);
+
+  /** @brief Retained nonvirtual wrapper; not connected to a public signal. */
   void OnScrollFinished(Ui::ScrollView scrollView);
 
 private:
@@ -249,8 +223,8 @@ private:
   int                                            mCurrentPage{0};            ///< Settled page index
   int                                            mSnapTargetPage{-1};        ///< Logical target awaiting completion; -1 = no explicit target
   int                                            mExpectedPageCount{-1};     ///< >=0: overrides layout-based count; -1: use layout (sentinel)
-  int                                            mLastNotifiedPageCount{-2}; ///< Page count last passed to PageChangedSignal; -2 = never emitted
-  bool                                           mNotifyInProgress{false};   ///< Suppress OnScrollFinished re-derive during NotifyPages*
+  int                                            mLastNotifiedPageCount{-2}; ///< Last queued page count; -2 = never queued
+  bool                                           mNotifyInProgress{false};   ///< Suppress geometry callbacks during NotifyPages* index adjustment
   PageScrollableInterface::PageChangedSignalType mPageChangedSignal;         ///< Emitted on page settle
   PageScrollableInterface::DestroyingSignalType  mDestroyingSignal;          ///< Emitted from destructor for observer lifetime management
 };

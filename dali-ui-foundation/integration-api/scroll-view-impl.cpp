@@ -32,7 +32,9 @@
 #include <dali/integration-api/debug.h>
 #include <dali/public-api/common/unique-ptr.h>
 #include <cmath>
+#include <deque>
 #include <limits>
+#include <utility>
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/extension-api/view.h>
@@ -61,7 +63,14 @@ Debug::Filter* gLogFilter = Debug::Filter::New(Debug::NoLogging, false, "LOG_SCR
 const AttachmentId SCROLL_REQUEST_STATE = AttachmentId::Alloc();
 struct ScrollRequestState
 {
-  uint64_t serial{0u};
+  uint64_t                                        serial{0u};
+  uint64_t                                        active{0u};
+  uint64_t                                        drag{0u};
+  uint64_t                                        notificationEpoch{0u};
+  unsigned                                        batchDepth{0u};
+  bool                                            dispatching{false};
+  std::function<void(uint64_t, ScrollCompletion)> completion;
+  std::deque<std::function<void()>>               notifications;
 };
 
 ScrollRequestState& GetScrollRequestState(Ui::View view)
@@ -197,10 +206,13 @@ void ScrollViewImpl::OnInitialize()
 
 void ScrollViewImpl::SetContent(View content)
 {
+  auto lifetime = Self();
   // Remove old content if exists
   if(mContent)
   {
-    CancelScrollAnimation();
+    const uint64_t request = BeginScrollRequest();
+    CancelScrollAnimation(ScrollCompletion::Interrupted);
+    if(!IsCurrentScrollRequest(request)) return;
     DevelActor::OnRelayoutSignal(mContent).Disconnect(this, &ScrollViewImpl::OnChildRelayout);
     Self().Remove(mContent);
     mContentPositionNotification.Reset();
@@ -399,10 +411,14 @@ void ScrollViewImpl::SetPanScrollEnabled(bool enabled)
     mEdgeDisplacement = 0.0f;
   }
 
-  CancelScrollAnimation();
+  auto           lifetime = Self();
+  const uint64_t request  = BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Interrupted);
+  if(!IsCurrentScrollRequest(request)) return;
   if(mIsDragging)
   {
     SendDragFinished();
+    if(!IsCurrentScrollRequest(request)) return;
   }
   if(mDisambiguating)
   {
@@ -493,17 +509,118 @@ bool ScrollViewImpl::IsCurrentScrollRequest(uint64_t request)
   return GetScrollRequestState(Ui::View::DownCast(Self())).serial == request;
 }
 
+uint64_t ScrollViewImpl::GetCurrentScrollRequest()
+{
+  return GetScrollRequestState(Ui::View::DownCast(Self())).serial;
+}
+
+Vector2 ScrollViewImpl::GetLiveScrollPosition() const
+{
+  return ContentPositionToScrollPosition(mCurrentPosition);
+}
+
+void ScrollViewImpl::SetScrollCompletionHandler(std::function<void(uint64_t, ScrollCompletion)> handler)
+{
+  GetScrollRequestState(Ui::View::DownCast(Self())).completion = std::move(handler);
+}
+
+uint64_t ScrollViewImpl::GetScrollNotificationEpoch()
+{
+  return GetScrollRequestState(Ui::View::DownCast(Self())).notificationEpoch;
+}
+
+void ScrollViewImpl::QueueScrollNotification(std::function<void()> notification)
+{
+  auto  lifetime = Self();
+  auto& state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  state.notifications.push_back(std::move(notification));
+  if(state.dispatching || state.batchDepth) return;
+
+  state.dispatching = true;
+  try
+  {
+    while(!state.notifications.empty())
+    {
+      auto next = std::move(state.notifications.front());
+      state.notifications.pop_front();
+      next();
+    }
+    state.dispatching = false;
+  }
+  catch(...)
+  {
+    state.notifications.clear();
+    ++state.notificationEpoch;
+    state.dispatching = false;
+    throw;
+  }
+}
+
+void ScrollViewImpl::BatchScrollNotifications(const std::function<void()>& operation)
+{
+  auto  lifetime = Self();
+  auto& state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  ++state.batchDepth;
+  try
+  {
+    operation();
+  }
+  catch(...)
+  {
+    --state.batchDepth;
+    state.notifications.clear();
+    ++state.notificationEpoch;
+    throw;
+  }
+  --state.batchDepth;
+  // Draining is explicit: no destructor invokes application callbacks.
+  if(!state.batchDepth && !state.dispatching && !state.notifications.empty())
+    QueueScrollNotification([] {});
+}
+
+void ScrollViewImpl::CompleteScrollRequest(uint64_t request, ScrollCompletion reason)
+{
+  auto  lifetime = Self();
+  auto& state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  if(!request || state.active != request) return;
+  const bool wasScrolling = mIsScrolling;
+  state.active            = 0u;
+  mIsScrolling            = false;
+  BatchScrollNotifications([&]
+  {
+    if(state.completion) state.completion(request, reason);
+    if(wasScrolling)
+    {
+      QueueScrollNotification([this]
+      {
+        auto handle = Ui::ScrollView::DownCast(Self());
+        mScrollFinishedSignal.Emit(handle);
+      });
+      Ui::Internal::ScrollStateObserver::Get().NotifyScrollFinished();
+    }
+    if(mIsDragging && state.drag == request) SendDragFinished();
+  });
+}
+
 void ScrollViewImpl::ScrollTo(const Vector2& position, bool animation)
 {
-  const uint64_t request = BeginScrollRequest();
-  CancelScrollAnimation();
+  auto           lifetime = Self();
+  const uint64_t request  = BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Replaced);
   if(!IsCurrentScrollRequest(request)) return;
   ScrollToForRequest(position, animation, request);
 }
 
 void ScrollViewImpl::ScrollToForRequest(const Vector2& position, bool animation, uint64_t request)
 {
-  if(!IsCurrentScrollRequest(request) || !mContent) return;
+  auto lifetime = Self();
+  if(!IsCurrentScrollRequest(request)) return;
+  GetScrollRequestState(Ui::View::DownCast(lifetime)).active = request;
+  if(!mContent)
+  {
+    CompleteScrollRequest(request, ScrollCompletion::NoOp);
+    return;
+  }
 
   // Force immediate scroll if not ready for animation
   bool isVisible = Self().GetProperty<bool>(Actor::Property::VISIBLE);
@@ -551,7 +668,7 @@ void ScrollViewImpl::ScrollToForRequest(const Vector2& position, bool animation,
 #endif
     if(dist < 0.5f)
     {
-      SendScrollFinished();
+      CompleteScrollRequest(request, ScrollCompletion::NoOp);
       return;
     }
 
@@ -578,16 +695,21 @@ void ScrollViewImpl::ScrollToForRequest(const Vector2& position, bool animation,
 
 void ScrollViewImpl::ScrollToWithDuration(const Vector2& position, float durationSec)
 {
-  const uint64_t request = BeginScrollRequest();
-  CancelScrollAnimation();
+  auto           lifetime = Self();
+  const uint64_t request  = BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Replaced);
   if(!IsCurrentScrollRequest(request)) return;
   ScrollToWithDurationForRequest(position, durationSec, request);
 }
 
 void ScrollViewImpl::ScrollToWithDurationForRequest(const Vector2& position, float durationSec, uint64_t request)
 {
-  if(!IsCurrentScrollRequest(request) || !mContent)
+  auto lifetime = Self();
+  if(!IsCurrentScrollRequest(request)) return;
+  GetScrollRequestState(Ui::View::DownCast(lifetime)).active = request;
+  if(!mContent)
   {
+    CompleteScrollRequest(request, ScrollCompletion::NoOp);
     return;
   }
 
@@ -599,7 +721,7 @@ void ScrollViewImpl::ScrollToWithDurationForRequest(const Vector2& position, flo
   float distY = std::abs(targetPosY - mCurrentPosition.y);
   if(std::sqrt(distX * distX + distY * distY) < 0.5f)
   {
-    SendScrollFinished();
+    CompleteScrollRequest(request, ScrollCompletion::NoOp);
     return;
   }
 
@@ -1746,8 +1868,11 @@ bool ScrollViewImpl::OnWheelEvent(const Dali::WheelEvent& event)
     return false;
   }
 
-  // Cancel any ongoing fling/animation and pick up the live content position.
-  CancelScrollAnimation();
+  auto           lifetime = Self();
+  const uint64_t request  = BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Replaced);
+  if(!IsCurrentScrollRequest(request) || !mContent) return true;
+  GetScrollRequestState(Ui::View::DownCast(lifetime)).active = request;
 
   Vector2 newPosition = AdjustScrollPosition(Vector2(mScrollPosition.x + stepX, mScrollPosition.y + stepY));
 
@@ -1760,10 +1885,12 @@ bool ScrollViewImpl::OnWheelEvent(const Dali::WheelEvent& event)
 
   if(std::sqrt(distX * distX + distY * distY) < 0.5f)
   {
-    return true; // Already at target; consume but do nothing.
+    CompleteScrollRequest(request, ScrollCompletion::NoOp);
+    return true;
   }
 
   SendScrollStarted();
+  if(!IsCurrentScrollRequest(request) || !mContent) return true;
 
   mScrollAnimation = Animation::New(WHEEL_ANIM_SEC);
   mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), targetPosX, AlphaFunction::EASE_OUT);
@@ -1777,7 +1904,8 @@ bool ScrollViewImpl::OnWheelEvent(const Dali::WheelEvent& event)
 
 bool ScrollViewImpl::OnInterceptTouch(Actor actor, TouchEvent touch)
 {
-  PointState::Type state = touch.GetState(0);
+  auto             lifetime = Self();
+  PointState::Type state    = touch.GetState(0);
 
   if(!mPanScrollEnabled)
   {
@@ -1811,8 +1939,11 @@ bool ScrollViewImpl::OnInterceptTouch(Actor actor, TouchEvent touch)
       }
       if(mIsDragging)
       {
-        CancelScrollAnimation();
+        const uint64_t request = BeginScrollRequest();
+        CancelScrollAnimation(ScrollCompletion::Interrupted);
+        if(!IsCurrentScrollRequest(request)) return mIntercepting;
         SendDragFinished();
+        if(!IsCurrentScrollRequest(request)) return mIntercepting;
       }
     }
 
@@ -1848,6 +1979,7 @@ bool ScrollViewImpl::OnInterceptTouch(Actor actor, TouchEvent touch)
 
 bool ScrollViewImpl::OnTouch(Actor actor, TouchEvent touch)
 {
+  auto lifetime = Self();
   if(!mIntercepting)
   {
     return false;
@@ -1885,8 +2017,11 @@ bool ScrollViewImpl::OnTouch(Actor actor, TouchEvent touch)
         mEndEdgeActive    = false;
         mEdgeDisplacement = 0.0f;
       }
-      CancelScrollAnimation();
+      const uint64_t request = BeginScrollRequest();
+      CancelScrollAnimation(ScrollCompletion::Interrupted);
+      if(!IsCurrentScrollRequest(request)) return true;
       SendDragFinished();
+      if(!IsCurrentScrollRequest(request)) return true;
     }
     mIntercepting = false;
   }
@@ -1914,8 +2049,11 @@ bool ScrollViewImpl::OnTouch(Actor actor, TouchEvent touch)
         mEndEdgeActive    = false;
         mEdgeDisplacement = 0.0f;
       }
-      CancelScrollAnimation();
+      const uint64_t request = BeginScrollRequest();
+      CancelScrollAnimation(ScrollCompletion::Interrupted);
+      if(!IsCurrentScrollRequest(request)) return true;
       SendDragFinished();
+      if(!IsCurrentScrollRequest(request)) return true;
     }
     mIntercepting = false;
   }
@@ -1925,6 +2063,7 @@ bool ScrollViewImpl::OnTouch(Actor actor, TouchEvent touch)
 
 void ScrollViewImpl::OnPanGesture(Actor actor, PanGesture gesture)
 {
+  auto lifetime = Self();
   if(!mPanScrollEnabled)
   {
     if(gesture.GetState() == GestureState::FINISHED ||
@@ -1941,8 +2080,9 @@ void ScrollViewImpl::OnPanGesture(Actor actor, PanGesture gesture)
     {
       // Pan is recognized by the detector. Record the position so we can
       // measure additional displacement before committing to scroll.
-      mPanRecognized    = true;
-      mPanStartPosition = gesture.GetScreenPosition();
+      GetScrollRequestState(Ui::View::DownCast(lifetime)).drag = 0u;
+      mPanRecognized                                           = true;
+      mPanStartPosition                                        = gesture.GetScreenPosition();
       // Seed the velocity tracker with the recognition point.
       mVelocityTracker.Clear();
       mVelocityTracker.Add(gesture.GetTime(), gesture.GetScreenPosition());
@@ -1981,11 +2121,15 @@ void ScrollViewImpl::OnPanGesture(Actor actor, PanGesture gesture)
         // Threshold met: steal the touch sequence and start scrolling.
         DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[ScrollView::OnPanGesture] post-recognition threshold met – intercepting\n");
         // Disambiguation resolved: this is a scroll, not a tap.
-        mDisambiguating = false;
+        const uint64_t request = BeginScrollRequest();
+        mDisambiguating        = false;
         Ui::Internal::ScrollStateObserver::Get().NotifyGestureDisambiguationEnded();
-        CancelScrollAnimation();
-        mIntercepting    = true;
-        mJustIntercepted = true;
+        if(!IsCurrentScrollRequest(request)) return;
+        CancelScrollAnimation(ScrollCompletion::Replaced);
+        if(!IsCurrentScrollRequest(request)) return;
+        GetScrollRequestState(Ui::View::DownCast(lifetime)).drag = request;
+        mIntercepting                                            = true;
+        mJustIntercepted                                         = true;
         OnDragStarted(gesture);
         OnDragging(gesture);
       }
@@ -2010,17 +2154,11 @@ void ScrollViewImpl::OnPanGesture(Actor actor, PanGesture gesture)
       }
       // Use mIsDragging as a fallback: mIntercepting may have been cleared by
       // OnTouch(UP) before gesture FINISHED fires asynchronously.
+      mPanRecognized = false;
       if(mIntercepting || mIsDragging)
       {
-        // Cancel any in-flight snap animation before processing the drag end.
-        // Skip entirely when no animation is running: CancelScrollAnimation would
-        // call SendScrollFinished with a mid-drag scroll position, corrupting
-        // mCurrentPage before OnDragFinished processes the gesture velocity.
-        if(mScrollAnimation)
-          CancelScrollAnimation();
         OnDragFinished(gesture);
       }
-      mPanRecognized = false;
       break;
     }
     default:
@@ -2039,6 +2177,17 @@ void ScrollViewImpl::OnDragStarted(const PanGesture& gesture)
 
 void ScrollViewImpl::OnDragging(const PanGesture& gesture)
 {
+  auto  lifetime = Self();
+  auto& state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  if(!state.drag)
+  {
+    const uint64_t request = BeginScrollRequest();
+    CancelScrollAnimation(ScrollCompletion::Replaced);
+    if(!IsCurrentScrollRequest(request)) return;
+    state.drag = request;
+  }
+  const uint64_t request = state.drag;
+  if(!IsCurrentScrollRequest(request) || !mContent) return;
   // Threshold check is done in OnPanGesture before OnDragging is ever called,
   // so here we unconditionally apply the displacement to the content position.
   //
@@ -2120,11 +2269,15 @@ void ScrollViewImpl::OnDragging(const PanGesture& gesture)
 
   if(!mIsScrolling)
   {
+    state.active = request;
     SendScrollStarted();
+    if(!IsCurrentScrollRequest(request)) return;
     SendDragStarted();
+    if(!IsCurrentScrollRequest(request)) return;
   }
 
   SendDragging(delta.x, delta.y);
+  if(!IsCurrentScrollRequest(request)) return;
   mLastPanPosition = gesture.GetScreenPosition();
 
   // Update scroll bar position with the updated scroll position
@@ -2133,7 +2286,17 @@ void ScrollViewImpl::OnDragging(const PanGesture& gesture)
 
 void ScrollViewImpl::OnDragFinished(const PanGesture& gesture)
 {
+  auto           lifetime = Self();
+  auto&          state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  const uint64_t drag     = state.drag;
+  if(drag && !IsCurrentScrollRequest(drag)) return;
+  const uint64_t beforeCallback = GetCurrentScrollRequest();
   SendDragFinished();
+  if(!IsCurrentScrollRequest(beforeCallback)) return;
+  const uint64_t request = BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Replaced);
+  if(!IsCurrentScrollRequest(request)) return;
+  state.active = request;
 
   // Do NOT read mContent.GetProperty here: if an edge effect displaced mContent
   // for the bounce visual, the live position includes that offset and would
@@ -2232,8 +2395,9 @@ void ScrollViewImpl::OnDragFinished(const PanGesture& gesture)
     Vector2 snapPos = mScrollPosition;
     float   snapDur = 0.0f;
     OnBeforeScrollAnimation(snapPos, snapDur);
+    if(!IsCurrentScrollRequest(request)) return;
     if(snapDur > 0.0f && (snapPos - mScrollPosition).LengthSquared() > 0.01f)
-      ScrollToWithDuration(snapPos, snapDur);
+      ScrollToWithDurationForRequest(snapPos, snapDur, request);
     else
       SendScrollFinished();
     return;
@@ -2267,7 +2431,8 @@ void ScrollViewImpl::OnDragFinished(const PanGesture& gesture)
   float   targetDur = durationMs / 1000.0f;
   Vector2 targetPos = newPos;
   OnBeforeScrollAnimation(targetPos, targetDur);
-  ScrollToWithDuration(targetPos, targetDur);
+  if(!IsCurrentScrollRequest(request)) return;
+  ScrollToWithDurationForRequest(targetPos, targetDur, request);
 }
 
 void ScrollViewImpl::OnBeforeScrollAnimation(Vector2& /*targetPosition*/, float& /*durationSec*/)
@@ -2282,57 +2447,77 @@ void ScrollViewImpl::OnScrollableAreaChanged()
 
 void ScrollViewImpl::SendScrollStarted()
 {
+  auto lifetime = Self();
   if(!mIsScrolling)
   {
+    auto& state = GetScrollRequestState(Ui::View::DownCast(lifetime));
+    if(!state.active) state.active = state.serial ? state.serial : BeginScrollRequest();
     mIsScrolling = true;
-    Ui::Internal::ScrollStateObserver::Get().NotifyScrollStarted();
-    Ui::ScrollView scrollView = Ui::ScrollView::DownCast(Self());
-    mScrollStartedSignal.Emit(scrollView);
+    BatchScrollNotifications([&]
+    {
+      QueueScrollNotification([this]
+      {
+        auto handle = Ui::ScrollView::DownCast(Self());
+        mScrollStartedSignal.Emit(handle);
+      });
+      Ui::Internal::ScrollStateObserver::Get().NotifyScrollStarted();
+    });
   }
 }
 
 void ScrollViewImpl::SendScrolling()
 {
   if(mIsScrolling)
-  {
-    Ui::ScrollView scrollView = Ui::ScrollView::DownCast(Self());
-    mScrollingSignal.Emit(scrollView);
-  }
+    QueueScrollNotification([this]
+    {
+      auto handle = Ui::ScrollView::DownCast(Self());
+      mScrollingSignal.Emit(handle);
+    });
 }
 
 void ScrollViewImpl::SendScrollFinished()
 {
-  if(mIsScrolling)
-  {
-    mIsScrolling = false;
-    Ui::Internal::ScrollStateObserver::Get().NotifyScrollFinished();
-    Ui::ScrollView scrollView = Ui::ScrollView::DownCast(Self());
-    mScrollFinishedSignal.Emit(scrollView);
-    // Auto-visibility bars fade out 2 seconds after the last scroll position
-    // update, handled by the hide timer inside ScrollBarImpl::ShowBar().
-  }
+  CompleteScrollRequest(GetScrollRequestState(Ui::View::DownCast(Self())).active, ScrollCompletion::Completed);
 }
 
 void ScrollViewImpl::SendDragStarted()
 {
-  mIsDragging = true;
-  Ui::Internal::ScrollStateObserver::Get().NotifyDragStarted(Window::Get(Self()));
-  Ui::ScrollView scrollView = Ui::ScrollView::DownCast(Self());
-  mDragStartedSignal.Emit(scrollView);
+  auto lifetime = Self();
+  mIsDragging   = true;
+  BatchScrollNotifications([&]
+  {
+    QueueScrollNotification([this]
+    {
+      auto handle = Ui::ScrollView::DownCast(Self());
+      mDragStartedSignal.Emit(handle);
+    });
+    Ui::Internal::ScrollStateObserver::Get().NotifyDragStarted(Window::Get(Self()));
+  });
 }
 
 void ScrollViewImpl::SendDragging(float deltaX, float deltaY)
 {
-  Ui::ScrollView scrollView = Ui::ScrollView::DownCast(Self());
-  mDraggingSignal.Emit(scrollView, deltaX, deltaY);
+  QueueScrollNotification([this, deltaX, deltaY]
+  {
+    auto handle = Ui::ScrollView::DownCast(Self());
+    mDraggingSignal.Emit(handle, deltaX, deltaY);
+  });
 }
 
 void ScrollViewImpl::SendDragFinished()
 {
+  auto lifetime = Self();
+  if(!mIsDragging) return;
   mIsDragging = false;
-  Ui::Internal::ScrollStateObserver::Get().NotifyDragFinished();
-  Ui::ScrollView scrollView = Ui::ScrollView::DownCast(Self());
-  mDragFinishedSignal.Emit(scrollView);
+  BatchScrollNotifications([&]
+  {
+    QueueScrollNotification([this]
+    {
+      auto handle = Ui::ScrollView::DownCast(Self());
+      mDragFinishedSignal.Emit(handle);
+    });
+    Ui::Internal::ScrollStateObserver::Get().NotifyDragFinished();
+  });
 }
 
 void ScrollViewImpl::UpdateScrollingProperties()
@@ -2409,6 +2594,14 @@ void ScrollViewImpl::ApplyScrollPosition(const Vector2& position)
 
 void ScrollViewImpl::CancelScrollAnimation()
 {
+  BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Interrupted);
+}
+
+void ScrollViewImpl::CancelScrollAnimation(ScrollCompletion reason)
+{
+  auto           lifetime = Self();
+  const uint64_t owner    = GetScrollRequestState(Ui::View::DownCast(lifetime)).active;
   if(mScrollAnimation)
   {
     if(mContent)
@@ -2420,14 +2613,12 @@ void ScrollViewImpl::CancelScrollAnimation()
     mScrollAnimation.Stop();
     mScrollAnimation.Reset();
   }
-  if(mIsScrolling)
-  {
-    SendScrollFinished();
-  }
+  CompleteScrollRequest(owner, reason);
 }
 
 void ScrollViewImpl::OnScrollAnimationFinished(Animation animation)
 {
+  auto lifetime = Self();
   // A Finished emitted for an animation CancelScrollAnimation already stopped and released
   // must not reset a newer handle nor write the content actor the new animation now owns.
   // CancelScrollAnimation has already captured the live position and sent ScrollFinished.
@@ -2492,6 +2683,7 @@ void ScrollViewImpl::OnLayoutDirectionChanged(Actor actor, LayoutDirection::Type
 
 void ScrollViewImpl::OnContentPositionChanged(PropertyNotification source)
 {
+  auto lifetime = Self();
   if(!mContent)
   {
     return;

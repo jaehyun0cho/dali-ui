@@ -443,6 +443,17 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls the content to the specified position.
    *
+   * A newer scroll request made by a synchronous handler takes precedence over
+   * the request invoking that handler, including requests made while cancelling
+   * an earlier scroll. ScrollFinishedSignal marks the end of a lifecycle and may
+   * also report cancellation; it does not guarantee arrival at the old target.
+   *
+   * Nested requests update internal state immediately. This view's scroll, drag
+   * and page notifications are delivered in order after the current signal emission
+   * finishes, before the outer dispatch returns. A signal's handle exposes the
+   * latest state, which may already include a newer request from another handler.
+   * This ordering does not extend to the global ScrollStateObserver signals.
+   *
    * @param[in] position The position to scroll to
    * @param[in] animation Whether to animate the scroll
    */

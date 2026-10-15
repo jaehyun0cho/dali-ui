@@ -64,9 +64,31 @@ PageGeometry& LastPageGeometry(Ui::View view)
   return *geometry;
 }
 
-// Restores mNotifyInProgress on every exit, including an exception thrown by an application
-// handler reached through SetScrollable*/ScrollToPage (pattern: PendingBatchRollbackScope,
-// public-api/layouts/layout-controller.cpp). The previous value is restored, not false.
+// Request policy belongs only to the internal repositioning that created it. A
+// public request from a callback never inherits NotifyPages/layout suppression.
+const AttachmentId PAGE_REQUEST_STATE = AttachmentId::Alloc();
+struct PageRequestState
+{
+  uint64_t targetOwner{0u};
+  uint64_t deferredOwner{0u};
+  uint64_t notificationEpoch{0u};
+  int      queuedPage{-2};
+  int      queuedCount{-2};
+};
+
+PageRequestState& GetPageRequestState(Ui::View view)
+{
+  auto* state = view.GetAttachment<PageRequestState>(PAGE_REQUEST_STATE);
+  if(!state)
+  {
+    view.SetAttachment(PAGE_REQUEST_STATE, Dali::MakeUnique<PageRequestState>());
+    state = view.GetAttachment<PageRequestState>(PAGE_REQUEST_STATE);
+  }
+  DALI_ASSERT_ALWAYS(state && "PageScrollView request attachment creation failed");
+  return *state;
+}
+
+// Only geometry and index adjustment run under this scope, never public callbacks.
 struct NotifyInProgressScope
 {
   explicit NotifyInProgressScope(bool& flag)
@@ -121,14 +143,15 @@ void PageScrollViewImpl::OnInitialize()
 {
   ScrollViewImpl::OnInitialize();
 
-  // Connect to ScrollFinishedSignal to keep mCurrentPage in sync after every
-  // animation (fling or snap) settles.
-  Ui::ScrollView handle = Ui::ScrollView::DownCast(Self());
-  ScrollFinishedSignal().Connect(this, &PageScrollViewImpl::OnScrollFinished);
+  SetScrollCompletionHandler([this](uint64_t request, ScrollCompletion reason)
+  {
+    OnScrollCompleted(request, reason);
+  });
 }
 
 void PageScrollViewImpl::SetPageSize(const Vector2& size)
 {
+  auto lifetime = Self();
   if(mPageSize == size) return;
   mPageSize = size;
 
@@ -195,56 +218,39 @@ int PageScrollViewImpl::GetPageCount() const
 
 void PageScrollViewImpl::ScrollToPage(int page, bool animate)
 {
-  const uint64_t request = BeginScrollRequest();
-  int            total   = GetPageCount();
-  int            target  = std::max(0, std::min(total - 1, page));
+  ScrollToPageRequest(page, animate, false);
+}
 
+uint64_t PageScrollViewImpl::ScrollToPageRequest(int page, bool animate, bool deferNotification)
+{
+  auto           lifetime = Self();
+  const uint64_t request  = BeginScrollRequest();
+  CancelScrollAnimation(ScrollCompletion::Replaced);
+  if(!IsCurrentScrollRequest(request)) return request;
+
+  const int     total      = GetPageCount();
+  const int     target     = std::max(0, std::min(total - 1, page));
   const Vector2 pageSize   = GetEffectivePageSize();
   const float   pageLength = GetScrollDirection() == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
-  if(!mNotifyInProgress && !IsScrolling() && mExpectedPageCount >= 0 && pageLength < 1.0f)
+  auto&         state      = GetPageRequestState(Ui::View::DownCast(lifetime));
+  if(mExpectedPageCount >= 0 && pageLength < 1.0f)
   {
-    // No physical page position exists yet. Both request modes replace the pending
-    // selection without emitting a scroll lifecycle that would discard its count.
-    mSnapTargetPage = -1;
-    CommitPage(target);
-    return; // A PageChanged handler may have selected a newer page.
+    mSnapTargetPage   = -1;
+    state.targetOwner = state.deferredOwner = 0u;
+    mCurrentPage                            = target;
+    if(!deferNotification) EmitPageChanged(GetCurrentPage(), total);
+    return request;
   }
 
-  // Finish the previous request before installing this target. Its synchronous
-  // handlers may issue a newer request or change the page count and geometry.
-  CancelScrollAnimation();
-  if(!IsCurrentScrollRequest(request)) return;
-  total                   = GetPageCount();
-  target                  = std::max(0, std::min(total - 1, page));
-  const Vector2 targetPos = ScrollPositionForPage(target);
-  mSnapTargetPage         = target;
-
-  DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[PageScrollView] ScrollToPage %d/%d\n", target, total);
-
+  state.targetOwner            = request;
+  state.deferredOwner          = deferNotification ? request : 0u;
+  mSnapTargetPage              = target;
+  const Vector2 targetPosition = ScrollPositionForPage(target);
   if(animate)
-    ScrollToWithDurationForRequest(targetPos, PAGE_SNAP_DURATION, request);
+    ScrollToWithDurationForRequest(targetPosition, PAGE_SNAP_DURATION, request);
   else
-    ScrollToForRequest(targetPos, false, request);
-
-  if(!IsCurrentScrollRequest(request) || IsScrolling() || mSnapTargetPage != target) return;
-
-  if(!animate)
-  {
-    // The signal system suppresses nested ScrollFinished emissions. Complete this
-    // instant request directly only if the normal handler has not consumed it.
-    OnScrollFinished(Ui::ScrollView::DownCast(Self()));
-    return;
-  }
-
-  // An animated no-op has no finish signal. Preserve its logical target even when
-  // the partial last page clamps to (almost) the same offset as another page.
-  // Clear before emitting, and retain a pending count until layout can resolve it.
-  mSnapTargetPage = -1;
-  if(!mNotifyInProgress)
-  {
-    total = GetPageCount();
-    CommitPage(total > 0 ? std::max(0, std::min(total - 1, target)) : 0);
-  }
+    ScrollToForRequest(targetPosition, false, request);
+  return request;
 }
 
 PageScrollableInterface::PageChangedSignalType& PageScrollViewImpl::PageChangedSignal()
@@ -316,9 +322,10 @@ void PageScrollViewImpl::OnBeforeScrollAnimation(Vector2& targetPosition, float&
     snapPage      = std::max(0, std::min(total - 1, snapPage));
   }
 
-  mSnapTargetPage = snapPage;
-  targetPosition  = ScrollPositionForPage(snapPage);
-  durationSec     = PAGE_SNAP_DURATION;
+  GetPageRequestState(Ui::View::DownCast(Self())).targetOwner = GetCurrentScrollRequest();
+  mSnapTargetPage                                             = snapPage;
+  targetPosition                                              = ScrollPositionForPage(snapPage);
+  durationSec                                                 = PAGE_SNAP_DURATION;
 
   DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[PageScrollView] OnBeforeScrollAnimation → page %d pos=(%.1f, %.1f)\n",
                 snapPage, targetPosition.x, targetPosition.y);
@@ -360,182 +367,124 @@ int PageScrollViewImpl::PageForScrollPosition(const Vector2& scrollPos) const
 
 void PageScrollViewImpl::CommitPage(int newPage)
 {
-  if(newPage == mCurrentPage) return;
-
   mCurrentPage = newPage;
-  int total    = GetPageCount();
-
-  DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[PageScrollView] page changed → %d / %d\n", mCurrentPage, total);
-
-  // P2: use GetCurrentPage() so that -1 is emitted when the view is empty.
-  EmitPageChanged(GetCurrentPage(), total);
+  EmitPageChanged(GetCurrentPage(), GetPageCount());
 }
 
 void PageScrollViewImpl::EmitPageChanged(int currentPage, int pageCount)
 {
-  mLastNotifiedPageCount = pageCount;
-  mPageChangedSignal.Emit(currentPage, pageCount);
+  auto           lifetime = Self();
+  auto&          state    = GetPageRequestState(Ui::View::DownCast(lifetime));
+  const uint64_t epoch    = GetScrollNotificationEpoch();
+  if(state.notificationEpoch == epoch && state.queuedPage == currentPage && state.queuedCount == pageCount) return;
+  state.notificationEpoch = epoch;
+  state.queuedPage        = currentPage;
+  state.queuedCount       = pageCount;
+  mLastNotifiedPageCount  = pageCount;
+  QueueScrollNotification([this, currentPage, pageCount]
+  {
+    mPageChangedSignal.Emit(currentPage, pageCount);
+  });
 }
-
-// ─── ScrollViewImpl::OnScrollableAreaChanged override ────────────────────────
 
 void PageScrollViewImpl::OnScrollableAreaChanged()
 {
-  // During NotifyPages*, mNotifyInProgress suppresses the intermediate
-  // OnScrollableAreaChanged that fires from SetScrollable* — mCurrentPage has
-  // not been adjusted yet and the emit happens explicitly at the end of the
-  // notify method.
+  auto lifetime = Self();
   if(mNotifyInProgress) return;
-
-  // LayoutManager calls SetScrollableWidth then SetScrollableHeight in separate
-  // steps, and RefreshViewport adds a third call for a viewport-only resize; each
-  // triggers this callback. Skip an unmeasured page length and a near-zero primary
-  // dimension until valid geometry has been observed in this direction. This protects
-  // the first layout's intermediate cross-axis callback without hiding later empty
-  // layouts or positive fractional extents.
-  //
-  // The guards run BEFORE the override is released, preserving pre-layout selections.
   const ScrollDirection dir      = GetScrollDirection();
   const Vector2         pageSize = GetEffectivePageSize();
-  const float           primary  = (dir == ScrollDirection::Horizontal) ? GetScrollableWidth() : GetScrollableHeight();
-  const float           pageLen  = (dir == ScrollDirection::Horizontal) ? pageSize.x : pageSize.y;
+  const float           primary  = dir == ScrollDirection::Horizontal ? GetScrollableWidth() : GetScrollableHeight();
+  const float           pageLen  = dir == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
   if(pageLen < 1.0f) return;
-  auto& geometry = LastPageGeometry(Ui::View::DownCast(Self()));
+  auto& geometry = LastPageGeometry(Ui::View::DownCast(lifetime));
   if(primary < 1.0f && (!geometry.valid || geometry.direction != dir)) return;
-  // 0.01 is the tolerance ScrollViewImpl itself uses for these dimensions
-  // (SetScrollableWidth, SetScrollableHeight, RefreshViewport).
   const bool geometryChanged = !geometry.valid || geometry.direction != dir ||
                                std::abs(geometry.primary - primary) >= 0.01f ||
                                std::abs(geometry.pageLength - pageLen) >= 0.01f;
-  // Publish before applying a pending selection: instant scrolling may re-enter layout.
   geometry = {primary, pageLen, dir, true};
 
-  // Layout has now set correct dimensions — release the expected-count override that
-  // NotifyPages* left in place, and apply the page it selected.
-  //
-  // An override reaches here after ANY NotifyPages*, not only a pre-layout one: the
-  // instant ScrollToPage the notify method issues re-enters OnScrollFinished while
-  // mNotifyInProgress is set, and that handler returns early without clearing the
-  // override, so the next layout pass finds it either way.
-  //
-  //  - Notified BEFORE the first layout: the page length was still 0, ScrollToPage
-  //    resolved every page to scroll position 0, and the selected page was recorded in
-  //    mCurrentPage but never applied. Applying it here is what keeps the re-derivation
-  //    below from silently resetting the selection to page 0.
-  //  - Notified AFTER a layout: the target equals the current position, the 0.5 unit
-  //    test below fails and nothing moves. If the geometry did change in the meantime,
-  //    re-applying the selected page is exactly the wanted outcome.
-  //
-  // Only when nothing else owns the scroll position: a scroll in flight, or a snap
-  // target waiting for its OnScrollFinished, is a newer intent than the recorded one, and
-  // then the page is re-derived from that newer intent below exactly as it is without a
-  // pending selection. A post-layout NotifyPages* leaves its selection pending until the
-  // next callback that gets this far, or a settled scroll, releases it: the layout pass
-  // right after the notify measures the very extent the notify already set and never
-  // reaches this point, so a scroll started in that window arrives here still in flight.
-  // Known residual: a user ScrollTo issued pre-layout after NotifyPages* clears the
-  // override through OnScrollFinished, and is then indistinguishable from a settled
-  // post-layout state.
-  const bool pendingSelection = (mExpectedPageCount >= 0);
+  const bool pendingSelection = mExpectedPageCount >= 0;
   mExpectedPageCount          = -1;
   bool selectionKept          = false;
+  bool applyReplaced          = false;
   if(pendingSelection && !IsScrolling() && mSnapTargetPage < 0)
   {
     const int total = GetPageCount();
     if(total > 0)
     {
-      const int     page    = std::max(0, std::min(total - 1, mCurrentPage));
-      const Vector2 target  = ScrollPositionForPage(page);
-      const Vector2 current = GetScrollPosition();
-      mCurrentPage          = page;
+      mCurrentPage          = std::max(0, std::min(total - 1, mCurrentPage));
       selectionKept         = true;
+      const Vector2 target  = ScrollPositionForPage(mCurrentPage);
+      const Vector2 current = GetLiveScrollPosition();
       if(std::abs(target.x - current.x) >= 0.5f || std::abs(target.y - current.y) >= 0.5f)
       {
-        // A partial last page can clamp to an offset rounding to the previous page.
-        // Keep the explicit NotifyPages selection while applying its physical position.
-        NotifyInProgressScope notify(mNotifyInProgress);
-        ScrollToPage(page, false);
+        const uint64_t request = ScrollToPageRequest(mCurrentPage, false, true);
+        // A callback may have replaced the apply. A completed newer request has
+        // already committed its logical page; an active one owns the target/live offset.
+        applyReplaced = !IsCurrentScrollRequest(request);
+        if(applyReplaced) selectionKept = !IsScrolling();
       }
     }
   }
 
-  // A count change is always reported. The reported page is the page the view will settle
-  // on: while a snap is in flight it is the snap target clamped to the new count, which is
-  // exactly what OnScrollFinished commits, so the transient and the settled notification
-  // agree even when the last page is partial (round(offset / pageLength) would name the
-  // page below it). A free scroll (no snap target) or a settled view re-derives from the
-  // scroll position; during an animated scroll that is the LIVE current position kept by
-  // OnContentPositionChanged, not the target. A NotifyPages* selection just applied above
-  // is the newer intent and is kept; one that was NOT applied because a scroll owns the
-  // position is superseded by that scroll. A geometry change that keeps the count re-derives
-  // only on a settled view, because a snap target that is still valid must not be
-  // replaced by the nearest page. ScrollToPage clears a target whose animated scroll never
-  // started, so an explicit page request that had nothing to scroll leaves no stale target
-  // behind.
   const int  newCount     = GetPageCount();
-  const bool countChanged = (newCount != mLastNotifiedPageCount);
+  const bool countChanged = newCount != mLastNotifiedPageCount;
   const bool settled      = !IsScrolling() && mSnapTargetPage < 0;
   int        newPage      = mCurrentPage;
-  if(!selectionKept && (countChanged || (geometryChanged && settled)))
+  if(!selectionKept && (applyReplaced || countChanged || (geometryChanged && settled)))
+    newPage = mSnapTargetPage >= 0 ? mSnapTargetPage : PageForScrollPosition(GetLiveScrollPosition());
+  newPage = newCount > 0 ? std::max(0, std::min(newCount - 1, newPage)) : 0;
+  CommitPage(newPage);
+}
+
+void PageScrollViewImpl::OnScrollCompleted(uint64_t request, ScrollCompletion reason)
+{
+  auto&      state      = GetPageRequestState(Ui::View::DownCast(Self()));
+  const bool ownsTarget = state.targetOwner == request;
+  const bool deferred   = state.deferredOwner == request;
+  const int  target     = ownsTarget ? mSnapTargetPage : -1;
+  if(ownsTarget)
   {
-    newPage = (mSnapTargetPage >= 0) ? mSnapTargetPage : PageForScrollPosition(GetScrollPosition());
+    mSnapTargetPage   = -1;
+    state.targetOwner = 0u;
   }
-  newPage = (newCount > 0) ? std::max(0, std::min(newCount - 1, newPage)) : 0;
-  if(!countChanged && newPage == mCurrentPage) return;
-  mCurrentPage = newPage;
+  if(deferred) state.deferredOwner = 0u;
+  if(reason == ScrollCompletion::Replaced) return;
+  // A free-scroll no-op has no arrival transition. In particular it must not
+  // demote an explicitly selected partial page by rounding the unchanged offset.
+  if(reason == ScrollCompletion::NoOp && !ownsTarget) return;
 
-  DALI_LOG_INFO(gLogFilter, Debug::Verbose,
-                "[PageScrollView] OnScrollableAreaChanged count %d → %d, page=%d\n",
-                mLastNotifiedPageCount, newCount, mCurrentPage);
-
-  EmitPageChanged(GetCurrentPage(), newCount);
+  const Vector2 pageSize   = GetEffectivePageSize();
+  const float   pageLength = GetScrollDirection() == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
+  // A physical position cannot resolve a pending logical selection before measurement.
+  if(pageLength < 1.0f && mExpectedPageCount >= 0) return;
+  if(!deferred && reason != ScrollCompletion::NoOp) mExpectedPageCount = -1;
+  int       page  = target >= 0 && reason != ScrollCompletion::Interrupted ? target : PageForScrollPosition(GetLiveScrollPosition());
+  const int total = GetPageCount();
+  mCurrentPage    = total > 0 ? std::max(0, std::min(total - 1, page)) : 0;
+  if(!deferred) EmitPageChanged(GetCurrentPage(), total);
 }
 
 void PageScrollViewImpl::OnScrollFinished(Ui::ScrollView /*scrollView*/)
 {
-  // Suppress the re-derive while a NotifyPages* call is in progress.
-  // The notify method has already set mCurrentPage correctly; we do not
-  // want an OnScrollFinished triggered by the internal instant-scroll to
-  // override it before the layout pass has updated mScrollableWidth/Height.
-  if(mNotifyInProgress)
-  {
-    // A NotifyPages* call repositioned us instantly; discard any in-flight
-    // snap target so the next real OnScrollFinished re-derives from position.
-    mSnapTargetPage = -1;
-    return;
-  }
+  // Kept as a nonvirtual ABI wrapper; internal completion never subscribes to a signal.
+  OnScrollCompleted(GetCurrentScrollRequest(), ScrollCompletion::Completed);
+}
 
-  // A completed scroll releases the NotifyPages* override so GetPageCount()
-  // uses the current scrollable extent and page size.
-  mExpectedPageCount = -1;
-
-  // An explicit page request keeps its target in both instant and animated modes,
-  // including a partial last page. CancelScrollAnimation()
-  // calls SendScrollFinished() while content is mid-animation, so
-  // PageForScrollPosition on the intermediate position would otherwise round
-  // incorrectly (e.g. 0.5 → page 1 while actually heading back to page 0).
-  int settled;
-  if(mSnapTargetPage >= 0)
-  {
-    settled         = mSnapTargetPage;
-    mSnapTargetPage = -1;
-  }
-  else
-  {
-    settled = PageForScrollPosition(GetScrollPosition());
-  }
-
-  // The count can shrink while a snap keeps its original target. Preserve a valid
-  // partial-page selection, but never commit an index outside the current page range.
+void PageScrollViewImpl::PublishPageAfterNotify(uint64_t request)
+{
+  if(!IsCurrentScrollRequest(request) && IsScrolling())
+    mCurrentPage = mSnapTargetPage >= 0 ? mSnapTargetPage : PageForScrollPosition(GetLiveScrollPosition());
   const int total = GetPageCount();
-  settled         = total > 0 ? std::max(0, std::min(total - 1, settled)) : 0;
-  CommitPage(settled);
+  mCurrentPage    = total > 0 ? std::max(0, std::min(total - 1, mCurrentPage)) : 0;
+  EmitPageChanged(GetCurrentPage(), total);
 }
 
 // ─── Dynamic page insertion / removal ────────────────────────────────────────
 
 void PageScrollViewImpl::NotifyPagesInserted(int atIndex, int insertedCount)
 {
+  auto lifetime = Self();
   if(insertedCount <= 0) return;
 
   int oldTotal = GetPageCount();
@@ -548,9 +497,7 @@ void PageScrollViewImpl::NotifyPagesInserted(int atIndex, int insertedCount)
   int newTotal       = oldTotal + insertedCount;
   mExpectedPageCount = newTotal;
 
-  // Suppress both OnScrollableAreaChanged (triggered by SetScrollable* below)
-  // and OnScrollFinished (triggered by ScrollToPage) while we are still
-  // adjusting mCurrentPage and the layout hasn't reflected the new count yet.
+  // Suppress only geometry callbacks while adjusting the count and logical index.
   {
     NotifyInProgressScope notify(mNotifyInProgress);
 
@@ -576,16 +523,15 @@ void PageScrollViewImpl::NotifyPagesInserted(int atIndex, int insertedCount)
     if(atIndex <= mCurrentPage)
       mCurrentPage += insertedCount;
     mCurrentPage = std::max(0, std::min(newTotal - 1, mCurrentPage));
-
-    ScrollToPage(mCurrentPage, false);
   }
+  const uint64_t request = ScrollToPageRequest(mCurrentPage, false, true);
 
   DALI_LOG_INFO(gLogFilter, Debug::Verbose,
                 "[PageScrollView] NotifyPagesInserted atIndex=%d count=%d → page %d/%d\n",
                 atIndex, insertedCount, mCurrentPage, newTotal);
 
   // P2: emit GetCurrentPage() so that -1 is propagated when the view is empty.
-  EmitPageChanged(GetCurrentPage(), newTotal);
+  PublishPageAfterNotify(request);
   // mExpectedPageCount is cleared by OnScrollableAreaChanged when the natural
   // layout pass fires (mNotifyInProgress is false at that point), which also
   // applies the page selected here if this ran before the first layout.
@@ -593,6 +539,7 @@ void PageScrollViewImpl::NotifyPagesInserted(int atIndex, int insertedCount)
 
 void PageScrollViewImpl::NotifyPagesRemoved(int atIndex, int removedCount)
 {
+  auto lifetime = Self();
   if(removedCount <= 0) return;
 
   int oldTotal = GetPageCount(); // may be pre-layout but is our best "before" value
@@ -642,17 +589,16 @@ void PageScrollViewImpl::NotifyPagesRemoved(int atIndex, int removedCount)
     }
 
     mCurrentPage = (newTotal > 0) ? std::max(0, std::min(newTotal - 1, mCurrentPage)) : 0;
-
-    // ScrollToPage handles 0-page case naturally (target=0, position=(0,0)).
-    ScrollToPage(mCurrentPage, false);
   }
+  // Reposition after releasing the geometry-only guard, including the empty case.
+  const uint64_t request = ScrollToPageRequest(mCurrentPage, false, true);
 
   DALI_LOG_INFO(gLogFilter, Debug::Verbose,
                 "[PageScrollView] NotifyPagesRemoved atIndex=%d count=%d → page %d/%d\n",
                 atIndex, removedCount, mCurrentPage, newTotal);
 
   // P2: emit GetCurrentPage() so that -1 is propagated when the view is empty.
-  EmitPageChanged(GetCurrentPage(), newTotal);
+  PublishPageAfterNotify(request);
   // mExpectedPageCount is cleared by OnScrollableAreaChanged when the natural
   // layout pass fires (mNotifyInProgress is false at that point), which also
   // applies the page selected here if this ran before the first layout.

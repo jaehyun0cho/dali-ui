@@ -157,8 +157,11 @@ public: // Page API
    *
    * An explicit target remains selected when the last page is only partially
    * scrollable, in either mode. Replacing an active request cancels it before
-   * installing the new target. Newer page requests from synchronous scroll handlers
-   * take precedence over the request that invoked those handlers.
+   * installing the new target. Cancellation does not select or report the abandoned
+   * target as reached. Newer page or free-scroll requests from synchronous handlers
+   * take precedence, including handlers invoked while applying a pending selection
+   * during layout. Internal NotifyPages/layout policy applies only to its own request.
+   * Nested requests follow the notification ordering documented by ScrollView::ScrollTo().
    *
    * @param[in] page    Target page index, clamped to [0, GetPageCount()-1].
    * @param[in] animate True to animate, false for instant jump.
@@ -172,6 +175,11 @@ public: // Page API
    * empty content reports (-1, 0). Content becoming nonempty reports the new
    * page and count, even without NotifyPages* calls. Repeated layout callbacks
    * that leave both values unchanged emit nothing.
+   *
+   * Each (currentPage, pageCount) is a snapshot of the transition that queued it.
+   * A handler may immediately change the view again; getters then expose the newer
+   * state while all remaining handlers still receive this snapshot. The new
+   * snapshot is delivered after the current emission, in the same outer dispatch.
    *
    * Signature: void(int currentPage, int pageCount)
    */

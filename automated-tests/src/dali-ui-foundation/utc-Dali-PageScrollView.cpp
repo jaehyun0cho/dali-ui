@@ -16,10 +16,13 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/internal/scroll-state-observer.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
+#include <dali/integration-api/debug.h>
 #include <stdlib.h>
 #include <cmath>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -43,6 +46,28 @@ void utc_dali_page_scroll_view_cleanup(void)
 
 namespace
 {
+unsigned* nestedEmitErrors = nullptr;
+void      CaptureNestedEmitErrors(Dali::Integration::Log::DebugPriority level, std::string& message)
+{
+  if(nestedEmitErrors && message.find("Cannot call Emit() from inside Emit()") != std::string::npos)
+    ++*nestedEmitErrors;
+  TestApplication::LogMessage(level, message);
+}
+struct ScrollLogScope
+{
+  ScrollLogScope()
+  {
+    nestedEmitErrors = &errors;
+    Dali::Integration::Log::InstallLogFunction(CaptureNestedEmitErrors);
+  }
+  ~ScrollLogScope()
+  {
+    Dali::Integration::Log::InstallLogFunction(TestApplication::LogMessage);
+    nestedEmitErrors = nullptr;
+  }
+  unsigned errors{0u};
+};
+
 const float PAGER_WIDTH   = 100.0f;
 const float PAGER_HEIGHT  = 80.0f;
 const float CONTENT_WIDTH = 500.0f;
@@ -392,13 +417,16 @@ void CheckPreLayoutSelection(ScrollDirection direction, int target, bool removed
   const int pendingCount = removed ? 3 : 4;
   DALI_TEST_EQUALS(pager.GetCurrentPage(), pendingCount - 1, TEST_LOCATION);
 
-  const int selectionSignals = target == pendingCount - 1 ? 0 : 1;
-  int scrollSignals = 0;
+  const int          selectionSignals = target == pendingCount - 1 ? 0 : 1;
+  int                scrollSignals    = 0;
   PageSignalRecorder recorder;
   pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
-  pager.ScrollStartedSignal().Connect(&recorder, [&](ScrollView) { ++scrollSignals; });
-  pager.ScrollingSignal().Connect(&recorder, [&](ScrollView) { ++scrollSignals; });
-  pager.ScrollFinishedSignal().Connect(&recorder, [&](ScrollView) { ++scrollSignals; });
+  pager.ScrollStartedSignal().Connect(&recorder, [&](ScrollView)
+  { ++scrollSignals; });
+  pager.ScrollingSignal().Connect(&recorder, [&](ScrollView)
+  { ++scrollSignals; });
+  pager.ScrollFinishedSignal().Connect(&recorder, [&](ScrollView)
+  { ++scrollSignals; });
 
   pager.ScrollToPage(target, animate);
   DALI_TEST_CHECK(!pager.IsScrolling());
@@ -465,7 +493,15 @@ void CheckPreLayoutSelectionReentrancy(ScrollDirection direction, bool outerAnim
 
   ReentrantPageRequest request(pager, innerAnimate);
   pager.PageChangedSignal().Connect(&request, &ReentrantPageRequest::OnPageChanged);
+  PageSignalRecorder downstream;
+  pager.PageChangedSignal().Connect(&downstream, &PageSignalRecorder::OnPageChanged);
+  ScrollLogScope log;
   pager.ScrollToPage(0, outerAnimate);
+  DALI_TEST_EQUALS(static_cast<int>(downstream.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[0].first, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[1].first, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[1].second, 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(log.errors, 0u, TEST_LOCATION);
 
   DALI_TEST_CHECK(request.requested);
   DALI_TEST_CHECK(!pager.IsScrolling());
@@ -643,7 +679,7 @@ void CheckEmptyContentWithoutNotify(ScrollDirection direction)
 
   PageSignalRecorder recorder;
   pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
-  int signalCount = 0;
+  int         signalCount       = 0;
   const float restoredExtents[] = {500.0f, 300.0f};
   for(float extent : restoredExtents)
   {
@@ -729,17 +765,15 @@ void CheckPartialPageRetarget(ScrollDirection direction)
   DALI_TEST_CHECK(CurrentContentPositionAlong(content, vertical) < -1.0f);
 
   pager.ScrollToPage(3, true);
-  // Cancelling the old snap consumes its own page 1, not the new target 3.
-  DALI_TEST_EQUALS(pager.GetCurrentPage(), 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(recorder.signals[0].first, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(recorder.signals[0].second, 4, TEST_LOCATION);
+  // The abandoned page was never reached and must not flash on an indicator.
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 0, TEST_LOCATION);
   DALI_TEST_CHECK(pager.IsScrolling());
 
   SettlePageRequest(application);
   CheckPartialPageSelection(pager, content, vertical);
   DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -340.0f, 0.001f, TEST_LOCATION);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
   DALI_TEST_EQUALS(recorder.signals.back().first, 3, TEST_LOCATION);
   DALI_TEST_EQUALS(recorder.signals.back().second, 4, TEST_LOCATION);
 }
@@ -790,13 +824,11 @@ void CheckPartialPageNoOpRetarget(ScrollDirection direction)
   // physical no-op but still has to replace the cancelled request's logical page.
   pager.ScrollToPage(3, true);
   CheckPartialPageSelection(pager, content, vertical);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
-  DALI_TEST_EQUALS(recorder.signals[0].first, 1, TEST_LOCATION);
-  DALI_TEST_EQUALS(recorder.signals.back().first, 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 0, TEST_LOCATION);
   pager.ScrollToPage(3, true);
   SettlePageRequest(application);
   CheckPartialPageSelection(pager, content, vertical);
-  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 0, TEST_LOCATION);
 }
 
 enum class PageRequestCallback
@@ -856,8 +888,7 @@ void CheckNewPageRequestFromCallback(ScrollDirection direction, PageRequestCallb
   DALI_TEST_EQUALS(pager.IsScrolling(), animate, TEST_LOCATION);
   if(!animate)
   {
-    // Nested ScrollFinished emissions are suppressed. The latest instant page must
-    // nevertheless commit its own target synchronously, before the next layout.
+    // Logical completion is immediate even while public notifications are queued.
     CheckPartialPageSelection(pager, content, vertical);
   }
   SettlePageRequest(application);
@@ -881,6 +912,9 @@ void CheckPageRetargetYieldsToFreeScroll(ScrollDirection direction, bool animate
   application.Render(100);
   application.SendNotification();
 
+  ScrollLogScope     log;
+  PageSignalRecorder recorder;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
   ConnectionTracker tracker;
   bool              requested = false;
   pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
@@ -898,6 +932,7 @@ void CheckPageRetargetYieldsToFreeScroll(ScrollDirection direction, bool animate
   DALI_TEST_EQUALS(pager.IsScrolling(), animate, TEST_LOCATION);
   if(!animate)
   {
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
     const Vector2 offset = pager.GetScrollPosition();
     DALI_TEST_EQUALS(vertical ? offset.y : offset.x, 240.0f, 0.001f, TEST_LOCATION);
   }
@@ -907,8 +942,11 @@ void CheckPageRetargetYieldsToFreeScroll(ScrollDirection direction, bool animate
   DALI_TEST_EQUALS(vertical ? offset.y : offset.x, 240.0f, 0.001f, TEST_LOCATION);
   DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -240.0f, 0.001f, TEST_LOCATION);
   DALI_TEST_EQUALS(CurrentContentPositionAlong(content, vertical), -240.0f, 0.001f, TEST_LOCATION);
-  // This checks shared ownership of motion. Page inference for a free instant
-  // scroll inside a suppressed Finished emission is a separate existing behavior.
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().first, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(log.errors, 0u, TEST_LOCATION);
 }
 
 void CheckNestedInstantPageReleasesExpectedCount(ScrollDirection direction)
@@ -1543,5 +1581,255 @@ int UtcDaliPageScrollViewCancelledCallbackStartsInstantFreeScrollVerticalP(void)
 int UtcDaliPageScrollViewCancelledCallbackStartsAnimatedFreeScrollVerticalP(void)
 {
   CheckPageRetargetYieldsToFreeScroll(ScrollDirection::Vertical, true);
+  END_TEST;
+}
+
+namespace
+{
+// Apply must release its preservation policy before any public callback can request
+// a different page. The downstream observer models a PageIndicator subscription.
+void CheckLayoutApplyReentrancy(ScrollDirection direction, PageRequestCallback callback, bool animate, bool freeScroll = false, float pageLength = 100.0f)
+{
+  UiTestApplication application;
+  ScrollLogScope    log;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  ResizeAlong(pager, vertical, pageLength);
+  const int expectedCount = static_cast<int>(std::ceil(CONTENT_WIDTH / pageLength));
+  pager.NotifyPagesInserted(0, 3);
+  ConnectionTracker tracker;
+  bool              requested = false;
+  auto              request   = [&](ScrollView)
+  {
+    if(requested) return;
+    requested = true;
+    if(freeScroll)
+      pager.ScrollTo(vertical ? Vector2(0.0f, pageLength) : Vector2(pageLength, 0.0f), animate);
+    else
+      pager.ScrollToPage(1, animate);
+    DALI_TEST_EQUALS(pager.IsScrolling(), animate, TEST_LOCATION);
+    if(animate) DALI_TEST_CHECK(Dali::Ui::Internal::ScrollStateObserver::Get().IsScrolling());
+    if(!animate) DALI_TEST_EQUALS(pager.GetCurrentPage(), 1, TEST_LOCATION);
+  };
+  if(callback == PageRequestCallback::Started)
+    pager.ScrollStartedSignal().Connect(&tracker, request);
+  else if(callback == PageRequestCallback::Scrolling)
+    pager.ScrollingSignal().Connect(&tracker, request);
+  else
+    pager.ScrollFinishedSignal().Connect(&tracker, request);
+  PageSignalRecorder downstream;
+  pager.PageChangedSignal().Connect(&downstream, &PageSignalRecorder::OnPageChanged);
+  pager.SetMinimumFlingDuration(300);
+  pager.SetMaximumFlingDuration(300);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_CHECK(requested);
+  DALI_TEST_EQUALS(pager.IsScrolling(), animate, TEST_LOCATION);
+  if(animate) DALI_TEST_CHECK(Dali::Ui::Internal::ScrollStateObserver::Get().IsScrolling());
+  if(!freeScroll || !animate)
+  {
+    DALI_TEST_EQUALS(static_cast<int>(downstream.signals.size()), 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(downstream.signals.back().first, 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(downstream.signals.back().second, expectedCount, TEST_LOCATION);
+  }
+  SettlePageRequest(application);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), expectedCount, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -pageLength, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals.back().first, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals.back().second, expectedCount, TEST_LOCATION);
+  if(!freeScroll || !animate) DALI_TEST_EQUALS(static_cast<int>(downstream.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(log.errors, 0u, TEST_LOCATION);
+}
+} //namespace
+
+int UtcDaliPageScrollViewLayoutApplyReentrancyP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(auto callback : {PageRequestCallback::Started, PageRequestCallback::Scrolling, PageRequestCallback::Cancelled})
+      for(bool animate : {false, true})
+        CheckLayoutApplyReentrancy(direction, callback, animate);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewLayoutApplyFreeScrollReentrancyP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(auto callback : {PageRequestCallback::Started, PageRequestCallback::Scrolling, PageRequestCallback::Cancelled})
+      for(bool animate : {false, true})
+        CheckLayoutApplyReentrancy(direction, callback, animate, true);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewApplyNestedPartialPageP(void)
+{
+  UiTestApplication application;
+  ScrollLogScope    log;
+  View              content;
+  PageScrollView    pager = BuildPager(content);
+  ResizeAlong(pager, false, 160.0f);
+  pager.NotifyPagesInserted(0, 3);
+  pager.ScrollToPage(2, false);
+  ConnectionTracker tracker;
+  bool              requested = false;
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(requested) return;
+    requested = true;
+    pager.ScrollToPage(3, false);
+  });
+  PageSignalRecorder downstream;
+  pager.PageChangedSignal().Connect(&downstream, &PageSignalRecorder::OnPageChanged);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  CheckPartialPageSelection(pager, content, false);
+  DALI_TEST_EQUALS(static_cast<int>(downstream.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals.back().first, 3, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals.back().second, 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(log.errors, 0u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewNotifyCountOnlyReentrancyP(void)
+{
+  UiTestApplication application;
+  ScrollLogScope    log;
+  View              content;
+  PageScrollView    pager = BuildPager(content);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  ConnectionTracker tracker;
+  bool              requested = false;
+  pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(requested) return;
+    requested = true;
+    pager.ScrollToPage(0, true); // No physical movement, but count changed.
+  });
+  PageSignalRecorder downstream;
+  pager.PageChangedSignal().Connect(&downstream, &PageSignalRecorder::OnPageChanged);
+  pager.NotifyPagesInserted(5, 1);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 6, TEST_LOCATION);
+  DALI_TEST_EQUALS(static_cast<int>(downstream.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[0].first, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[0].second, 6, TEST_LOCATION);
+  DALI_TEST_EQUALS(log.errors, 0u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewNotificationExceptionRecoveryP(void)
+{
+  UiTestApplication application;
+  ScrollLogScope    log;
+  View              content;
+  PageScrollView    pager = BuildPager(content);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  ConnectionTracker tracker;
+  bool              thrown = false;
+  pager.PageChangedSignal().Connect(&tracker, [&](int, int)
+  {
+    if(thrown) return;
+    thrown = true;
+    pager.ScrollToPage(2, false);
+    throw std::runtime_error("page callback");
+  });
+  PageSignalRecorder downstream;
+  pager.PageChangedSignal().Connect(&downstream, &PageSignalRecorder::OnPageChanged);
+  bool caught = false;
+  try
+  {
+    pager.ScrollToPage(1, false);
+  }
+  catch(const std::runtime_error&)
+  {
+    caught = true;
+  }
+  DALI_TEST_CHECK(caught);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  // The queued pair was discarded. A no-op must resynchronize this second consumer.
+  pager.ScrollToPage(2, true);
+  DALI_TEST_EQUALS(static_cast<int>(downstream.signals.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[0].first, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(downstream.signals[0].second, 5, TEST_LOCATION);
+  DALI_TEST_EQUALS(log.errors, 0u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewNotificationKeepsOwnerAliveP(void)
+{
+  UiTestApplication application;
+  View              content;
+  PageScrollView    pager = BuildPager(content);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  ConnectionTracker tracker;
+  bool              finished  = false;
+  bool              destroyed = false;
+  pager.DestroyingSignal().Connect(&tracker, [&]
+  { destroyed = true; });
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { finished = true; });
+  pager.PageChangedSignal().Connect(&tracker, [&](int, int)
+  {
+    application.GetWindow().Remove(pager);
+    pager.Reset();
+    DALI_TEST_CHECK(!destroyed);
+  });
+  pager.ScrollToPage(1, false);
+  DALI_TEST_CHECK(!pager);
+  DALI_TEST_CHECK(finished);
+  DALI_TEST_CHECK(destroyed);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewSameCountApplyReentrancyP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(auto callback : {PageRequestCallback::Started, PageRequestCallback::Scrolling, PageRequestCallback::Cancelled})
+      for(bool animate : {false, true})
+        for(bool freeScroll : {false, true})
+          CheckLayoutApplyReentrancy(direction, callback, animate, freeScroll, 160.0f);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewFreeNoOpPreservesPartialSelectionP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+  {
+    UiTestApplication application;
+    const bool        vertical = direction == ScrollDirection::Vertical;
+    View              content;
+    PageScrollView    pager = BuildPagerAlong(direction, content);
+    ResizeAlong(pager, vertical, 160.0f);
+    application.GetWindow().Add(pager);
+    application.SendNotification();
+    application.Render();
+    pager.ScrollToPage(3, false);
+    SettlePageRequest(application);
+    PageSignalRecorder recorder;
+    pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+    ConnectionTracker tracker;
+    int               starts   = 0;
+    int               finishes = 0;
+    pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+    { ++starts; });
+    pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+    { ++finishes; });
+    pager.ScrollTo(pager.GetScrollPosition(), true);
+    CheckPartialPageSelection(pager, content, vertical);
+    DALI_TEST_CHECK(recorder.signals.empty());
+    DALI_TEST_EQUALS(starts, 0, TEST_LOCATION);
+    DALI_TEST_EQUALS(finishes, 0, TEST_LOCATION);
+  }
   END_TEST;
 }

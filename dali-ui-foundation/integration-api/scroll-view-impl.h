@@ -24,6 +24,7 @@
 #include <dali/public-api/math/vector2.h>
 #include <dali/public-api/object/property-notification.h>
 #include <cstdint>
+#include <functional>
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/public-api/layouts/scroll-view-layout-manager.h>
@@ -40,6 +41,14 @@ namespace Ui
 
 namespace Integration
 {
+
+enum class ScrollCompletion
+{
+  Completed,
+  NoOp,
+  Replaced,
+  Interrupted
+};
 
 class ScrollViewImpl;
 using ScrollViewImplPtr = IntrusivePtr<ScrollViewImpl>;
@@ -436,6 +445,19 @@ protected:
    * mid-flight.
    */
   void CancelScrollAnimation();
+
+  /** @brief Cancels the active owner after the caller issued a replacement or interruption token. */
+  void CancelScrollAnimation(ScrollCompletion reason);
+
+  uint64_t GetCurrentScrollRequest();
+  Vector2  GetLiveScrollPosition() const;
+  void     SetScrollCompletionHandler(std::function<void(uint64_t, ScrollCompletion)> handler);
+  void     CompleteScrollRequest(uint64_t request, ScrollCompletion reason);
+
+  /** @brief Serializes public notifications without delaying internal state changes. */
+  void     QueueScrollNotification(std::function<void()> notification);
+  void     BatchScrollNotifications(const std::function<void()>& operation);
+  uint64_t GetScrollNotificationEpoch();
 
   /**
    * @brief Scrolls to @p position over @p durationSec seconds.

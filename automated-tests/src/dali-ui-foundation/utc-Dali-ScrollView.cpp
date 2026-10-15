@@ -16,18 +16,22 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
-#include <dali-ui-foundation/public-api/views/scroll/page-scroll-view.h>
 #include <dali-ui-foundation/extension-api/view.h>
+#include <dali-ui-foundation/public-api/views/scroll/page-scroll-view.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
+#include <dali/devel-api/events/pan-gesture-devel.h>
 #include <dali/integration-api/events/touch-event-integ.h>
 #include <stdlib.h>
+#include <functional>
 #include <iostream>
+#include <stdexcept>
+#include <vector>
 
 #define private public
 #define protected public
-#include <dali-ui-foundation/integration-api/scroll-view-impl.h>
 #include <dali-ui-foundation/integration-api/page-scroll-view-impl.h>
+#include <dali-ui-foundation/integration-api/scroll-view-impl.h>
 #undef protected
 #undef private
 
@@ -1433,7 +1437,7 @@ int UtcDaliScrollViewFocusAndKeyScrollPropertiesP(void)
 int UtcDaliScrollViewKeyNavigationSelectsVisibleContentP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetScrollDirection(ScrollDirection::Vertical);
   scrollView.SetKeyScrollEnabled(true);
   scrollView.SetVerticalScrollBarVisibility(ScrollBarVisibility::Never);
@@ -1495,8 +1499,8 @@ int UtcDaliScrollViewKeyNavigationSelectsVisibleContentP(void)
 int UtcDaliScrollViewKeyboardScrollingWithoutFocusableContentP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
-  View content = View::New();
+  ScrollView        scrollView = ScrollView::New();
+  View              content    = View::New();
   scrollView.SetRequestedWidth(200.0f);
   scrollView.SetRequestedHeight(200.0f);
   scrollView.SetVerticalScrollBarVisibility(ScrollBarVisibility::Never);
@@ -1733,7 +1737,7 @@ int UtcDaliScrollViewScrolledContentSurvivesSettledLayoutPassP(void)
 int UtcDaliScrollViewInternalMathP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetRequestedWidth(200.0f);
   scrollView.SetRequestedHeight(300.0f);
   View content = View::New();
@@ -1754,12 +1758,12 @@ int UtcDaliScrollViewInternalMathP(void)
   Dali::Ui::Extension::View::SetPositionY(child, 100.0f);
   Dali::Ui::Extension::View::SetPositionX(grandchild, 10.0f);
   Dali::Ui::Extension::View::SetPositionY(grandchild, 20.0f);
-  impl.mViewportWidth = 200.0f;
-  impl.mViewportHeight = 300.0f;
-  impl.mScrollableWidth = 600.0f;
+  impl.mViewportWidth    = 200.0f;
+  impl.mViewportHeight   = 300.0f;
+  impl.mScrollableWidth  = 600.0f;
   impl.mScrollableHeight = 900.0f;
-  impl.mMinimumStartX = -400.0f;
-  impl.mMinimumStartY = -600.0f;
+  impl.mMinimumStartX    = -400.0f;
+  impl.mMinimumStartY    = -600.0f;
 
   scrollView.SetScrollDirection(ScrollDirection::Vertical);
   DALI_TEST_EQUALS(impl.AdjustMovement(Vector2(20.0f, 10.0f)), Vector2::ZERO, TEST_LOCATION);
@@ -1794,7 +1798,7 @@ int UtcDaliScrollViewInternalMathP(void)
 int UtcDaliScrollViewInternalStateAndSignalsP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetRequestedWidth(200.0f);
   scrollView.SetRequestedHeight(300.0f);
   View content = View::New();
@@ -1806,18 +1810,24 @@ int UtcDaliScrollViewInternalStateAndSignalsP(void)
   application.Render();
   auto& impl = GetScrollImpl(scrollView);
 
-  int scrollStarted = 0;
+  int scrollStarted  = 0;
   int scrollFinished = 0;
-  int scrolling = 0;
-  int dragStarted = 0;
-  int dragging = 0;
-  int dragFinished = 0;
-  impl.ScrollStartedSignal().Connect(&application, [&scrollStarted](ScrollView) { ++scrollStarted; });
-  impl.ScrollFinishedSignal().Connect(&application, [&scrollFinished](ScrollView) { ++scrollFinished; });
-  impl.ScrollingSignal().Connect(&application, [&scrolling](ScrollView) { ++scrolling; });
-  impl.DragStartedSignal().Connect(&application, [&dragStarted](ScrollView) { ++dragStarted; });
-  impl.DraggingSignal().Connect(&application, [&dragging](ScrollView, float, float) { ++dragging; });
-  impl.DragFinishedSignal().Connect(&application, [&dragFinished](ScrollView) { ++dragFinished; });
+  int scrolling      = 0;
+  int dragStarted    = 0;
+  int dragging       = 0;
+  int dragFinished   = 0;
+  impl.ScrollStartedSignal().Connect(&application, [&scrollStarted](ScrollView)
+  { ++scrollStarted; });
+  impl.ScrollFinishedSignal().Connect(&application, [&scrollFinished](ScrollView)
+  { ++scrollFinished; });
+  impl.ScrollingSignal().Connect(&application, [&scrolling](ScrollView)
+  { ++scrolling; });
+  impl.DragStartedSignal().Connect(&application, [&dragStarted](ScrollView)
+  { ++dragStarted; });
+  impl.DraggingSignal().Connect(&application, [&dragging](ScrollView, float, float)
+  { ++dragging; });
+  impl.DragFinishedSignal().Connect(&application, [&dragFinished](ScrollView)
+  { ++dragFinished; });
   impl.SendScrollStarted();
   impl.SendScrollStarted();
   impl.SendScrolling();
@@ -1869,7 +1879,7 @@ int UtcDaliScrollViewInternalStateAndSignalsP(void)
 int UtcDaliPageScrollViewPublicPagingAndHandlesP(void)
 {
   UiTestApplication application(UiConfig::New());
-  PageScrollView pager = PageScrollView::New();
+  PageScrollView    pager = PageScrollView::New();
   DALI_TEST_CHECK(pager);
   DALI_TEST_CHECK(PageScrollView::DownCast(pager));
   DALI_TEST_CHECK(!PageScrollView::DownCast(View::New()));
@@ -1893,7 +1903,8 @@ int UtcDaliPageScrollViewPublicPagingAndHandlesP(void)
   DALI_TEST_EQUALS(pager.GetCurrentPage(), 0, TEST_LOCATION);
 
   int pageChanges = 0;
-  pager.PageChangedSignal().Connect(&application, [&pageChanges](int, int) { ++pageChanges; });
+  pager.PageChangedSignal().Connect(&application, [&pageChanges](int, int)
+  { ++pageChanges; });
   DALI_TEST_CHECK(pager.DestroyingSignal().Empty());
   pager.ScrollToPage(2, false);
   application.SendNotification();
@@ -1911,15 +1922,15 @@ int UtcDaliPageScrollViewPublicPagingAndHandlesP(void)
 int UtcDaliScrollViewEdgeEffectsAndWheelP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
-  auto& impl = GetScrollImpl(scrollView);
+  ScrollView        scrollView = ScrollView::New();
+  auto&             impl       = GetScrollImpl(scrollView);
   DALI_TEST_CHECK(impl.HasIntrinsicWheelHandling());
 
   WheelEvent vertical = WheelEvent::New(WheelEvent::MOUSE_WHEEL, 0, 0u, Vector2(50.0f, 50.0f), 1, 100u);
   DALI_TEST_CHECK(!impl.OnWheelEvent(vertical));
 
   EdgeEffect start = EdgeEffect::New();
-  EdgeEffect end = EdgeEffect::New();
+  EdgeEffect end   = EdgeEffect::New();
   scrollView.SetStartEdgeEffect(start);
   scrollView.SetEndEdgeEffect(end);
   DALI_TEST_CHECK(scrollView.GetStartEdgeEffect() == start);
@@ -1958,7 +1969,7 @@ int UtcDaliScrollViewEdgeEffectsAndWheelP(void)
 int UtcDaliScrollViewFocusNavigationThroughContentP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetScrollDirection(ScrollDirection::Vertical);
   scrollView.SetKeyScrollEnabled(true);
   scrollView.SetKeyScrollStep(70.0f);
@@ -2012,7 +2023,7 @@ int UtcDaliScrollViewFocusNavigationThroughContentP(void)
 int UtcDaliScrollViewHorizontalFocusNavigationP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetScrollDirection(ScrollDirection::Horizontal);
   scrollView.SetKeyScrollEnabled(true);
   scrollView.SetKeyScrollStep(70.0f);
@@ -2065,7 +2076,7 @@ int UtcDaliScrollViewHorizontalFocusNavigationP(void)
 int UtcDaliScrollViewEdgePullReverseAndReleaseP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetPivot(Pivot::TOP_LEFT);
   scrollView.SetParentOrigin(ParentOrigin::TOP_LEFT);
   scrollView.SetRequestedWidth(200.0f);
@@ -2079,7 +2090,7 @@ int UtcDaliScrollViewEdgePullReverseAndReleaseP(void)
   content.SetRequestedHeight(600.0f);
   scrollView.SetContent(content);
   BounceEdgeEffect start = BounceEdgeEffect::New(ScrollDirection::Vertical);
-  BounceEdgeEffect end = BounceEdgeEffect::New(ScrollDirection::Vertical);
+  BounceEdgeEffect end   = BounceEdgeEffect::New(ScrollDirection::Vertical);
   scrollView.SetStartEdgeEffect(start);
   scrollView.SetEndEdgeEffect(end);
   application.GetScene().Add(scrollView);
@@ -2118,7 +2129,7 @@ int UtcDaliScrollViewEdgePullReverseAndReleaseP(void)
 int UtcDaliScrollViewFocusEntryUsesVisibleEdgeItemsP(void)
 {
   UiTestApplication application;
-  ScrollView scrollView = ScrollView::New();
+  ScrollView        scrollView = ScrollView::New();
   scrollView.SetScrollDirection(ScrollDirection::Vertical);
   scrollView.SetKeyScrollEnabled(true);
   scrollView.SetRequestedX(100.0f);
@@ -2184,10 +2195,10 @@ int UtcDaliScrollViewFocusEntryUsesVisibleEdgeItemsP(void)
 int UtcDaliBounceEdgeEffectPropertiesAndDownCastP(void)
 {
   UiTestApplication application;
-  BounceEdgeEffect effect = BounceEdgeEffect::New(ScrollDirection::Horizontal);
+  BounceEdgeEffect  effect = BounceEdgeEffect::New(ScrollDirection::Horizontal);
   DALI_TEST_EQUALS(effect.GetAxis(), ScrollDirection::Horizontal, TEST_LOCATION);
 
-  EdgeEffect base = effect;
+  EdgeEffect       base     = effect;
   BounceEdgeEffect downcast = BounceEdgeEffect::DownCast(base);
   DALI_TEST_CHECK(downcast);
   DALI_TEST_EQUALS(downcast.GetAxis(), ScrollDirection::Horizontal, TEST_LOCATION);
@@ -2202,8 +2213,8 @@ int UtcDaliBounceEdgeEffectPropertiesAndDownCastP(void)
 int UtcDaliEdgeEffectStateTransitionsAndSignalsP(void)
 {
   UiTestApplication application;
-  EdgeEffect effect = EdgeEffect::New();
-  View source = View::New();
+  EdgeEffect        effect = EdgeEffect::New();
+  View              source = View::New();
   effect.SetSource(source);
   DALI_TEST_CHECK(effect.GetSource() == source);
   DALI_TEST_CHECK(effect.GetState() == EdgeEffect::State::IDLE);
@@ -2399,5 +2410,267 @@ int UtcDaliScrollViewScrollingCallbackStartsInstantScrollP(void)
 int UtcDaliScrollViewScrollingCallbackStartsAnimatedScrollP(void)
 {
   CheckNewScrollRequestFromCallback(ScrollRequestCallback::Scrolling, true);
+  END_TEST;
+}
+
+namespace
+{
+void PrepareReentrantScroll(UiTestApplication& application, ScrollView scrollView, View& content)
+{
+  scrollView.SetScrollDirection(ScrollDirection::Horizontal);
+  scrollView.SetRequestedWidth(100.0f);
+  scrollView.SetRequestedHeight(80.0f);
+  scrollView.SetMinimumFlingDuration(300);
+  scrollView.SetMaximumFlingDuration(300);
+  content = View::New();
+  content.SetRequestedWidth(500.0f);
+  content.SetRequestedHeight(80.0f);
+  scrollView.SetContent(content);
+  application.GetWindow().Add(scrollView);
+  application.SendNotification();
+  application.Render();
+}
+
+void FinishReentrantScroll(UiTestApplication& application, ScrollView scrollView, View content)
+{
+  application.SendNotification();
+  application.Render(16);
+  for(int i = 0; i < 4; ++i) application.Render(100);
+  application.SendNotification();
+  DALI_TEST_CHECK(!scrollView.IsScrolling());
+  DALI_TEST_EQUALS(scrollView.GetScrollPosition().x, 300.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(content.GetCurrentProperty<float>(Actor::Property::POSITION_X), -300.0f, 0.001f, TEST_LOCATION);
+}
+
+void CheckDragRequestOwnership(int callback, bool animate)
+{
+  UiTestApplication application;
+  ScrollView        scrollView = ScrollView::New();
+  View              content;
+  PrepareReentrantScroll(application, scrollView, content);
+  ConnectionTracker tracker;
+  bool              requested = false;
+  auto              latest    = [&](ScrollView)
+  {
+    if(requested) return;
+    requested = true;
+    scrollView.ScrollTo(Vector2(300.0f, 0.0f), animate);
+  };
+  if(callback == 0)
+    scrollView.ScrollStartedSignal().Connect(&tracker, latest);
+  else if(callback == 1)
+    scrollView.DragStartedSignal().Connect(&tracker, latest);
+  else if(callback == 2)
+    scrollView.DraggingSignal().Connect(&tracker, [&](ScrollView view, float, float)
+    { latest(view); });
+  else
+    scrollView.DragFinishedSignal().Connect(&tracker, latest);
+
+  auto& impl = GetScrollImpl(scrollView);
+  auto  drag = DevelPanGesture::New(GestureState::CONTINUING);
+  DevelPanGesture::SetDisplacement(drag, Vector2(-50.0f, 0.0f));
+  impl.OnDragging(drag);
+  auto end = DevelPanGesture::New(GestureState::FINISHED);
+  impl.OnDragFinished(end);
+  DALI_TEST_CHECK(requested);
+  DALI_TEST_EQUALS(scrollView.IsScrolling(), animate, TEST_LOCATION);
+  // Later callbacks from the same gesture cannot adopt the new animation's owner.
+  impl.OnDragging(drag);
+  impl.OnDragFinished(end);
+  DALI_TEST_EQUALS(scrollView.IsScrolling(), animate, TEST_LOCATION);
+  FinishReentrantScroll(application, scrollView, content);
+  DALI_TEST_CHECK(!impl.mIsDragging);
+}
+} //namespace
+
+int UtcDaliScrollViewNestedLifecycleOrderP(void)
+{
+  UiTestApplication application;
+  PageScrollView    pager = PageScrollView::New();
+  View              content;
+  PrepareReentrantScroll(application, pager, content);
+  ConnectionTracker tracker;
+  bool              requested = false;
+  std::vector<char> events;
+  pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(requested) return;
+    requested = true;
+    pager.ScrollTo(Vector2(300.0f, 0.0f), false);
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), 3, TEST_LOCATION);
+  });
+  // This consumer is connected AFTER the reentrant handler.
+  pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  { events.push_back('S'); });
+  pager.ScrollingSignal().Connect(&tracker, [&](ScrollView)
+  { events.push_back('C'); });
+  pager.PageChangedSignal().Connect(&tracker, [&](int page, int count)
+  {
+    events.push_back('P');
+    DALI_TEST_EQUALS(page, 3, TEST_LOCATION);
+    DALI_TEST_EQUALS(count, 5, TEST_LOCATION);
+  });
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { events.push_back('F'); });
+  pager.ScrollTo(Vector2(200.0f, 0.0f), false);
+  const std::vector<char> expected{'S', 'F', 'S', 'C', 'P', 'F'};
+  DALI_TEST_CHECK(events == expected);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  END_TEST;
+}
+
+int UtcDaliScrollViewCompletedBatchPrecedesNestedStartP(void)
+{
+  UiTestApplication application;
+  PageScrollView    pager = PageScrollView::New();
+  View              content;
+  PrepareReentrantScroll(application, pager, content);
+  ConnectionTracker tracker;
+  bool              requested = false;
+  std::vector<char> events;
+  pager.PageChangedSignal().Connect(&tracker, [&](int, int)
+  {
+    if(requested) return;
+    requested = true;
+    pager.ScrollToPage(3, false);
+  });
+  pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  { events.push_back('S'); });
+  pager.PageChangedSignal().Connect(&tracker, [&](int, int)
+  { events.push_back('P'); });
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { events.push_back('F'); });
+  pager.ScrollToPage(1, false);
+  const std::vector<char> expected{'S', 'P', 'F', 'S', 'P', 'F'};
+  DALI_TEST_CHECK(events == expected);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 3, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliScrollViewStartedInterruptionInvalidatesRunnerP(void)
+{
+  UiTestApplication application;
+  ScrollView        scrollView = ScrollView::New();
+  View              content;
+  PrepareReentrantScroll(application, scrollView, content);
+  ConnectionTracker tracker;
+  scrollView.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  { scrollView.SetPanScrollEnabled(false); });
+  scrollView.ScrollTo(Vector2(200.0f, 0.0f), true);
+  DALI_TEST_CHECK(!scrollView.IsScrolling());
+  DALI_TEST_CHECK(!GetScrollImpl(scrollView).mScrollAnimation);
+  application.SendNotification();
+  application.Render(400);
+  DALI_TEST_EQUALS(content.GetCurrentProperty<float>(Actor::Property::POSITION_X), 0.0f, 0.001f, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliScrollViewDragCallbacksPreserveLatestRequestP(void)
+{
+  for(int callback = 0; callback < 4; ++callback)
+    for(bool animate : {false, true}) CheckDragRequestOwnership(callback, animate);
+  END_TEST;
+}
+
+int UtcDaliScrollViewWheelCallbackPreservesLatestRequestP(void)
+{
+  for(bool animate : {false, true})
+  {
+    UiTestApplication application;
+    ScrollView        scrollView = ScrollView::New();
+    View              content;
+    PrepareReentrantScroll(application, scrollView, content);
+    ConnectionTracker tracker;
+    bool              requested = false;
+    scrollView.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+    {
+      if(requested) return;
+      requested = true;
+      scrollView.ScrollTo(Vector2(300.0f, 0.0f), animate);
+    });
+    WheelEvent wheel = WheelEvent::New(WheelEvent::MOUSE_WHEEL, 0, 0u, Vector2(50.0f, 40.0f), 1, 100u);
+    DALI_TEST_CHECK(GetScrollImpl(scrollView).OnWheelEvent(wheel));
+    DALI_TEST_CHECK(requested);
+    DALI_TEST_EQUALS(scrollView.IsScrolling(), animate, TEST_LOCATION);
+    FinishReentrantScroll(application, scrollView, content);
+  }
+  END_TEST;
+}
+
+int UtcDaliScrollViewStartedExceptionRecoveryP(void)
+{
+  UiTestApplication application;
+  ScrollView        scrollView = ScrollView::New();
+  View              content;
+  PrepareReentrantScroll(application, scrollView, content);
+  ConnectionTracker tracker;
+  bool              thrown   = false;
+  int               starts   = 0;
+  int               finishes = 0;
+  scrollView.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    ++starts;
+    if(thrown) return;
+    thrown = true;
+    throw std::runtime_error("scroll callback");
+  });
+  scrollView.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { ++finishes; });
+  bool caught = false;
+  try
+  {
+    scrollView.ScrollTo(Vector2(200.0f, 0.0f), true);
+  }
+  catch(const std::runtime_error&)
+  {
+    caught = true;
+  }
+  DALI_TEST_CHECK(caught);
+  // No rollback guarantee is assumed: the next request cancels the interrupted start.
+  scrollView.ScrollTo(Vector2(300.0f, 0.0f), false);
+  DALI_TEST_EQUALS(starts, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(finishes, 2, TEST_LOCATION);
+  FinishReentrantScroll(application, scrollView, content);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewGesturePartialNoOpAndSnapP(void)
+{
+  UiTestApplication application;
+  PageScrollView    pager = PageScrollView::New();
+  View              content;
+  PrepareReentrantScroll(application, pager, content);
+  pager.SetRequestedWidth(160.0f);
+  application.SendNotification();
+  application.Render();
+  pager.ScrollToPage(3, false);
+  ConnectionTracker tracker;
+  std::vector<int>  pages;
+  pager.PageChangedSignal().Connect(&tracker, [&](int page, int)
+  { pages.push_back(page); });
+  auto& impl = GetScrollImpl(pager);
+  auto  drag = DevelPanGesture::New(GestureState::CONTINUING);
+  auto  end  = DevelPanGesture::New(GestureState::FINISHED);
+  impl.OnDragging(drag); // Zero motion; snap remains on the partial last page.
+  impl.OnDragFinished(end);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 3, TEST_LOCATION);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_CHECK(pages.empty());
+
+  // A new gesture moves 60 units toward page 2, crossing the 30% snap threshold.
+  auto begin = DevelPanGesture::New(GestureState::STARTED);
+  impl.OnPanGesture(pager, begin);
+  DevelPanGesture::SetDisplacement(drag, Vector2(60.0f, 0.0f));
+  impl.OnDragging(drag);
+  impl.OnPanGesture(pager, end);
+  DALI_TEST_CHECK(!impl.mPanRecognized);
+  application.SendNotification();
+  application.Render(16);
+  for(int i = 0; i < 4; ++i) application.Render(100);
+  application.SendNotification();
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(static_cast<int>(pages.size()), 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(pages.back(), 2, TEST_LOCATION);
   END_TEST;
 }
