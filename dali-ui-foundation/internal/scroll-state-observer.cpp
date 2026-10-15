@@ -85,6 +85,20 @@ void ScrollStateObserver::NotifyScrollFinished()
   mScrollFinishedSignal.Emit();
 }
 
+void ScrollStateObserver::ReleaseStates(bool scrolling, bool dragging, bool disambiguating) noexcept
+{
+  if(scrolling && mScrollingDepth > 0) --mScrollingDepth;
+  if(dragging && mDraggingDepth > 0) --mDraggingDepth;
+  if(disambiguating && mDisambiguatingDepth > 0) --mDisambiguatingDepth;
+}
+
+void ScrollStateObserver::NotifyScrollAndDragFinished(bool scrolling, bool dragging)
+{
+  ReleaseStates(scrolling, dragging, false);
+  if(scrolling) mScrollFinishedSignal.Emit();
+  if(dragging) mDragFinishedSignal.Emit();
+}
+
 } // namespace Internal
 } // namespace Ui
 } //namespace DALI_NAMESPACE

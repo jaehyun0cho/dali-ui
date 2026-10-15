@@ -63,14 +63,19 @@ Debug::Filter* gLogFilter = Debug::Filter::New(Debug::NoLogging, false, "LOG_SCR
 const AttachmentId SCROLL_REQUEST_STATE = AttachmentId::Alloc();
 struct ScrollRequestState
 {
-  uint64_t                                        serial{0u};
-  uint64_t                                        active{0u};
-  uint64_t                                        drag{0u};
-  uint64_t                                        notificationEpoch{0u};
-  unsigned                                        batchDepth{0u};
-  bool                                            dispatching{false};
-  std::function<void(uint64_t, ScrollCompletion)> completion;
-  std::deque<std::function<void()>>               notifications;
+  uint64_t                                         serial{0u};
+  uint64_t                                         active{0u};
+  uint64_t                                         drag{0u};
+  uint64_t                                         destinationOwner{0u};
+  uint64_t                                         animationOwner{0u};
+  Vector2                                          destination{Vector2::ZERO};
+  Vector2                                          animationOrigin{Vector2::ZERO};
+  std::function<Vector2(uint64_t, const Vector2&)> targetResolver;
+  uint64_t                                         notificationEpoch{0u};
+  unsigned                                         batchDepth{0u};
+  bool                                             dispatching{false};
+  std::function<void(uint64_t, ScrollCompletion)>  completion;
+  std::deque<std::function<void()>>                notifications;
 };
 
 ScrollRequestState& GetScrollRequestState(Ui::View view)
@@ -154,6 +159,14 @@ ScrollViewImpl::ScrollViewImpl()
 
 ScrollViewImpl::~ScrollViewImpl()
 {
+  if(mScrollAnimation)
+  {
+    mScrollAnimation.Stop();
+    mScrollAnimation.Reset();
+  }
+  // The owning actor is being destroyed: do not recreate a handle or emit callbacks.
+  if(mIsScrolling || mIsDragging || mDisambiguating)
+    Ui::Internal::ScrollStateObserver::Get().ReleaseStates(mIsScrolling, mIsDragging, mDisambiguating);
 }
 
 void ScrollViewImpl::OnInitialize()
@@ -411,6 +424,11 @@ void ScrollViewImpl::SetPanScrollEnabled(bool enabled)
     mEdgeDisplacement = 0.0f;
   }
 
+  mIntercepting    = false;
+  mJustIntercepted = false;
+  mPanRecognized   = false;
+  mVelocityTracker.Clear();
+
   auto           lifetime = Self();
   const uint64_t request  = BeginScrollRequest();
   CancelScrollAnimation(ScrollCompletion::Interrupted);
@@ -425,11 +443,6 @@ void ScrollViewImpl::SetPanScrollEnabled(bool enabled)
     mDisambiguating = false;
     Ui::Internal::ScrollStateObserver::Get().NotifyGestureDisambiguationEnded();
   }
-
-  mIntercepting    = false;
-  mJustIntercepted = false;
-  mPanRecognized   = false;
-  mVelocityTracker.Clear();
 }
 
 bool ScrollViewImpl::IsPanScrollEnabled() const
@@ -519,6 +532,24 @@ Vector2 ScrollViewImpl::GetLiveScrollPosition() const
   return ContentPositionToScrollPosition(mCurrentPosition);
 }
 
+void ScrollViewImpl::SetScrollTargetResolver(std::function<Vector2(uint64_t, const Vector2&)> resolver)
+{
+  GetScrollRequestState(Ui::View::DownCast(Self())).targetResolver = std::move(resolver);
+}
+
+Vector2 ScrollViewImpl::ResolveScrollDestination(uint64_t request)
+{
+  auto& state = GetScrollRequestState(Ui::View::DownCast(Self()));
+  return AdjustScrollPosition(state.targetResolver ? state.targetResolver(request, state.destination) : state.destination);
+}
+
+void ScrollViewImpl::ApplyResolvedScrollPosition(const Vector2& position)
+{
+  mScrollPosition  = position;
+  mCurrentPosition = Vector2(mMaximumStartX - position.x, mMaximumStartY - position.y);
+  ApplyScrollPosition(position);
+}
+
 void ScrollViewImpl::SetScrollCompletionHandler(std::function<void(uint64_t, ScrollCompletion)> handler)
 {
   GetScrollRequestState(Ui::View::DownCast(Self())).completion = std::move(handler);
@@ -583,22 +614,41 @@ void ScrollViewImpl::CompleteScrollRequest(uint64_t request, ScrollCompletion re
   auto  lifetime = Self();
   auto& state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
   if(!request || state.active != request) return;
+  if(reason == ScrollCompletion::Completed && state.destinationOwner == request && mContent)
+  {
+    // Geometry can change in a callback or while an animation is playing. Resolve
+    // the original intent before PageScrollView commits the logical arrival.
+    UpdateScrollingProperties(false);
+    ApplyResolvedScrollPosition(ResolveScrollDestination(request));
+  }
   const bool wasScrolling = mIsScrolling;
+  const bool wasDragging  = mIsDragging && state.drag == request;
   state.active            = 0u;
+  state.destinationOwner  = 0u;
+  state.animationOwner    = 0u;
   mIsScrolling            = false;
+  if(wasDragging) mIsDragging = false;
+  // Keep the old drag token until a new gesture STARTED: late CONTINUING events
+  // must remain stale rather than being mistaken for a new gesture.
   BatchScrollNotifications([&]
   {
     if(state.completion) state.completion(request, reason);
     if(wasScrolling)
-    {
       QueueScrollNotification([this]
       {
         auto handle = Ui::ScrollView::DownCast(Self());
         mScrollFinishedSignal.Emit(handle);
       });
-      Ui::Internal::ScrollStateObserver::Get().NotifyScrollFinished();
-    }
-    if(mIsDragging && state.drag == request) SendDragFinished();
+    if(wasDragging)
+      QueueScrollNotification([this]
+      {
+        auto handle = Ui::ScrollView::DownCast(Self());
+        mDragFinishedSignal.Emit(handle);
+      });
+    // Both old depths are released before either global callback can start a
+    // new owner or throw. No old-owner cleanup runs after those callbacks.
+    if(wasScrolling || wasDragging)
+      Ui::Internal::ScrollStateObserver::Get().NotifyScrollAndDragFinished(wasScrolling, wasDragging);
   });
 }
 
@@ -615,82 +665,73 @@ void ScrollViewImpl::ScrollToForRequest(const Vector2& position, bool animation,
 {
   auto lifetime = Self();
   if(!IsCurrentScrollRequest(request)) return;
-  GetScrollRequestState(Ui::View::DownCast(lifetime)).active = request;
+  auto& state            = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  state.active           = request;
+  state.destinationOwner = request;
+  state.destination      = position;
   if(!mContent)
   {
     CompleteScrollRequest(request, ScrollCompletion::NoOp);
     return;
   }
 
-  // Force immediate scroll if not ready for animation
-  bool isVisible = Self().GetProperty<bool>(Actor::Property::VISIBLE);
-  if(!isVisible)
+  if(animation && Self().GetProperty<bool>(Actor::Property::VISIBLE))
   {
-    animation = false;
+    AnimateScrollRequest(request, 0.0f, true);
+    return;
   }
 
-  Vector2 adjustedPosition = AdjustScrollPosition(position);
+  SendScrollStarted();
+  if(!IsCurrentScrollRequest(request) || !mContent) return;
+  UpdateScrollingProperties(false);
+  ApplyResolvedScrollPosition(ResolveScrollDestination(request));
+  SendScrolling();
+  if(!IsCurrentScrollRequest(request)) return;
+  SendScrollFinished();
+}
 
-  DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[ScrollView::ScrollTo] requested=[%.2f, %.2f], adjusted=[%.2f, %.2f], animation=%d, scrollableH=%.0f, viewportH=%.0f\n",
-                position.x, position.y, adjustedPosition.x, adjustedPosition.y, animation, mScrollableHeight, mViewportHeight);
-
-  if(!animation)
+void ScrollViewImpl::AnimateScrollRequest(uint64_t request, float durationSec, bool automaticDuration)
+{
+  UpdateScrollingProperties(false);
+  Vector2 adjusted = ResolveScrollDestination(request);
+  Vector2 target(mMaximumStartX - adjusted.x, mMaximumStartY - adjusted.y);
+  // Test the scroll-managed baseline, excluding any visual bounce displacement.
+  if((target - mCurrentPosition).Length() < 0.5f)
   {
-    SendScrollStarted();
-    if(!IsCurrentScrollRequest(request) || !mContent) return;
-    ApplyScrollPosition(adjustedPosition);
-    mCurrentPosition = Vector2(std::round(mContent.GetProperty<float>(Actor::Property::POSITION_X)),
-                               std::round(mContent.GetProperty<float>(Actor::Property::POSITION_Y)));
-    mScrollPosition  = ContentPositionToScrollPosition(mCurrentPosition);
-    SendScrolling();
-    if(!IsCurrentScrollRequest(request)) return;
-    SendScrollFinished();
+    CompleteScrollRequest(request, ScrollCompletion::NoOp);
+    return;
   }
-  else
+
+  SendScrollStarted();
+  if(!IsCurrentScrollRequest(request) || !mContent) return;
+  // A handler can change geometry without creating a newer request.
+  UpdateScrollingProperties(false);
+  adjusted = ResolveScrollDestination(request);
+  target   = Vector2(mMaximumStartX - adjusted.x, mMaximumStartY - adjusted.y);
+  const Vector2 origin(mContent.GetProperty<float>(Actor::Property::POSITION_X),
+                       mContent.GetProperty<float>(Actor::Property::POSITION_Y));
+  const float   distance = (target - origin).Length();
+  if(distance < 0.5f)
   {
-    if(!mContent)
-    {
-      return;
-    }
-
-    float targetPosX = mMaximumStartX - adjustedPosition.x;
-    float targetPosY = mMaximumStartY - adjustedPosition.y;
-
-    float currentPosX = mContent.GetProperty<float>(Actor::Property::POSITION_X);
-    float currentPosY = mContent.GetProperty<float>(Actor::Property::POSITION_Y);
-
-    float distX = std::abs(targetPosX - currentPosX);
-    float distY = std::abs(targetPosY - currentPosY);
-    float dist  = std::sqrt(distX * distX + distY * distY);
-#ifdef DEBUG_SCROLL
-    DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[ScrollView::ScrollTo] animate from contentPos=[%.2f, %.2f] to [%.2f, %.2f], dist=%.2f\n",
-                  currentPosX, currentPosY, targetPosX, targetPosY, dist);
-#endif
-    if(dist < 0.5f)
-    {
-      CompleteScrollRequest(request, ScrollCompletion::NoOp);
-      return;
-    }
-
-    // Calculate duration proportional to distance, clamped between min/max fling duration
-    float maxScrollDist = std::max(1.0f, mScrollableHeight - mViewportHeight);
-    float ratio         = std::min(1.0f, dist / maxScrollDist);
-    float durationMs    = mMinimumFlingDuration + ratio * (mMaximumFlingDuration - mMinimumFlingDuration);
-    float durationSec   = durationMs / 1000.0f;
-#ifdef DEBUG_SCROLL
-    DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[ScrollView::ScrollTo] animation duration=%.3f sec (ratio=%.3f)\n", durationSec, ratio);
-#endif
-    SendScrollStarted();
-    if(!IsCurrentScrollRequest(request) || !mContent) return;
-
-    mScrollAnimation = Animation::New(durationSec);
-    mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), targetPosX, AlphaFunction::EASE_OUT);
-    mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_Y), targetPosY, AlphaFunction::EASE_OUT);
-    mScrollAnimation.FinishedSignal().Connect(this, &ScrollViewImpl::OnScrollAnimationFinished);
-    mScrollAnimation.Play();
-
-    mScrollPosition = adjustedPosition;
+    CompleteScrollRequest(request, ScrollCompletion::Completed);
+    return;
   }
+  if(automaticDuration)
+  {
+    const float maxScrollDist = std::max(1.0f, mScrollableHeight - mViewportHeight);
+    const float ratio         = std::min(1.0f, distance / maxScrollDist);
+    durationSec               = (mMinimumFlingDuration + ratio * (mMaximumFlingDuration - mMinimumFlingDuration)) / 1000.0f;
+  }
+
+  auto& state           = GetScrollRequestState(Ui::View::DownCast(Self()));
+  state.animationOwner  = request;
+  state.animationOrigin = origin;
+  mScrollAnimation      = Animation::New(durationSec);
+  mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), target.x, AlphaFunction::EASE_OUT);
+  mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_Y), target.y, AlphaFunction::EASE_OUT);
+  mScrollAnimation.FinishedSignal().Connect(this, &ScrollViewImpl::OnScrollAnimationFinished);
+  mScrollAnimation.Play();
+  mScrollPosition = adjusted;
 }
 
 void ScrollViewImpl::ScrollToWithDuration(const Vector2& position, float durationSec)
@@ -706,33 +747,16 @@ void ScrollViewImpl::ScrollToWithDurationForRequest(const Vector2& position, flo
 {
   auto lifetime = Self();
   if(!IsCurrentScrollRequest(request)) return;
-  GetScrollRequestState(Ui::View::DownCast(lifetime)).active = request;
+  auto& state            = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  state.active           = request;
+  state.destinationOwner = request;
+  state.destination      = position;
   if(!mContent)
   {
     CompleteScrollRequest(request, ScrollCompletion::NoOp);
     return;
   }
-
-  Vector2 adjustedPosition = AdjustScrollPosition(position);
-  float   targetPosX       = mMaximumStartX - adjustedPosition.x;
-  float   targetPosY       = mMaximumStartY - adjustedPosition.y;
-
-  float distX = std::abs(targetPosX - mCurrentPosition.x);
-  float distY = std::abs(targetPosY - mCurrentPosition.y);
-  if(std::sqrt(distX * distX + distY * distY) < 0.5f)
-  {
-    CompleteScrollRequest(request, ScrollCompletion::NoOp);
-    return;
-  }
-
-  SendScrollStarted();
-  if(!IsCurrentScrollRequest(request) || !mContent) return;
-  mScrollAnimation = Animation::New(durationSec);
-  mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), targetPosX, AlphaFunction::EASE_OUT);
-  mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_Y), targetPosY, AlphaFunction::EASE_OUT);
-  mScrollAnimation.FinishedSignal().Connect(this, &ScrollViewImpl::OnScrollAnimationFinished);
-  mScrollAnimation.Play();
-  mScrollPosition = adjustedPosition;
+  AnimateScrollRequest(request, durationSec, false);
 }
 
 void ScrollViewImpl::ScrollTo(View child, bool animation, ScrollToPosition scrollToPosition)
@@ -1872,33 +1896,7 @@ bool ScrollViewImpl::OnWheelEvent(const Dali::WheelEvent& event)
   const uint64_t request  = BeginScrollRequest();
   CancelScrollAnimation(ScrollCompletion::Replaced);
   if(!IsCurrentScrollRequest(request) || !mContent) return true;
-  GetScrollRequestState(Ui::View::DownCast(lifetime)).active = request;
-
-  Vector2 newPosition = AdjustScrollPosition(Vector2(mScrollPosition.x + stepX, mScrollPosition.y + stepY));
-
-  const float targetPosX  = mMaximumStartX - newPosition.x;
-  const float targetPosY  = mMaximumStartY - newPosition.y;
-  const float currentPosX = mContent.GetCurrentProperty<float>(Actor::Property::POSITION_X);
-  const float currentPosY = mContent.GetCurrentProperty<float>(Actor::Property::POSITION_Y);
-  const float distX       = targetPosX - currentPosX;
-  const float distY       = targetPosY - currentPosY;
-
-  if(std::sqrt(distX * distX + distY * distY) < 0.5f)
-  {
-    CompleteScrollRequest(request, ScrollCompletion::NoOp);
-    return true;
-  }
-
-  SendScrollStarted();
-  if(!IsCurrentScrollRequest(request) || !mContent) return true;
-
-  mScrollAnimation = Animation::New(WHEEL_ANIM_SEC);
-  mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_X), targetPosX, AlphaFunction::EASE_OUT);
-  mScrollAnimation.AnimateTo(Property(mContent, Actor::Property::POSITION_Y), targetPosY, AlphaFunction::EASE_OUT);
-  mScrollAnimation.FinishedSignal().Connect(this, &ScrollViewImpl::OnScrollAnimationFinished);
-  mScrollAnimation.Play();
-
-  mScrollPosition = newPosition;
+  ScrollToWithDurationForRequest(Vector2(mScrollPosition.x + stepX, mScrollPosition.y + stepY), WHEEL_ANIM_SEC, request);
   return true;
 }
 
@@ -1953,8 +1951,11 @@ bool ScrollViewImpl::OnInterceptTouch(Actor actor, TouchEvent touch)
     mPanRecognized   = false;
     // Disambiguation begins immediately on touch: we don't yet know if this
     // will be a tap or a scroll.
-    mDisambiguating = true;
-    Ui::Internal::ScrollStateObserver::Get().NotifyGestureDisambiguationBegan();
+    if(!mDisambiguating)
+    {
+      mDisambiguating = true;
+      Ui::Internal::ScrollStateObserver::Get().NotifyGestureDisambiguationBegan();
+    }
   }
 
   // Always feed to the gesture detector so it can build velocity/displacement
@@ -2122,8 +2123,11 @@ void ScrollViewImpl::OnPanGesture(Actor actor, PanGesture gesture)
         DALI_LOG_INFO(gLogFilter, Debug::Verbose, "[ScrollView::OnPanGesture] post-recognition threshold met – intercepting\n");
         // Disambiguation resolved: this is a scroll, not a tap.
         const uint64_t request = BeginScrollRequest();
-        mDisambiguating        = false;
-        Ui::Internal::ScrollStateObserver::Get().NotifyGestureDisambiguationEnded();
+        if(mDisambiguating)
+        {
+          mDisambiguating = false;
+          Ui::Internal::ScrollStateObserver::Get().NotifyGestureDisambiguationEnded();
+        }
         if(!IsCurrentScrollRequest(request)) return;
         CancelScrollAnimation(ScrollCompletion::Replaced);
         if(!IsCurrentScrollRequest(request)) return;
@@ -2483,7 +2487,10 @@ void ScrollViewImpl::SendScrollFinished()
 void ScrollViewImpl::SendDragStarted()
 {
   auto lifetime = Self();
-  mIsDragging   = true;
+  if(mIsDragging) return;
+  auto& state = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  state.drag  = state.active ? state.active : (state.serial ? state.serial : BeginScrollRequest());
+  mIsDragging = true;
   BatchScrollNotifications([&]
   {
     QueueScrollNotification([this]
@@ -2522,6 +2529,11 @@ void ScrollViewImpl::SendDragFinished()
 
 void ScrollViewImpl::UpdateScrollingProperties()
 {
+  UpdateScrollingProperties(true);
+}
+
+void ScrollViewImpl::UpdateScrollingProperties(bool applyPosition)
+{
   if(!mContent)
   {
     return;
@@ -2557,7 +2569,7 @@ void ScrollViewImpl::UpdateScrollingProperties()
 
   // Do not call SetProperty while an animation is running — it would override
   // the BAKE'd mid-animation position and cause a visible snap backward.
-  if(!mScrollAnimation)
+  if(applyPosition && !mScrollAnimation)
   {
     ApplyScrollPosition(mScrollPosition);
     // Duration-based scrolling compares its target with this cache. Keep the applied
@@ -2601,17 +2613,27 @@ void ScrollViewImpl::CancelScrollAnimation()
 void ScrollViewImpl::CancelScrollAnimation(ScrollCompletion reason)
 {
   auto           lifetime = Self();
-  const uint64_t owner    = GetScrollRequestState(Ui::View::DownCast(lifetime)).active;
+  auto&          state    = GetScrollRequestState(Ui::View::DownCast(lifetime));
+  const uint64_t owner    = state.active;
   if(mScrollAnimation)
   {
+    Vector2 position;
     if(mContent)
     {
-      mCurrentPosition = Vector2(mContent.GetCurrentProperty<float>(Actor::Property::POSITION_X),
-                                 mContent.GetCurrentProperty<float>(Actor::Property::POSITION_Y));
-      mScrollPosition  = ContentPositionToScrollPosition(mCurrentPosition);
+      // Before the first update, scene properties can still precede an earlier
+      // immediate request. Play() has also baked its target into event properties.
+      const Vector2 contentPosition = state.animationOwner == owner && mScrollAnimation.GetCurrentProgress() == 0.0f
+                                        ? state.animationOrigin
+                                        : Vector2(mContent.GetCurrentProperty<float>(Actor::Property::POSITION_X),
+                                                  mContent.GetCurrentProperty<float>(Actor::Property::POSITION_Y));
+      UpdateScrollingProperties(false);
+      position = AdjustScrollPosition(ContentPositionToScrollPosition(contentPosition));
     }
     mScrollAnimation.Stop();
     mScrollAnimation.Reset();
+    // Stop's BAKE can overwrite event properties. Restore the captured position
+    // afterwards, with the current padding and bounds and without rounding.
+    if(mContent) ApplyResolvedScrollPosition(position);
   }
   CompleteScrollRequest(owner, reason);
 }
@@ -2619,45 +2641,8 @@ void ScrollViewImpl::CancelScrollAnimation(ScrollCompletion reason)
 void ScrollViewImpl::OnScrollAnimationFinished(Animation animation)
 {
   auto lifetime = Self();
-  // A Finished emitted for an animation CancelScrollAnimation already stopped and released
-  // must not reset a newer handle nor write the content actor the new animation now owns.
-  // CancelScrollAnimation has already captured the live position and sent ScrollFinished.
-  if(animation != mScrollAnimation)
-  {
-    return;
-  }
-
+  if(animation != mScrollAnimation) return;
   mScrollAnimation.Reset();
-
-  if(mContent)
-  {
-    mCurrentPosition                = Vector2(std::round(mContent.GetCurrentProperty<float>(Actor::Property::POSITION_X)),
-                                              std::round(mContent.GetCurrentProperty<float>(Actor::Property::POSITION_Y)));
-    const Vector2 completedPosition = ContentPositionToScrollPosition(mCurrentPosition);
-    const Vector2 clampedPosition   = AdjustScrollPosition(completedPosition);
-    if(clampedPosition != completedPosition)
-    {
-      // Layout may shrink the range while an animation retains its original endpoint.
-      // Repair the settled position before notifying observers by applying the clamped
-      // FLOAT, exactly as the non-animated ScrollTo applies its clamped target: on a
-      // fractional range the actor must rest on the maximum, not one unit past it.
-      // (ScrollTo(false) then rounds only its cached copies, so its public offset can
-      // differ from the actor by less than one unit; that pre-existing behaviour is not
-      // changed here.) The animation has already finished, so nothing is retargeted;
-      // ApplyScrollPosition also updates the scroll bar.
-      mScrollPosition = clampedPosition;
-      ApplyScrollPosition(mScrollPosition);
-      mCurrentPosition = Vector2(mMaximumStartX - mScrollPosition.x, mMaximumStartY - mScrollPosition.y);
-    }
-    else
-    {
-      mScrollPosition = completedPosition;
-
-      // Update scroll bar position
-      mScrollBar.UpdateScrollPosition(mScrollPosition);
-    }
-  }
-
   SendScrollFinished();
 }
 

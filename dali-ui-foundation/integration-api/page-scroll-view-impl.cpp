@@ -143,6 +143,13 @@ void PageScrollViewImpl::OnInitialize()
 {
   ScrollViewImpl::OnInitialize();
 
+  SetScrollTargetResolver([this](uint64_t request, const Vector2& fallback)
+  {
+    const auto& state = GetPageRequestState(Ui::View::DownCast(Self()));
+    if(state.targetOwner != request || mSnapTargetPage < 0) return fallback;
+    const int target = std::max(0, std::min(GetPageCount() - 1, mSnapTargetPage));
+    return ScrollPositionForPage(target);
+  });
   SetScrollCompletionHandler([this](uint64_t request, ScrollCompletion reason)
   {
     OnScrollCompleted(request, reason);
@@ -155,30 +162,10 @@ void PageScrollViewImpl::SetPageSize(const Vector2& size)
   if(mPageSize == size) return;
   mPageSize = size;
 
-  // Page size change immediately affects GetPageCount() and page boundaries.
-  // If layout has already run (primary scrollable dimension > 0), re-derive
-  // mCurrentPage from the current scroll position with the new page size and
-  // notify observers if count or page changed.
-  // Pre-layout: the primary dimension is 0 here; OnScrollableAreaChanged from
-  // the first layout pass will emit the correct values.
-  ScrollDirection dir     = GetScrollDirection();
-  float           primary = (dir == ScrollDirection::Horizontal) ? GetScrollableWidth() : GetScrollableHeight();
-  if(primary < 1.0f) return;
-  const Vector2 effective  = GetEffectivePageSize();
-  const float   pageLength = dir == ScrollDirection::Horizontal ? effective.x : effective.y;
-  if(pageLength >= 1.0f)
-    LastPageGeometry(Ui::View::DownCast(Self())) = {primary, pageLength, dir, true};
-
-  int newCount = GetPageCount();
-  int newPage  = (newCount > 0)
-                   ? std::max(0, std::min(newCount - 1, PageForScrollPosition(GetScrollPosition())))
-                   : 0;
-
-  if(newCount != mLastNotifiedPageCount || newPage != mCurrentPage)
-  {
-    mCurrentPage = newPage;
-    EmitPageChanged(GetCurrentPage(), newCount);
-  }
+  // Use the same geometry transition as layout. In particular, an animation's
+  // cached destination is not a live position, and unchanged effective geometry
+  // must not demote an explicitly selected partial last page.
+  OnScrollableAreaChanged();
 }
 
 Vector2 PageScrollViewImpl::GetPageSize() const
@@ -228,12 +215,10 @@ uint64_t PageScrollViewImpl::ScrollToPageRequest(int page, bool animate, bool de
   CancelScrollAnimation(ScrollCompletion::Replaced);
   if(!IsCurrentScrollRequest(request)) return request;
 
-  const int     total      = GetPageCount();
-  const int     target     = std::max(0, std::min(total - 1, page));
-  const Vector2 pageSize   = GetEffectivePageSize();
-  const float   pageLength = GetScrollDirection() == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
-  auto&         state      = GetPageRequestState(Ui::View::DownCast(lifetime));
-  if(mExpectedPageCount >= 0 && pageLength < 1.0f)
+  const int total  = GetPageCount();
+  const int target = std::max(0, std::min(total - 1, page));
+  auto&     state  = GetPageRequestState(Ui::View::DownCast(lifetime));
+  if(mExpectedPageCount >= 0 && !HasUsablePageGeometry())
   {
     mSnapTargetPage   = -1;
     state.targetOwner = state.deferredOwner = 0u;
@@ -341,6 +326,19 @@ Vector2 PageScrollViewImpl::GetEffectivePageSize() const
   return Vector2(GetViewportWidth(), GetViewportHeight());
 }
 
+bool PageScrollViewImpl::HasUsablePageGeometry()
+{
+  const ScrollDirection dir        = GetScrollDirection();
+  const Vector2         pageSize   = GetEffectivePageSize();
+  const bool            horizontal = dir == ScrollDirection::Horizontal;
+  const float           pageLength = horizontal ? pageSize.x : pageSize.y;
+  const float           viewport   = horizontal ? GetViewportWidth() : GetViewportHeight();
+  const float           content    = horizontal ? GetScrollableWidth() : GetScrollableHeight();
+  const auto&           geometry   = LastPageGeometry(Ui::View::DownCast(Self()));
+  return pageLength >= 1.0f && viewport >= 1.0f &&
+         (content >= 1.0f || (geometry.valid && geometry.direction == dir));
+}
+
 Vector2 PageScrollViewImpl::ScrollPositionForPage(int page) const
 {
   Vector2         pgSize = GetEffectivePageSize();
@@ -390,15 +388,13 @@ void PageScrollViewImpl::EmitPageChanged(int currentPage, int pageCount)
 void PageScrollViewImpl::OnScrollableAreaChanged()
 {
   auto lifetime = Self();
-  if(mNotifyInProgress) return;
-  const ScrollDirection dir      = GetScrollDirection();
-  const Vector2         pageSize = GetEffectivePageSize();
-  const float           primary  = dir == ScrollDirection::Horizontal ? GetScrollableWidth() : GetScrollableHeight();
-  const float           pageLen  = dir == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
-  if(pageLen < 1.0f) return;
-  auto& geometry = LastPageGeometry(Ui::View::DownCast(lifetime));
-  if(primary < 1.0f && (!geometry.valid || geometry.direction != dir)) return;
-  const bool geometryChanged = !geometry.valid || geometry.direction != dir ||
+  if(mNotifyInProgress || !HasUsablePageGeometry()) return;
+  const ScrollDirection dir             = GetScrollDirection();
+  const Vector2         pageSize        = GetEffectivePageSize();
+  const float           primary         = dir == ScrollDirection::Horizontal ? GetScrollableWidth() : GetScrollableHeight();
+  const float           pageLen         = dir == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
+  auto&                 geometry        = LastPageGeometry(Ui::View::DownCast(lifetime));
+  const bool            geometryChanged = !geometry.valid || geometry.direction != dir ||
                                std::abs(geometry.primary - primary) >= 0.01f ||
                                std::abs(geometry.pageLength - pageLen) >= 0.01f;
   geometry = {primary, pageLen, dir, true};
@@ -454,10 +450,20 @@ void PageScrollViewImpl::OnScrollCompleted(uint64_t request, ScrollCompletion re
   // demote an explicitly selected partial page by rounding the unchanged offset.
   if(reason == ScrollCompletion::NoOp && !ownsTarget) return;
 
-  const Vector2 pageSize   = GetEffectivePageSize();
-  const float   pageLength = GetScrollDirection() == ScrollDirection::Horizontal ? pageSize.x : pageSize.y;
-  // A physical position cannot resolve a pending logical selection before measurement.
-  if(pageLength < 1.0f && mExpectedPageCount >= 0) return;
+  // Explicit page size alone does not provide a measured viewport or content.
+  const bool usableGeometry = HasUsablePageGeometry();
+  if(mExpectedPageCount >= 0 && !usableGeometry) return;
+  if(usableGeometry)
+  {
+    // Request resolution can refresh the viewport before layout reports it. Record
+    // the geometry used for this selection so a later callback cannot reinterpret
+    // a settled partial page as a new geometry transition.
+    const ScrollDirection dir                    = GetScrollDirection();
+    const Vector2         pageSize               = GetEffectivePageSize();
+    const bool            horizontal             = dir == ScrollDirection::Horizontal;
+    LastPageGeometry(Ui::View::DownCast(Self())) = {horizontal ? GetScrollableWidth() : GetScrollableHeight(),
+                                                    horizontal ? pageSize.x : pageSize.y, dir, true};
+  }
   if(!deferred && reason != ScrollCompletion::NoOp) mExpectedPageCount = -1;
   int       page  = target >= 0 && reason != ScrollCompletion::Interrupted ? target : PageForScrollPosition(GetLiveScrollPosition());
   const int total = GetPageCount();

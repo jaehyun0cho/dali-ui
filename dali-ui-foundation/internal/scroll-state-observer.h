@@ -196,6 +196,15 @@ public:
    */
   void NotifyScrollFinished();
 
+  /** @brief Releases both old states before emitting either finish notification. */
+  void NotifyScrollAndDragFinished(bool scrolling, bool dragging);
+
+  /**
+   * @brief Silently releases only states owned by a container being destroyed.
+   * Destruction must not call application handlers with a partially destroyed sender.
+   */
+  void ReleaseStates(bool scrolling, bool dragging, bool disambiguating) noexcept;
+
 private:
   ScrollStateObserver()                                      = default;
   ~ScrollStateObserver()                                     = default;

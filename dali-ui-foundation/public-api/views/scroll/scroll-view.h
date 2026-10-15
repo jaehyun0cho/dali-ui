@@ -448,6 +448,14 @@ public: // Non-Chainable Methods
    * an earlier scroll. ScrollFinishedSignal marks the end of a lifecycle and may
    * also report cancellation; it does not guarantee arrival at the old target.
    *
+   * Normal completion clamps the original requested position to the current
+   * scrollable bounds and applies the current padding, retaining fractional pixels.
+   * Geometry changes during an animation do not restart it; its endpoint is
+   * reconciled before completion notifications. Cancellation instead preserves the
+   * current rendered position, or the starting position if no animation update has
+   * occurred, clamped to the current bounds. An animated request already at its
+   * logical offset leaves visual edge-effect displacement unchanged.
+   *
    * Nested requests update internal state immediately. This view's scroll, drag
    * and page notifications are delivered in order after the current signal emission
    * finishes, before the outer dispatch returns. A signal's handle exposes the

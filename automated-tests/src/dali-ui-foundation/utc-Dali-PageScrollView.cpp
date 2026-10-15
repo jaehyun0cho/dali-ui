@@ -16,6 +16,8 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/view.h>
+#include <dali-ui-foundation/integration-api/page-scroll-view-impl.h>
 #include <dali-ui-foundation/internal/scroll-state-observer.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
@@ -1831,5 +1833,278 @@ int UtcDaliPageScrollViewFreeNoOpPreservesPartialSelectionP(void)
     DALI_TEST_EQUALS(starts, 0, TEST_LOCATION);
     DALI_TEST_EQUALS(finishes, 0, TEST_LOCATION);
   }
+  END_TEST;
+}
+
+namespace
+{
+enum class StartedPageGeometry
+{
+  PageSize,
+  Viewport,
+  Padding
+};
+
+void CheckStartedPageGeometry(ScrollDirection direction, bool animate, StartedPageGeometry change)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  pager.SetMinimumFlingDuration(300);
+  pager.SetMaximumFlingDuration(300);
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  ConnectionTracker  tracker;
+  PageSignalRecorder recorder;
+  int                starts   = 0;
+  int                finishes = 0;
+  const float        padding  = vertical ? 9.5f : 7.25f;
+  pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+  pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(++starts != 1) return;
+    if(change == StartedPageGeometry::PageSize)
+    {
+      pager.SetPageSize(Vector2(160.0f, 160.0f));
+    }
+    else if(change == StartedPageGeometry::Viewport)
+    {
+      ResizeAlong(pager, vertical, 160.0f);
+      // Requested size alone does not change the event-side viewport yet.
+      if(vertical)
+        Dali::Ui::Extension::View::SetSizeHeight(pager, 160.0f);
+      else
+        Dali::Ui::Extension::View::SetSizeWidth(pager, 160.0f);
+    }
+    else
+    {
+      pager.SetPadding(vertical ? 0.0f : padding, 0.0f, vertical ? padding : 0.0f, 0.0f);
+    }
+  });
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { ++finishes; });
+  pager.ScrollToPage(2, animate);
+  if(!animate)
+  {
+    const float offset = change == StartedPageGeometry::Padding ? 200.0f : 320.0f;
+    DALI_TEST_EQUALS(vertical ? pager.GetScrollPosition().y : pager.GetScrollPosition().x, offset, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), (change == StartedPageGeometry::Padding ? padding : 0.0f) - offset, 0.001f, TEST_LOCATION);
+  }
+  SettlePageRequest(application);
+  const float offset = change == StartedPageGeometry::Padding ? 200.0f : 320.0f;
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), change == StartedPageGeometry::Padding ? 5 : 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(vertical ? pager.GetScrollPosition().y : pager.GetScrollPosition().x, offset, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), (change == StartedPageGeometry::Padding ? padding : 0.0f) - offset, 0.001f, TEST_LOCATION);
+  DALI_TEST_CHECK(!recorder.signals.empty());
+  DALI_TEST_EQUALS(recorder.signals.back().first, 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(recorder.signals.back().second, pager.GetPageCount(), TEST_LOCATION);
+  DALI_TEST_EQUALS(starts, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+}
+
+void CheckExplicitPageSizeBeforeLayout(ScrollDirection direction, bool animate, bool completeFreeScroll)
+{
+  UiTestApplication application;
+  const bool        vertical = direction == ScrollDirection::Vertical;
+  View              content;
+  PageScrollView    pager = BuildPagerAlong(direction, content);
+  // Before an explicit page size is supplied, the initial logical count is one.
+  pager.NotifyPagesInserted(0, 3);
+  pager.SetPageSize(Vector2(100.0f, 100.0f));
+  DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 3, TEST_LOCATION);
+  ConnectionTracker tracker;
+  int               lifecycle = 0;
+  pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  { ++lifecycle; });
+  pager.ScrollingSignal().Connect(&tracker, [&](ScrollView)
+  { ++lifecycle; });
+  pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { ++lifecycle; });
+  pager.ScrollToPage(2, animate);
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetScrollPosition(), Vector2::ZERO, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(lifecycle, 0, TEST_LOCATION);
+  if(completeFreeScroll)
+  {
+    // A free instant completion must not consume the pending page selection
+    // while only the explicit page size, but no viewport geometry, is usable.
+    pager.ScrollTo(Vector2::ZERO, false);
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+  }
+  application.GetWindow().Add(pager);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_CHECK(!pager.IsScrolling());
+  DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+  DALI_TEST_EQUALS(pager.GetPageCount(), 5, TEST_LOCATION);
+  DALI_TEST_EQUALS(vertical ? pager.GetScrollPosition().y : pager.GetScrollPosition().x, 200.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -200.0f, 0.001f, TEST_LOCATION);
+}
+} // namespace
+
+int UtcDaliPageScrollViewStartedGeometryUsesLatestTargetP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(bool animate : {false, true})
+      for(auto change : {StartedPageGeometry::PageSize, StartedPageGeometry::Viewport, StartedPageGeometry::Padding})
+        CheckStartedPageGeometry(direction, animate, change);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewAnimatedNonLastPageResizeP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+  {
+    UiTestApplication application;
+    const bool        vertical = direction == ScrollDirection::Vertical;
+    View              content;
+    PageScrollView    pager = BuildPagerAlong(direction, content);
+    pager.SetMinimumFlingDuration(300);
+    pager.SetMaximumFlingDuration(300);
+    application.GetWindow().Add(pager);
+    application.SendNotification();
+    application.Render();
+    ConnectionTracker tracker;
+    int               starts   = 0;
+    int               finishes = 0;
+    pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+    { ++starts; });
+    pager.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+    { ++finishes; });
+    pager.ScrollToPage(2, true);
+    application.SendNotification();
+    application.Render(16);
+    ResizeAlong(pager, vertical, 160.0f);
+    application.SendNotification();
+    SettlePageRequest(application);
+    // Page 2 is not a boundary: a clamp-only repair would incorrectly leave 200.
+    DALI_TEST_EQUALS(pager.GetCurrentPage(), 2, TEST_LOCATION);
+    DALI_TEST_EQUALS(pager.GetPageCount(), 4, TEST_LOCATION);
+    DALI_TEST_EQUALS(vertical ? pager.GetScrollPosition().y : pager.GetScrollPosition().x, 320.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -320.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(starts, 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+  }
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewSameEffectiveExplicitSizeKeepsPartialPageP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(bool animate : {false, true})
+    {
+      UiTestApplication application;
+      const bool        vertical = direction == ScrollDirection::Vertical;
+      View              content;
+      PageScrollView    pager = BuildPagerAlong(direction, content);
+      ResizeAlong(pager, vertical, 160.0f);
+      application.GetWindow().Add(pager);
+      application.SendNotification();
+      application.Render();
+      pager.ScrollToPage(3, animate);
+      if(!animate) SettlePageRequest(application);
+      PageSignalRecorder recorder;
+      pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+      pager.SetPageSize(Vector2(160.0f, 160.0f));
+      SettlePageRequest(application);
+      CheckPartialPageSelection(pager, content, vertical);
+      DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), animate ? 1 : 0, TEST_LOCATION);
+      // Reapplying the explicit size must not reinterpret 340 / 160 as page 2.
+      pager.SetPageSize(Vector2(160.0f, 160.0f));
+      CheckPartialPageSelection(pager, content, vertical);
+      DALI_TEST_EQUALS(static_cast<int>(recorder.signals.size()), animate ? 1 : 0, TEST_LOCATION);
+    }
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewExplicitPageSizePreLayoutPendingSelectionP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(bool animate : {false, true})
+      for(bool completeFreeScroll : {false, true})
+        CheckExplicitPageSizeBeforeLayout(direction, animate, completeFreeScroll);
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewStartedViewportPartialPageSurvivesAreaRefreshP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(bool animate : {false, true})
+    {
+      UiTestApplication application;
+      const bool        vertical = direction == ScrollDirection::Vertical;
+      View              content;
+      PageScrollView    pager = BuildPagerAlong(direction, content);
+      application.GetWindow().Add(pager);
+      application.SendNotification();
+      application.Render();
+      ConnectionTracker tracker;
+      bool              resized = false;
+      pager.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+      {
+        if(resized) return;
+        resized = true;
+        ResizeAlong(pager, vertical, 160.0f);
+        if(vertical)
+          Dali::Ui::Extension::View::SetSizeHeight(pager, 160.0f);
+        else
+          Dali::Ui::Extension::View::SetSizeWidth(pager, 160.0f);
+        // Do not call RefreshViewport: request resolution must refresh the size.
+      });
+      pager.ScrollToPage(3, animate);
+      SettlePageRequest(application);
+      CheckPartialPageSelection(pager, content, vertical);
+      PageSignalRecorder recorder;
+      pager.PageChangedSignal().Connect(&recorder, &PageSignalRecorder::OnPageChanged);
+      // Report a cross-axis change: primary size and page length are unchanged.
+      // Completion must have recorded 160, otherwise this callback reinterprets
+      // the unchanged offset 340 as page 2 after observing a stale page length 100.
+      auto& impl = static_cast<Dali::Ui::Integration::PageScrollViewImpl&>(pager.GetImplementation());
+      if(vertical)
+        impl.SetScrollableWidth(81.0f);
+      else
+        impl.SetScrollableHeight(81.0f);
+      CheckPartialPageSelection(pager, content, vertical);
+      DALI_TEST_CHECK(recorder.signals.empty());
+    }
+  END_TEST;
+}
+
+int UtcDaliPageScrollViewSetPageSizeDuringFreeScrollUsesLiveSelectionP(void)
+{
+  for(auto direction : {ScrollDirection::Horizontal, ScrollDirection::Vertical})
+    for(float pageLength : {110.0f, 160.0f})
+    {
+      UiTestApplication application;
+      const bool        vertical = direction == ScrollDirection::Vertical;
+      View              content;
+      PageScrollView    pager = BuildPagerAlong(direction, content);
+      pager.SetMinimumFlingDuration(300);
+      pager.SetMaximumFlingDuration(300);
+      application.GetWindow().Add(pager);
+      application.SendNotification();
+      application.Render();
+      pager.ScrollToPage(1, false);
+      application.SendNotification();
+      application.Render();
+      pager.ScrollTo(vertical ? Vector2(0.0f, 350.0f) : Vector2(350.0f, 0.0f), true);
+      pager.SetPageSize(Vector2(pageLength, pageLength));
+      // GetScrollPosition holds the free animation's destination, not its live
+      // origin. Changing page size must not publish that future page early.
+      DALI_TEST_EQUALS(pager.GetCurrentPage(), 1, TEST_LOCATION);
+      DALI_TEST_CHECK(pager.IsScrolling());
+      SettlePageRequest(application);
+      DALI_TEST_EQUALS(pager.GetCurrentPage(), pageLength == 110.0f ? 3 : 2, TEST_LOCATION);
+      DALI_TEST_EQUALS(pager.GetPageCount(), pageLength == 110.0f ? 5 : 4, TEST_LOCATION);
+      DALI_TEST_EQUALS(vertical ? pager.GetScrollPosition().y : pager.GetScrollPosition().x, 350.0f, 0.001f, TEST_LOCATION);
+      DALI_TEST_EQUALS(ContentPositionAlong(content, vertical), -350.0f, 0.001f, TEST_LOCATION);
+    }
   END_TEST;
 }

@@ -440,14 +440,18 @@ protected:
   /**
    * @brief Cancels any in-progress scroll/fling animation.
    *
-   * After this call the content position is frozen at its current rendered
-   * position, which may differ from mScrollPosition if an animation was
-   * mid-flight.
+   * Freezes the current rendered position, or the saved event-side origin if
+   * the animation has not advanced yet, clamped to the current bounds.
    */
   void CancelScrollAnimation();
 
   /** @brief Cancels the active owner after the caller issued a replacement or interruption token. */
   void CancelScrollAnimation(ScrollCompletion reason);
+
+  void    SetScrollTargetResolver(std::function<Vector2(uint64_t, const Vector2&)> resolver);
+  Vector2 ResolveScrollDestination(uint64_t request);
+  void    ApplyResolvedScrollPosition(const Vector2& position);
+  void    AnimateScrollRequest(uint64_t request, float durationSec, bool automaticDuration);
 
   uint64_t GetCurrentScrollRequest();
   Vector2  GetLiveScrollPosition() const;
@@ -603,6 +607,9 @@ private:
    * @brief Updates scrolling properties.
    */
   void UpdateScrollingProperties();
+
+  /** @brief Refreshes geometry without applying a position during request resolution. */
+  void UpdateScrollingProperties(bool applyPosition);
 
   /**
    * @brief Applies scroll position to content.

@@ -181,6 +181,9 @@ private:
    */
   Vector2 GetEffectivePageSize() const;
 
+  /** @brief Requires a measured viewport and content, retaining known empty geometry. */
+  bool HasUsablePageGeometry();
+
   /**
    * @brief Returns the scroll position that centers the given page in the viewport.
    */

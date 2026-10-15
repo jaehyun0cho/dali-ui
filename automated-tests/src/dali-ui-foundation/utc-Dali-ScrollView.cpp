@@ -32,6 +32,7 @@
 #define protected public
 #include <dali-ui-foundation/integration-api/page-scroll-view-impl.h>
 #include <dali-ui-foundation/integration-api/scroll-view-impl.h>
+#include <dali-ui-foundation/internal/scroll-state-observer.h>
 #undef protected
 #undef private
 
@@ -2672,5 +2673,639 @@ int UtcDaliPageScrollViewGesturePartialNoOpAndSnapP(void)
   DALI_TEST_CHECK(!pager.IsScrolling());
   DALI_TEST_EQUALS(static_cast<int>(pages.size()), 1, TEST_LOCATION);
   DALI_TEST_EQUALS(pages.back(), 2, TEST_LOCATION);
+  END_TEST;
+}
+
+namespace
+{
+Vector2 RegressionAxisPosition(bool vertical, float position)
+{
+  return vertical ? Vector2(0.0f, position) : Vector2(position, 0.0f);
+}
+
+float RegressionAxisOffset(ScrollView view, bool vertical)
+{
+  const Vector2 position = view.GetScrollPosition();
+  return vertical ? position.y : position.x;
+}
+
+float RegressionActorPosition(View content, bool vertical, bool current = false)
+{
+  const auto property = vertical ? Actor::Property::POSITION_Y : Actor::Property::POSITION_X;
+  return current ? content.GetCurrentProperty<float>(property) : content.GetProperty<float>(property);
+}
+
+void SetRegressionAxisSize(View view, bool vertical, float size)
+{
+  if(vertical)
+  {
+    view.SetRequestedHeight(size);
+    Dali::Ui::Extension::View::SetSizeHeight(view, size);
+  }
+  else
+  {
+    view.SetRequestedWidth(size);
+    Dali::Ui::Extension::View::SetSizeWidth(view, size);
+  }
+}
+
+void PrepareGeometryScroll(UiTestApplication& application, ScrollView view, View& content, bool vertical)
+{
+  view.SetScrollDirection(vertical ? ScrollDirection::Vertical : ScrollDirection::Horizontal);
+  view.SetRequestedWidth(vertical ? 80.0f : 100.0f);
+  view.SetRequestedHeight(vertical ? 100.0f : 80.0f);
+  view.SetMinimumFlingDuration(300);
+  view.SetMaximumFlingDuration(300);
+  content = View::New();
+  content.SetRequestedWidth(vertical ? 80.0f : 500.0f);
+  content.SetRequestedHeight(vertical ? 500.0f : 80.0f);
+  view.SetContent(content);
+  application.GetWindow().Add(view);
+  application.SendNotification();
+  application.Render();
+}
+
+void SettleGeometryScroll(UiTestApplication& application)
+{
+  application.SendNotification();
+  application.Render(16);
+  for(int i = 0; i < 4; ++i) application.Render(100);
+  application.SendNotification();
+  // A completion-time correction reaches the scene on the next update.
+  application.Render(0);
+}
+
+enum class StartedScrollGeometry
+{
+  Bounds,
+  Viewport,
+  Padding
+};
+
+void CheckStartedScrollGeometry(bool vertical, bool animate, StartedScrollGeometry change)
+{
+  UiTestApplication application;
+  ScrollView        view = ScrollView::New();
+  View              content;
+  PrepareGeometryScroll(application, view, content, vertical);
+  ConnectionTracker tracker;
+  int               starts   = 0;
+  int               finishes = 0;
+  const float       padding  = vertical ? 9.5f : 7.25f;
+  view.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+  {
+    if(++starts != 1) return;
+    if(change == StartedScrollGeometry::Bounds)
+    {
+      SetRegressionAxisSize(content, vertical, 300.0f);
+      if(vertical)
+        GetScrollImpl(view).SetScrollableHeight(300.0f);
+      else
+        GetScrollImpl(view).SetScrollableWidth(300.0f);
+    }
+    else if(change == StartedScrollGeometry::Viewport)
+    {
+      SetRegressionAxisSize(view, vertical, 160.0f);
+    }
+    else
+    {
+      view.SetPadding(vertical ? 0.0f : padding, 0.0f, vertical ? padding : 0.0f, 0.0f);
+    }
+  });
+  view.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+  { ++finishes; });
+  const float requested     = change == StartedScrollGeometry::Padding ? 250.25f : 350.0f;
+  const float expected      = change == StartedScrollGeometry::Bounds ? 200.0f : (change == StartedScrollGeometry::Viewport ? 340.0f : 250.25f);
+  const float expectedActor = (change == StartedScrollGeometry::Padding ? padding : 0.0f) - expected;
+  view.ScrollTo(RegressionAxisPosition(vertical, requested), animate);
+  if(!animate)
+  {
+    DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), expected, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), expectedActor, 0.001f, TEST_LOCATION);
+  }
+  SettleGeometryScroll(application);
+  DALI_TEST_CHECK(!view.IsScrolling());
+  DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), expected, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), expectedActor, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), expectedActor, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(starts, 1, TEST_LOCATION);
+  DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+}
+
+void CheckCancelledAnimationOrigin(bool vertical, bool progressed)
+{
+  UiTestApplication application;
+  ScrollView        view = ScrollView::New();
+  View              content;
+  PrepareGeometryScroll(application, view, content, vertical);
+  view.ScrollTo(RegressionAxisPosition(vertical, 250.25f), false);
+  // Deliberately do not Render between the instant position and the new animation.
+  view.ScrollTo(RegressionAxisPosition(vertical, 350.0f), true);
+  float expected = 250.25f;
+  if(progressed)
+  {
+    application.SendNotification();
+    application.Render(16);
+    application.Render(60);
+    expected = -RegressionActorPosition(content, vertical, true);
+    DALI_TEST_CHECK(expected > 250.25f && expected < 350.0f);
+  }
+  GetScrollImpl(view).CancelScrollAnimation();
+  DALI_TEST_CHECK(!view.IsScrolling());
+  DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), expected, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), -expected, 0.001f, TEST_LOCATION);
+  application.SendNotification();
+  application.Render(16);
+  DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), -expected, 0.001f, TEST_LOCATION);
+  // Both caches must agree: the same destination is now a physical no-op.
+  view.ScrollTo(RegressionAxisPosition(vertical, expected), true);
+  DALI_TEST_CHECK(!view.IsScrolling());
+  DALI_TEST_CHECK(!GetScrollImpl(view).mScrollAnimation);
+}
+
+struct ObserverDepth
+{
+  ObserverDepth()
+  {
+    const auto& observer = Dali::Ui::Internal::ScrollStateObserver::Get();
+    scrolling            = observer.mScrollingDepth;
+    dragging             = observer.mDraggingDepth;
+    disambiguating       = observer.mDisambiguatingDepth;
+  }
+  void Check(int scrollDelta, int dragDelta, int disambiguationDelta) const
+  {
+    const auto& observer = Dali::Ui::Internal::ScrollStateObserver::Get();
+    DALI_TEST_EQUALS(observer.mScrollingDepth, scrolling + scrollDelta, TEST_LOCATION);
+    DALI_TEST_EQUALS(observer.mDraggingDepth, dragging + dragDelta, TEST_LOCATION);
+    DALI_TEST_EQUALS(observer.mDisambiguatingDepth, disambiguating + disambiguationDelta, TEST_LOCATION);
+  }
+  int scrolling;
+  int dragging;
+  int disambiguating;
+};
+
+void BeginRegressionDrag(ScrollView view)
+{
+  auto gesture = DevelPanGesture::New(GestureState::CONTINUING);
+  DevelPanGesture::SetDisplacement(gesture, Vector2(-50.0f, 0.0f));
+  GetScrollImpl(view).OnDragging(gesture);
+}
+
+void SendRegressionTouch(ScrollView view, PointState::Type state, uint32_t time)
+{
+  auto touch = TouchEvent::New(time);
+  touch.AddPoint(4, state, Vector2(25.0f, 25.0f));
+  GetScrollImpl(view).OnInterceptTouch(view, touch);
+}
+
+void CheckDestroyedScrollState(int kind)
+{
+  UiTestApplication application;
+  ObserverDepth     baseline;
+  ScrollView        first  = ScrollView::New();
+  ScrollView        second = ScrollView::New();
+  View              firstContent;
+  View              secondContent;
+  PrepareGeometryScroll(application, first, firstContent, false);
+  PrepareGeometryScroll(application, second, secondContent, false);
+  for(ScrollView view : {first, second})
+  {
+    if(kind == 0)
+      view.ScrollTo(Vector2(300.0f, 0.0f), true);
+    else if(kind == 1)
+      BeginRegressionDrag(view);
+    else
+      SendRegressionTouch(view, PointState::DOWN, 10u);
+  }
+  baseline.Check(kind == 2 ? 0 : 2, kind == 1 ? 2 : 0, kind == 2 ? 2 : 0);
+  ConnectionTracker tracker;
+  auto&             observer       = Dali::Ui::Internal::ScrollStateObserver::Get();
+  int               globalFinishes = 0;
+  int               localFinishes  = 0;
+  observer.ScrollFinishedSignal().Connect(&tracker, [&]
+  { ++globalFinishes; });
+  observer.DragFinishedSignal().Connect(&tracker, [&]
+  { ++globalFinishes; });
+  observer.DisambiguationEndedSignal().Connect(&tracker, [&]
+  { ++globalFinishes; });
+  for(ScrollView view : {first, second})
+  {
+    view.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+    { ++localFinishes; });
+    view.DragFinishedSignal().Connect(&tracker, [&](ScrollView)
+    { ++localFinishes; });
+  }
+  application.GetWindow().Remove(second);
+  second.Reset();
+  baseline.Check(kind == 2 ? 0 : 1, kind == 1 ? 1 : 0, kind == 2 ? 1 : 0);
+  application.GetWindow().Remove(first);
+  first.Reset();
+  baseline.Check(0, 0, 0);
+  DALI_TEST_EQUALS(globalFinishes, 0, TEST_LOCATION);
+  DALI_TEST_EQUALS(localFinishes, 0, TEST_LOCATION);
+}
+} // namespace
+
+int UtcDaliScrollViewStartedGeometryResolvesLatestBoundsP(void)
+{
+  for(bool vertical : {false, true})
+    for(bool animate : {false, true})
+      for(auto change : {StartedScrollGeometry::Bounds, StartedScrollGeometry::Viewport, StartedScrollGeometry::Padding})
+        CheckStartedScrollGeometry(vertical, animate, change);
+  END_TEST;
+}
+
+int UtcDaliScrollViewAnimatedOriginalDestinationSurvivesRangeChangesP(void)
+{
+  for(bool vertical : {false, true})
+  {
+    UiTestApplication application;
+    ScrollView        view = ScrollView::New();
+    View              content;
+    PrepareGeometryScroll(application, view, content, vertical);
+    ConnectionTracker tracker;
+    int               starts   = 0;
+    int               finishes = 0;
+    view.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+    { ++starts; });
+    view.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+    { ++finishes; });
+    // This starts clamped to 400, but 800.25 remains the caller's destination.
+    view.ScrollTo(RegressionAxisPosition(vertical, 800.25f), true);
+    application.SendNotification();
+    application.Render(16);
+    SetRegressionAxisSize(content, vertical, 300.0f);
+    application.SendNotification();
+    application.Render(40);
+    SetRegressionAxisSize(content, vertical, 1000.0f);
+    application.SendNotification();
+    SettleGeometryScroll(application);
+    DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 800.25f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), -800.25f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), -800.25f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(starts, 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+  }
+  END_TEST;
+}
+
+int UtcDaliScrollViewFractionalDestinationKeepsExactCachesP(void)
+{
+  for(bool vertical : {false, true})
+    for(bool animate : {false, true})
+    {
+      UiTestApplication application;
+      ScrollView        view = ScrollView::New();
+      View              content;
+      PrepareGeometryScroll(application, view, content, vertical);
+      view.ScrollTo(RegressionAxisPosition(vertical, 250.25f), animate);
+      SettleGeometryScroll(application);
+      DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 250.25f, 0.001f, TEST_LOCATION);
+      DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), -250.25f, 0.001f, TEST_LOCATION);
+      const auto& position = GetScrollImpl(view).mCurrentPosition;
+      DALI_TEST_EQUALS(vertical ? position.y : position.x, -250.25f, 0.001f, TEST_LOCATION);
+      view.ScrollTo(RegressionAxisPosition(vertical, 250.25f), true);
+      DALI_TEST_CHECK(!view.IsScrolling());
+    }
+  END_TEST;
+}
+
+int UtcDaliScrollViewCancelPreservesAnimationOriginP(void)
+{
+  for(bool vertical : {false, true})
+    for(bool progressed : {false, true})
+      CheckCancelledAnimationOrigin(vertical, progressed);
+  END_TEST;
+}
+
+int UtcDaliScrollViewQueuedStartedCancelPreservesEventOriginP(void)
+{
+  for(bool vertical : {false, true})
+  {
+    UiTestApplication application;
+    ScrollView        view = ScrollView::New();
+    View              content;
+    PrepareGeometryScroll(application, view, content, vertical);
+    ConnectionTracker tracker;
+    int               stage = 0;
+    view.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+    {
+      if(stage == 0)
+      {
+        stage = 1;
+        view.ScrollTo(RegressionAxisPosition(vertical, 250.25f), false);
+        view.ScrollTo(RegressionAxisPosition(vertical, 350.0f), true);
+      }
+      else if(stage == 1)
+      {
+        // This queued Started is delivered after the replacement animation was
+        // created, although no scene update has consumed the instant position.
+        stage = 2;
+        GetScrollImpl(view).CancelScrollAnimation();
+      }
+    });
+    view.ScrollTo(RegressionAxisPosition(vertical, 100.0f), true);
+    DALI_TEST_EQUALS(stage, 2, TEST_LOCATION);
+    DALI_TEST_CHECK(!view.IsScrolling());
+    DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 250.25f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), -250.25f, 0.001f, TEST_LOCATION);
+    application.SendNotification();
+    application.Render(16);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), -250.25f, 0.001f, TEST_LOCATION);
+  }
+  END_TEST;
+}
+
+int UtcDaliScrollViewDestroyReleasesOnlyOwnedGlobalStatesP(void)
+{
+  for(int kind = 0; kind < 3; ++kind) CheckDestroyedScrollState(kind);
+  END_TEST;
+}
+
+int UtcDaliScrollViewGlobalFinishedReentryKeepsNewDragDepthP(void)
+{
+  UiTestApplication application;
+  ObserverDepth     baseline;
+  ScrollView        first  = ScrollView::New();
+  ScrollView        second = ScrollView::New();
+  View              firstContent;
+  View              secondContent;
+  PrepareGeometryScroll(application, first, firstContent, false);
+  PrepareGeometryScroll(application, second, secondContent, false);
+  BeginRegressionDrag(first);
+  baseline.Check(1, 1, 0);
+  ConnectionTracker tracker;
+  auto&             observer     = Dali::Ui::Internal::ScrollStateObserver::Get();
+  bool              replaced     = false;
+  bool              validating   = true;
+  int               dragFinishes = 0;
+  observer.ScrollFinishedSignal().Connect(&tracker, [&]
+  {
+    if(replaced) return;
+    replaced = true;
+    // Both old flags and counters are released before the first callback.
+    baseline.Check(0, 0, 0);
+    DALI_TEST_CHECK(!first.IsScrolling());
+    DALI_TEST_CHECK(!GetScrollImpl(first).mIsDragging);
+    BeginRegressionDrag(second);
+  });
+  observer.DragFinishedSignal().Connect(&tracker, [&]
+  {
+    if(!validating) return;
+    ++dragFinishes;
+    baseline.Check(1, 1, 0);
+  });
+  GetScrollImpl(first).CancelScrollAnimation();
+  DALI_TEST_CHECK(replaced);
+  DALI_TEST_EQUALS(dragFinishes, 1, TEST_LOCATION);
+  baseline.Check(1, 1, 0);
+  // The cancelled gesture's token must remain a tombstone until a new STARTED.
+  BeginRegressionDrag(first);
+  auto end = DevelPanGesture::New(GestureState::FINISHED);
+  GetScrollImpl(first).OnDragFinished(end);
+  DALI_TEST_CHECK(!first.IsScrolling());
+  DALI_TEST_CHECK(!GetScrollImpl(first).mIsDragging);
+  baseline.Check(1, 1, 0);
+  validating = false;
+  GetScrollImpl(second).CancelScrollAnimation();
+  baseline.Check(0, 0, 0);
+  END_TEST;
+}
+
+int UtcDaliScrollViewGlobalFinishedThrowReleasesOldDepthP(void)
+{
+  UiTestApplication application;
+  ObserverDepth     baseline;
+  ScrollView        view = ScrollView::New();
+  View              content;
+  PrepareGeometryScroll(application, view, content, false);
+  BeginRegressionDrag(view);
+  baseline.Check(1, 1, 0);
+  ConnectionTracker tracker;
+  auto&             observer = Dali::Ui::Internal::ScrollStateObserver::Get();
+  bool              thrown   = false;
+  observer.ScrollFinishedSignal().Connect(&tracker, [&]
+  {
+    if(thrown) return;
+    thrown = true;
+    baseline.Check(0, 0, 0);
+    DALI_TEST_CHECK(!view.IsScrolling());
+    DALI_TEST_CHECK(!GetScrollImpl(view).mIsDragging);
+    throw std::runtime_error("global scroll finished");
+  });
+  bool caught = false;
+  try
+  {
+    GetScrollImpl(view).CancelScrollAnimation();
+  }
+  catch(const std::runtime_error&)
+  {
+    caught = true;
+  }
+  DALI_TEST_CHECK(caught);
+  baseline.Check(0, 0, 0);
+  DALI_TEST_CHECK(!view.IsScrolling());
+  DALI_TEST_CHECK(!GetScrollImpl(view).mIsDragging);
+  view.ScrollTo(Vector2(200.0f, 0.0f), false);
+  DALI_TEST_EQUALS(view.GetScrollPosition().x, 200.0f, 0.001f, TEST_LOCATION);
+  baseline.Check(0, 0, 0);
+  END_TEST;
+}
+
+int UtcDaliScrollViewDisambiguationOwnershipP(void)
+{
+  UiTestApplication application;
+  ObserverDepth     baseline;
+  ScrollView        first  = ScrollView::New();
+  ScrollView        second = ScrollView::New();
+  View              firstContent;
+  View              secondContent;
+  PrepareGeometryScroll(application, first, firstContent, false);
+  PrepareGeometryScroll(application, second, secondContent, false);
+  SendRegressionTouch(first, PointState::DOWN, 10u);
+  SendRegressionTouch(first, PointState::DOWN, 20u);
+  baseline.Check(0, 0, 1);
+  auto begin = DevelPanGesture::New(GestureState::STARTED);
+  GetScrollImpl(second).OnPanGesture(second, begin);
+  auto drag = DevelPanGesture::New(GestureState::CONTINUING);
+  DevelPanGesture::SetScreenPosition(drag, Vector2(-100.0f, 0.0f));
+  DevelPanGesture::SetDisplacement(drag, Vector2(-50.0f, 0.0f));
+  // The second view never received DOWN and must not end the first one's depth.
+  GetScrollImpl(second).OnPanGesture(second, drag);
+  baseline.Check(1, 1, 1);
+  GetScrollImpl(second).CancelScrollAnimation();
+  baseline.Check(0, 0, 1);
+  SendRegressionTouch(first, PointState::UP, 30u);
+  SendRegressionTouch(first, PointState::UP, 40u);
+  baseline.Check(0, 0, 0);
+  END_TEST;
+}
+
+int UtcDaliScrollViewNoDestinationAndNoOpPreserveVisualOffsetP(void)
+{
+  for(bool vertical : {false, true})
+    for(int kind = 0; kind < 4; ++kind)
+    {
+      UiTestApplication application;
+      ScrollView        view = ScrollView::New();
+      View              content;
+      PrepareGeometryScroll(application, view, content, vertical);
+      auto&             impl = GetScrollImpl(view);
+      ConnectionTracker tracker;
+      int               starts   = 0;
+      int               finishes = 0;
+      view.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+      { ++starts; });
+      view.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+      { ++finishes; });
+      // An edge effect can move the actor while the managed boundary stays zero.
+      if(vertical)
+        Dali::Ui::Extension::View::SetPositionY(content, 12.75f);
+      else
+        Dali::Ui::Extension::View::SetPositionX(content, 12.75f);
+      if(kind == 0)
+      {
+        impl.BeginScrollRequest();
+        impl.SendScrollStarted();
+        impl.SendScrollFinished();
+      }
+      else if(kind == 1)
+      {
+        view.ScrollTo(Vector2::ZERO, true);
+      }
+      else if(kind == 2)
+      {
+        impl.ScrollToWithDuration(Vector2::ZERO, 0.3f);
+      }
+      else
+      {
+        auto wheel = WheelEvent::New(WheelEvent::MOUSE_WHEEL, vertical ? 0 : 1, 0u, Vector2(25.0f, 25.0f), -1, 100u);
+        DALI_TEST_CHECK(impl.OnWheelEvent(wheel));
+      }
+      DALI_TEST_CHECK(!view.IsScrolling());
+      DALI_TEST_CHECK(!impl.mScrollAnimation);
+      DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 0.0f, 0.001f, TEST_LOCATION);
+      DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), 12.75f, 0.001f, TEST_LOCATION);
+      DALI_TEST_EQUALS(starts, kind == 0 ? 1 : 0, TEST_LOCATION);
+      DALI_TEST_EQUALS(finishes, kind == 0 ? 1 : 0, TEST_LOCATION);
+      application.SendNotification();
+      application.Render(16);
+      DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), 12.75f, 0.001f, TEST_LOCATION);
+    }
+  END_TEST;
+}
+
+int UtcDaliScrollViewGlobalFinishedSameViewDragOwnsNewStateP(void)
+{
+  UiTestApplication application;
+  ObserverDepth     baseline;
+  ScrollView        view = ScrollView::New();
+  View              content;
+  PrepareGeometryScroll(application, view, content, false);
+  BeginRegressionDrag(view);
+  baseline.Check(1, 1, 0);
+  ConnectionTracker tracker;
+  auto&             observer     = Dali::Ui::Internal::ScrollStateObserver::Get();
+  bool              replaced     = false;
+  bool              validating   = true;
+  int               dragFinishes = 0;
+  observer.ScrollFinishedSignal().Connect(&tracker, [&]
+  {
+    if(replaced) return;
+    replaced = true;
+    baseline.Check(0, 0, 0);
+    auto begin = DevelPanGesture::New(GestureState::STARTED);
+    GetScrollImpl(view).OnPanGesture(view, begin);
+    BeginRegressionDrag(view);
+    DALI_TEST_CHECK(view.IsScrolling());
+    DALI_TEST_CHECK(GetScrollImpl(view).mIsDragging);
+  });
+  observer.DragFinishedSignal().Connect(&tracker, [&]
+  {
+    if(!validating) return;
+    ++dragFinishes;
+    // This event belongs to the old drag, but the new drag already owns state.
+    baseline.Check(1, 1, 0);
+    DALI_TEST_CHECK(view.IsScrolling());
+    DALI_TEST_CHECK(GetScrollImpl(view).mIsDragging);
+  });
+  GetScrollImpl(view).CancelScrollAnimation();
+  DALI_TEST_CHECK(replaced);
+  DALI_TEST_EQUALS(dragFinishes, 1, TEST_LOCATION);
+  DALI_TEST_CHECK(view.IsScrolling());
+  DALI_TEST_CHECK(GetScrollImpl(view).mIsDragging);
+  baseline.Check(1, 1, 0);
+  validating = false;
+  GetScrollImpl(view).CancelScrollAnimation();
+  baseline.Check(0, 0, 0);
+  END_TEST;
+}
+
+int UtcDaliScrollViewInstantScrollingGeometryReconcilesBeforeFinishedP(void)
+{
+  for(bool vertical : {false, true})
+  {
+    UiTestApplication application;
+    ScrollView        view = ScrollView::New();
+    View              content;
+    PrepareGeometryScroll(application, view, content, vertical);
+    ConnectionTracker tracker;
+    int               scrolling = 0;
+    int               finishes  = 0;
+    view.ScrollingSignal().Connect(&tracker, [&](ScrollView)
+    {
+      ++scrolling;
+      SetRegressionAxisSize(view, vertical, 300.5f);
+    });
+    view.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+    {
+      ++finishes;
+      DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 199.5f, 0.001f, TEST_LOCATION);
+      DALI_TEST_EQUALS(RegressionActorPosition(content, vertical), -199.5f, 0.001f, TEST_LOCATION);
+    });
+    view.ScrollTo(RegressionAxisPosition(vertical, 250.25f), false);
+    DALI_TEST_EQUALS(scrolling, 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+    DALI_TEST_CHECK(!view.IsScrolling());
+    DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 199.5f, 0.001f, TEST_LOCATION);
+    application.SendNotification();
+    application.Render(16);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), -199.5f, 0.001f, TEST_LOCATION);
+  }
+  END_TEST;
+}
+
+int UtcDaliScrollViewWheelStartedGeometryUsesLatestBoundsP(void)
+{
+  for(bool vertical : {false, true})
+  {
+    UiTestApplication application;
+    ScrollView        view = ScrollView::New();
+    View              content;
+    PrepareGeometryScroll(application, view, content, vertical);
+    ConnectionTracker tracker;
+    int               starts   = 0;
+    int               finishes = 0;
+    view.ScrollStartedSignal().Connect(&tracker, [&](ScrollView)
+    {
+      ++starts;
+      SetRegressionAxisSize(content, vertical, 150.5f);
+      if(vertical)
+        GetScrollImpl(view).SetScrollableHeight(150.5f);
+      else
+        GetScrollImpl(view).SetScrollableWidth(150.5f);
+    });
+    view.ScrollFinishedSignal().Connect(&tracker, [&](ScrollView)
+    { ++finishes; });
+    auto wheel = WheelEvent::New(WheelEvent::MOUSE_WHEEL, vertical ? 0 : 1, 0u, Vector2(25.0f, 25.0f), 1, 100u);
+    DALI_TEST_CHECK(GetScrollImpl(view).OnWheelEvent(wheel));
+    DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 50.5f, 0.001f, TEST_LOCATION);
+    SettleGeometryScroll(application);
+    DALI_TEST_CHECK(!view.IsScrolling());
+    DALI_TEST_EQUALS(RegressionAxisOffset(view, vertical), 50.5f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(RegressionActorPosition(content, vertical, true), -50.5f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(starts, 1, TEST_LOCATION);
+    DALI_TEST_EQUALS(finishes, 1, TEST_LOCATION);
+  }
   END_TEST;
 }

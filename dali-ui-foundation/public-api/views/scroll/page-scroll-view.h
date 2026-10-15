@@ -117,6 +117,9 @@ public: // Page API
    *  - Horizontal scrolling → size.x
    *
    * Set to (0, 0) (the default) to use the viewport size as the page size.
+   * An active explicit page request resolves its destination using the new size
+   * at normal completion. Setting an equivalent effective size preserves a settled
+   * partial-page selection.
    *
    * @param[in] size Page size in pixels.
    */
@@ -150,10 +153,11 @@ public: // Page API
   /**
    * @brief Animates or snaps to the given page.
    *
-   * Before the page size is available, if a NotifyPages* count is pending and no
-   * scroll is active, either mode records the requested page for the first valid
+   * Before usable viewport and content geometry is available, if a NotifyPages*
+   * count is pending, either mode records the requested page for the first valid
    * layout. This logical selection emits PageChangedSignal when changed, without
-   * ScrollStartedSignal, ScrollingSignal or ScrollFinishedSignal.
+   * ScrollStartedSignal, ScrollingSignal or ScrollFinishedSignal. An explicit
+   * page size alone does not make pre-layout geometry usable.
    *
    * An explicit target remains selected when the last page is only partially
    * scrollable, in either mode. Replacing an active request cancels it before
@@ -161,6 +165,8 @@ public: // Page API
    * target as reached. Newer page or free-scroll requests from synchronous handlers
    * take precedence, including handlers invoked while applying a pending selection
    * during layout. Internal NotifyPages/layout policy applies only to its own request.
+   * If geometry changes during a request, normal completion resolves the target
+   * against the current page size and count without restarting the animation.
    * Nested requests follow the notification ordering documented by ScrollView::ScrollTo().
    *
    * @param[in] page    Target page index, clamped to [0, GetPageCount()-1].
