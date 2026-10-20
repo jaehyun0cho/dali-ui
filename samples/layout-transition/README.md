@@ -60,7 +60,8 @@ Timing values use `SetDuration()`, `SetAlpha()`, and `SetDelay()` with matching
 getters. Animator callbacks read `GetView()`, `GetProgress()`, `GetFromBounds()`,
 and `GetToBounds()` from the supplied context. The callback reference is valid
 only during that callback; an explicit copy is an independent snapshot that
-retains the target `View`.
+retains the target `View`. `LayoutRect` is an alias of core `Dali::Bounds`, so
+its `x`, `y`, `width`, and `height` fields remain directly accessible.
 
 Bounds lengths retain public `value` and `unit` fields as a fixed scalar
 representation. `LayoutBoundsOffset::x/y` remain public length values.

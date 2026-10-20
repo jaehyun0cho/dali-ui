@@ -113,7 +113,7 @@ Layout processing is driven by **LayoutController** per window. In each ProcessE
 ### 4. Layout Types (layout-types)
 
 - **MeasuredSize**: measured width and height.
-- **LayoutRect**: x, y, width, height (placement region).
+- **LayoutRect**: alias of core `Dali::Bounds` (`Rect<float>`), with public x, y, width, height fields for the placement region. Additional layout metadata belongs in separate types.
 - **WRAP_CONTENT**: constant (-1.0f) indicating the view sizes to fit its content (natural size or children bounding box).
 - **MATCH_PARENT**: constant (-2.0f) indicating the view fills the parent container's available space. See **MATCH_PARENT semantics** below.
 - **LayoutAlignment**: FILL, START, CENTER, END (used by GridLayoutParams and StackLayoutParams for cross-axis alignment).

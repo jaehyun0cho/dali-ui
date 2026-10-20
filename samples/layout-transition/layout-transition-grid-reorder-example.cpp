@@ -541,7 +541,7 @@ private:
     mDragPreview    = View();
     mDraggedIndex   = 0u;
     mDragGrabOffset = Vector2(0.0f, 0.0f);
-    mDragBounds     = {};
+    mDragBounds     = LayoutRect{};
 
     if(dragPreview && dragPreview.GetParent())
     {

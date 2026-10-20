@@ -2246,8 +2246,8 @@ void CaptureReparentBoundsAnimator(const LayoutAnimatorContext& ctx)
 void ResetReparentBoundsCaptures()
 {
   gReparentBoundsFireCount = 0u;
-  gReparentFromBounds      = {};
-  gReparentToBounds        = {};
+  gReparentFromBounds      = LayoutRect{};
+  gReparentToBounds        = LayoutRect{};
 }
 } // namespace
 
@@ -5164,8 +5164,8 @@ void ResetSelfCaptures()
   gSelfAnimInvokes     = 0u;
   gSelfAnimSlot        = LayoutTransitionSlot::CHANGE;
   gSelfAnimCause       = LayoutChangeCause::OTHER;
-  gSelfAnimFrom        = {};
-  gSelfAnimTo          = {};
+  gSelfAnimFrom        = LayoutRect{};
+  gSelfAnimTo          = LayoutRect{};
   gSelfAnimView         = nullptr;
   gParentAnimInvokes    = 0u;
   gParentAnimView       = nullptr;

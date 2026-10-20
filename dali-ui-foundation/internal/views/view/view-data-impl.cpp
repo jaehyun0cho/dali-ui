@@ -519,9 +519,9 @@ inline bool IsValidLayoutRect(const LayoutRect& b)
 
 // Equality of two arrange rects, used as the arrange cache KEY comparison.
 //
-// EXACT, deliberately not an epsilon compare (LayoutRect has no operator==, so
-// this is spelled out here). The arrange cache serves a stored rect in place of
-// re-running a producer, and the same rect is then written to the actor by
+// EXACT, deliberately not the epsilon comparison of the core Bounds equality
+// operator. The arrange cache serves a stored rect in place of re-running a
+// producer, and the same rect is then written to the actor by
 // ApplySelfBoundsIfChanged, whose write suppression is itself an exact `!=`
 // test. An epsilon key would let a sub-epsilon slot change hit the cache and
 // then be silently applied as the OLD geometry, i.e. a wrong result rather than

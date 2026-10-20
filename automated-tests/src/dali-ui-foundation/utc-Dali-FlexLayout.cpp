@@ -452,8 +452,8 @@ int UtcDaliFlexLayoutMeasureArrangeP(void)
   LayoutRect a = layout.Arrange(LayoutRect(0, 0, 200, 100));
   DALI_TEST_EQUALS(m.GetWidth(), 200.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(m.GetHeight(), 100.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(a.GetWidth(), 200.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(a.GetHeight(), 100.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(a.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(a.height, 100.0f, TEST_LOCATION);
   END_TEST;
 }
 

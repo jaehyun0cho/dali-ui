@@ -231,7 +231,7 @@ Animator mode는 일부 alpha만 직접 평가합니다. `BOUNCE`, `SIN`, `EASE_
 
 ## 값 타입과 API migration
 
-`LayoutTransitionTiming`, `LayoutAnimatorTiming`, `LayoutBoundsEffect`, `LayoutAnimatorContext`는 field를 private implementation에 저장합니다. 이후 implementation에 field를 추가해도 공개 object layout은 유지할 수 있습니다. 기존 직접 저장 타입을 전환하는 이번 변경 자체는 의도적인 source/ABI break이므로, 애플리케이션과 의존 library의 source migration 및 rebuild가 필요합니다.
+`LayoutTransitionTiming`, `LayoutAnimatorTiming`, `LayoutBoundsEffect`, `LayoutAnimatorContext`는 field를 private implementation에 저장합니다. 이후 implementation에 field를 추가해도 공개 object layout은 유지할 수 있습니다. 기존 직접 저장 타입을 전환하는 이번 변경 자체는 의도적인 source/ABI break이므로, 애플리케이션과 의존 library의 source migration 및 rebuild가 필요합니다. `LayoutRect`의 alias 전환도 타입 정체성과 이를 사용하는 signature를 바꾸므로, 객체 크기가 같다는 이유로 기존 ABI가 유지되지는 않습니다.
 
 | 기존 사용 | 현재 API |
 |---|---|
@@ -241,6 +241,9 @@ Animator mode는 일부 alpha만 직접 평가합니다. `BOUNCE`, `SIN`, `EASE_
 | `effect.hasOffset`, `effect.hasSizeFactor` | `HasOffset()`, `HasSizeFactor()`로 조회합니다. `SetOffset()` / `ClearOffset()`, `SetSizeFactor()` / `ClearSizeFactor()`로 option과 값을 함께 변경합니다. |
 | 나머지 effect field | `GetSizeFactorX()`, `GetSizeFactorY()`, `GetAnchorX()`, `GetAnchorY()`, `GetClipMode()`와 기존의 값 묶음 Setter를 사용합니다. |
 | Context field | `GetView()`, `GetSlot()`, `GetChangeCause()`, `GetProgress()`, `GetRawProgress()`, `GetFromBounds()`, `GetToBounds()`를 사용합니다. |
+| `LayoutRect` scalar Getter/Setter | `x`, `y`, `width`, `height`에 직접 접근합니다. `LayoutRect`는 core `Dali::Bounds`의 alias입니다. |
+| `rect.GetPosition()`, `rect.GetSize()` | `Vector2(rect.x, rect.y)`, `Vector2(rect.width, rect.height)`로 생성합니다. |
+| `rect = {}` | rectangle assignment가 선택되도록 `rect = LayoutRect{}`를 사용합니다. |
 
 두 Timing 타입은 default 생성과 `Duration`, `AlphaFunction`, `Duration` 순서의 인자 1~3개 brace 생성을 계속 지원합니다. 기본값과 등록 시점의 validation도 유지합니다. Timing과 Effect의 복사본은 독립된 값이며, Effect 내부 Timing도 독립적으로 복사됩니다. Timing과 Effect를 move한 이후 원본은 소멸하거나 새 값을 대입할 수 있으며, 그 외에는 사용하지 않습니다.
 
@@ -254,7 +257,7 @@ framework는 stack storage로 매 callback의 Context를 생성합니다. 애플
 
 snapshot은 동일한 target `View` handle을 유지하며 View 자체를 복제하지는 않습니다. target 자신의 callback closure 안에 snapshot을 보관하면 `View`를 직접 capture한 경우처럼 reference cycle이 생길 수 있습니다. target의 수명을 유지할 필요가 없다면 `WeakHandle<View>`와 필요한 scalar/bounds 값만 따로 저장하세요.
 
-`MeasuredSize`의 두 public 크기 field와 `LayoutBoundsOffset`의 두 public length axis는 고정된 표현으로 유지합니다. 추가 측정 또는 offset metadata는 별도 타입으로 제공합니다.
+`MeasuredSize`의 두 public 크기 field와 `LayoutBoundsOffset`의 두 public length axis는 고정된 표현으로 유지합니다. 추가 측정 또는 offset metadata는 별도 타입으로 제공합니다. `LayoutRect`는 core `Bounds`의 고정 표현을 사용합니다. core rectangle의 equality는 epsilon 비교이지만, layout arrange cache의 exact field 비교와 transition bounds의 기존 tolerance는 유지합니다.
 
 ---
 

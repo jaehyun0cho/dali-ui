@@ -2045,8 +2045,8 @@ int UtcDaliViewArrangeP(void)
   View              view = View::New();
   LayoutRect        bounds(10.0f, 20.0f, 100.0f, 80.0f);
   LayoutRect        size = view.Arrange(bounds);
-  DALI_TEST_EQUALS(size.GetWidth(), 100.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(size.GetHeight(), 80.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(size.width, 100.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(size.height, 80.0f, TEST_LOCATION);
   END_TEST;
 }
 
@@ -2313,8 +2313,8 @@ int UtcDaliViewArrangeWithLayoutP(void)
   LayoutRect   arranged = layout.Arrange(LayoutRect(0, 0, 200, 200));
   DALI_TEST_EQUALS(measured.GetWidth(), 200.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(measured.GetHeight(), 200.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(arranged.GetWidth(), 200.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(arranged.GetHeight(), 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(arranged.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(arranged.height, 200.0f, TEST_LOCATION);
   END_TEST;
 }
 

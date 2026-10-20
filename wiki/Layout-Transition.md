@@ -539,7 +539,8 @@ while a secondary visual effect follows `rawProgress`.
 implementation fields can be added without changing these public object layouts.
 The conversion from the previous directly stored types is itself an intentional
 source and ABI break: applications and dependent libraries must migrate their
-sources and rebuild.
+sources and rebuild. The `LayoutRect` alias also changes type identity and
+signatures that use it; equal object sizes do not preserve the previous ABI.
 
 | Previous use | Current API |
 |---|---|
@@ -549,6 +550,9 @@ sources and rebuild.
 | `effect.hasOffset`, `effect.hasSizeFactor` | `HasOffset()`, `HasSizeFactor()`; use `SetOffset()` / `ClearOffset()` and `SetSizeFactor()` / `ClearSizeFactor()` to update the options and their values together |
 | Remaining effect fields | `GetSizeFactorX()`, `GetSizeFactorY()`, `GetAnchorX()`, `GetAnchorY()`, `GetClipMode()` and the existing grouped setters |
 | Context fields | `GetView()`, `GetSlot()`, `GetChangeCause()`, `GetProgress()`, `GetRawProgress()`, `GetFromBounds()`, `GetToBounds()` |
+| `LayoutRect` scalar getters/setters | Access `x`, `y`, `width`, `height` directly; `LayoutRect` is an alias of core `Dali::Bounds` |
+| `rect.GetPosition()`, `rect.GetSize()` | `Vector2(rect.x, rect.y)`, `Vector2(rect.width, rect.height)` |
+| `rect = {}` | `rect = LayoutRect{}` to select rectangle assignment explicitly |
 
 Both timing types still support default construction and brace construction with
 one, two, or three arguments in the order `Duration`, `AlphaFunction`, `Duration`.
@@ -596,7 +600,10 @@ the target is unnecessary.
 
 `MeasuredSize` retains its two public size fields, and `LayoutBoundsOffset`
 retains its two public length axes. These representations are fixed; additional
-measurement or offset metadata requires a separate type.
+measurement or offset metadata requires a separate type. `LayoutRect`
+uses the fixed core `Bounds` representation. Core rectangle equality uses an
+epsilon comparison; the layout arrange cache continues to compare fields exactly,
+and transition bounds comparison continues to use its existing tolerance.
 
 ---
 

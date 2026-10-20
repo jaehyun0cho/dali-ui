@@ -599,7 +599,7 @@ private:
     mDraggedOriginalReqW = 0.0f;
     mDraggedOriginalReqH = 0.0f;
     mDragGrabOffsetY     = 0.0f;
-    mDragBounds          = {};
+    mDragBounds          = LayoutRect{};
 
     if(!droppedChild || !proxyToRemove)
     {

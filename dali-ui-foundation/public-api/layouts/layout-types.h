@@ -18,6 +18,7 @@
  */
 
 // EXTERNAL INCLUDES
+#include <dali/public-api/math/rect.h>
 #include <dali/public-api/math/vector2.h>
 #include <dali/public-api/signals/callback.h>
 #include <cfloat>
@@ -187,123 +188,13 @@ public:
 };
 
 /**
- * @brief Class representing a rectangle for layout positioning and sizing.
+ * @brief Layout bounds expressed as the core 2D rectangle value type.
+ *
+ * LayoutRect is an alias of Dali::Bounds, with public x, y, width and height
+ * fields. Its representation follows the core Bounds ABI. Layout-specific
+ * metadata belongs in a separate type.
  */
-class DALI_UI_API LayoutRect
-{
-public:
-  /**
-   * @brief Default constructor.
-   */
-  LayoutRect()
-  : x(0.0f),
-    y(0.0f),
-    width(0.0f),
-    height(0.0f)
-  {
-  }
-
-  /**
-   * @brief Constructor with position and size.
-   *
-   * @param[in] posX X position
-   * @param[in] posY Y position
-   * @param[in] w Width
-   * @param[in] h Height
-   */
-  LayoutRect(float posX, float posY, float w, float h)
-  : x(posX),
-    y(posY),
-    width(w),
-    height(h)
-  {
-  }
-
-  /**
-   * @brief Gets the X position.
-   */
-  float GetX() const
-  {
-    return x;
-  }
-
-  /**
-   * @brief Sets the X position.
-   */
-  void SetX(float posX)
-  {
-    x = posX;
-  }
-
-  /**
-   * @brief Gets the Y position.
-   */
-  float GetY() const
-  {
-    return y;
-  }
-
-  /**
-   * @brief Sets the Y position.
-   */
-  void SetY(float posY)
-  {
-    y = posY;
-  }
-
-  /**
-   * @brief Gets the width.
-   */
-  float GetWidth() const
-  {
-    return width;
-  }
-
-  /**
-   * @brief Sets the width.
-   */
-  void SetWidth(float w)
-  {
-    width = w;
-  }
-
-  /**
-   * @brief Gets the height.
-   */
-  float GetHeight() const
-  {
-    return height;
-  }
-
-  /**
-   * @brief Sets the height.
-   */
-  void SetHeight(float h)
-  {
-    height = h;
-  }
-
-  /**
-   * @brief Gets the position as Vector2.
-   */
-  Vector2 GetPosition() const
-  {
-    return Vector2(x, y);
-  }
-
-  /**
-   * @brief Gets the size as Vector2.
-   */
-  Vector2 GetSize() const
-  {
-    return Vector2(width, height);
-  }
-
-  float x;      ///< X position
-  float y;      ///< Y position
-  float width;  ///< Width
-  float height; ///< Height
-};
+using LayoutRect = DALI_NAMESPACE::Bounds;
 
 // ============================================================================
 // Layout Callback types

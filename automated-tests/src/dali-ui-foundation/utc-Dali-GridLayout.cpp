@@ -518,8 +518,8 @@ int UtcDaliGridLayoutMeasureArrangeP(void)
   LayoutRect a = layout.Arrange(LayoutRect(0, 0, 200, 120));
   DALI_TEST_EQUALS(m.GetWidth(), 200.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(m.GetHeight(), 120.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(a.GetWidth(), 200.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(a.GetHeight(), 120.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(a.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(a.height, 120.0f, TEST_LOCATION);
   END_TEST;
 }
 

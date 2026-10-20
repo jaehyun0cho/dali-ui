@@ -109,53 +109,53 @@ LayoutRect AbsoluteLayoutParams::GetBounds() const
 AbsoluteLayoutParams& AbsoluteLayoutParams::SetX(float x)
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  mImpl->mBounds.SetX(x);
+  mImpl->mBounds.x = x;
   return *this;
 }
 
 float AbsoluteLayoutParams::GetX() const
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  return mImpl->mBounds.GetX();
+  return mImpl->mBounds.x;
 }
 
 AbsoluteLayoutParams& AbsoluteLayoutParams::SetY(float y)
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  mImpl->mBounds.SetY(y);
+  mImpl->mBounds.y = y;
   return *this;
 }
 
 float AbsoluteLayoutParams::GetY() const
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  return mImpl->mBounds.GetY();
+  return mImpl->mBounds.y;
 }
 
 AbsoluteLayoutParams& AbsoluteLayoutParams::SetWidth(float width)
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  mImpl->mBounds.SetWidth(width);
+  mImpl->mBounds.width = width;
   return *this;
 }
 
 float AbsoluteLayoutParams::GetWidth() const
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  return mImpl->mBounds.GetWidth();
+  return mImpl->mBounds.width;
 }
 
 AbsoluteLayoutParams& AbsoluteLayoutParams::SetHeight(float height)
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  mImpl->mBounds.SetHeight(height);
+  mImpl->mBounds.height = height;
   return *this;
 }
 
 float AbsoluteLayoutParams::GetHeight() const
 {
   DALI_ASSERT_VALID_LAYOUT_PARAMS(mImpl);
-  return mImpl->mBounds.GetHeight();
+  return mImpl->mBounds.height;
 }
 
 AbsoluteLayoutParams& AbsoluteLayoutParams::SetFlags(AbsoluteLayoutFlags flags)

@@ -158,10 +158,10 @@ int UtcDaliAbsoluteLayoutSetLayoutBoundsP(void)
   LayoutRect bounds(10.0f, 20.0f, 100.0f, 50.0f);
   child.SetLayoutParams(AbsoluteLayoutParams::New().SetBounds(bounds));
   LayoutRect got = GetRequiredLayoutParams<AbsoluteLayoutParams>(child).GetBounds();
-  DALI_TEST_EQUALS(got.GetX(), 10.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetY(), 20.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetWidth(), 100.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetHeight(), 50.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.x, 10.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.y, 20.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.width, 100.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.height, 50.0f, TEST_LOCATION);
   END_TEST;
 }
 
@@ -173,10 +173,10 @@ int UtcDaliAbsoluteLayoutGetLayoutBoundsP(void)
   layout.Add(child);
   child.SetLayoutParams(AbsoluteLayoutParams::New());
   LayoutRect got = GetRequiredLayoutParams<AbsoluteLayoutParams>(child).GetBounds();
-  DALI_TEST_EQUALS(got.GetX(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetY(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetWidth(), -1.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetHeight(), -1.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.x, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.y, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.width, -1.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.height, -1.0f, TEST_LOCATION);
   END_TEST;
 }
 
@@ -199,32 +199,32 @@ int UtcDaliAbsoluteLayoutParamsValueSemanticsP(void)
   a.SetLayoutParams(source);
   b.SetLayoutParams(source);
   source.SetBounds(boundsB).SetFlags(AbsoluteLayoutFlags::ALL);
-  DALI_TEST_EQUALS(copied.GetBounds().GetX(), boundsA.GetX(), TEST_LOCATION);
+  DALI_TEST_EQUALS(copied.GetBounds().x, boundsA.x, TEST_LOCATION);
   DALI_TEST_EQUALS(static_cast<uint8_t>(assigned.GetFlags()), static_cast<uint8_t>(AbsoluteLayoutFlags::POSITION_PROPORTIONAL), TEST_LOCATION);
 
   auto storedA = GetRequiredLayoutParams<AbsoluteLayoutParams>(a);
   auto storedB = GetRequiredLayoutParams<AbsoluteLayoutParams>(b);
-  DALI_TEST_EQUALS(storedA.GetBounds().GetX(), boundsA.GetX(), TEST_LOCATION);
-  DALI_TEST_EQUALS(storedA.GetBounds().GetY(), boundsA.GetY(), TEST_LOCATION);
-  DALI_TEST_EQUALS(storedA.GetBounds().GetWidth(), boundsA.GetWidth(), TEST_LOCATION);
-  DALI_TEST_EQUALS(storedA.GetBounds().GetHeight(), boundsA.GetHeight(), TEST_LOCATION);
+  DALI_TEST_EQUALS(storedA.GetBounds().x, boundsA.x, TEST_LOCATION);
+  DALI_TEST_EQUALS(storedA.GetBounds().y, boundsA.y, TEST_LOCATION);
+  DALI_TEST_EQUALS(storedA.GetBounds().width, boundsA.width, TEST_LOCATION);
+  DALI_TEST_EQUALS(storedA.GetBounds().height, boundsA.height, TEST_LOCATION);
   DALI_TEST_EQUALS(static_cast<uint8_t>(storedA.GetFlags()), static_cast<uint8_t>(AbsoluteLayoutFlags::POSITION_PROPORTIONAL), TEST_LOCATION);
-  DALI_TEST_EQUALS(storedB.GetBounds().GetX(), boundsA.GetX(), TEST_LOCATION);
+  DALI_TEST_EQUALS(storedB.GetBounds().x, boundsA.x, TEST_LOCATION);
 
   storedA.SetBounds(boundsB).SetFlags(AbsoluteLayoutFlags::SIZE_PROPORTIONAL);
   auto unchangedA = GetRequiredLayoutParams<AbsoluteLayoutParams>(a);
-  DALI_TEST_EQUALS(unchangedA.GetBounds().GetX(), boundsA.GetX(), TEST_LOCATION);
+  DALI_TEST_EQUALS(unchangedA.GetBounds().x, boundsA.x, TEST_LOCATION);
   DALI_TEST_EQUALS(static_cast<uint8_t>(unchangedA.GetFlags()), static_cast<uint8_t>(AbsoluteLayoutFlags::POSITION_PROPORTIONAL), TEST_LOCATION);
 
   a.SetLayoutParams(storedA);
   auto committedA = GetRequiredLayoutParams<AbsoluteLayoutParams>(a);
   auto unchangedB = GetRequiredLayoutParams<AbsoluteLayoutParams>(b);
-  DALI_TEST_EQUALS(committedA.GetBounds().GetX(), boundsB.GetX(), TEST_LOCATION);
-  DALI_TEST_EQUALS(committedA.GetBounds().GetY(), boundsB.GetY(), TEST_LOCATION);
-  DALI_TEST_EQUALS(committedA.GetBounds().GetWidth(), boundsB.GetWidth(), TEST_LOCATION);
-  DALI_TEST_EQUALS(committedA.GetBounds().GetHeight(), boundsB.GetHeight(), TEST_LOCATION);
+  DALI_TEST_EQUALS(committedA.GetBounds().x, boundsB.x, TEST_LOCATION);
+  DALI_TEST_EQUALS(committedA.GetBounds().y, boundsB.y, TEST_LOCATION);
+  DALI_TEST_EQUALS(committedA.GetBounds().width, boundsB.width, TEST_LOCATION);
+  DALI_TEST_EQUALS(committedA.GetBounds().height, boundsB.height, TEST_LOCATION);
   DALI_TEST_EQUALS(static_cast<uint8_t>(committedA.GetFlags()), static_cast<uint8_t>(AbsoluteLayoutFlags::SIZE_PROPORTIONAL), TEST_LOCATION);
-  DALI_TEST_EQUALS(unchangedB.GetBounds().GetX(), boundsA.GetX(), TEST_LOCATION);
+  DALI_TEST_EQUALS(unchangedB.GetBounds().x, boundsA.x, TEST_LOCATION);
   AbsoluteLayoutParams missingParams = AbsoluteLayoutParams::New().SetX(7.0f);
   DALI_TEST_CHECK(!empty.TryGetLayoutParams(missingParams));
   DALI_TEST_EQUALS(missingParams.GetX(), 7.0f, TEST_LOCATION);
@@ -268,10 +268,10 @@ int UtcDaliAbsoluteLayoutLayoutBoundsZeroP(void)
   layout.Add(child);
   child.SetLayoutParams(AbsoluteLayoutParams::New().SetBounds(LayoutRect(0, 0, 0, 0)));
   LayoutRect got = GetRequiredLayoutParams<AbsoluteLayoutParams>(child).GetBounds();
-  DALI_TEST_EQUALS(got.GetX(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetY(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetWidth(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(got.GetHeight(), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.x, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.y, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.width, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(got.height, 0.0f, TEST_LOCATION);
   END_TEST;
 }
 
@@ -300,8 +300,8 @@ int UtcDaliAbsoluteLayoutMeasureArrangeP(void)
   LayoutRect a = layout.Arrange(LayoutRect(0, 0, 200, 150));
   DALI_TEST_EQUALS(m.GetWidth(), 200.0f, TEST_LOCATION);
   DALI_TEST_EQUALS(m.GetHeight(), 150.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(a.GetWidth(), 200.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(a.GetHeight(), 150.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(a.width, 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(a.height, 150.0f, TEST_LOCATION);
   END_TEST;
 }
 
@@ -684,10 +684,10 @@ int UtcDaliAbsoluteLayoutBoundsRepeatedUpdateP(void)
     layout.Measure(300.0f, 200.0f);
     layout.Arrange(LayoutRect(0.0f, 0.0f, 300.0f, 200.0f));
 
-    DALI_TEST_EQUALS(child.GetPositionX(), rect.GetX(), TEST_LOCATION);
-    DALI_TEST_EQUALS(child.GetPositionY(), rect.GetY(), TEST_LOCATION);
-    DALI_TEST_EQUALS(child.GetSize().width, rect.GetWidth(), TEST_LOCATION);
-    DALI_TEST_EQUALS(child.GetSize().height, rect.GetHeight(), TEST_LOCATION);
+    DALI_TEST_EQUALS(child.GetPositionX(), rect.x, TEST_LOCATION);
+    DALI_TEST_EQUALS(child.GetPositionY(), rect.y, TEST_LOCATION);
+    DALI_TEST_EQUALS(child.GetSize().width, rect.width, TEST_LOCATION);
+    DALI_TEST_EQUALS(child.GetSize().height, rect.height, TEST_LOCATION);
   }
   END_TEST;
 }
@@ -852,11 +852,11 @@ int UtcDaliAbsoluteLayoutParamsIndividualBoundsAndMoveP(void)
   DALI_TEST_EQUALS(params.GetHeight(), 60.0f, TEST_LOCATION);
 
   AbsoluteLayoutParams moved(std::move(params));
-  DALI_TEST_EQUALS(moved.GetBounds().GetY(), 8.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(moved.GetBounds().y, 8.0f, TEST_LOCATION);
   AbsoluteLayoutParams assigned = AbsoluteLayoutParams::New();
   assigned = std::move(moved);
-  DALI_TEST_EQUALS(assigned.GetBounds().GetWidth(), 120.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(assigned.GetBounds().GetHeight(), 60.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(assigned.GetBounds().width, 120.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(assigned.GetBounds().height, 60.0f, TEST_LOCATION);
   // Self-move through a reference alias so the this != &other guard in
   // AbsoluteLayoutParams::operator=(AbsoluteLayoutParams&&) is exercised
   // without tripping GCC 13 -Wself-move, which only flags a literal self-move.

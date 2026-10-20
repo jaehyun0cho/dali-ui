@@ -94,39 +94,37 @@ int UtcDaliMeasuredSizeToVector2P(void)
 int UtcDaliLayoutRectDefaultConstructorP(void)
 {
   LayoutRect rect;
-  DALI_TEST_EQUALS(rect.GetX(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetY(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetWidth(), 0.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetHeight(), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.x, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.y, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.width, 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.height, 0.0f, TEST_LOCATION);
   END_TEST;
 }
 
 int UtcDaliLayoutRectConstructorP(void)
 {
+  static_assert(std::is_same<LayoutRect, Bounds>::value, "LayoutRect must remain an alias of core Bounds");
   const float x = 1.0f, y = 2.0f, w = 3.0f, h = 4.0f;
-  LayoutRect rect(x, y, w, h);
-  DALI_TEST_EQUALS(rect.GetX(), x, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetY(), y, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetWidth(), w, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetHeight(), h, TEST_LOCATION);
+  const Bounds coreBounds(x, y, w, h);
+  LayoutRect   rect = coreBounds;
+  DALI_TEST_EQUALS(rect.x, x, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.y, y, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.width, w, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.height, h, TEST_LOCATION);
   END_TEST;
 }
 
-int UtcDaliLayoutRectSettersGettersP(void)
+int UtcDaliLayoutRectFieldsP(void)
 {
   LayoutRect rect;
-  rect.SetX(5.0f);
-  rect.SetY(10.0f);
-  rect.SetWidth(100.0f);
-  rect.SetHeight(200.0f);
-  DALI_TEST_EQUALS(rect.GetX(), 5.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetY(), 10.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetWidth(), 100.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetHeight(), 200.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetPosition().x, 5.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetPosition().y, 10.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetSize().width, 100.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(rect.GetSize().height, 200.0f, TEST_LOCATION);
+  rect.x      = 5.0f;
+  rect.y      = 10.0f;
+  rect.width  = 100.0f;
+  rect.height = 200.0f;
+  DALI_TEST_EQUALS(rect.x, 5.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.y, 10.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.width, 100.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rect.height, 200.0f, TEST_LOCATION);
   END_TEST;
 }
 

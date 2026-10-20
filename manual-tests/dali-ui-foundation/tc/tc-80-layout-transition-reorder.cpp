@@ -75,7 +75,7 @@ public:
     mEditMode = false;
     mDragging = false;
     mDraggedIndex = 0u;
-    mDragBounds = {};
+    mDragBounds           = LayoutRect{};
     mDragGrabOffsetY = 0.0f;
     mDraggedOriginalReqW = 0.0f;
     mDraggedOriginalReqH = 0.0f;
@@ -607,7 +607,7 @@ private:
     mDraggedOriginalReqW = 0.0f;
     mDraggedOriginalReqH = 0.0f;
     mDragGrabOffsetY     = 0.0f;
-    mDragBounds          = {};
+    mDragBounds          = LayoutRect{};
 
     if(!droppedChild || !proxyToRemove)
     {

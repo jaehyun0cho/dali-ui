@@ -77,7 +77,7 @@ public:
   {
     mDragging = false;
     mDraggedIndex = 0u;
-    mDragBounds = {};
+    mDragBounds            = LayoutRect{};
     mDragGrabOffset = Vector2::ZERO;
     mLastTouchRootPosition = Vector2::ZERO;
     mLongPressArmed = false;
@@ -560,7 +560,7 @@ private:
     mDragPreview    = View();
     mDraggedIndex   = 0u;
     mDragGrabOffset = Vector2(0.0f, 0.0f);
-    mDragBounds     = {};
+    mDragBounds     = LayoutRect{};
 
     if(dragPreview && dragPreview.GetParent())
     {
