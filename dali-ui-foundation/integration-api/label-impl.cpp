@@ -1577,6 +1577,11 @@ Ui::Text::Fit LabelImpl::GetTextFit() const
   return Ui::Text::Fit::None();
 }
 
+bool LabelImpl::IsTextFitActive() const
+{
+  return mController->IsTextFitEnabled() || mController->IsTextFitCandidatesEnabled();
+}
+
 void LabelImpl::ClearTextFitInternal()
 {
   if(mController->IsTextFitEnabled() || mController->IsTextFitCandidatesEnabled())

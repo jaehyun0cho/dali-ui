@@ -31,7 +31,6 @@
 #include <dali-ui-foundation/public-api/layouts/grid-layout-manager.h>
 #include <dali-ui-foundation/public-api/layouts/scroll-view-layout-manager.h>
 #include <dali-ui-foundation/public-api/layouts/stack-layout-manager.h>
-#include <dali-ui-foundation/public-api/text/fit/text-fit.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
 
 namespace DALI_NAMESPACE
@@ -286,10 +285,10 @@ HeightAtWidth ResolveHeightAtWidth(ViewImpl& view, float width, float heightBudg
   if(type == typeid(Ui::Integration::LabelImpl))
   {
     auto& label = static_cast<Ui::Integration::LabelImpl&>(view);
-    // A single-line Label's height does not follow its width. A text-fit Label measures under a
-    // temporarily changed font configuration, which a metric query cannot reproduce. The cheap
-    // test runs first: GetTextFit() builds a configuration object.
-    if(label.IsMultiLine() && label.GetTextFit().GetType() == Ui::Text::Fit::Type::NONE)
+    // A single-line Label's height does not follow its width. A text-fit Label (IsTextFitActive(),
+    // the condition its measure tests) measures under a temporarily changed font configuration,
+    // which a metric query cannot reproduce.
+    if(label.IsMultiLine() && !label.IsTextFitActive())
     {
       return ResolveLabelHeight(label, width, heightBudget);
     }

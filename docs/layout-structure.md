@@ -576,8 +576,8 @@ a supported producer, that child's whole supported subtree, because whether it
 depends on its width is only known after the walk; each visited view costs two
 trait lookups and a type test, each visited container one temporary copy of its
 child list (plus per-child buffers when something depends on its width), and each
-multi-line `Label` one text-fit configuration allocation plus, when it is asked for
-a width other than the one its text was last laid out at, one more text layout. A `ScrollView` arranges on every
+multi-line `Label`, when it is asked for a width other than the one its text was
+last laid out at, one more text layout. A `ScrollView` arranges on every
 layout pass that reaches its root (`ArrangePolicy::ALWAYS`), so its content is
 walked on every such pass, even when nothing in it depends on its width; a
 `WRAP_CONTENT`-height layout root resolves once per pass.

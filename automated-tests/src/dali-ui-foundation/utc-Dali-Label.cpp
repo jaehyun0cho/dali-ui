@@ -5396,3 +5396,37 @@ int UtcDaliLabelStandaloneWrapContentKeepsNaturalSizeUnderZeroSizedParentP(void)
 
   END_TEST;
 }
+
+// IsTextFitActive() reports exactly what GetTextFit() reports through its type -- whether a text-fit
+// range or text-fit candidates drive the measure -- in every state the setters reach, without building
+// a Text::Fit configuration.
+int UtcDaliLabelIsTextFitActiveP(void)
+{
+  UiTestApplication application;
+  Label             label = Label::New("text");
+  auto&             impl  = static_cast<Dali::Ui::Integration::LabelImpl&>(label.GetImplementation());
+
+  DALI_TEST_CHECK(!impl.IsTextFitActive());
+  DALI_TEST_CHECK(label.GetTextFit().GetType() == Text::Fit::Type::NONE);
+
+  label.SetTextFit(Text::Fit::Range(8.0f, 40.0f, 4.0f));
+  DALI_TEST_CHECK(impl.IsTextFitActive());
+  DALI_TEST_CHECK(label.GetTextFit().GetType() == Text::Fit::Type::RANGE);
+
+  label.SetTextFit(Text::Fit::None());
+  DALI_TEST_CHECK(!impl.IsTextFitActive());
+  DALI_TEST_CHECK(label.GetTextFit().GetType() == Text::Fit::Type::NONE);
+
+  Dali::Vector<Text::Fit::Candidate> candidates;
+  candidates.PushBack(Text::Fit::Candidate(8.0f, 10.0f));
+  candidates.PushBack(Text::Fit::Candidate(16.0f, 18.0f));
+  label.SetTextFit(candidates);
+  DALI_TEST_CHECK(impl.IsTextFitActive());
+  DALI_TEST_CHECK(label.GetTextFit().GetType() == Text::Fit::Type::CANDIDATES);
+
+  label.SetTextFit(Dali::Vector<Text::Fit::Candidate>());
+  DALI_TEST_CHECK(!impl.IsTextFitActive());
+  DALI_TEST_CHECK(label.GetTextFit().GetType() == Text::Fit::Type::NONE);
+
+  END_TEST;
+}

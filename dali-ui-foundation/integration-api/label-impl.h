@@ -563,6 +563,16 @@ public:
   Ui::Text::Fit GetTextFit() const;
 
   /**
+   * @brief Whether a text-fit range or text-fit candidates are enabled.
+   *
+   * The very condition OnMeasure() tests before it measures under a temporarily changed font
+   * configuration. Unlike GetTextFit(), it builds no configuration object.
+   *
+   * @return True when text fit is active
+   */
+  bool IsTextFitActive() const;
+
+  /**
    * @brief Sets the explicit font size scale used internally.
    */
   void SetFontSizeScale(float scale);
