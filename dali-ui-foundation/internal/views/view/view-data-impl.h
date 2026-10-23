@@ -493,7 +493,9 @@ public:
   /// Plain one-line readers of the layout bookkeeping bits. They exist so the
   /// internal UTC target can assert on cache state directly instead of inferring
   /// it from geometry; this is an internal, non-exported header, so they add no
-  /// public API and no ABI surface. Nothing in the library reads them.
+  /// public API and no ABI surface. Besides the internal UTC target, only the
+  /// height-for-width resolution reads IsMeasureCacheValid(), GetLastMeasureScale()
+  /// and GetLastMeasureConstraint() (a Label's measured text height).
   /// @{
   bool IsMeasureCacheValid() const
   {
@@ -505,6 +507,13 @@ public:
   float GetLastMeasureScale() const
   {
     return mMeasureKeyOrPropagation.scaleKey;
+  }
+  /// The effective natural constraint the measure cache entry was produced for, a KEY
+  /// term of the measure hit predicate (published by Measure() together with the scale
+  /// key). Meaningful only while IsMeasureCacheValid().
+  MeasuredSize GetLastMeasureConstraint() const
+  {
+    return mLastMeasureConstraint;
   }
   bool IsArrangeCacheValid() const
   {
@@ -1507,7 +1516,9 @@ private:
    *
    * Single concern: the CACHED RESULTS only. Both caches go together because a
    * measured size is an input to this view's own arrangement, so an arrange
-   * result cannot outlive the measurement it was produced against.
+   * result cannot outlive the measurement it was produced against. So does the
+   * height-for-width text-height memo of a resolved Label (DropHeightForWidthMemo),
+   * which is derived from the same inputs.
    *
    * Deliberately does NOT touch mMeasureDirty. Dirty means "this view has
    * layout work that has not been consumed yet"; it is consumed at pass entry

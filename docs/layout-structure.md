@@ -563,9 +563,12 @@ at a slot that carries the resolved height.
   a `MATCH_PARENT`-width `Label` with no sibling that sets the width -- collapses
   to its padding.
 
-**Caching and cost.** The resolution keeps no state of its own and adds no
-per-view memory. A change to a `Label`'s text or style, or to any layout-tracked
-property, invalidates every ancestor as before. A measured size rewritten by an
+**Caching and cost.** The resolution keeps one cache of its own, dropped together
+with a view's measure and arrange caches: for a multi-line `Label` it has
+resolved, a small trait with the text height of the width it was last resolved
+at. A change to a `Label`'s text, font or line settings, or to any layout-tracked
+property, invalidates every ancestor as before; the `Label` settings that do not
+are checked by the resolution itself (below). A measured size rewritten by an
 arrange-owned re-measure (a `MATCH_PARENT` child re-measured at its slot) does not
 invalidate the arranging ancestor -- the owner scope stops that walk -- so a later
 arrange miss can read it; the result can differ once and then re-converges, the
@@ -575,9 +578,12 @@ An arrange that misses walks, for every child with a `WRAP_CONTENT` height that 
 a supported producer, that child's whole supported subtree, because whether it
 depends on its width is only known after the walk; each visited view costs two
 trait lookups and a type test, each visited container one temporary copy of its
-child list (plus per-child buffers when something depends on its width), and each
-multi-line `Label`, when it is asked for a width other than the one its text was
-last laid out at, one more text layout. A `ScrollView` arranges on every
+child list (plus per-child buffers when something depends on its width). A
+multi-line `Label` lays its text out only when neither its trait (same width, and
+none of its settings that do not invalidate the layout changed: line wrap mode,
+letter spacing, overflow mode, layout direction mode, text outline, locale) nor
+its own measured height (measured at that very width and not clamped) already
+gives the answer, so a settled pass lays no text out. A `ScrollView` arranges on every
 layout pass that reaches its root (`ArrangePolicy::ALWAYS`), so its content is
 walked on every such pass, even when nothing in it depends on its width; a
 `WRAP_CONTENT`-height layout root resolves once per pass.

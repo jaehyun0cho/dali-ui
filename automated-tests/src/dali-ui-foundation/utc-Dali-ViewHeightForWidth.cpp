@@ -16,8 +16,10 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/integration-api/label-impl.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
+#include <dali/integration-api/adaptor-framework/adaptor.h>
 
 #include <algorithm>
 #include <string>
@@ -1431,6 +1433,313 @@ int UtcDaliViewHeightForWidthDefaultOverBudgetKeepsMeasuredHeightP(void)
   DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
   DALI_TEST_EQUALS(HeightOf(label), h480, HFW_EPSILON, TEST_LOCATION);
   DALI_TEST_EQUALS(PositionYOf(label), LABEL_Y, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The text-height memo of a resolved Label keeps arrange-only passes stable: the root stack of
+// UtcDaliViewHeightForWidthRootStackP (a 100-wide seed and a MATCH_PARENT-width Label) keeps the
+// Label's height at 100 across repeated arrange-only passes, each served from the memo.
+int UtcDaliViewHeightForWidthLabelMemoStableAcrossArrangePassesP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(seed);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+
+  const float h100 = label.GetHeightForWidth(100.0f);
+  DALI_TEST_CHECK(h100 > label.GetHeightForWidth(480.0f));
+
+  for(int pass = 0; pass < 4; ++pass)
+  {
+    if(pass > 0)
+    {
+      stack.InvalidateArrange();
+      SettleLayout(application);
+    }
+    DALI_TEST_EQUALS(WidthOf(stack), 100.0f, HFW_EPSILON, TEST_LOCATION);
+    DALI_TEST_EQUALS(HeightOf(stack), h100, HFW_EPSILON, TEST_LOCATION);
+    DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+    DALI_TEST_EQUALS(HeightOf(label), h100, HFW_EPSILON, TEST_LOCATION);
+  }
+
+  END_TEST;
+}
+
+// A text change invalidates the Label's layout, which drops its memo: after doubling the text the
+// stack and the Label follow the new text height at 100.
+int UtcDaliViewHeightForWidthLabelMemoDroppedOnTextChangeP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(seed);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+  const float h0 = label.GetHeightForWidth(100.0f);
+
+  label.SetText((std::string(WRAPPING_TEXT) + WRAPPING_TEXT).c_str());
+  SettleLayout(application);
+
+  const float h1 = label.GetHeightForWidth(100.0f);
+  DALI_TEST_CHECK(h1 > h0);
+  DALI_TEST_CHECK(h1 < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(stack), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), h1, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h1, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The memo holds the height of one width: when the seed widens the stack to 200 and narrows it back
+// to 100, the Label -- never invalidated itself -- follows each width (the memo misses on the width).
+int UtcDaliViewHeightForWidthLabelMemoFollowsWidthChangeP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(seed);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+
+  seed.SetRequestedWidth(200.0f);
+  SettleLayout(application);
+
+  const float h100 = label.GetHeightForWidth(100.0f);
+  const float h200 = label.GetHeightForWidth(200.0f);
+  DALI_TEST_CHECK(h100 > h200);
+
+  DALI_TEST_EQUALS(WidthOf(stack), 200.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), h200, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 200.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h200, HFW_EPSILON, TEST_LOCATION);
+
+  seed.SetRequestedWidth(100.0f);
+  SettleLayout(application);
+
+  DALI_TEST_EQUALS(WidthOf(stack), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h100, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The letter spacing changes the text height without invalidating the layout. The memo keeps it as a
+// key field, so the next resolution sees the change and computes the height again: after an
+// arrange-only pass the stack and the Label take the Label's live height at 100.
+int UtcDaliViewHeightForWidthLabelMemoLetterSpacingP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(seed);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+  const float h0 = label.GetHeightForWidth(100.0f);
+
+  static_cast<Dali::Ui::Integration::LabelImpl&>(label.GetImplementation()).SetLetterSpacing(6.0f);
+  const float h1 = label.GetHeightForWidth(100.0f);
+  DALI_TEST_CHECK(h1 > h0);
+  DALI_TEST_CHECK(h1 < 800.0f);
+
+  stack.InvalidateArrange();
+  SettleLayout(application);
+
+  DALI_TEST_EQUALS(HeightOf(stack), h1, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h1, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The text outline is a layout input that does not invalidate the layout: its width moves the start
+// of every line, so a 10-wide outline puts one glyph fewer on each line at 100. The memo keeps the
+// outline width as a key field, so the next resolution sees the change. The stack is re-measured
+// first, which re-measures the Label at 480 (the stack's arrange had re-measured it at its 100-wide
+// slot), so the text controller's own height-for-width cache no longer holds the width 100: the root
+// slot's resolution at 100 then takes the new text height. Without the outline key the memo would
+// serve the old height.
+int UtcDaliViewHeightForWidthLabelMemoOutlineP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(seed);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+  const float h0 = label.GetHeightForWidth(100.0f);
+
+  Text::Outline outline;
+  outline.SetWidth(10.0f);
+  label.SetTextOutline(outline);
+  stack.InvalidateMeasure();
+  SettleLayout(application);
+
+  const float h1 = label.GetHeightForWidth(100.0f);
+  DALI_TEST_CHECK(h1 > h0);
+  DALI_TEST_CHECK(h1 < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(stack), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), h1, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h1, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// A locale change drops a Label's font data without invalidating the layout; the memo keeps the
+// locale generation as a key field. Smoke test: the observer connects at the first store, the
+// emission bumps the generation, and the next resolution sees the mismatch and computes the height
+// again. The harness font has locale-independent metrics, so the new height equals the old one and
+// this case cannot tell a stale memo from a fresh one; it checks that the path runs and keeps the
+// layout at the Label's live height at 100.
+int UtcDaliViewHeightForWidthLabelMemoLocaleChangeP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(seed);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+
+  Dali::Adaptor::Get().LocaleChangedSignal().Emit("ko_KR");
+  stack.InvalidateArrange();
+  SettleLayout(application);
+
+  const float h1 = label.GetHeightForWidth(100.0f);
+  DALI_TEST_CHECK(h1 > 0.0f);
+  DALI_TEST_CHECK(h1 < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(stack), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), h1, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h1, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The skip rule: three MATCH_PARENT-width Labels in a 300-wide, WRAP_CONTENT-height vertical stack are
+// measured at their final width already, so their measured heights are their text heights. After the
+// middle Label's text doubles, the stack's root slot takes its new measured height at 300 without
+// laying the text out again, and the layout equals a full resolution: the Labels stack at their
+// text heights.
+int UtcDaliViewHeightForWidthFullWidthLabelsMatchTextHeightP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL);
+  stack.SetRequestedWidth(300.0f); // WRAP_CONTENT height
+  Label l1 = CreateWrappingLabel(MATCH_PARENT);
+  Label l2 = CreateWrappingLabel(MATCH_PARENT);
+  Label l3 = CreateWrappingLabel(MATCH_PARENT);
+  stack.Add(l1);
+  stack.Add(l2);
+  stack.Add(l3);
+  window.Add(stack);
+
+  SettleLayout(application);
+
+  const float h = l1.GetHeightForWidth(300.0f);
+  DALI_TEST_CHECK(3.0f * h < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(l1), 300.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(l1), h, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionYOf(l1), 0.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(l2), h, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionYOf(l2), h, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(l3), h, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionYOf(l3), 2.0f * h, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(stack), 300.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), 3.0f * h, HFW_EPSILON, TEST_LOCATION);
+
+  l2.SetText((std::string(WRAPPING_TEXT) + WRAPPING_TEXT).c_str());
+  SettleLayout(application);
+
+  const float h2 = l2.GetHeightForWidth(300.0f);
+  DALI_TEST_CHECK(h2 > h);
+  DALI_TEST_CHECK(2.0f * h + h2 < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(l2), 300.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(l2), h2, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionYOf(l3), h + h2, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(stack), 300.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), 2.0f * h + h2, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// The trust bit: a fixed 300-wide multi-line Label in a 300-wide, WRAP_CONTENT-height vertical stack
+// (not re-measured by the stack's arrange, so its last measure stays the one at 300 x 800). It is
+// switched to single-line and re-measured -- its measured height becomes the single-line height -- and
+// then switched back to multi-line, which does not invalidate the layout. The resolution that found
+// it single-line distrusted its measured height, so the next resolution lays the text out again and
+// the Label and the stack take the multi-line height. Trusting the measured height there would keep
+// the single-line height.
+int UtcDaliViewHeightForWidthLabelMultiLineSwitchAfterRemeasureP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout stack = StackLayout::New(StackOrientation::VERTICAL);
+  stack.SetRequestedWidth(300.0f); // WRAP_CONTENT height
+  Label label = CreateWrappingLabel(300.0f);
+  stack.Add(label);
+  window.Add(stack);
+
+  SettleLayout(application);
+  const float hm = label.GetHeightForWidth(300.0f);
+
+  label.SetMultiLine(false);
+  label.InvalidateMeasure();
+  SettleLayout(application);
+
+  const float hs = HeightOf(label);
+  DALI_TEST_CHECK(hm > hs);
+  DALI_TEST_EQUALS(HeightOf(stack), hs, HFW_EPSILON, TEST_LOCATION);
+
+  label.SetMultiLine(true);
+  stack.InvalidateArrange();
+  SettleLayout(application);
+
+  DALI_TEST_EQUALS(WidthOf(label), 300.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), hm, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(stack), hm, HFW_EPSILON, TEST_LOCATION);
 
   END_TEST;
 }

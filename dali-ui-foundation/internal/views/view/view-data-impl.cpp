@@ -5734,6 +5734,7 @@ void ViewDataImpl::InvalidateLayoutCaches()
 {
   DropMeasureCacheEntry();
   DropArrangeCacheEntry();
+  DropHeightForWidthMemo(*this);
 
   // mMeasureDirty is deliberately NOT touched here.
   //

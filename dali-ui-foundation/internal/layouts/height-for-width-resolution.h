@@ -59,23 +59,35 @@
  * not predicted, see WIDTHS). It then arranges its children as before, inside the allocation
  * its parent derived.
  *
- * HOW. ResolveHeightAtWidth() never measures, arranges, publishes or records anything: no
- * Measure() call, no measured size, no cache key and no arrange entry changes, and no
- * layout pass is opened. It reads the subtree's last measured sizes, its layout-tracked
- * state and the text metrics of a Label, and re-derives the height through the same rules
- * the container's own measure and arrange use. It keeps no state of its own and needs no
- * per-view memory. A change to a Label's text or style, or to any layout-tracked property,
- * invalidates every ancestor as before. A measured size rewritten by an arrange-owned
- * re-measure (a MATCH_PARENT child re-measured at its slot) does not invalidate the arranging
- * ancestor -- the owner scope stops that walk -- so a later arrange miss can read it; the
- * result can differ once and then re-converges.
+ * HOW. ResolveHeightAtWidth() never measures, arranges or publishes anything: no Measure()
+ * call, no measured size, no cache key and no arrange entry changes, and no layout pass is
+ * opened. It reads the subtree's last measured sizes, its layout-tracked state and the text
+ * metrics of a Label, and re-derives the height through the same rules the container's own
+ * measure and arrange use. It keeps one cache of its own: for a multi-line Label it has
+ * resolved, a small trait with the text height of the width it was last resolved at, dropped
+ * wherever the Label's layout caches are (ViewDataImpl::InvalidateLayoutCaches). A change to a
+ * Label's text, font or line settings, or to any layout-tracked property, invalidates every
+ * ancestor as before; the Label inputs that do not are checked by the resolution itself (COST).
+ * A measured size rewritten by an arrange-owned re-measure (a MATCH_PARENT child re-measured at
+ * its slot) does not invalidate the arranging ancestor -- the owner scope stops that walk -- so
+ * a later arrange miss can read it; the result can differ once and then re-converges.
  *
  * COST. An arrange that misses walks, for every child with a WRAP_CONTENT height that is a
  * supported producer, that child's whole supported subtree, because whether it depends on
  * its width is only known after the walk; each visited view costs two trait lookups and a
  * type test, each visited container one temporary copy of its child list (plus per-child
- * buffers when something depends on its width), and each multi-line Label, when it is asked
- * for a width other than the one its text was last laid out at, one more text layout.
+ * buffers when something depends on its width). A multi-line Label lays its text out only when
+ * its trait does not hold the height of the same width (HEIGHT_FOR_WIDTH_FIT_EPSILON) and its
+ * measured height does not provably equal it (measured at that very width, unclamped, since its
+ * last invalidation, with every change of the inputs that do not invalidate the layout --
+ * multi-line, line wrap mode, letter spacing, overflow mode, layout direction mode, text
+ * outline, locale -- observed by a resolution), so a settled pass lays no text out. Widths
+ * within HEIGHT_FOR_WIDTH_FIT_EPSILON count as one width (the resolver's own tolerance; the text
+ * controller's height-for-width cache uses the tighter Math::MACHINE_EPSILON_1000). Reading the
+ * outline costs one allocation per multi-line Label resolution (LabelImpl::GetTextOutline()
+ * returns by value). A Label re-measured without being resolved before such a change (an
+ * out-of-band Measure(), or a weight child of a vertical StackLayout) may keep its measured
+ * height, as without this resolution.
  * A ScrollView arranges on every layout pass that reaches its root (ArrangePolicy::ALWAYS),
  * so its content is walked on every such pass, even when nothing in it depends on its width;
  * a WRAP_CONTENT-height layout root resolves once per pass. Follow-up, needing separate
@@ -135,6 +147,7 @@ class FlexLayoutManager;
 
 namespace Internal
 {
+class ViewDataImpl;
 
 /**
  * @brief The tolerance of the fit test a container applies before it adopts resolved heights.
@@ -233,7 +246,8 @@ bool IsHeightForWidthContainer(ViewImpl& view);
 /**
  * @brief Resolves the height @p view needs when it is laid out exactly @p width wide.
  *
- * Never measures, arranges, publishes or records anything (see the file comment). The rules:
+ * Never measures, arranges or publishes anything; it keeps only its own caches (see the file
+ * comment). The rules:
  *  - a height that is not WRAP_CONTENT, a view with a MeasureCallback or an ArrangeCallback, and
  *    every unsupported producer report their measured height, not dependent;
  *  - a layout manager outranks the view type, as it does in Measure(): a supported manager's
@@ -312,6 +326,17 @@ bool DeriveDefaultChildHeights(ViewImpl& container, const std::vector<Ui::View>&
  * @param[in,out] bounds The derived slot, in visual units
  */
 void ApplyRootHeightForWidth(ViewImpl& view, const StandaloneSlotInputs& inputs, float heightBudget, LayoutRect& bounds);
+
+/**
+ * @brief Drops the text-height memo of a resolved multi-line Label, if it holds one.
+ *
+ * Called by ViewDataImpl::InvalidateLayoutCaches(): the memo goes wherever the Label's measure and
+ * arrange caches go, and its measured height may stand in for its text height again once the next
+ * measure has run. A no-op for any view that holds no memo.
+ *
+ * @param[in] data The ViewDataImpl whose layout caches are being dropped
+ */
+void DropHeightForWidthMemo(ViewDataImpl& data);
 
 /**
  * @brief Manager derivations: the content height a supported layout manager needs at an exact
