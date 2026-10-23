@@ -1743,3 +1743,142 @@ int UtcDaliViewHeightForWidthLabelMultiLineSwitchAfterRemeasureP(void)
 
   END_TEST;
 }
+
+// The subtree verdict follows a structural change: a plain View P (WRAP_CONTENT x WRAP_CONTENT root)
+// holding a vertical stack R with a seed and a fixed 50 x 30 view B has nothing width-dependent, so P
+// and R are found width-independent and keep their measured height 30. Adding a MATCH_PARENT-width
+// Label L to R re-measures R and P, which drops both verdicts: P's root slot resolves R at 100 again
+// and both take 30 + H(100), with L below B. A verdict kept from before the add would leave P and R at
+// their measured height 30 + H(480).
+int UtcDaliViewHeightForWidthLabelAddedToFixedSubtreeP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  View        p    = View::New();                                  // WRAP_CONTENT x WRAP_CONTENT
+  StackLayout r    = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed = CreateSeed();
+  View        b    = View::New();
+  b.SetRequestedWidth(50.0f);
+  b.SetRequestedHeight(30.0f);
+  r.Add(seed);
+  r.Add(b);
+  p.Add(r);
+  window.Add(p);
+
+  SettleLayout(application);
+
+  DALI_TEST_EQUALS(WidthOf(p), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(p), 30.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(r), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(r), 30.0f, HFW_EPSILON, TEST_LOCATION);
+
+  Label label = CreateWrappingLabel(MATCH_PARENT);
+  r.Add(label);
+  SettleLayout(application);
+
+  const float h100 = label.GetHeightForWidth(100.0f);
+  const float h480 = label.GetHeightForWidth(480.0f);
+  DALI_TEST_CHECK(h100 > h480);
+  DALI_TEST_CHECK(30.0f + h100 < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(r), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(r), 30.0f + h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(p), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(p), 30.0f + h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(PositionYOf(label), 30.0f, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// An ArrangeCallback set and removed without a re-measure: a vertical stack P (WRAP_CONTENT x
+// WRAP_CONTENT root) holding a plain View R with a seed and a MATCH_PARENT-width Label. R and P first
+// take H(100). With an ArrangeCallback on R, R is an unsupported producer, so P is found
+// width-independent and both keep their measured height H(480). Removing the callback only
+// invalidates the arrange, so the verdicts are reset explicitly: R, P and the Label take H(100)
+// again. A verdict kept from the callback would leave P at H(480).
+int UtcDaliViewHeightForWidthArrangeCallbackToggleP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout p     = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        r     = View::New();                                  // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = CreateWrappingLabel(MATCH_PARENT);
+  r.Add(seed);
+  r.Add(label);
+  p.Add(r);
+  window.Add(p);
+
+  SettleLayout(application);
+
+  const float h100 = label.GetHeightForWidth(100.0f);
+  const float h480 = label.GetHeightForWidth(480.0f);
+  DALI_TEST_CHECK(h100 > h480);
+
+  DALI_TEST_EQUALS(WidthOf(r), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(r), h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(p), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(p), h100, HFW_EPSILON, TEST_LOCATION);
+
+  r.SetArrangeCallback(ArrangeCallback::New(&ArrangeChildrenAtMeasuredSize));
+  SettleLayout(application);
+
+  DALI_TEST_EQUALS(HeightOf(r), h480, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(p), h480, HFW_EPSILON, TEST_LOCATION);
+
+  r.SetArrangeCallback(ArrangeCallback());
+  SettleLayout(application);
+
+  DALI_TEST_EQUALS(WidthOf(r), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(r), h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(p), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(p), h100, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), h100, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}
+
+// A single-line Label keeps its parent's subtree width-dependent: a vertical stack P (WRAP_CONTENT x
+// WRAP_CONTENT root) holding a seed and a single-line, MATCH_PARENT-width Label takes the single-line
+// height hs. Switching the Label to multi-line does not invalidate the layout; after an arrange-only
+// pass P's root slot still walks to the Label and P and the Label take H(100). A width-independent
+// verdict for P, taken while the Label was single-line, would keep hs.
+int UtcDaliViewHeightForWidthSingleLineLabelSwitchedToMultiLineP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+
+  StackLayout p     = StackLayout::New(StackOrientation::VERTICAL); // WRAP_CONTENT x WRAP_CONTENT
+  View        seed  = CreateSeed();
+  Label       label = Label::New(WRAPPING_TEXT); // single-line, WRAP_CONTENT height
+  label.SetLineWrapMode(Text::LineWrapMode::CHARACTER);
+  label.SetRequestedWidth(MATCH_PARENT);
+  p.Add(seed);
+  p.Add(label);
+  window.Add(p);
+
+  SettleLayout(application);
+
+  const float hs = HeightOf(label);
+  DALI_TEST_EQUALS(HeightOf(p), hs, HFW_EPSILON, TEST_LOCATION);
+
+  label.SetMultiLine(true);
+  p.InvalidateArrange();
+  SettleLayout(application);
+
+  const float hm = label.GetHeightForWidth(100.0f);
+  DALI_TEST_CHECK(hm > hs);
+  DALI_TEST_CHECK(hm < 800.0f);
+
+  DALI_TEST_EQUALS(WidthOf(p), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(p), hm, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(WidthOf(label), 100.0f, HFW_EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(HeightOf(label), hm, HFW_EPSILON, TEST_LOCATION);
+
+  END_TEST;
+}

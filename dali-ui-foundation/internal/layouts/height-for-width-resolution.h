@@ -63,23 +63,25 @@
  * call, no measured size, no cache key and no arrange entry changes, and no layout pass is
  * opened. It reads the subtree's last measured sizes, its layout-tracked state and the text
  * metrics of a Label, and re-derives the height through the same rules the container's own
- * measure and arrange use. It keeps one cache of its own: for a multi-line Label it has
- * resolved, a small trait with the text height of the width it was last resolved at, dropped
- * wherever the Label's layout caches are (ViewDataImpl::InvalidateLayoutCaches). A change to a
- * Label's text, font or line settings, or to any layout-tracked property, invalidates every
- * ancestor as before; the Label inputs that do not are checked by the resolution itself (COST).
- * A measured size rewritten by an arrange-owned re-measure (a MATCH_PARENT child re-measured at
- * its slot) does not invalidate the arranging ancestor -- the owner scope stops that walk -- so
- * a later arrange miss can read it; the result can differ once and then re-converges.
+ * measure and arrange use. It keeps two caches of its own, both dropped wherever a view's
+ * layout caches are (ViewDataImpl::InvalidateLayoutCaches): a two-bit verdict per view saying
+ * whether its subtree can depend on its width (DEPENDENCE; spare bits, so no view grows), and,
+ * for a multi-line Label it has resolved, a small trait with the text height of the width it
+ * was last resolved at (COST). A change to a Label's text, font or line settings, or to any
+ * layout-tracked property, invalidates every ancestor as before; the Label inputs that do not
+ * are checked by the resolution itself (COST). A measured size rewritten by an arrange-owned
+ * re-measure (a MATCH_PARENT child re-measured at its slot) does not invalidate the arranging
+ * ancestor -- the owner scope stops that walk -- so a later arrange miss can read it; the
+ * result can differ once and then re-converges.
  *
- * COST. An arrange that misses walks, for every child with a WRAP_CONTENT height that is a
- * supported producer, that child's whole supported subtree, because whether it depends on
- * its width is only known after the walk; each visited view costs two trait lookups and a
- * type test, each visited container one temporary copy of its child list (plus per-child
- * buffers when something depends on its width). A multi-line Label lays its text out only when
- * its trait does not hold the height of the same width (HEIGHT_FOR_WIDTH_FIT_EPSILON) and its
- * measured height does not provably equal it (measured at that very width, unclamped, since its
- * last invalidation, with every change of the inputs that do not invalidate the layout --
+ * COST. A supported view whose verdict says its subtree cannot depend on its width is answered
+ * without being looked into; after its first resolution it costs one test per arrange. Every
+ * other supported subtree is walked: each visited view costs two trait lookups and a type test,
+ * each visited container one temporary copy of its child list (plus per-child buffers when
+ * something depends on its width). A multi-line Label lays its text out only when its trait
+ * does not hold the height of the same width (HEIGHT_FOR_WIDTH_FIT_EPSILON) and its measured
+ * height does not provably equal it (measured at that very width, unclamped, since its last
+ * invalidation, with every change of the inputs that do not invalidate the layout --
  * multi-line, line wrap mode, letter spacing, overflow mode, layout direction mode, text
  * outline, locale -- observed by a resolution), so a settled pass lays no text out. Widths
  * within HEIGHT_FOR_WIDTH_FIT_EPSILON count as one width (the resolver's own tolerance; the text
@@ -87,12 +89,11 @@
  * outline costs one allocation per multi-line Label resolution (LabelImpl::GetTextOutline()
  * returns by value). A Label re-measured without being resolved before such a change (an
  * out-of-band Measure(), or a weight child of a vertical StackLayout) may keep its measured
- * height, as without this resolution.
- * A ScrollView arranges on every layout pass that reaches its root (ArrangePolicy::ALWAYS),
- * so its content is walked on every such pass, even when nothing in it depends on its width;
- * a WRAP_CONTENT-height layout root resolves once per pass. Follow-up, needing separate
- * approval: a per-view "contains width-dependent content" bit, cleared together with the
- * measure cache, could prune the walk.
+ * height, as without this resolution. A subtree holding a WRAP_CONTENT-height Label,
+ * single-line and text-fit ones included, is always walked, because switching those modes does
+ * not invalidate the layout. A ScrollView arranges on every layout pass that reaches its root
+ * (ArrangePolicy::ALWAYS), so its content is resolved on every such pass; a WRAP_CONTENT-height
+ * layout root resolves once per pass.
  *
  * SUPPORTED PRODUCERS, identified by their exact dynamic type so a subclass that redefines
  * a virtual is never guessed at:
@@ -114,9 +115,14 @@
  * DEPENDENCE. A resolved height is reported only when it actually follows the width
  * (HeightAtWidth::dependsOnWidth): a multi-line Label, a supported container with at least
  * one width-dependent child, or a FlexLayoutManager with a horizontal main axis that wraps
- * (its line breaks follow the width). The flag is structural (types and parameters), never a
- * comparison of values, so a tree without width-dependent content keeps exactly its current
- * numbers.
+ * (its line breaks follow the width) -- except that a container whose resolved content exceeds
+ * its budget reports its measured height (WHAT). Otherwise the flag never compares values, so a
+ * tree without width-dependent content keeps exactly its current numbers. The verdict each view
+ * keeps (HOW) is the structural part alone, over-approximated: a supported container's subtree
+ * can depend on its width when it is a wrapping horizontal FlexLayoutManager or a
+ * non-STANDALONE child's can, and a WRAP_CONTENT-height Label (exact type, no layout manager or
+ * callback) always can. A view whose verdict is "cannot" resolves to its measured height,
+ * exactly as a full walk would.
  *
  * WIDTHS. A child is resolved at the width its parent's own arrange rule gives it; its own
  * min/max width is not applied, because an arranged width is never clamped by it. A

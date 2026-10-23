@@ -579,6 +579,35 @@ public:
   }
   /// @}
 
+  /// @name Height-for-width subtree verdict
+  /// The height-for-width verdict of this view's subtree (Internal::MayDependOnWidth in
+  /// height-for-width-resolution.cpp): whether a height-for-width resolution of this view can
+  /// depend on the width it is laid out at. UNKNOWN until a resolution computes it; reset by
+  /// InvalidateLayoutCaches() and ResetHeightForWidthStateUpward(). A cache only: it raises no
+  /// dirty bit and schedules nothing.
+  /// @{
+  enum class HeightForWidthState : uint8_t
+  {
+    UNKNOWN     = 0, ///< Not computed since the last reset
+    INDEPENDENT = 1, ///< No resolution of this view can depend on its width
+    DEPENDENT   = 2  ///< A resolution of this view may depend on its width
+  };
+  HeightForWidthState GetHeightForWidthState() const
+  {
+    return mHeightForWidthState;
+  }
+  void SetHeightForWidthState(HeightForWidthState state)
+  {
+    mHeightForWidthState = state;
+  }
+  /// Resets the verdict of this view and of every ancestor up to the layout boundary (a
+  /// STANDALONE view, or a parent that is not a View): each verdict summarises its subtree.
+  /// For the structural changes that do not reach InvalidateLayoutCaches() -- a later
+  /// SetArrangeCallback and a producer trait swapped through Integration::View::SetTrait /
+  /// RemoveTrait.
+  void ResetHeightForWidthStateUpward();
+  /// @}
+
   View GetParentView() const;
   void EmitFocusChangedSignal(bool focusGained);
   void RegisterWithLayoutController();
@@ -1516,9 +1545,10 @@ private:
    *
    * Single concern: the CACHED RESULTS only. Both caches go together because a
    * measured size is an input to this view's own arrangement, so an arrange
-   * result cannot outlive the measurement it was produced against. So does the
-   * height-for-width text-height memo of a resolved Label (DropHeightForWidthMemo),
-   * which is derived from the same inputs.
+   * result cannot outlive the measurement it was produced against. So do the
+   * height-for-width caches derived from them: the subtree verdict
+   * (GetHeightForWidthState) and a resolved Label's text-height memo
+   * (DropHeightForWidthMemo).
    *
    * Deliberately does NOT touch mMeasureDirty. Dirty means "this view has
    * layout work that has not been consumed yet"; it is consumed at pass entry
@@ -1990,6 +2020,13 @@ private:
   /// signedness caveat noted on mLastArrangeDirection cannot apply: the three
   /// enumerators are 0..2 and an unsigned 2-bit field holds 0..3.
   LayoutTransitionMode mLayoutTransitionMode : 2;
+
+  /// The height-for-width subtree verdict (GetHeightForWidthState).
+  ///
+  /// PACKING: a 2-bit field right after mLayoutTransitionMode, in the same byte (bits that
+  /// were free), so sizeof(ViewDataImpl) does not change. UNSIGNED by construction -- the
+  /// enum's underlying type is uint8_t -- so its three enumerators 0..2 fit losslessly.
+  HeightForWidthState mHeightForWidthState : 2;
 
   /// A whole bool, not a bit-field: ScopedTrueFlag binds a `bool&`, which a bit-field
   /// cannot provide. It sits between the bit-field run above and mFlags below; a

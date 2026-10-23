@@ -1205,6 +1205,7 @@ ViewDataImpl::ViewDataImpl(ViewImpl& viewImpl)
   // mArrangeCacheValid starts false.
   mLastArrangeDirection(Dali::LayoutDirection::LEFT_TO_RIGHT),
   mLayoutTransitionMode(LayoutTransitionMode::AUTO),
+  mHeightForWidthState(HeightForWidthState::UNKNOWN),
   mKeyEventDispatchInProgress(false),
   mFlags(ViewImpl::ViewBehaviour(ViewImpl::VIEW_BEHAVIOUR_DEFAULT))
 {
@@ -4148,6 +4149,11 @@ void ViewDataImpl::SetArrangeCallback(ArrangeCallback callback, ArrangePolicy po
   mArrangeCallbackAlways = (policy == ArrangePolicy::ALWAYS);
   RefreshArrangeProducerPolicy();
 
+  // An ArrangeCallback makes this view an unsupported producer for the height-for-width
+  // resolution (and removing it, a supported one again), and an arrange invalidation does not
+  // reach InvalidateLayoutCaches(), so the subtree verdicts are reset explicitly.
+  ResetHeightForWidthStateUpward();
+
   // Pair the policy change with invalidation so a view that has already
   // published a cache entry cannot be served from it under the new policy.
   InvalidateArrange();
@@ -5735,6 +5741,7 @@ void ViewDataImpl::InvalidateLayoutCaches()
   DropMeasureCacheEntry();
   DropArrangeCacheEntry();
   DropHeightForWidthMemo(*this);
+  mHeightForWidthState = HeightForWidthState::UNKNOWN;
 
   // mMeasureDirty is deliberately NOT touched here.
   //
@@ -5759,6 +5766,28 @@ void ViewDataImpl::InvalidateLayoutCaches()
   if(mArrangeInProgress)
   {
     mArrangePassPoisoned = true;
+  }
+}
+
+void ViewDataImpl::ResetHeightForWidthStateUpward()
+{
+  // Each verdict summarises its subtree, so every ancestor up to the layout boundary goes too.
+  // Cache-only: raises no dirty bit and registers nothing. Safe before the handle exists
+  // (Self() is then empty, see SetArrangePolicy). No parent consults a STANDALONE child's
+  // verdict, so the walk stops there.
+  for(ViewDataImpl* data = this;;)
+  {
+    data->mHeightForWidthState = HeightForWidthState::UNKNOWN;
+    if(IntegrationView::IsLayoutModeStandalone(data->mViewImpl) || !data->mViewImpl.Self())
+    {
+      return;
+    }
+    Ui::View parent = data->GetParentView();
+    if(!parent)
+    {
+      return;
+    }
+    data = &ViewDataImpl::Get(GetImpl(parent));
   }
 }
 
@@ -6310,6 +6339,11 @@ void ViewDataImpl::OnLayoutProducerTraitChanged(TraitId id)
   {
     return;
   }
+
+  // Swapping a producer can make this view a supported or an unsupported producer for the
+  // height-for-width resolution, and the invalidation below is gated on a standing cache entry,
+  // so the subtree verdicts are reset explicitly.
+  ResetHeightForWidthStateUpward();
 
   // A LAYOUT_SIGNALS swap replaces the callback and its policy. Reset the policy
   // to ArrangePolicy::IF_CHANGED before deriving the active producer again.

@@ -497,6 +497,86 @@ HeightAtWidth ResolveManagedHeight(ViewImpl& view, LayoutManager& manager, float
   return HeightAtWidth{ApplyHeightLimits(view, contentHeight + visPadH, s), true};
 }
 
+/**
+ * @brief Whether a layout manager has a derivation of its own: the ResolveManagedHeight dispatch.
+ */
+bool HasManagerDerivation(const LayoutManager& manager)
+{
+  const std::type_info& type = typeid(manager);
+  return type == typeid(StackLayoutManager) ||
+         type == typeid(GridLayoutManager) ||
+         type == typeid(FlexLayoutManager) ||
+         type == typeid(AbsoluteLayoutManager);
+}
+
+/**
+ * @brief The structural verdict: can a resolution of @p view depend on its width -- now, or after a
+ * change that does not invalidate the layout (a Label's multi-line or text-fit switch)?
+ *
+ * Over-approximates HeightAtWidth::dependsOnWidth: a resolution can report a dependence only through
+ * a resolved Label, a wrapping horizontal FlexLayoutManager, or a child that reports one, and every
+ * derivation visits only non-STANDALONE children with a WRAP_CONTENT height. So when no Label with a
+ * WRAP_CONTENT height and no wrapping horizontal FlexLayoutManager is reachable through supported
+ * containers, every resolution of @p view reports its measured height, not dependent, whatever the
+ * width and budget. The verdict of a supported container is stored on its view
+ * (ViewDataImpl::GetHeightForWidthState) until a structural change resets it; a Label's is never
+ * stored (volatile: its multi-line and text-fit switches do not invalidate the layout), and an
+ * unsupported view answers false at once.
+ */
+bool MayDependOnWidth(ViewImpl& view)
+{
+  if(view.GetRequestedHeight() != WRAP_CONTENT)
+  {
+    return false;
+  }
+
+  ViewDataImpl&                           data  = ViewDataImpl::Get(view);
+  const ViewDataImpl::HeightForWidthState state = data.GetHeightForWidthState();
+  if(state != ViewDataImpl::HeightForWidthState::UNKNOWN)
+  {
+    return state == ViewDataImpl::HeightForWidthState::DEPENDENT;
+  }
+
+  if(data.HasLayoutCallback())
+  {
+    return false;
+  }
+
+  LayoutManager* manager = data.GetLayoutManager();
+  if(manager)
+  {
+    if(!HasManagerDerivation(*manager))
+    {
+      return false; // ScrollViewLayoutManager and any custom or derived manager
+    }
+  }
+  else if(typeid(view) == typeid(Ui::Integration::LabelImpl))
+  {
+    return true; // Volatile: never stored
+  }
+  else if(typeid(view) != typeid(ViewImpl))
+  {
+    return false;
+  }
+
+  bool depends = false;
+  if(manager && typeid(*manager) == typeid(FlexLayoutManager))
+  {
+    // A wrapping row's line breaks follow its width by themselves.
+    const auto& flex = static_cast<const FlexLayoutManager&>(*manager);
+    depends          = flex.IsMainAxisHorizontal() && flex.GetWrap() != FlexWrap::NO_WRAP;
+  }
+  for(uint32_t i = 0, count = view.GetChildViewCount(); i < count && !depends; ++i)
+  {
+    Ui::View  child     = view.GetChildViewAt(i);
+    ViewImpl& childImpl = GetImpl(child);
+    depends             = childImpl.GetLayoutMode() != LayoutMode::STANDALONE && MayDependOnWidth(childImpl);
+  }
+
+  data.SetHeightForWidthState(depends ? ViewDataImpl::HeightForWidthState::DEPENDENT : ViewDataImpl::HeightForWidthState::INDEPENDENT);
+  return depends;
+}
+
 } // namespace
 
 bool IsHeightForWidthContainer(ViewImpl& view)
@@ -530,9 +610,16 @@ HeightAtWidth ResolveHeightAtWidth(ViewImpl& view, float width, float heightBudg
     return Unresolved(view);
   }
 
+  // A subtree whose verdict says it cannot depend on its width is answered without being looked
+  // into (MayDependOnWidth): exactly the result a full walk would reach.
+  ViewDataImpl& data = ViewDataImpl::Get(view);
+  if(data.GetHeightForWidthState() == ViewDataImpl::HeightForWidthState::INDEPENDENT)
+  {
+    return Unresolved(view);
+  }
+
   // The producers are ranked as Measure() and Arrange() rank them: a layout callback outranks
   // everything, so the view's own derivation would not describe its layout.
-  const ViewDataImpl& data = ViewDataImpl::Get(view);
   if(data.HasLayoutCallback())
   {
     return Unresolved(view);
@@ -542,12 +629,20 @@ HeightAtWidth ResolveHeightAtWidth(ViewImpl& view, float width, float heightBudg
   // own one through View::AttachLayoutManager).
   if(LayoutManager* manager = data.GetLayoutManager())
   {
+    if(!MayDependOnWidth(view))
+    {
+      return Unresolved(view);
+    }
     return ResolveManagedHeight(view, *manager, width, heightBudget);
   }
 
   const std::type_info& type = typeid(view);
   if(type == typeid(ViewImpl))
   {
+    if(!MayDependOnWidth(view))
+    {
+      return Unresolved(view);
+    }
     return ResolveDefaultHeight(view, width, heightBudget);
   }
 
