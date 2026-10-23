@@ -24,6 +24,7 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/internal/layouts/flex-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/height-for-width-resolution.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
@@ -362,6 +363,239 @@ void ArrangeOneFlexLine(ViewImpl* owner, FlexLine& line, std::vector<View>& chil
   crossOffsetInOut += line.crossSize;
 }
 
+// ROW (main axis horizontal): the width ArrangeOneFlexLine gives a child -- its grown/shrunk main
+// size, or the whole content width for a MATCH_PARENT width without flex-grow -- with the margin
+// added and subtracted in the same float order as the placement.
+float FlexRowChildWidth(ViewImpl& childImpl, float workingWidth, float contentWidth, float marginMain)
+{
+  float childMainSize = workingWidth;
+  if(childImpl.GetRequestedWidth() == MATCH_PARENT && GetFlexGrow(childImpl) == 0.0f)
+  {
+    childMainSize = std::max(0.0f, contentWidth - marginMain);
+  }
+  return std::max(0.0f, (childMainSize + marginMain) - marginMain);
+}
+
+// COLUMN (main axis vertical): the width ArrangeOneFlexLine gives a child for a line cross extent --
+// the line cross for a MATCH_PARENT width or a STRETCH alignment, its measured width otherwise --
+// with the margin added and subtracted in the same float order as the placement.
+float FlexColumnChildWidth(ViewImpl& childImpl, float workingWidth, float lineCross, float marginCross, FlexAlign alignItems)
+{
+  float childCrossSize = workingWidth;
+  if(childImpl.GetRequestedWidth() == MATCH_PARENT)
+  {
+    childCrossSize = lineCross - marginCross;
+  }
+  FlexAlign effectiveAlign = GetAlignSelf(childImpl);
+  if(effectiveAlign == FlexAlign::AUTO)
+  {
+    effectiveAlign = alignItems;
+  }
+  if(effectiveAlign == FlexAlign::STRETCH)
+  {
+    childCrossSize = lineCross - marginCross;
+  }
+  return std::max(0.0f, (childCrossSize + marginCross) - marginCross);
+}
+
+// The cross extent of every line as Arrange() places it, in the order of @p lines: a single NO_WRAP
+// line spans at least the available cross extent, and wrapping lines under alignContent STRETCH
+// share the free cross extent equally. The total is summed in placement order (Arrange() reverses
+// the lines first for WRAP_REVERSE), so the shares are the very values the placement computes.
+// Only the line cross extents are read, which the main-axis grow/shrink does not change.
+std::vector<float> FlexPlacementLineCross(const std::vector<FlexLine>& lines, float availableCross, FlexWrap wrap, FlexAlign alignContent)
+{
+  std::vector<float> lineCross(lines.size(), 0.0f);
+  for(size_t l = 0; l < lines.size(); ++l)
+  {
+    lineCross[l] = lines[l].crossSize;
+  }
+
+  if(wrap == FlexWrap::NO_WRAP && lines.size() == 1)
+  {
+    lineCross[0] = std::max(lineCross[0], availableCross);
+  }
+
+  if(wrap != FlexWrap::NO_WRAP && !lines.empty() && alignContent == FlexAlign::STRETCH)
+  {
+    float totalLineCross = 0.0f;
+    if(wrap == FlexWrap::WRAP_REVERSE)
+    {
+      for(size_t l = lines.size(); l > 0; --l)
+      {
+        totalLineCross += lineCross[l - 1];
+      }
+    }
+    else
+    {
+      for(size_t l = 0; l < lines.size(); ++l)
+      {
+        totalLineCross += lineCross[l];
+      }
+    }
+    const float freeCross    = std::max(0.0f, availableCross - totalLineCross);
+    const float extraPerLine = freeCross / static_cast<float>(lines.size());
+    for(float& cross : lineCross)
+    {
+      cross += extraPerLine;
+    }
+  }
+  return lineCross;
+}
+
+// Height-for-width, ROW, after the grow/shrink in Arrange(): every WRAP_CONTENT-height child is
+// resolved at the width the placement gives it, with the budget Measure() hands it. Adopted only
+// when the line cross extents rebuilt from those heights -- in the line builder's own form -- fit
+// the content height together; the lines and the dependent children's heights are then updated.
+void ApplyFlexRowResolvedHeights(std::vector<View>& children, std::vector<FlexLine>& lines,
+                                 std::vector<MeasuredSize>& workingSizes, float contentWidth, float contentHeight)
+{
+  std::vector<float> resolved;
+  for(const FlexLine& line : lines)
+  {
+    for(uint32_t idx : line.childIndices)
+    {
+      ViewImpl& childImpl = GetImpl(children[idx]);
+      if(childImpl.GetRequestedHeight() != WRAP_CONTENT)
+      {
+        continue;
+      }
+      float                         childScale  = childImpl.GetEffectiveScale();
+      Insets                        margin      = childImpl.GetMargin();
+      float                         marginMain  = (margin.start + margin.end) * childScale;
+      float                         marginCross = (margin.top + margin.bottom) * childScale;
+      const Internal::HeightAtWidth result =
+        Internal::ResolveHeightAtWidth(childImpl,
+                                       FlexRowChildWidth(childImpl, workingSizes[idx].width, contentWidth, marginMain),
+                                       std::max(0.0f, contentHeight - marginCross));
+      if(result.dependsOnWidth)
+      {
+        if(resolved.empty())
+        {
+          resolved.assign(children.size(), -1.0f);
+        }
+        resolved[idx] = result.height;
+      }
+    }
+  }
+  if(resolved.empty())
+  {
+    return;
+  }
+
+  std::vector<float> lineCross(lines.size(), 0.0f);
+  float              needed = 0.0f;
+  for(size_t l = 0; l < lines.size(); ++l)
+  {
+    float crossSize = 0.0f;
+    for(uint32_t idx : lines[l].childIndices)
+    {
+      ViewImpl& childImpl  = GetImpl(children[idx]);
+      float     childScale = childImpl.GetEffectiveScale();
+      Insets    margin     = childImpl.GetMargin();
+      float     height     = (resolved[idx] >= 0.0f) ? resolved[idx] : workingSizes[idx].height;
+      crossSize            = std::max(crossSize, height + (margin.top + margin.bottom) * childScale);
+    }
+    lineCross[l] = crossSize;
+    needed += crossSize;
+  }
+  if(needed > contentHeight + Internal::HEIGHT_FOR_WIDTH_FIT_EPSILON)
+  {
+    return; // Does not fit: arrange exactly as before.
+  }
+
+  for(size_t l = 0; l < lines.size(); ++l)
+  {
+    lines[l].crossSize = lineCross[l];
+  }
+  for(uint32_t idx = 0; idx < resolved.size(); ++idx)
+  {
+    if(resolved[idx] >= 0.0f)
+    {
+      workingSizes[idx].height = resolved[idx];
+    }
+  }
+}
+
+// Height-for-width, COLUMN, before the grow/shrink in Arrange(): every WRAP_CONTENT-height child
+// without a flex basis (a basis is an explicit main size) is resolved at the width the placement
+// gives it for its line's cross extent. Adopted only when every line's main extent rebuilt from
+// those heights -- in the line builder's own form -- fits the content height; the line main extents
+// and the dependent children's heights are then updated, so grow/shrink starts from them. The lines
+// themselves are not re-split: the break points stay those of the measured heights.
+void ApplyFlexColumnResolvedHeights(std::vector<View>& children, std::vector<FlexLine>& lines,
+                                    std::vector<MeasuredSize>& workingSizes, float contentWidth, float contentHeight,
+                                    FlexWrap wrap, FlexAlign alignItems, FlexAlign alignContent)
+{
+  const std::vector<float> lineCross = FlexPlacementLineCross(lines, contentWidth, wrap, alignContent);
+
+  std::vector<float> resolved;
+  for(size_t l = 0; l < lines.size(); ++l)
+  {
+    for(uint32_t idx : lines[l].childIndices)
+    {
+      ViewImpl& childImpl = GetImpl(children[idx]);
+      if(childImpl.GetRequestedHeight() != WRAP_CONTENT || GetFlexBasis(childImpl) >= 0.0f)
+      {
+        continue;
+      }
+      float                         childScale  = childImpl.GetEffectiveScale();
+      Insets                        margin      = childImpl.GetMargin();
+      float                         marginMain  = (margin.top + margin.bottom) * childScale;
+      float                         marginCross = (margin.start + margin.end) * childScale;
+      const Internal::HeightAtWidth result =
+        Internal::ResolveHeightAtWidth(childImpl,
+                                       FlexColumnChildWidth(childImpl, workingSizes[idx].width, lineCross[l], marginCross, alignItems),
+                                       std::max(0.0f, contentHeight - marginMain));
+      if(result.dependsOnWidth)
+      {
+        if(resolved.empty())
+        {
+          resolved.assign(children.size(), -1.0f);
+        }
+        resolved[idx] = result.height;
+      }
+    }
+  }
+  if(resolved.empty())
+  {
+    return;
+  }
+
+  std::vector<float> lineMain(lines.size(), 0.0f);
+  float              needed = 0.0f;
+  for(size_t l = 0; l < lines.size(); ++l)
+  {
+    float mainSize = 0.0f;
+    for(uint32_t idx : lines[l].childIndices)
+    {
+      ViewImpl& childImpl  = GetImpl(children[idx]);
+      float     childScale = childImpl.GetEffectiveScale();
+      Insets    margin     = childImpl.GetMargin();
+      float     height     = (resolved[idx] >= 0.0f) ? resolved[idx] : workingSizes[idx].height;
+      mainSize += height + (margin.top + margin.bottom) * childScale;
+    }
+    lineMain[l] = mainSize;
+    needed      = std::max(needed, mainSize);
+  }
+  if(needed > contentHeight + Internal::HEIGHT_FOR_WIDTH_FIT_EPSILON)
+  {
+    return; // Does not fit: arrange exactly as before.
+  }
+
+  for(size_t l = 0; l < lines.size(); ++l)
+  {
+    lines[l].mainSize = lineMain[l];
+  }
+  for(uint32_t idx = 0; idx < resolved.size(); ++idx)
+  {
+    if(resolved[idx] >= 0.0f)
+    {
+      workingSizes[idx].height = resolved[idx];
+    }
+  }
+}
+
 } // namespace
 
 class FlexLayoutManager::Impl : public LayoutManager::Impl
@@ -639,9 +873,25 @@ void FlexLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   std::vector<FlexLine> lines =
     BuildFlexLinesForArrange(children, workingSizes, availableMain, IsMainAxisHorizontal(), impl->mWrap);
 
+  // Height-for-width (see height-for-width-resolution.h): a child whose WRAP_CONTENT height follows
+  // its width is given the height it needs at the width the placement below gives it -- in a column,
+  // before grow/shrink distributes the main axis; in a row, after it has fixed every width. Only an
+  // exact FlexLayoutManager on a view without layout callbacks does this; when no child depends on
+  // its width the lines and sizes stay exactly as built.
+  const bool resolveHeights = Internal::IsHeightForWidthContainer(*view);
+  if(resolveHeights && !IsMainAxisHorizontal())
+  {
+    ApplyFlexColumnResolvedHeights(children, lines, workingSizes, contentWidth, contentHeight, impl->mWrap, impl->mAlignItems, impl->mAlignContent);
+  }
+
   for(auto& line : lines)
   {
     ApplyFlexGrowShrink(line, children, workingSizes, availableMain, IsMainAxisHorizontal());
+  }
+
+  if(resolveHeights && IsMainAxisHorizontal())
+  {
+    ApplyFlexRowResolvedHeights(children, lines, workingSizes, contentWidth, contentHeight);
   }
 
   if(impl->mWrap == FlexWrap::WRAP_REVERSE)
@@ -706,6 +956,131 @@ void FlexLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
                        justify.spacing, impl->mAlignItems, IsMainAxisHorizontal(), IsMainAxisReversed());
   }
 }
+
+namespace Internal
+{
+
+bool ResolveFlexContentHeightForWidth(const FlexLayoutManager& manager, ViewImpl& view, float contentWidth, float contentHeightBudget, float& contentHeight, float predictedContentWidth)
+{
+  const uint32_t        childCount = view.GetChildViewCount();
+  std::vector<Ui::View> children;
+  children.reserve(childCount);
+  for(uint32_t i = 0; i < childCount; ++i)
+  {
+    children.push_back(view.GetChildViewAt(i));
+  }
+
+  std::vector<MeasuredSize> workingSizes(children.size());
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    workingSizes[i] = GetImpl(children[i]).GetMeasuredSize();
+  }
+
+  const FlexWrap wrap    = manager.GetWrap();
+  bool           depends = false;
+  float          height  = 0.0f;
+  if(manager.IsMainAxisHorizontal())
+  {
+    // ROW: the lines the arrange builds at exactly this content width, grown/shrunk there, and the
+    // sum of their cross extents (Measure()'s WRAP_CONTENT height) with every width-dependent child
+    // resolved at its placement width. A wrapping row depends on its width by itself: its line
+    // breaks follow the width.
+    std::vector<FlexLine> lines = BuildFlexLinesForArrange(children, workingSizes, contentWidth, true, wrap);
+    for(auto& line : lines)
+    {
+      ApplyFlexGrowShrink(line, children, workingSizes, contentWidth, true);
+    }
+    depends = (wrap != FlexWrap::NO_WRAP);
+
+    for(const FlexLine& line : lines)
+    {
+      float crossSize = 0.0f;
+      for(uint32_t idx : line.childIndices)
+      {
+        ViewImpl& childImpl   = GetImpl(children[idx]);
+        float     childScale  = childImpl.GetEffectiveScale();
+        Insets    margin      = childImpl.GetMargin();
+        float     marginMain  = (margin.start + margin.end) * childScale;
+        float     marginCross = (margin.top + margin.bottom) * childScale;
+        float     childHeight = workingSizes[idx].height;
+        if(childImpl.GetRequestedHeight() == WRAP_CONTENT)
+        {
+          const HeightAtWidth resolved = ResolveHeightAtWidth(childImpl, FlexRowChildWidth(childImpl, workingSizes[idx].width, contentWidth, marginMain), std::max(0.0f, contentHeightBudget - marginCross));
+          if(resolved.dependsOnWidth)
+          {
+            childHeight = resolved.height;
+            depends     = true;
+          }
+        }
+        crossSize = std::max(crossSize, childHeight + marginCross);
+      }
+      height += crossSize;
+    }
+  }
+  else
+  {
+    // COLUMN: the lines Measure() builds against the height budget, and the largest line main
+    // extent (Measure()'s WRAP_CONTENT height) with every width-dependent child -- no flex basis --
+    // resolved at the width the placement gives it for its line's cross extent.
+    //
+    // A MATCH_PARENT-width flex is re-measured at its slot by its parent before it is arranged: its
+    // WRAP_CONTENT-width children are then taken at the width that re-measure gives them (their
+    // measured width capped by the predicted content width less their margin, the constraint
+    // Measure() hands them), for the line cross extents and for their own width alike. The line
+    // cross extents themselves still use the unclamped content width the arrange gives. A row is
+    // left alone: its grow/shrink decides the widths.
+    if(predictedContentWidth >= 0.0f)
+    {
+      for(uint32_t i = 0; i < children.size(); ++i)
+      {
+        ViewImpl& childImpl = GetImpl(children[i]);
+        if(IsChildStandalone(childImpl) || childImpl.GetRequestedWidth() != WRAP_CONTENT)
+        {
+          continue;
+        }
+        Insets margin         = childImpl.GetMargin();
+        workingSizes[i].width = PredictRemeasuredWidth(childImpl, workingSizes[i].width, std::max(0.0f, predictedContentWidth - (margin.start + margin.end) * childImpl.GetEffectiveScale()));
+      }
+    }
+
+    std::vector<FlexLine>    lines     = BuildFlexLinesForArrange(children, workingSizes, contentHeightBudget, false, wrap);
+    const std::vector<float> lineCross = FlexPlacementLineCross(lines, contentWidth, wrap, manager.GetAlignContent());
+    const FlexAlign          align     = manager.GetAlignItems();
+
+    for(size_t l = 0; l < lines.size(); ++l)
+    {
+      float mainSize = 0.0f;
+      for(uint32_t idx : lines[l].childIndices)
+      {
+        ViewImpl& childImpl   = GetImpl(children[idx]);
+        float     childScale  = childImpl.GetEffectiveScale();
+        Insets    margin      = childImpl.GetMargin();
+        float     marginMain  = (margin.top + margin.bottom) * childScale;
+        float     marginCross = (margin.start + margin.end) * childScale;
+        float     childHeight = workingSizes[idx].height;
+        if(childImpl.GetRequestedHeight() == WRAP_CONTENT && GetFlexBasis(childImpl) < 0.0f)
+        {
+          const HeightAtWidth resolved = ResolveHeightAtWidth(childImpl, FlexColumnChildWidth(childImpl, workingSizes[idx].width, lineCross[l], marginCross, align), std::max(0.0f, contentHeightBudget - marginMain));
+          if(resolved.dependsOnWidth)
+          {
+            childHeight = resolved.height;
+            depends     = true;
+          }
+        }
+        mainSize += childHeight + marginMain;
+      }
+      height = std::max(height, mainSize);
+    }
+  }
+
+  if(depends)
+  {
+    contentHeight = height;
+  }
+  return depends;
+}
+
+} // namespace Internal
 
 } // namespace Ui
 } //namespace DALI_NAMESPACE

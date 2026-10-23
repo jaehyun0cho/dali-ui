@@ -133,6 +133,7 @@ A **layout root** is a top-level View in the layout hierarchy (its parent is not
 
 2. **Arrange**  
    - The View is given a `LayoutRect` (typically from 0,0 with the measured size). It applies its own alignment and margin, and if it has a LayoutManager, the manager calls `Arrange(child, childBounds)` for each child to set position and size.
+   - A child whose `WRAP_CONTENT` height follows its width (wrapped text, for example) is given the height it needs at the width it is finally arranged at, rather than the height it was measured at; see [Height-for-width (wrapped content)](#height-for-width-wrapped-content).
 
 ### Layout caching and the measure/arrange contract
 
@@ -419,6 +420,11 @@ during Measure.
   work when the constraint has not changed.
 - Continuing the example: parent arranged at 100px → child B is
   re-measured and arranged at 100px.
+- When child B's height is `WRAP_CONTENT` and follows its width (wrapped
+  text), the height it is arranged at is the one it needs at the assigned
+  width, not the one it reported for the incoming constraint, and the
+  re-measure above runs at that slot. See
+  [Height-for-width (wrapped content)](#height-for-width-wrapped-content).
 
 **Per-LayoutManager behavior:**
 - **StackLayout**: cross-axis `MATCH_PARENT` fills the available cross-axis
@@ -427,12 +433,163 @@ during Measure.
   determines the main-axis size and main-axis `MATCH_PARENT` is ignored.
 - **FlexLayout**: cross-axis `MATCH_PARENT` fills the flex line's cross
   size. Main-axis `MATCH_PARENT` fills the available main axis; use
-  flex-grow for proportional distribution.
+  flex-grow for proportional distribution. In a row, a wrapped child's
+  height is taken at its width after grow/shrink; in a column, at the line's
+  cross extent for a `MATCH_PARENT` or `STRETCH` child and at its measured
+  width otherwise.
 - **GridLayout**: `MATCH_PARENT` children do not drive AUTO row/column
-  sizing. In Arrange, cells are filled by default (FILL alignment).
+  sizing. In Arrange, cells are filled by default (FILL alignment). AUTO
+  rows use a wrapped child's height at its cell width.
 - **AbsoluteLayout**: `MATCH_PARENT` children fill the available content
   area (when no explicit bounds are set via AbsoluteLayoutParams).
 - **ScrollView**: `MATCH_PARENT` children fill the viewport in Arrange.
+  Content whose `WRAP_CONTENT` height follows its width gets the height it
+  needs at its slot width, and the scrollable height follows it.
+
+### Height-for-width (wrapped content)
+
+`Measure()` offers a view an at-most budget, and the width a view is finally
+laid out at is decided afterwards, by its parent: a `WRAP_CONTENT` container is
+arranged at its measured width, while a `FILL`-aligned, `MATCH_PARENT`,
+weighted, grid-cell or flex-shrunk child gets whatever its parent's rule gives
+it. A child whose height follows its width -- a multi-line `Label`, a container
+holding one, a wrapping row `FlexLayout` -- is therefore measured at a width it
+may not get, and its measured height belongs to that other width: too short when
+the final width is narrower (the text is clipped), too tall when it is wider.
+
+`Measure()` itself is unchanged. Wherever a width becomes final, the framework
+resolves the height such a child needs at exactly that width and uses it as the
+child's slot height:
+
+1. **A container's arrange**, for its children with a `WRAP_CONTENT` height.
+2. **A layout root's or a `STANDALONE` view's own slot**, right after the slot is
+   derived, then clamped by the view's own minimum/maximum height. The parent's
+   placement of a `STANDALONE` view and the view's own layout-root pass run the
+   same step on the same inputs, so they keep deriving the same slot.
+3. **`ScrollView` content**, with an unbounded budget; the scrollable height
+   follows.
+
+The resolution never measures: it calls no `Measure()`, publishes no measured
+size, changes no cache entry and opens no pass. It reads the subtree's last
+measured sizes, its layout-tracked state and a `Label`'s text metrics, and
+re-derives the height through the rules the containers' own measure and arrange
+use.
+
+**Who participates.** Producers are recognised by their exact type, so a
+subclass that redefines a virtual is never guessed at:
+
+- a multi-line `Label` without text fit;
+- a plain `View` that owns no layout manager;
+- a view of any type whose layout manager is exactly a `StackLayoutManager`,
+  `GridLayoutManager`, `FlexLayoutManager` or `AbsoluteLayoutManager` (the
+  manager outranks the view's own measure and arrange). So `StackLayout`,
+  `GridLayout`, `FlexLayout` and `AbsoluteLayout` participate, and so do component
+  views built on those managers -- `Dialog` and `Toast` own a
+  `StackLayoutManager`, `DialogContainer` and `Navigator` an
+  `AbsoluteLayoutManager` -- whose wrapped text can now grow when they are laid
+  out narrower than their measure budget. A horizontal `FlexLayout` that wraps
+  depends on its width by itself: its line breaks follow it.
+
+None of them may have a `MeasureCallback` or an `ArrangeCallback`, and only a
+`WRAP_CONTENT` height is resolved. Every other view reports its measured height
+and is not looked into, so whatever lies below it keeps its current layout:
+views with layout callbacks, custom layout managers (including subclasses of the
+managers above), a `View` subclass that owns no such manager, other view types,
+`ScrollView`'s own height, and text-fit or single-line `Label`s. A height is
+resolved only when it actually follows the width, so a tree without such content
+keeps exactly its current numbers.
+
+**The width a container gives a child** is the one its own arrange gives it:
+
+| Container | Width a child is resolved at |
+|---|---|
+| plain `View` | the content width less the child's margin for `MATCH_PARENT`, its measured width otherwise |
+| `StackLayout`, vertical | the cross extent for `MATCH_PARENT` and for a `FILL`-aligned `WRAP_CONTENT` width, its measured width otherwise; weight children are not resolved (their share decides their height) |
+| `StackLayout`, horizontal | its weight share, the content width less its margin for a non-weight `MATCH_PARENT`, its measured width otherwise |
+| `GridLayout` | its cell less its margin, or its measured width when that is narrower and the child is `START`/`CENTER`/`END`-aligned |
+| `FlexLayout`, row | its width after grow/shrink (the whole content width for `MATCH_PARENT` without flex-grow) |
+| `FlexLayout`, column | the line cross extent for `MATCH_PARENT` or `STRETCH`, its measured width otherwise; a child with a flex basis is not resolved |
+| `AbsoluteLayout` | its explicit or proportional width, the available width less its margin for `MATCH_PARENT`, its measured width otherwise; a child with an explicit or proportional height is not resolved |
+| `ScrollView` | the viewport width for `MATCH_PARENT`, its measured width otherwise |
+
+The child's own minimum/maximum **width** is not applied: an arranged width is
+never clamped by it. Its own minimum/maximum height applies, and so does the
+budget the container's measure would give it, with the container's final extent
+in place of its measure-time extent. In a `GridLayout` the AUTO rows and the cell
+placement use the same resolved heights, so a `START`/`CENTER`/`END`-aligned
+child gets the height its row was sized for.
+
+**Fit rule.** A container adopts the resolved heights only when its resolved
+layout fits the bounds it was given -- the non-weight run of a vertical
+`StackLayout`, every cross extent of a horizontal one, the non-STAR rows of a
+`GridLayout`, the line extents of a `FlexLayout`, the bottom extent of a plain
+`View` or an `AbsoluteLayout`; otherwise it arranges exactly as before. A
+container also reports a resolved height to its parent only when its resolved
+content fits its own height budget (the constraint its measure would get). When
+it does not -- a `WRAP_CONTENT` root whose wrapped content is taller than the
+window, for example -- it reports its measured height and keeps its current
+layout, so a box is never sized for a layout its own arrange would refuse. A
+container its parent sizes from that resolved height therefore fits, unless the
+measured sizes it reads were rewritten in between (see **Limits**); a container
+whose parent sized it from its measured height alone -- a custom parent, or a
+fixed height that is too small -- keeps its current layout.
+
+**Limits.** Only the height follows the width; a width never follows a height. A
+column `FlexLayout` still splits its lines once, at the measured heights. The
+`MATCH_PARENT` re-measure protocol above is unchanged; the re-measure simply runs
+at a slot that carries the resolved height.
+
+- A `WRAP_CONTENT`-width child of a `MATCH_PARENT`-width container is taken at
+  the width it will measure to after its parent re-measures that container at the
+  final width: its measured width capped by the constraint that re-measure hands
+  it -- the final width clamped by the container's own minimum/maximum width (as
+  `Measure()` clamps every constraint), less the container's padding and the
+  child's margin. A `MATCH_PARENT`-width child keeps the container's unclamped
+  content width, which is what its arrange gives it. A `WRAP_CONTENT` container
+  squeezed by its parent without being re-measured (a grid cell or a flex-row
+  shrink narrower than its measured width) and the children of a `WRAP_CONTENT`
+  container nested inside a re-measured one keep their last measured widths; a
+  flex row builds its lines from the last measured widths.
+- A `GridLayout` resolved by its parent builds its AUTO columns from its
+  children's last measured widths, while its own arrange re-measures them first;
+  the children of a `WRAP_CONTENT` container nested inside a re-measured
+  `MATCH_PARENT` container are taken at their last measured widths; and the
+  measured size of a child the resolution does not look into can be rewritten by
+  an arrange-owned re-measure between a parent's resolution and the container's
+  arrange. In each of these cases the container's fit test can fail, and it then
+  arranges its children as before inside the allocation its parent derived.
+- A multi-line `Label` laid out 0 wide resolves to height 0 (the rule of its
+  measure), so a `WRAP_CONTENT` container whose only content is such a `Label` --
+  a `MATCH_PARENT`-width `Label` with no sibling that sets the width -- collapses
+  to its padding.
+
+**Caching and cost.** The resolution keeps no state of its own and adds no
+per-view memory. A change to a `Label`'s text or style, or to any layout-tracked
+property, invalidates every ancestor as before. A measured size rewritten by an
+arrange-owned re-measure (a `MATCH_PARENT` child re-measured at its slot) does not
+invalidate the arranging ancestor -- the owner scope stops that walk -- so a later
+arrange miss can read it; the result can differ once and then re-converges, the
+same one-pass caveat the `STANDALONE` slot documents.
+
+An arrange that misses walks, for every child with a `WRAP_CONTENT` height that is
+a supported producer, that child's whole supported subtree, because whether it
+depends on its width is only known after the walk; each visited view costs two
+trait lookups and a type test, each visited container one temporary copy of its
+child list (plus per-child buffers when something depends on its width), and each
+multi-line `Label` one text-fit configuration allocation plus, when it is asked for
+a width other than the one its text was last laid out at, one more text layout. A `ScrollView` arranges on every
+layout pass that reaches its root (`ArrangePolicy::ALWAYS`), so its content is
+walked on every such pass, even when nothing in it depends on its width; a
+`WRAP_CONTENT`-height layout root resolves once per pass.
+
+**Example.** A `WRAP_CONTENT` x `WRAP_CONTENT` vertical `StackLayout` root holds a
+100-wide view and a `MATCH_PARENT`-width multi-line `Label`. Measured against the
+480-wide window, the `Label` reports its height at 480, H(480), and the stack
+measures 100 x H(480). The stack's slot is 100 wide, so the slot step resolves the
+`Label` at 100: the stack and the `Label` are both H(100) tall, where they used to
+be H(480) tall with the text clipped. Without the 100-wide view the stack would be
+0 wide, and the `Label`, laid out 0 wide, would resolve to height 0: the stack
+collapses to its padding.
 
 ### Grid placement (explicit cells)
 
@@ -648,7 +805,10 @@ A Standalone child:
   `Minimum`/`Maximum` width and height. The same derivation runs whether the
   slot comes from the parent's arrange pass or from the child's own
   layout-root pass, so both agree; for a `MATCH_PARENT` axis it is the only
-  place the clamp reaches, because the measured value is discarded there.
+  place the clamp reaches, because the measured value is discarded there. A
+  `WRAP_CONTENT` height that follows the width is first resolved at the slot
+  width, by the same step on both paths (see
+  [Height-for-width (wrapped content)](#height-for-width-wrapped-content)).
 
 **Behaviour change.** Compared with the earlier derivation, an explicitly sized
 Standalone view is measured at its requested size instead of the parent's
@@ -693,4 +853,5 @@ Two PlantUML diagram SOURCE files live beside this document in the repository. T
 |------|-------------|
 | Public child API | Child add/remove/insert/bulk-remove uses Actor::Add/Remove/InsertAbove/InsertBelow/RemoveAll. View provides Remove(View, RemovePolicy) and RemoveAll(RemovePolicy). GetChildCount/GetChildAt are inherited from Actor (actor tree, ghost-inclusive); the logical layout child list is exposed via GetChildViewCount, GetChildViewAt and IndexOfChildView. |
 | Layout processing | LayoutController collects layout roots per window, runs Measure then Arrange in the pre-process phase of a ProcessEvents cycle, and reports every completed pass through `LayoutFinished` in its post-process phase. |
+| Height-for-width | A `WRAP_CONTENT` height that follows the width (multi-line `Label`, plain `View`, `StackLayout`/`GridLayout`/`FlexLayout`/`AbsoluteLayout` containers of such content, wrapping row `FlexLayout`) is resolved, without measuring, at the width the view is finally laid out at: in a supported container's arrange (only when the result fits), in a layout root's or `STANDALONE` view's slot, and for `ScrollView` content. A container whose resolved content exceeds its own height budget, and every unsupported producer, keep their measured height. |
 | Implementation | ViewImpl holds children and can attach a LayoutManager as a Trait via `View::AttachLayoutManager()`. Applications can customize measure/arrange via `SetMeasureCallback()`/`SetArrangeCallback()`. |

@@ -24,6 +24,7 @@
 #include <vector>
 
 // INTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/height-for-width-resolution.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/internal/layouts/stack-layout-params-impl.h>
@@ -153,6 +154,194 @@ void MeasureStackWeightChildren(std::vector<View>& children, std::vector<Measure
       workingSizes[i].width  = std::max(0.0f, share - marginW);
       workingSizes[i].height = childSize.height;
       maxCrossAxisInOut      = std::max(maxCrossAxisInOut, childSize.height + marginH);
+    }
+  }
+}
+
+// The width the VERTICAL placement in Arrange() gives a child: a MATCH_PARENT width takes the
+// cross extent, a FILL-aligned WRAP_CONTENT width is stretched to it, every other width keeps
+// the allocated one.
+float StackVerticalChildWidth(ViewImpl& childImpl, float allocatedWidth, float crossAvailable)
+{
+  float childWidth = allocatedWidth;
+  if(childImpl.GetRequestedWidth() == MATCH_PARENT)
+  {
+    childWidth = crossAvailable;
+  }
+  if(GetChildAlignment(childImpl) == LayoutAlignment::FILL && childImpl.GetRequestedWidth() == WRAP_CONTENT)
+  {
+    return crossAvailable;
+  }
+  return childWidth;
+}
+
+// The child height a VERTICAL stack aggregates while it resolves its own height: the height
+// resolved at the placement width for a width-dependent WRAP_CONTENT height, the measured height
+// otherwise. Sets dependsOut when the child depends on its width. With a predictedContentWidth (the
+// stack is MATCH_PARENT wide, so its parent re-measures it at its slot before arranging it; the
+// content width that re-measure gives the stack's measure) a WRAP_CONTENT-width child starts from
+// the width that re-measure gives it -- its measured width capped by the predicted content width
+// less its margin, the first measure pass's constraint form -- rather than its measured width;
+// MATCH_PARENT and FILL-stretched widths still take the unclamped cross extent the arrange gives.
+float StackVerticalAggregateHeight(ViewImpl& childImpl, float contentWidth, float contentHeightBudget, float marginW, float marginH, float predictedContentWidth, bool& dependsOut)
+{
+  const MeasuredSize measured = childImpl.GetMeasuredSize();
+  if(childImpl.GetRequestedHeight() != WRAP_CONTENT)
+  {
+    return measured.height;
+  }
+  const float                   crossAvailable = std::max(0.0f, contentWidth - marginW);
+  const float                   allocatedWidth = (predictedContentWidth >= 0.0f && childImpl.GetRequestedWidth() == WRAP_CONTENT)
+                                                   ? Internal::PredictRemeasuredWidth(childImpl, measured.width, std::max(0.0f, predictedContentWidth - marginW))
+                                                   : measured.width;
+  const Internal::HeightAtWidth resolved =
+    Internal::ResolveHeightAtWidth(childImpl,
+                                   StackVerticalChildWidth(childImpl, allocatedWidth, crossAvailable),
+                                   std::max(0.0f, contentHeightBudget - marginH));
+  if(!resolved.dependsOnWidth)
+  {
+    return measured.height;
+  }
+  dependsOut = true;
+  return resolved.height;
+}
+
+// Height-for-width, VERTICAL, before the weight redistribution in Arrange(): every non-weight
+// WRAP_CONTENT-height child is resolved at the width the placement gives it. The resolved heights
+// are adopted only when the main-axis run they produce -- the redistribution's non-weight sum plus
+// the spacing -- fits the available height; the redistribution then hands the weight children what
+// is left. Weight children are not resolved: their share decides their height.
+void ResolveStackMainAxisHeights(std::vector<View>& children, std::vector<MeasuredSize>& allocations, float availableWidth, float availableHeight, float visSpacing)
+{
+  std::vector<float> resolved;
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
+    if(IsChildStandalone(childImpl) || GetChildWeight(childImpl) > 0.0f || childImpl.GetRequestedHeight() != WRAP_CONTENT)
+    {
+      continue;
+    }
+
+    const float                   childScale = childImpl.GetEffectiveScale();
+    const Insets                  margin     = childImpl.GetMargin();
+    const float                   marginW    = static_cast<float>(margin.start + margin.end) * childScale;
+    const float                   marginH    = static_cast<float>(margin.top + margin.bottom) * childScale;
+    const Internal::HeightAtWidth result =
+      Internal::ResolveHeightAtWidth(childImpl,
+                                     StackVerticalChildWidth(childImpl, allocations[i].width, std::max(0.0f, availableWidth - marginW)),
+                                     std::max(0.0f, availableHeight - marginH));
+    if(result.dependsOnWidth)
+    {
+      if(resolved.empty())
+      {
+        resolved.assign(children.size(), -1.0f);
+      }
+      resolved[i] = result.height;
+    }
+  }
+  if(resolved.empty())
+  {
+    return;
+  }
+
+  // The non-weight main-axis run, in the redistribution's own form.
+  float    nonWeightMain     = 0.0f;
+  uint32_t visibleChildCount = 0;
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
+    if(IsChildStandalone(childImpl))
+    {
+      continue;
+    }
+    visibleChildCount++;
+    if(GetChildWeight(childImpl) > 0.0f)
+    {
+      continue;
+    }
+    const float  childScale = childImpl.GetEffectiveScale();
+    const Insets margin     = childImpl.GetMargin();
+    const float  mainSize   = (resolved[i] >= 0.0f) ? resolved[i] : allocations[i].height;
+    nonWeightMain += mainSize + static_cast<float>(margin.top + margin.bottom) * childScale;
+  }
+  const float spacingTotal = (visibleChildCount > 1) ? visSpacing * (visibleChildCount - 1) : 0.0f;
+  if(nonWeightMain + spacingTotal > availableHeight + Internal::HEIGHT_FOR_WIDTH_FIT_EPSILON)
+  {
+    return; // Does not fit: arrange exactly as before.
+  }
+
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    if(resolved[i] >= 0.0f)
+    {
+      allocations[i].height = resolved[i];
+    }
+  }
+}
+
+// Height-for-width, HORIZONTAL, after the weight redistribution in Arrange() (a weight child's
+// width is its share by then): every WRAP_CONTENT-height child is resolved at the width the
+// placement gives it. The resolved heights are adopted only when every resulting cross extent fits
+// the available height. A START/CENTER/END-aligned child is then placed at its resolved height; a
+// FILL-aligned WRAP_CONTENT child keeps the whole cross extent as its slot.
+void ResolveStackCrossAxisHeights(std::vector<View>& children, std::vector<MeasuredSize>& allocations, float availableWidth, float availableHeight)
+{
+  std::vector<float> resolved;
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
+    if(IsChildStandalone(childImpl) || childImpl.GetRequestedHeight() != WRAP_CONTENT)
+    {
+      continue;
+    }
+
+    const float  childScale = childImpl.GetEffectiveScale();
+    const Insets margin     = childImpl.GetMargin();
+    const float  marginW    = static_cast<float>(margin.start + margin.end) * childScale;
+    const float  marginH    = static_cast<float>(margin.top + margin.bottom) * childScale;
+    float        width      = allocations[i].width;
+    if(GetChildWeight(childImpl) <= 0.0f && childImpl.GetRequestedWidth() == MATCH_PARENT)
+    {
+      width = std::max(0.0f, availableWidth - marginW);
+    }
+    const Internal::HeightAtWidth result = Internal::ResolveHeightAtWidth(childImpl, width, std::max(0.0f, availableHeight - marginH));
+    if(result.dependsOnWidth)
+    {
+      if(resolved.empty())
+      {
+        resolved.assign(children.size(), -1.0f);
+      }
+      resolved[i] = result.height;
+    }
+  }
+  if(resolved.empty())
+  {
+    return;
+  }
+
+  float needed = 0.0f;
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
+    if(IsChildStandalone(childImpl))
+    {
+      continue;
+    }
+    const float  childScale = childImpl.GetEffectiveScale();
+    const Insets margin     = childImpl.GetMargin();
+    const float  height     = (resolved[i] >= 0.0f) ? resolved[i] : allocations[i].height;
+    needed                  = std::max(needed, height + static_cast<float>(margin.top + margin.bottom) * childScale);
+  }
+  if(needed > availableHeight + Internal::HEIGHT_FOR_WIDTH_FIT_EPSILON)
+  {
+    return; // Does not fit: arrange exactly as before.
+  }
+
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    if(resolved[i] >= 0.0f)
+    {
+      allocations[i].height = resolved[i];
     }
   }
 }
@@ -381,6 +570,16 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
     allocations[i] = GetImpl(children[i]).GetMeasuredSize();
   }
 
+  // Height-for-width: a child whose WRAP_CONTENT height follows its width is given the height it
+  // needs at the width the placement below gives it (see height-for-width-resolution.h). Only an
+  // exact StackLayoutManager on a view without layout callbacks does this; when no child depends on
+  // its width the allocations stay exactly as measured.
+  const bool resolveHeights = Internal::IsHeightForWidthContainer(*view);
+  if(resolveHeights && impl->mOrientation == StackOrientation::VERTICAL)
+  {
+    ResolveStackMainAxisHeights(children, allocations, availableWidth, availableHeight, visSpacing);
+  }
+
   // Re-distribute weight among weight children using actual arrange bounds.
   {
     float    totalWeight       = 0.0f;
@@ -467,6 +666,12 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
         }
       }
     }
+  }
+
+  // Height-for-width on the cross axis, now that every width -- weight shares included -- is final.
+  if(resolveHeights && impl->mOrientation == StackOrientation::HORIZONTAL)
+  {
+    ResolveStackCrossAxisHeights(children, allocations, availableWidth, availableHeight);
   }
 
   for(uint32_t i = 0; i < children.size(); ++i)
@@ -588,6 +793,190 @@ void StackLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
     }
   }
 }
+
+namespace Internal
+{
+
+bool ResolveStackContentHeightForWidth(const StackLayoutManager& manager, ViewImpl& view, float contentWidth, float contentHeightBudget, float& contentHeight, float predictedContentWidth)
+{
+  const float    s          = view.GetEffectiveScale();
+  const float    visSpacing = manager.GetSpacing() * s;
+  const uint32_t count      = view.GetChildViewCount();
+
+  std::vector<Ui::View> children;
+  children.reserve(count);
+  for(uint32_t i = 0; i < count; ++i)
+  {
+    children.push_back(view.GetChildViewAt(i));
+  }
+
+  bool  depends = false;
+  float height  = 0.0f;
+  if(manager.GetOrientation() == StackOrientation::VERTICAL)
+  {
+    // The WRAP_CONTENT main-axis extent of Measure(), with every width-dependent child resolved at
+    // the width the vertical placement gives it. First pass: the non-weight children.
+    float    mainAxisNonWeight = 0.0f;
+    float    totalWeight       = 0.0f;
+    uint32_t visibleChildCount = 0;
+    for(uint32_t i = 0; i < children.size(); ++i)
+    {
+      ViewImpl& childImpl = GetImpl(children[i]);
+      if(IsChildStandalone(childImpl))
+      {
+        continue;
+      }
+      visibleChildCount++;
+      const float weight = GetChildWeight(childImpl);
+      if(weight > 0.0f)
+      {
+        totalWeight += weight;
+        continue;
+      }
+      const float  childScale = childImpl.GetEffectiveScale();
+      const Insets margin     = childImpl.GetMargin();
+      const float  marginW    = static_cast<float>(margin.start + margin.end) * childScale;
+      const float  marginH    = static_cast<float>(margin.top + margin.bottom) * childScale;
+      mainAxisNonWeight += StackVerticalAggregateHeight(childImpl, contentWidth, contentHeightBudget, marginW, marginH, predictedContentWidth, depends) + marginH;
+    }
+
+    if(totalWeight > 0.0f && visibleChildCount > 0)
+    {
+      // The weight branch of Measure() for a WRAP_CONTENT main axis: a minimum height larger than
+      // the wrapped run is shared by the weight children; otherwise they are aggregated like the
+      // non-weight children.
+      const float  spacingTotal   = (visibleChildCount > 1) ? visSpacing * (visibleChildCount - 1) : 0.0f;
+      const float  wrappedMain    = mainAxisNonWeight + spacingTotal;
+      const Insets padding        = view.GetPadding();
+      const float  paddingMain    = static_cast<float>(padding.top + padding.bottom) * s;
+      const float  minMainContent = std::max(0.0f, view.GetMinimumHeight() * s - paddingMain);
+      const float  targetMain     = std::max(wrappedMain, minMainContent);
+      if(targetMain > wrappedMain)
+      {
+        height = targetMain;
+      }
+      else
+      {
+        for(uint32_t i = 0; i < children.size(); ++i)
+        {
+          ViewImpl& childImpl = GetImpl(children[i]);
+          if(IsChildStandalone(childImpl) || GetChildWeight(childImpl) <= 0.0f)
+          {
+            continue;
+          }
+          const float  childScale = childImpl.GetEffectiveScale();
+          const Insets margin     = childImpl.GetMargin();
+          const float  marginW    = static_cast<float>(margin.start + margin.end) * childScale;
+          const float  marginH    = static_cast<float>(margin.top + margin.bottom) * childScale;
+          mainAxisNonWeight += StackVerticalAggregateHeight(childImpl, contentWidth, contentHeightBudget, marginW, marginH, predictedContentWidth, depends) + marginH;
+        }
+        height = mainAxisNonWeight + spacingTotal;
+      }
+    }
+    else
+    {
+      height = mainAxisNonWeight;
+      if(visibleChildCount > 1)
+      {
+        height += visSpacing * (visibleChildCount - 1);
+      }
+    }
+  }
+  else
+  {
+    // The cross-axis extent of Measure(), with every child at the width the horizontal placement
+    // gives it: a weight child its share of what the non-weight children leave (the arrange-time
+    // redistribution), a non-weight MATCH_PARENT child the whole content width, every other child
+    // its measured width -- for a WRAP_CONTENT width with a predictedContentWidth, the width the
+    // stack's re-measure gives it (its measured width capped by the predicted content width less its
+    // margin, the constraint the first measure pass hands it), in the non-weight run as well. The
+    // weight shares and MATCH_PARENT widths keep the unclamped content width the arrange gives.
+    auto nonWeightWidth = [predictedContentWidth](ViewImpl& childImpl, float measuredWidth, float marginW) -> float
+    {
+      return (predictedContentWidth >= 0.0f && childImpl.GetRequestedWidth() == WRAP_CONTENT)
+               ? PredictRemeasuredWidth(childImpl, measuredWidth, std::max(0.0f, predictedContentWidth - marginW))
+               : measuredWidth;
+    };
+
+    float    totalWeight       = 0.0f;
+    float    nonWeightMain     = 0.0f;
+    uint32_t visibleChildCount = 0;
+    for(uint32_t i = 0; i < children.size(); ++i)
+    {
+      ViewImpl& childImpl = GetImpl(children[i]);
+      if(IsChildStandalone(childImpl))
+      {
+        continue;
+      }
+      visibleChildCount++;
+      const float weight = GetChildWeight(childImpl);
+      if(weight > 0.0f)
+      {
+        totalWeight += weight;
+      }
+      else
+      {
+        const float  childScale = childImpl.GetEffectiveScale();
+        const Insets margin     = childImpl.GetMargin();
+        const float  marginW    = static_cast<float>(margin.start + margin.end) * childScale;
+        nonWeightMain += nonWeightWidth(childImpl, childImpl.GetMeasuredSize().width, marginW) + marginW;
+      }
+    }
+    const float spacingTotal  = (visibleChildCount > 1) ? visSpacing * (visibleChildCount - 1) : 0.0f;
+    const float remainingMain = std::max(0.0f, contentWidth - nonWeightMain - spacingTotal);
+
+    float maxCrossAxis = 0.0f;
+    for(uint32_t i = 0; i < children.size(); ++i)
+    {
+      ViewImpl& childImpl = GetImpl(children[i]);
+      if(IsChildStandalone(childImpl))
+      {
+        continue;
+      }
+      const float        childScale = childImpl.GetEffectiveScale();
+      const Insets       margin     = childImpl.GetMargin();
+      const float        marginW    = static_cast<float>(margin.start + margin.end) * childScale;
+      const float        marginH    = static_cast<float>(margin.top + margin.bottom) * childScale;
+      const MeasuredSize measured   = childImpl.GetMeasuredSize();
+      const float        weight     = GetChildWeight(childImpl);
+
+      float width = measured.width;
+      if(weight > 0.0f)
+      {
+        width = std::max(0.0f, (weight / totalWeight) * remainingMain - marginW);
+      }
+      else if(childImpl.GetRequestedWidth() == MATCH_PARENT)
+      {
+        width = std::max(0.0f, contentWidth - marginW);
+      }
+      else
+      {
+        width = nonWeightWidth(childImpl, measured.width, marginW);
+      }
+
+      float childHeight = measured.height;
+      if(childImpl.GetRequestedHeight() == WRAP_CONTENT)
+      {
+        const HeightAtWidth resolved = ResolveHeightAtWidth(childImpl, width, std::max(0.0f, contentHeightBudget - marginH));
+        if(resolved.dependsOnWidth)
+        {
+          childHeight = resolved.height;
+          depends     = true;
+        }
+      }
+      maxCrossAxis = std::max(maxCrossAxis, childHeight + marginH);
+    }
+    height = maxCrossAxis;
+  }
+
+  if(depends)
+  {
+    contentHeight = height;
+  }
+  return depends;
+}
+
+} // namespace Internal
 
 } // namespace Ui
 } //namespace DALI_NAMESPACE

@@ -69,6 +69,7 @@
 #include <dali-ui-foundation/internal/layouts/absolute-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/flex-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/grid-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/height-for-width-resolution.h>
 #include <dali-ui-foundation/internal/layouts/layout-callbacks-object.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-direction-utils.h>
@@ -409,11 +410,14 @@ void ArrangeStandaloneChild(ViewImpl& owner, ViewImpl& childImpl, float parentFu
   }
 
   // THE shared slot derivation, the same call LayoutController::ProcessLayoutRoot
-  // makes for a boundary view driven as a layout root -- fed the same snapshot, the
-  // same available extent (both read this parent's layout target) and a measured size
-  // produced at the same constraint, which is what makes the two results identical. It
-  // also applies the child's own min/max clamp.
-  const LayoutRect bounds = DeriveStandaloneRootBounds(inputs, available.width, available.height, measured);
+  // makes for a boundary view driven as a layout root -- then the shared
+  // height-for-width step, which resolves a width-dependent WRAP_CONTENT height at the
+  // slot width (ApplyRootHeightForWidth). Both are fed the same snapshot, the same
+  // available extent (both read this parent's layout target), the same constraint and
+  // a measured size produced at that constraint, which keeps the two results
+  // identical. The derivation also applies the child's own min/max clamp.
+  LayoutRect bounds = DeriveStandaloneRootBounds(inputs, available.width, available.height, measured);
+  ApplyRootHeightForWidth(childImpl, inputs, constraint.height, bounds);
   childImpl.Arrange(bounds);
 }
 
@@ -1430,9 +1434,31 @@ LayoutRect ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
     float visPadBottom = static_cast<float>(mPadding.bottom) * s;
 
     std::vector<Ui::View> childSnapshot(mChildren.Begin(), mChildren.End());
-    for(auto& childView : childSnapshot)
+
+    // Height-for-width: the final width of every child is known here, so a child whose
+    // WRAP_CONTENT height follows its width is given the height it needs at exactly that
+    // width (DeriveDefaultChildHeights walks this very snapshot, so its indices are this
+    // loop's). The resolved heights are adopted only when the resolved layout fits the
+    // content box; otherwise -- e.g. under a parent that sized this view from its measured
+    // height alone -- the children are arranged exactly as before. When no child depends on
+    // its width nothing is resolved and nothing below changes. A non-MATCH_PARENT child is
+    // placed below at its measured width, so that is the width it is resolved at: no width
+    // is predicted here (NO_REMEASURE_PREDICTION; see PredictRemeasuredWidth).
+    std::vector<float> resolvedHeights;
+    if(IsHeightForWidthContainer(mViewImpl))
     {
-      ViewImpl& childImpl = GetImpl(childView);
+      const float contentHeight = bounds.height - visPadTop - visPadBottom;
+      float       neededHeight  = 0.0f;
+      if(DeriveDefaultChildHeights(mViewImpl, childSnapshot, bounds.width - visPadLeft - visPadRight, contentHeight, NO_REMEASURE_PREDICTION, resolvedHeights, neededHeight) &&
+         neededHeight > contentHeight + HEIGHT_FOR_WIDTH_FIT_EPSILON)
+      {
+        resolvedHeights.clear(); // Does not fit: arrange exactly as before.
+      }
+    }
+
+    for(uint32_t i = 0; i < childSnapshot.size(); ++i)
+    {
+      ViewImpl& childImpl = GetImpl(childSnapshot[i]);
       if(IntegrationView::IsLayoutModeStandalone(childImpl))
       {
         continue;
@@ -1457,6 +1483,10 @@ LayoutRect ViewDataImpl::ArrangeDefault(const LayoutRect& bounds)
       if(childImpl.GetRequestedHeight() == MATCH_PARENT)
       {
         childH = std::max(0.0f, bounds.height - visPadTop - visPadBottom - visMarginH);
+      }
+      else if(i < resolvedHeights.size() && resolvedHeights[i] >= 0.0f)
+      {
+        childH = resolvedHeights[i];
       }
       float childX = visPadLeft + visMarginStart + childImpl.GetRequestedX() * s;
       float childY = visPadTop + visMarginTop + childImpl.GetRequestedY() * s;
@@ -4658,6 +4688,11 @@ void ViewDataImpl::InvalidateParentArrangeCacheForOutOfBandArrange(bool framewor
   // the bounds the parent's next miss would. An application calling the public
   // View::Arrange() carries no such ownership, which is why the exemption is gated on
   // the root entry point and not on the layout mode alone.
+  //
+  // With the height-for-width step (ApplyRootHeightForWidth) the bounds also read the
+  // subtree's measured sizes and text metrics; an arrange-owned re-measure in between can
+  // make the two derivations differ once (standalone-bounds-utils.h), after which they
+  // re-converge.
   if(frameworkLayoutRootPass && IntegrationView::IsLayoutModeStandalone(mViewImpl))
   {
     return;

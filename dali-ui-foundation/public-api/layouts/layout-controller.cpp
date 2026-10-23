@@ -34,6 +34,7 @@
 #include <vector>
 
 // INTERNAL INCLUDES
+#include <dali-ui-foundation/internal/layouts/height-for-width-resolution.h>
 #include <dali-ui-foundation/internal/layouts/layout-invalidation-generation.h>
 #include <dali-ui-foundation/internal/layouts/layout-transition-dispatcher.h>
 #include <dali-ui-foundation/internal/layouts/standalone-bounds-utils.h>
@@ -1510,7 +1511,11 @@ private:
       const Internal::StandaloneExtent available    = Internal::ResolveStandaloneAvailableExtent(inputs, parentWidth, parentHeight);
       const Internal::StandaloneExtent constraint   = Internal::DeriveStandaloneMeasureConstraint(inputs, available);
       const MeasuredSize               measuredSize = view->Measure(constraint.width, constraint.height);
-      const LayoutRect                 bounds       = Internal::DeriveStandaloneRootBounds(inputs, available.width, available.height, measuredSize);
+      LayoutRect                       bounds       = Internal::DeriveStandaloneRootBounds(inputs, available.width, available.height, measuredSize);
+
+      // The shared height-for-width step, fed the same snapshot and constraint as the parent's
+      // placement (ArrangeStandaloneChild), so the two paths keep deriving the same slot.
+      Internal::ApplyRootHeightForWidth(*view, inputs, constraint.height, bounds);
 
       // Use the internal root entry point rather than the public Arrange path: it
       // identifies this framework-owned self pass, whose bounds are the ones the
@@ -1563,8 +1568,10 @@ private:
     // measured (minimum) size, and the root's own min/max is enforced on the result.
     // It is the same shared derivation the STANDALONE branch above ends on; a
     // STANDALONE view with a parent has already returned there, which is where its
-    // convergence with ArrangeStandaloneChild is established.
-    const LayoutRect bounds = Internal::DeriveStandaloneRootBounds(inputs, widthConstraint, heightConstraint, measuredSize);
+    // convergence with ArrangeStandaloneChild is established. A WRAP_CONTENT height that
+    // follows the width is then resolved at the slot width, by the same step.
+    LayoutRect bounds = Internal::DeriveStandaloneRootBounds(inputs, widthConstraint, heightConstraint, measuredSize);
+    Internal::ApplyRootHeightForWidth(*view, inputs, heightConstraint, bounds);
 
     // The internal root entry point, as in the STANDALONE branch above. Its
     // framework-root-pass exemption (InvalidateParentArrangeCacheForOutOfBandArrange)

@@ -321,6 +321,18 @@ inline StandaloneExtent DeriveStandaloneMeasureConstraint(const StandaloneSlotIn
  * its own scale, margin or requested size mid-pass cannot make the extent and the slot
  * disagree.
  *
+ * Every caller -- ArrangeStandaloneChild and both branches of ProcessLayoutRoot --
+ * follows this with Internal::ApplyRootHeightForWidth (height-for-width-resolution.h),
+ * fed the same snapshot and the height constraint the view was just measured at: a
+ * WRAP_CONTENT height that follows the width is resolved at the slot width this function
+ * derived, then clamped by the same snapshot min/max. That step reads only the view's
+ * measured subtree, its layout-tracked state and text metrics, and it measures and
+ * publishes nothing, so the parent placement and the view's own pass still derive
+ * identical bounds. It stays out of this header so the header remains free of view
+ * internals. A descendant the resolution does not support and whose measured height an
+ * arrange-time re-measure changed in between can make the two derivations differ once;
+ * the next pass converges, as with any arrange-time re-measure.
+ *
  * @param[in] inputs The view's slot inputs, snapshotted before the pass
  * @param[in] availableWidth The available extent (ResolveStandaloneAvailableExtent) on the width axis
  * @param[in] availableHeight The available extent (ResolveStandaloneAvailableExtent) on the height axis

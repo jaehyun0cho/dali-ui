@@ -24,6 +24,7 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/integration-api/scroll-view-impl.h>
+#include <dali-ui-foundation/internal/layouts/height-for-width-resolution.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
@@ -119,6 +120,10 @@ void ScrollViewLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
   const uint32_t               count      = GetChildViewCount(view);
   float                        s          = view->GetEffectiveScale();
 
+  // Height-for-width (see height-for-width-resolution.h): only an exact ScrollViewLayoutManager on a
+  // view without layout callbacks resolves its children's heights.
+  const bool resolveHeights = Internal::IsHeightForWidthContainer(*view);
+
   for(uint32_t i = 0; i < count; ++i)
   {
     View child = GetChildViewAt(view, i);
@@ -148,6 +153,18 @@ void ScrollViewLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
     if(childImpl.GetRequestedHeight() == MATCH_PARENT)
     {
       childBounds.height = bounds.height;
+    }
+    else if(resolveHeights)
+    {
+      // Height-for-width: content whose height follows its width gets the height it needs at its
+      // final width. The scrollable axis is unbounded -- the budget Measure() hands a
+      // non-MATCH_PARENT axis -- so there is no fit test: content may exceed the viewport by
+      // design. The scrollable height below follows the resolved height.
+      const Internal::HeightAtWidth resolved = Internal::ResolveHeightAtWidth(childImpl, childBounds.width, std::numeric_limits<float>::max());
+      if(resolved.dependsOnWidth)
+      {
+        childBounds.height = resolved.height;
+      }
     }
 
     if(childImpl.GetRequestedWidth() == MATCH_PARENT || childImpl.GetRequestedHeight() == MATCH_PARENT)

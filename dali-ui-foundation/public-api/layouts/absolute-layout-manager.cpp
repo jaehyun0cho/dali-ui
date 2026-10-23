@@ -24,6 +24,7 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/internal/layouts/absolute-layout-params-impl.h>
+#include <dali-ui-foundation/internal/layouts/height-for-width-resolution.h>
 #include <dali-ui-foundation/internal/layouts/layout-dependency-scope.h>
 #include <dali-ui-foundation/internal/layouts/layout-manager-impl.h>
 #include <dali-ui-foundation/public-api/views/view-impl.h>
@@ -52,6 +53,158 @@ AbsoluteLayoutFlags GetChildFlags(Internal::AbsoluteLayoutParamsImpl* params)
     return params->GetFlags();
   }
   return AbsoluteLayoutFlags::NONE;
+}
+
+bool HasAbsoluteFlag(AbsoluteLayoutFlags flags, AbsoluteLayoutFlags flag)
+{
+  return (static_cast<uint8_t>(flags) & static_cast<uint8_t>(flag)) != 0;
+}
+
+// The width Arrange() gives a child: its explicit or proportional width, the available width less
+// its margin for a MATCH_PARENT width, its measured width otherwise. With a predictedContentWidth
+// (only the resolution of a MATCH_PARENT-width container, which its parent re-measures at its slot
+// before arranging it; the content width that re-measure gives the container's measure) a
+// WRAP_CONTENT-width child is taken at the width that re-measure gives it: its measured width capped
+// by the predicted content width less its margin, the constraint Measure() hands a child without an
+// explicit width. Explicit, proportional and MATCH_PARENT widths keep the unclamped available width.
+float AbsoluteArrangeWidth(ViewImpl& childImpl, const LayoutRect& spec, bool widthProportional, float availableWidth, float childScale, float predictedContentWidth)
+{
+  float w = spec.width;
+  if(widthProportional)
+  {
+    w *= availableWidth;
+  }
+  else if(w > 0.0f)
+  {
+    w *= childScale;
+  }
+  if(w < 0)
+  {
+    if(childImpl.GetRequestedWidth() == MATCH_PARENT)
+    {
+      Insets margin = childImpl.GetMargin();
+      w             = std::max(0.0f, availableWidth - (margin.start + margin.end) * childScale);
+    }
+    else if(predictedContentWidth >= 0.0f && childImpl.GetRequestedWidth() == WRAP_CONTENT)
+    {
+      Insets margin = childImpl.GetMargin();
+      w             = Internal::PredictRemeasuredWidth(childImpl, childImpl.GetMeasuredSize().width, std::max(0.0f, predictedContentWidth - (margin.start + margin.end) * childScale));
+    }
+    else
+    {
+      w = childImpl.GetMeasuredSize().width;
+    }
+  }
+  return w;
+}
+
+// The height Arrange() takes from a child's spec before its MATCH_PARENT / measured fallback: the
+// explicit or proportional height, negative when the spec sets none.
+float AbsoluteSpecHeight(const LayoutRect& spec, bool heightProportional, float availableHeight, float childScale)
+{
+  float h = spec.height;
+  if(heightProportional)
+  {
+    h *= availableHeight;
+  }
+  else if(h > 0.0f)
+  {
+    h *= childScale;
+  }
+  return h;
+}
+
+// Height-for-width: resolves every non-STANDALONE child whose height is its own WRAP_CONTENT (no
+// explicit or proportional height in its spec) at the width Arrange() gives it, with the budget
+// Measure() hands it. On the first dependent child @p resolved is assigned (child count, -1.0f);
+// entry i >= 0 is child i's resolved height. @p predictedContentWidth is not negative only for the
+// resolution of a MATCH_PARENT-width container (see AbsoluteArrangeWidth); Arrange() passes
+// Internal::NO_REMEASURE_PREDICTION.
+//
+// @return True when at least one child depends on its width
+bool ResolveAbsoluteChildHeights(std::vector<View>& children, float availableWidth, float availableHeight, float predictedContentWidth, std::vector<float>& resolved)
+{
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
+    if(childImpl.GetLayoutMode() == LayoutMode::STANDALONE || childImpl.GetRequestedHeight() != WRAP_CONTENT)
+    {
+      continue;
+    }
+
+    float                     childScale = childImpl.GetEffectiveScale();
+    auto*                     params     = Internal::AbsoluteLayoutParamsImpl::Get(childImpl);
+    const LayoutRect          spec       = GetChildBounds(params);
+    const AbsoluteLayoutFlags flags      = GetChildFlags(params);
+    if(AbsoluteSpecHeight(spec, HasAbsoluteFlag(flags, AbsoluteLayoutFlags::HEIGHT_PROPORTIONAL), availableHeight, childScale) >= 0.0f)
+    {
+      continue; // The spec decides the height.
+    }
+
+    Insets                        margin = childImpl.GetMargin();
+    const Internal::HeightAtWidth result =
+      Internal::ResolveHeightAtWidth(childImpl,
+                                     AbsoluteArrangeWidth(childImpl, spec, HasAbsoluteFlag(flags, AbsoluteLayoutFlags::WIDTH_PROPORTIONAL), availableWidth, childScale, predictedContentWidth),
+                                     std::max(0.0f, availableHeight - (margin.top + margin.bottom) * childScale));
+    if(result.dependsOnWidth)
+    {
+      if(resolved.empty())
+      {
+        resolved.assign(children.size(), -1.0f);
+      }
+      resolved[i] = result.height;
+    }
+  }
+  return !resolved.empty();
+}
+
+// The bottom extent Measure() reports for a WRAP_CONTENT height, with the resolved heights in place
+// of the measured ones: a HEIGHT_PROPORTIONAL child is excluded (its height would be defined by the
+// extent it depends on), a Y_PROPORTIONAL child contributes its extent only, every other child its
+// scaled spec position plus its extent. A child's extent is its explicit height, 0 for an explicit
+// 0, else its resolved height or its measured height, plus its vertical margin.
+float AbsoluteWrapContentBottom(std::vector<View>& children, const std::vector<float>& resolved)
+{
+  float maxBottom = 0.0f;
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
+    if(childImpl.GetLayoutMode() == LayoutMode::STANDALONE)
+    {
+      continue;
+    }
+
+    float                     childScale = childImpl.GetEffectiveScale();
+    auto*                     params     = Internal::AbsoluteLayoutParamsImpl::Get(childImpl);
+    const LayoutRect          spec       = GetChildBounds(params);
+    const AbsoluteLayoutFlags flags      = GetChildFlags(params);
+    if(HasAbsoluteFlag(flags, AbsoluteLayoutFlags::HEIGHT_PROPORTIONAL))
+    {
+      continue;
+    }
+
+    float h = spec.height;
+    if(h > 0.0f)
+    {
+      h *= childScale;
+    }
+    if(h < 0)
+    {
+      h = (i < resolved.size() && resolved[i] >= 0.0f) ? resolved[i] : childImpl.GetMeasuredSize().height;
+    }
+
+    Insets margin  = childImpl.GetMargin();
+    float  marginH = (margin.top + margin.bottom) * childScale;
+    if(HasAbsoluteFlag(flags, AbsoluteLayoutFlags::Y_PROPORTIONAL))
+    {
+      maxBottom = std::max(maxBottom, h + marginH);
+    }
+    else
+    {
+      maxBottom = std::max(maxBottom, spec.y * childScale + h + marginH);
+    }
+  }
+  return maxBottom;
 }
 
 } // namespace
@@ -249,9 +402,22 @@ void AbsoluteLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
     children.push_back(GetChildViewAt(view, i));
   }
 
-  for(auto& child : children)
+  // Height-for-width (see height-for-width-resolution.h): a child whose WRAP_CONTENT height follows
+  // its width is given the height it needs at the width it is placed at below. Adopted only when
+  // the bottom extent of the WRAP_CONTENT measure, rebuilt with those heights, fits the available
+  // height; otherwise, and whenever no child depends on its width, every child keeps its measured
+  // height. Only an exact AbsoluteLayoutManager on a view without layout callbacks does this.
+  std::vector<float> resolvedHeights;
+  if(Internal::IsHeightForWidthContainer(*view) &&
+     ResolveAbsoluteChildHeights(children, availableWidth, availableHeight, Internal::NO_REMEASURE_PREDICTION, resolvedHeights) &&
+     AbsoluteWrapContentBottom(children, resolvedHeights) > availableHeight + Internal::HEIGHT_FOR_WIDTH_FIT_EPSILON)
   {
-    ViewImpl& childImpl = GetImpl(child);
+    resolvedHeights.clear(); // Does not fit: arrange exactly as before.
+  }
+
+  for(uint32_t i = 0; i < children.size(); ++i)
+  {
+    ViewImpl& childImpl = GetImpl(children[i]);
 
     if(IsStandalone(&childImpl))
     {
@@ -322,7 +488,7 @@ void AbsoluteLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
         }
         else
         {
-          h = childMeasured.height;
+          h = (!resolvedHeights.empty() && resolvedHeights[i] >= 0.0f) ? resolvedHeights[i] : childMeasured.height;
         }
       }
     }
@@ -362,6 +528,32 @@ void AbsoluteLayoutManager::Arrange(ViewImpl* view, const LayoutRect& bounds)
     childImpl.Arrange(childBounds);
   }
 }
+
+namespace Internal
+{
+
+bool ResolveAbsoluteContentHeightForWidth(ViewImpl& view, float contentWidth, float contentHeightBudget, float& contentHeight, float predictedContentWidth)
+{
+  const uint32_t        count = view.GetChildViewCount();
+  std::vector<Ui::View> children;
+  children.reserve(count);
+  for(uint32_t i = 0; i < count; ++i)
+  {
+    children.push_back(view.GetChildViewAt(i));
+  }
+
+  // The WRAP_CONTENT height of Measure(), with every child whose height is its own WRAP_CONTENT
+  // resolved at the width the arrange gives it at exactly this content width.
+  std::vector<float> resolved;
+  if(!ResolveAbsoluteChildHeights(children, contentWidth, contentHeightBudget, predictedContentWidth, resolved))
+  {
+    return false;
+  }
+  contentHeight = AbsoluteWrapContentBottom(children, resolved);
+  return true;
+}
+
+} // namespace Internal
 
 } // namespace Ui
 } //namespace DALI_NAMESPACE
