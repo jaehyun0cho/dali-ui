@@ -31,6 +31,6 @@
   ],
   "plan_note": "Example only: measure timer resolution and approve precision before collecting candidate samples; do not tune after observing candidate.",
   "contract_manifest": "layout-validation-manifest.json",
-  "contract_manifest_sha256": "940499f38e1f22efbf9209023998408de64fbc21a0d7d76483569bfdd79c3c3c",
+  "contract_manifest_sha256": "957fc9f8ba5b4c065592b5dc394581ddf2c13c209067e8a0736e2001db37b018",
   "metric_family": "transition"
 }

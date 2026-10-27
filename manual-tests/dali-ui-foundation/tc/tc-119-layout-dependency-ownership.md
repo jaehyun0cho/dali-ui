@@ -22,18 +22,19 @@
 
 ## 시나리오와 독립 기대값
 
-- K13.owner.0.4는 default/Stack/Flex/Grid/Absolute의 MATCH_PARENT child를 사용합니다. parent ID1, child ID2를 등록합니다. parent는 WRAP_CONTENT이고 먼저 Measure(120,60), 이후 Arrange(0,0,200,80)를 호출하여 최종 slot의 Measure가 다른 constraint에서 실행되게 합니다.
+- K13.owner.0.4는 default/Stack/Flex/Grid/Absolute의 WRAP×WRAP parent(자기 min/max 없음)와 그 유일한 child인 MATCH_PARENT×MATCH_PARENT probe(30×10)를 사용합니다. parent ID1, child ID2를 등록합니다. parent에는 자기 크기를 줄 다른 child도 minimum도 없으므로 300×100 stage constraint에서 child의 at-most probe를 그대로 유지하여 (30,10)으로 측정되고 (0,0,30,10)에 배치됩니다. 그 Arrange 안에서 child는 최종 slot 30×10에 다시 측정됩니다(저장된 AT_MOST mode가 slot의 mode와 달라 재측정을 생략할 수 없습니다, docs/layout-structure.md 두 단계 측정과 Arrange 재측정 생략 조건).
 - owner는 영속적인 parent 속성이 아니라 현재 nested Measure를 감싼 thread-local scope입니다. child Measure callback 안에서 parent.arrangeInProgress가 true인 관측을 POD snapshot에 저장하고 callback 밖에서 검사합니다. scope 밖의 owner0을 오류로 처리하지 마십시오.
-- 각 scenario의 필수 검사는 21행입니다. capture, owned-producer-observed, valid가 true여야 하고 owner-in-measure=1, owner-kind-in-measure=1, parent-arranging/child-measuring/owner-measure-cache-preserved=true여야 합니다.
+- 각 scenario의 필수 검사는 25행입니다. capture, owned-producer-observed, valid가 true여야 하고 owner-in-measure=1, owner-kind-in-measure=1, parent-arranging/child-measuring/owner-measure-cache-preserved=true여야 합니다. child producer의 첫 호출 constraint `budget-constraint`는 stage content (300,100)이고, parent가 Arrange 중일 때의 마지막 호출 constraint `owned-constraint`는 최종 slot (30,10)입니다.
 - scope 종료 후 owner-after-scope/owner-kind-after-scope=0이며 parent의 Measure/Arrange cache가 모두 유효해야 합니다. child의 명시적인 InvalidateMeasure는 parent arrangeDirty를 true로 만들어야 합니다. owner push가 존재하고 push/pop 수가 같으며 overflow가 없어야 합니다.
-- final-measure-constraint=(200,80)의 두 행과 final-slot=(0,0,200,80)의 네 행을 확인하십시오. producer를 호출하지 않고 단순히 owner 행만 만들어 낸 관측은 유효하지 않습니다.
+- final-measure-constraint=(30,10)의 두 행과 final-slot=(0,0,30,10)의 네 행을 확인하십시오. producer를 호출하지 않고 단순히 owner 행만 만들어 낸 관측은 유효하지 않습니다.
+- `K13.measure-pass-slot.0`/`.4`(default View, Absolute)는 위 fixture의 parent에 120×60 minimum을 준 것입니다. minimum이 parent에 자기 크기를 주므로 child는 300×100에서 probe된 뒤 Measure 안에서 slot 120×60에 EXACTLY로 측정되고, Arrange는 그 측정을 찾아 재측정을 생략합니다. 그래서 owner scope 안의 producer 호출 `owned-calls`=0, parent의 OWNER_PUSH `parent-owner-push`=0, child의 MEASURE_PRODUCER `child-producer`=2(probe와 exact), MEASURE_ENTER `child-enter`=2, MEASURE_HIT `child-hit`=0, ARRANGE_ENTER `child-arrange-enter`=1이고 final-measure-constraint와 measured는 (120,60), 렌더 (0,0,120,60), overflow 없음입니다. HUD pass가 stage를 다시 측정해도 parent의 (300,100) key가 같아 child에 도달하지 않습니다. 각 16행입니다.
 - measuredSlotUnconsumed는 모든 일반 child의 소비 상태가 아닙니다. 일반 Measure에서 true로 쓰이지만 STANDALONE 보정 경로만 읽고 소비합니다. standalone slot의 실제 소비와 외부 측정 후 보정은 TC120의 별도 scenario에서 검증합니다.
 
 `Rect`는 x/y/width/height의 네 필수 행, `Size`는 width/height의 두 필수 행입니다. 일반 geometry 허용오차는 0.001이며 정수·순서·bool·별도로 지정한 exact 항목은 정확히 일치해야 합니다. NaN/Inf는 일반 geometry 비교에서 실패합니다. expected는 입력 표·식에서 계산하며 candidate 출력으로 갱신하지 마십시오.
 
 ## 근거와 검증 경계
 
-최종 slot 크기로 측정하는 dependency owner 경로를 각 manager별 새 fixture로 관측합니다. public parent 관계와 내부 measure dependency owner를 혼동하지 않습니다.
+최종 slot 크기로 측정하는 dependency owner 경로를 각 manager별 새 fixture로 관측합니다. public parent 관계와 내부 measure dependency owner를 혼동하지 않습니다. 자기 크기가 있는 parent는 MATCH_PARENT child를 measure pass에서 이미 slot에 측정하므로 owner scope가 생기지 않으며, 이 경우는 `K13.measure-pass-slot`이 별도로 검사합니다.
 
 `Snapshot`은 `LayoutController`가 `LayoutFinished`로 보고한 최종 parent-local target bounds(post-RTL, pre-transition)입니다. `GetArrangedBounds()`의 logical rect(pre-RTL)와 구분하십시오. 행 이름에 `logical`이나 `arranged`가 포함되어도 좌표 의미는 관측 API를 기준으로 판단하십시오. `Rendered` 행(id.x/.y/.width/.height, `*.rendered.*` 포함)은 current scene-graph 상태에서 계산한 화면 사각형을 부모 또는 명시한 base 기준으로 관측한 값이며 RTL 적용 후 좌표입니다. `GetMeasuredSize`는 해당 pass의 측정 결과입니다. controller 완료 snapshot, transition 중간 current geometry, Window의 최종 화면 합성은 서로 다른 관측입니다. callback 측정·배치 횟수는 controller pass가 호출한 synthetic producer의 횟수입니다.
 
@@ -47,15 +48,17 @@
 
 아래 목록은 검토된 manifest의 정확한 ID와 필수 행 수입니다. 설명의 축약 이름보다 이 목록을 우선하십시오. 각 step의 전체 stdout 행은 완료 시 자동 출력되므로 그대로 보존하십시오. stdout와 stderr를 함께 수집하십시오.
 
-Profile `diagnostic / release`: 5 scenario, 5 action, 105 checks. 이 표에 없는 scenario는 컴파일된 계약에 선언되지 않으며 실행·판정 대상이 아닙니다.
+Profile `diagnostic / release`: 7 scenario, 7 action, 157 checks. 이 표에 없는 scenario는 컴파일된 계약에 선언되지 않으며 실행·판정 대상이 아닙니다.
 
 | Scenario ID | 순서대로 실행할 action ID : required_checks |
 |---|---|
-| `K13.owner.0` | `run` : 21 |
-| `K13.owner.1` | `run` : 21 |
-| `K13.owner.2` | `run` : 21 |
-| `K13.owner.3` | `run` : 21 |
-| `K13.owner.4` | `run` : 21 |
+| `K13.owner.0` | `run` : 25 |
+| `K13.owner.1` | `run` : 25 |
+| `K13.owner.2` | `run` : 25 |
+| `K13.owner.3` | `run` : 25 |
+| `K13.owner.4` | `run` : 25 |
+| `K13.measure-pass-slot.0` | `run` : 16 |
+| `K13.measure-pass-slot.4` | `run` : 16 |
 
 마지막 결과 수집 후 `< Back`으로 나가 같은 `(tc,pid,run)`의 `LR_CASE_END`를 수집하십시오. `reason=exit`, `cleanup_passed=true`이고 `completed_scenarios == required_scenarios`이며 모든 count(failures 포함)가 마지막 `LR_RESULT`와 같아야 합니다. PASS는 그 완료 조건과 failures=0이 함께 성립할 때만입니다. `layout-validation-coverage.md`에 알려진 제품 결함 행이 문서화된 TC는 failures>0으로 종결되며, `check-log`가 `observations-valid-with-failures`로 그 행을 **정확히** 나열해야 합니다. 그 밖의 실패 행이나 `invalid-evidence`는 회귀 또는 무효 증거이며 PASS가 아닙니다. END 누락·cleanup 오류도 PASS가 아닙니다.
 

@@ -61,6 +61,8 @@ TV06은 문서화한 정상 입력 계약과 구분한 robustness assertion입�
 | TD12 | D:662 no View parent → no self frame | TC131 `TR04.self-root-inert` / `self-root` | 실제 extra Window root, Self transition, width280 → bounds=(0,0,280,200), start0 | `rect(self.root.target)`, `self.root.start` | MAPPED_STATIC |
 | TD13 | R inherited owner / D:1246 actual direct-parent frame | TC131 `TR04.inherited-enter-exit-parent-units` / `inherited-enter`, `inherited-exit` | owner root ID1 vs direct parent ID4(200×100), child(10,15,80,40), parent-fraction(.5,.5). ENTER t0=(110,65,80,40); EXIT t.5=(60,40,80,40) | `inherited.owner=1`, `inherited.direct-parent=4`, `spec.*`, `inherited.ghost.logical=0`, `inherited.ghost.direct-parent` | MAPPED_STATIC |
 | TD14 | D:2718 normal inherited completion / direct-parent unparent | 위 TC131 / `inherited-enter-finish`, `inherited-exit-finish` | ENTER final=(10,15,80,40), start/finish1; EXIT start/finish1, child detached | `rect(inherited.enter.final)`, `inherited.enter.start/finish`, `inherited.exit.start/finish/unparented` | MAPPED_STATIC |
+| TD15 | D:1139 equal-bounds skip, D:338 ResolveChangeCause의 OTHER(:365); view-data-impl.cpp ArrangeImpl ClampToOwnSizeBounds가 CHANGE target을 정함 | TC130 `TR03.clamped-target-ltr` / `mount`,`change`,`slot-only`; `TR03.clamped-target-rtl` / `mount`,`change` | Absolute root300×200, MATCH×MATCH child bounds위치(40,30) max120×80 → target(40,30,120,80)(RTL 300−40−120=140); max폭150 → CHANGE cause OTHER, from(40,30,120,80)→to(40,30,150,80)(RTL from(140,…)→to(110,30,150,80)), logical(40,30,150,80), measured(150,80); root폭280 slot도 같은 clamp rect → 새 start 없음(누계1), active to(40,30,150,80) | `clamp.context.present`, `clamp.context.slot/cause`, `rect(clamp.context.from/to)`, `clamp.engine.active`, `rect(clamp.logical)`, `size(clamp.measured)`, `rect(clamp.mount.target)`, `size(clamp.mount.measured)`, `slot-only.no-new-start`, `rect(slot-only.logical/active-to)`, `size(slot-only.measured)` | MAPPED_STATIC |
+| TD16 | C:1522 ProcessLayoutRoot STANDALONE 분기가 부모의 layout target(arrangedBounds)을 읽음; D:1928 CHANGE 시작 시 SIZE를 from으로 되돌림 | TC131 `TR04.standalone-parent-target` / `mount`,`change-held` | root200×100 → MATCH nested → MATCH×MATCH STANDALONE child; geometry를 쓰지 않는 CHANGE animator(DIRECT_CHILDREN)와 manual tick에서 root300×150 + child InvalidateMeasure → nested actor(0,0,200,100) 유지, layout target(0,0,300,150); child 자기 pass는 target을 따라 (0,0,300,150), measured(300,150) | `rect(target.mount.parent/mount.standalone)`, `rect(target.parent.actor-held/parent.layout-target)`, `rect(target.standalone.bounds)`, `size(target.standalone.measured)`, `target.parent.animator-active` | MAPPED_STATIC |
 
 `default-disabled`라는 action 이름은 생성자의 기본값을 뜻하지 않습니다. 이 action은 명시적으로 `ClearChangeTiming()`을 호출합니다. I:45 생성자의 `mChangeTimingEnabled=true`는 별도 사실이며, action 이름만으로 기본 disabled라는 결론을 내리지 마십시오.
 
@@ -123,8 +125,11 @@ TC135의 기본 interruption fixture는 HUD View tree 밖 같은 Window의 `SENS
 | TC13 | C:PendingBatchRollbackScope BeginTurn/remainingroots/Commit | TC142 `CT05.remaining-root-rollback` / `abort-earlier-root`,`drain-restored-batch` | ancestorproducer예외;catch직후snapshot고정후동일action에서주입해제. 아직미실행standaloneID5의ROLLBACK_ROOT필수,pending>=2;복구child(40,30,80,40),boundary(5,7,160,120),pending0,fence중depth1 | `remaining.exception/exception.message/trace.complete/later-root.restored/pending-retained/depth.restored/pending.empty/depth.inside-fence`, `rect(remaining.recovered.child/boundary)` | MAPPED_STATIC |
 | TC14 | C:1222 StartTransitionsAfterLayout의lifecycle예외도rollback | TC142 `CT05.lifecycle-throws` / `throw-lifecycle`,`recover-lifecycle` | OnStart정확runtime_error→depth0,pending>0,start1;clear후target100,oldfinish0 | `lifecycle.exception/exception.message/depth.restored/pending.retained/failed-start.once/cancel.silent`, `rect(lifecycle.recovered)` | MAPPED_STATIC |
 | TC15 | C:LayoutPassScope, D:718/723 outermost resizeflag해제 | TC142 `CT05.resize-flag-abort` / `abort-resize-then-change` | resize640×480중Measure예외→다음ordinaryx90의causeOTHER,from40,to90,oldfinish0 | `resize-abort.exception/context/no-finish`, `context.slot/cause`, `rect(context.from/to)` | MAPPED_STATIC |
+| TC16 | C:1522 ProcessLayoutRoot의 MATCH root 축: (constraint − margin)을 자기 min/max로 clamp해 EXACTLY 측정; view-data-impl.cpp DeriveMeasureModes의 View 부모 없는 규칙 | TC138 `CT01.root-maximum` / `pass`,`application-measure`,`below-maximum` | extraWindow(30,30,320,240)의 MATCH×MATCH root max200×150, margin3/7/5/11, 요청위치11/13; 실현 크기 Rw×Rh(입력)에서 전제 Rw−10≥200·Rh−16≥150 → producer constraint·measured (200,150), bounds(14,18,200,150); 같은 clamp 전 숫자 Measure(Rw−10,Rh−16)은 hit(producer증가0, MEASURE_HIT1, MEASURE_PRODUCER0); Measure(150,100)은 producer+1, (150,100) | `precondition.window-above-maximum`, `size(root.producer.constraint)`, `size(root.measured)`, `rect(root.bounds)`, `root.producer.called`, `size(app.measure.result)`, `app.measure.producer-runs/hit-events/producer-events/trace.complete`, `size(below.result)`, `below.producer-runs`, `size(below.producer.constraint)` | MAPPED_STATIC |
+| TC17 | standalone-bounds-utils.h DeriveStandaloneMeasureConstraint의 WRAP=window−margin(재연결 뒤 부모 측정·배치·자기 root pass가 같은 제약); view-data-impl.cpp scene 연결 등록; C:860 OnWindowResize의 tracked root 전체 invalidate. 해제 시 WRAP STANDALONE cache drop은 host(View)의 OnChildRemoved/OnChildAdded subtree reset과 겹쳐 이 fixture가 판별하지 않음(TC126 `L05.standalone-offscene`의 `dropped.*`가 고정) | TC138 `CT01.standalone-window-root` / `mount`,`reconnect`,`window-resize` | main window W×H(입력), Absolute root 아래 WRAP×WRAP STANDALONE(producer80×40, margin3/7/5/11, 요청11/13) → constraint (W−10,H−16), measured(80,40), target(14,18,80,40); root를 host에서 떼었다 다시 붙이면(subtree cache reset) producer정확히+1·dirty없음; 같은 크기 OnWindowResize(W,H) 직후 measureDirty, fence에서 producer+1·target/constraint 동일 | `size(standalone.window-bound)`, `size(standalone.measured)`, `rect(standalone.target)`, `reconnect.producer-runs/settled`, `resize.reaches-standalone/producer-runs/settled`, `rect(resize.target)`, `size(resize.window-bound)` | MAPPED_STATIC |
+| TC18 | view-data-impl.cpp SetLayoutMode STANDALONE→DEFAULT의 root 등록 해제, C:815 ReleaseLayoutRoot와 pending turn 제거, C:1403 depth sort | TC139 `CT02.mode-switch-cancels-self-turn` / `mount`,`switch-before-turn`,`steady` | vertical stack300×200, sibling60×20, STANDALONE child80×40 at(40,30); 같은 batch에서 child InvalidateMeasure(pending+1) 뒤 DEFAULT 전환(registered−1), ProcessLayouts에서 child ROOT_DRAIN0; child target·logical(0,20,80,40), 새 frame current(0,20,80,40) | `rect(switch.standalone.target/sibling.target)`, `switch.self-turn.queued/registration.withdrawn/cancelled-turn.drains/trace.complete`, `rect(switch.default.target/default.logical)`, `rect(switch.steady.current)` | MAPPED_STATIC |
 
-TC01은 scale=1·고정 min/max 기본값 fixture입니다. producer가 scale/margin/requested를 바꾸는 도중에도 `SnapshotStandaloneSlotInputs`의 같은 입력을 유지하는 분기는 이 네 fixture만으로 닫히지 않습니다. 다른 신규 TC의 action/assertion 연결 또는 추가 fixture가 필요합니다.
+TC01은 scale=1·고정 min/max 기본값 fixture입니다. root의 자기 min/max clamp는 TC16(`CT01.root-maximum`)이 따로 검사합니다. producer가 scale/margin/requested를 바꾸는 도중에도 `SnapshotStandaloneSlotInputs`의 같은 입력을 유지하는 분기는 이 fixture들만으로 닫히지 않습니다. 다른 신규 TC의 action/assertion 연결 또는 추가 fixture가 필요합니다.
 
 ## TC156 정확성 선행 조건과 work/time 분리
 
@@ -158,7 +163,7 @@ scenario는 두 계열 30개입니다. timing 계열 `TR15.mode-{0.4}-n{1,32,128
 | TG09 | C:781 dead weakroot 정리, C:1222 invalid/dead batchentry,rollback중bad_alloc catch | TC139는명시Unregister이고TC142는producer/lifecycle예외 | weakexpired분기의독립trace·pending제거;allocationfailure는승인된국소faultseam과원래예외보존 |
 | TG10 | C:1100 tombstone / emit도중WeakHandle만료 / nested b1 stale-skip | TC140 latest-wins는emit전 2pass이고unsubscribe만직접검사 | 앞Viewlistener가뒤View파괴·재layout하는episode,뒤view최신 1회/소멸 0회 및 Windowfence순서 |
 | TG11 | C:Process의Viewemit중Remove→Windowemit억제,동일callback내Remove→Get→새controller보호 | TC141은Windowfence에서Remove후다음action에Get | 같은callback내교체후newcontroller생존·oldWindowemit0·freshroot처리evidence |
-| TG12 | C:1407 SnapshotStandaloneSlotInputs의mid-Measure입력변경,axis별scale/minmax;C:766 ReplaceCurrentWindow | TC138 고정scale1·기본clamp·동일Window만 | 입력snapshot전후의독립constraint/slot·해당rootownership,교체된Window의root/fence정합 |
+| TG12 | C:1522 ProcessLayoutRoot·SnapshotStandaloneSlotInputs의 mid-Measure 입력 변경, axis별 scale; C:845 ReplaceCurrentWindow | TC138은 고정 scale1·동일 Window만(root의 자기 min/max clamp는 TC16 `CT01.root-maximum`이 검사) | 입력 snapshot 전후의 독립 constraint/slot·해당 root ownership, 교체된 Window의 root/fence 정합 |
 | TG13 | D:373/2328/2353 실제timer수명·driver wake·capacity 및C:1146 no-self-wake | TC134 자연완료·TC156begin/tick수만으로전체wake/storage량은확정못함 | 다른신규PARK/work-count TC의정확event/callsite예산과passiveidle증거연결 |
 | TG14 | null/empty handle·missing actor·no callback 방어 return,동일handle양role 동시부착 | 실제fixture에없는모든early-return을정상경로로커버했다고할수없음 | 도달가능조건별명시fixture/observer,정확무동작/복구assertion;도달불가판정은근거검토필요 |
 
@@ -166,22 +171,22 @@ scenario는 두 계열 30개입니다. timing 계열 `TR15.mode-{0.4}-n{1,32,128
 
 아래는 검토용 metadata와 CPP의 scenario 생성식을 대조한 체크리스트입니다. TC132의 `TR14.ancestor-replay-during-enter`는 초기 metadata 수집 뒤 추가된 source delta이며 아래 합계/행에는 포함했습니다. 최종 실행 전 metadata/manifest를 다시 추출·검토해야 합니다. metadata는 실행 성공의 증거가 아닙니다. 실행 로그에서 계약을 축소해도 통과하지 않도록 최종 manifest는 별도로 검토하고 외부 SHA pin을 고정하십시오. 이 문서는 manifest를 수정하지 않습니다.
 
-표의 수치는 단일 계약(`layout-validation-manifest.json`, SHA-256 `940499f38e1f22efbf9209023998408de64fbc21a0d7d76483569bfdd79c3c3c`)에서 생성했습니다. 관측 hook이 항상 컴파일되므로 profile별 계약 구분은 없습니다.
+표의 수치는 단일 계약(`layout-validation-manifest.json`, SHA-256 `957fc9f8ba5b4c065592b5dc394581ddf2c13c209067e8a0736e2001db37b018`)에서 생성했습니다. 관측 hook이 항상 컴파일되므로 profile별 계약 구분은 없습니다.
 
 | TC | scenario 수 | action 수 | required checks 합계 | 코드 |
 |---|---:|---:|---:|---|
 | TC128 | 4 | 4 | 139 | [tc-128-layout-transition-config-validation.cpp](tc/tc-128-layout-transition-config-validation.cpp) |
 | TC129 | 5 | 14 | 82 | [tc-129-layout-transition-initial-mount.cpp](tc/tc-129-layout-transition-initial-mount.cpp) |
-| TC130 | 11 | 24 | 171 | [tc-130-layout-transition-change-causes.cpp](tc/tc-130-layout-transition-change-causes.cpp) |
-| TC131 | 10 | 22 | 122 | [tc-131-layout-transition-scope.cpp](tc/tc-131-layout-transition-scope.cpp) |
+| TC130 | 13 | 29 | 230 | [tc-130-layout-transition-change-causes.cpp](tc/tc-130-layout-transition-change-causes.cpp) |
+| TC131 | 11 | 24 | 145 | [tc-131-layout-transition-scope.cpp](tc/tc-131-layout-transition-scope.cpp) |
 | TC132 | 34 | 375 | 2394 | [tc-132-layout-transition-bounds.cpp](tc/tc-132-layout-transition-bounds.cpp) |
 | TC133 | 7 | 20 | 114 | [tc-133-layout-transition-composite-clip.cpp](tc/tc-133-layout-transition-composite-clip.cpp) |
 | TC134 | 20 | 41 | 1262 | [tc-134-layout-transition-animator-clock.cpp](tc/tc-134-layout-transition-animator-clock.cpp) |
 | TC135 | 8 | 30 | 196 | [tc-135-layout-transition-interruption.cpp](tc/tc-135-layout-transition-interruption.cpp) |
 | TC136 | 6 | 21 | 108 | [tc-136-layout-transition-exit-focus.cpp](tc/tc-136-layout-transition-exit-focus.cpp) |
 | TC137 | 13 | 39 | 171 | [tc-137-layout-transition-lifecycle.cpp](tc/tc-137-layout-transition-lifecycle.cpp) |
-| TC138 | 5 | 6 | 40 | [tc-138-layout-controller-root-constraints.cpp](tc/tc-138-layout-controller-root-constraints.cpp) |
-| TC139 | 2 | 3 | 18 | [tc-139-layout-controller-batch-order.cpp](tc/tc-139-layout-controller-batch-order.cpp) |
+| TC138 | 7 | 12 | 80 | [tc-138-layout-controller-root-constraints.cpp](tc/tc-138-layout-controller-root-constraints.cpp) |
+| TC139 | 3 | 6 | 42 | [tc-139-layout-controller-batch-order.cpp](tc/tc-139-layout-controller-batch-order.cpp) |
 | TC140 | 2 | 6 | 33 | [tc-140-layout-controller-completion.cpp](tc/tc-140-layout-controller-completion.cpp) |
 | TC141 | 2 | 6 | 26 | [tc-141-layout-controller-lifetime.cpp](tc/tc-141-layout-controller-lifetime.cpp) |
 | TC142 | 6 | 16 | 98 | [tc-142-layout-controller-rollback.cpp](tc/tc-142-layout-controller-rollback.cpp) |
@@ -211,6 +216,8 @@ scenario는 두 계열 30개입니다. timing 계열 `TR15.mode-{0.4}-n{1,32,128
 | TC130 | `TR14.threshold-0.500000` | `mount:4` → `threshold:5` |
 | TC130 | `TR14.threshold-0.510000` | `mount:4` → `threshold:5` |
 | TC130 | `TR01.timing-enable-override` | `mount:4` → `default-disabled:5` → `override-enabled:3` → `override-cleared:6` |
+| TC130 | `TR03.clamped-target-ltr` | `mount:6` → `change:18` → `slot-only:11` |
+| TC130 | `TR03.clamped-target-rtl` | `mount:6` → `change:18` |
 | TC131 | `TR04.scope-0` | `mount:4` → `change-grandchild:7` |
 | TC131 | `TR04.scope-1` | `mount:4` → `change-grandchild:7` |
 | TC131 | `TR04.scope-2` | `mount:4` → `change-grandchild:7` |
@@ -221,6 +228,7 @@ scenario는 두 계열 30개입니다. timing 계열 `TR15.mode-{0.4}-n{1,32,128
 | TC131 | `TR04.scope-7` | `mount:4` → `change-grandchild:7` |
 | TC131 | `TR04.self-root-inert` | `self-root:5` |
 | TC131 | `TR04.inherited-enter-exit-parent-units` | `mount-inherited:4` → `inherited-enter:8` → `inherited-enter-finish:6` → `inherited-exit:8` → `inherited-exit-finish:3` |
+| TC131 | `TR04.standalone-parent-target` | `mount:8` → `change-held:15` |
 | TC132 | `TR05.slide-e0-u0-s-1` | `mount-parent:4` → `enter-seek-0:6` → `enter-seek-1:6` → `enter-seek-2:6` → `enter-seek-3:6` → `enter-natural-finish:6` → `exit-seek-0:8` → `exit-seek-1:8` → `exit-seek-2:8` → `exit-seek-3:8` → `exit-natural-finish:4` |
 | TC132 | `TR05.slide-e0-u0-s1` | `mount-parent:4` → `enter-seek-0:6` → `enter-seek-1:6` → `enter-seek-2:6` → `enter-seek-3:6` → `enter-natural-finish:6` → `exit-seek-0:8` → `exit-seek-1:8` → `exit-seek-2:8` → `exit-seek-3:8` → `exit-natural-finish:4` |
 | TC132 | `TR05.slide-e0-u1-s-1` | `mount-parent:4` → `enter-seek-0:6` → `enter-seek-1:6` → `enter-seek-2:6` → `enter-seek-3:6` → `enter-natural-finish:6` → `exit-seek-0:8` → `exit-seek-1:8` → `exit-seek-2:8` → `exit-seek-3:8` → `exit-natural-finish:4` |
@@ -314,8 +322,11 @@ scenario는 두 계열 30개입니다. timing 계열 `TR15.mode-{0.4}-n{1,32,128
 | TC138 | `CT01.constraint-2` | `run:8` |
 | TC138 | `CT01.constraint-3` | `run:8` |
 | TC138 | `CT01.real-window-resize` | `create:4` → `resize:4` |
+| TC138 | `CT01.root-maximum` | `pass:10` → `application-measure:6` → `below-maximum:5` |
+| TC138 | `CT01.standalone-window-root` | `mount:8` → `reconnect:2` → `window-resize:9` |
 | TC139 | `CT02.depth-and-dedup` | `mount:4` → `queue-reverse-order:10` |
 | TC139 | `CT02.deleted-pending-root` | `unregister:4` |
+| TC139 | `CT02.mode-switch-cancels-self-turn` | `mount:8` → `switch-before-turn:12` → `steady:4` |
 | TC140 | `CT03.view-before-window` | `mount-observed-tree:11` → `manual-process-defers-emit:6` → `noop-no-new-signal:4` |
 | TC140 | `CT03.latest-and-unsubscribe` | `mount:4` → `two-passes-one-delivery:6` → `unsubscribe-before-post:2` |
 | TC141 | `CT04.remove-in-completion` | `mount-extra-window:4` → `remove-during-fence:3` → `recreate-and-process:6` |
