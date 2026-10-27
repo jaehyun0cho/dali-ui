@@ -19,6 +19,20 @@ struct Roots
   StackLayout left, right;
   View        a, b, c;
 };
+struct Offscene
+{
+  std::shared_ptr<Probe>   probe;
+  View                     stage, parent;
+  std::size_t              registeredRoots{0};
+  Diagnostic::ViewSnapshot departingProbe{}, departingParent{};
+};
+// The window extent a WRAP_CONTENT x WRAP_CONTENT standalone 300x90 probe (no margin) is measured
+// against while it is in a window; the window size is an input read at check time.
+MeasuredSize WindowBound(Run& r)
+{
+  const auto window = r.GetWindow().GetPositionSize();
+  return MeasuredSize(std::min(300.0f, static_cast<float>(window.width)), std::min(90.0f, static_cast<float>(window.height)));
+}
 } // namespace
 
 class Tc126 : public Case
@@ -102,6 +116,68 @@ public:
            r.Size("reattached", s->root.GetMeasuredSize(), MeasuredSize(44, 28));
            r.Rendered("reattached.rendered", s->root, LayoutRect(0, 0, 44, 28));
            r.Rendered("child", s->child, LayoutRect(7, 9, 37, 19));
+         });
+       }},
+    }));
+    // A window-bounded standalone probe under a plain View parent, on a stage that is its own
+    // window root: measured against the window while on scene. The stage is removed from the window
+    // itself -- its parent is a Layer, so no View OnChildRemoved resets the subtree caches -- and
+    // only the per-view scene disconnection acts, leaf first: the probe drops its caches in its own
+    // hook (they were measured against the window it is leaving), its non-standalone parent keeps
+    // its own, and the stage, a scale root, then resets its whole subtree. The first rule is read in
+    // the parent's SceneDisconnectedSignal (after the probe's and the parent's hooks, before the
+    // stage's), the reset is read after Unparent() returns; both are read right after the removal,
+    // because reconnecting a layout root resets its whole subtree again. An off-scene parent
+    // Arrange then measures the probe against the parent's 200x80 extent, and putting the stage back
+    // registers the stage and the probe as tracked roots again and measures the probe against the
+    // window. The stage's parent is not a View, so it is never a required view of AfterRender.
+    out.push_back(Steps("L05.standalone-offscene", "A window-bounded standalone child drops its caches when its tree leaves the window, falls back to the parent extent, and re-registers on reconnection", {
+      {"mount", 6, [](Run& r) {
+         auto s    = std::make_shared<Offscene>();
+         s->stage  = r.StageOnWindow(200, 110);
+         s->parent = Container(0, 200, 80);
+         s->probe  = Probed(r, 300, 90, false);
+         s->probe->view.SetLayoutMode(LayoutMode::STANDALONE);
+         s->probe->view.SetRequestedX(7);
+         s->probe->view.SetRequestedY(9);
+         s->parent.Add(s->probe->view);
+         ColorizeTree(s->parent);
+         s->stage.Add(s->parent);
+         r.SetState(s);
+         r.AfterRender({s->parent, s->probe->view}, [=](Run& r) {
+           const MeasuredSize bound = WindowBound(r);
+           r.Rendered("probe", s->probe->view, LayoutRect(7, 9, bound.width, bound.height));
+           r.Size("probe.measured", s->probe->view.GetMeasuredSize(), bound);
+         });
+       }},
+      {"detach", 12, [](Run& r) {
+         auto               s     = r.State<Offscene>();
+         const MeasuredSize bound = WindowBound(r);
+         s->parent.SceneDisconnectedSignal().Connect(&r, [s](Actor) {
+           if(s->departingParent.valid) return;
+           s->departingProbe  = Diagnostic::GetViewSnapshot(s->probe->view);
+           s->departingParent = Diagnostic::GetViewSnapshot(s->parent);
+         });
+         s->stage.Unparent();
+         const auto parent = Diagnostic::GetViewSnapshot(s->parent);
+         r.Truth("dropped.measure-cache", s->departingProbe.valid && !s->departingProbe.measureCacheValid);
+         r.Truth("dropped.arrange-cache", s->departingProbe.valid && !s->departingProbe.arrangeCacheValid);
+         r.Truth("detach.parent-cache-kept", s->departingParent.valid && s->departingParent.measureCacheValid && s->departingParent.arrangeCacheValid);
+         r.Truth("detach.parent-cache-dropped", parent.valid && !parent.measureCacheValid && !parent.arrangeCacheValid);
+         r.Size("kept.measured", s->probe->view.GetMeasuredSize(), bound);
+         s->parent.Arrange(LayoutRect(0, 0, 200, 80));
+         r.Rect("offscene.placement", s->probe->view, LayoutRect(7, 9, 200, 80));
+         r.Size("offscene.measured", s->probe->view.GetMeasuredSize(), MeasuredSize(200, 80));
+       }},
+      {"reattach", 7, [](Run& r) {
+         auto s             = r.State<Offscene>();
+         s->registeredRoots = Diagnostic::GetWindowSnapshot(r.GetWindow()).registeredRoots;
+         r.GetWindow().Add(s->stage);
+         r.AfterRender({s->parent, s->probe->view}, [=](Run& r) {
+           const MeasuredSize bound = WindowBound(r);
+           r.Equal("reattach.registered-delta", static_cast<int64_t>(Diagnostic::GetWindowSnapshot(r.GetWindow()).registeredRoots) - static_cast<int64_t>(s->registeredRoots), 2);
+           r.Rendered("probe", s->probe->view, LayoutRect(7, 9, bound.width, bound.height));
+           r.Size("probe.measured", s->probe->view.GetMeasuredSize(), bound);
          });
        }},
     }));

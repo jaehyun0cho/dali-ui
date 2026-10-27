@@ -43,7 +43,9 @@ text-model의 fixed100×120 Label은 SetText/SetFontSize/SetVerticalTextAlignmen
 
 ## 추가 intrinsic·고정 한글 font scenario
 
-- `text-intrinsic`은 7 step 각 6행, 모두 42행입니다. 24px A의 WRAP natural width=1401/2048*24±1,height29±1입니다. CHARACTER wrap의 A6개를 MATCH_PARENT width constraint25에 측정하면 width0,height174±6(6줄), constraint40이면 width0,height87±3(3줄)입니다. requested width25는 width25/height174±6입니다. text를 A로 바꾸면 25×(29±1), WRAP+font36이면 width=1401/2048*36±2(glyph bearing·정수 반올림이 크기에 비례해 커지므로 폭만 ±2),height43±1, empty text는 0×0입니다. 서로 다른 font hinting의 누적 허용오차는 한 줄당 1px이며 줄 수 차이를 허용한다는 뜻이 아닙니다.
+- `text-intrinsic`은 7 step 각 6행, 모두 42행입니다. 24px A의 WRAP natural width=1401/2048*24±1,height29±1입니다. CHARACTER wrap의 A6개를 MATCH_PARENT width constraint25에 측정하면 width25(결정된 stage 폭에서 EXACTLY로 측정된 slot),height174±6(6줄), constraint40이면 width40,height87±3(3줄)입니다. requested width25는 width25/height174±6입니다. text를 A로 바꾸면 25×(29±1), WRAP+font36이면 width=1401/2048*36±2(glyph bearing·정수 반올림이 크기에 비례해 커지므로 폭만 ±2),height43±1, empty text는 0×0입니다. 서로 다른 font hinting의 누적 허용오차는 한 줄당 1px이며 줄 수 차이를 허용한다는 뜻이 아닙니다.
+- `text-two-step`: 300×300 stage의 WRAP×WRAP vertical stack에 seed Leaf(40,0)과 Label `AAAAAA`(DejaVu Sans 24, multi-line, CHARACTER wrap, 폭 MATCH_PARENT, 높이 WRAP)를 둡니다. glyph `A`의 advance 1401/2048×24=16.418px이므로 폭 w의 한 줄에는 floor(w/16.418)자가 들어가고 k줄 높이는 29k±k입니다. stack은 300 budget에서 Label을 probe한 뒤(1줄) seed에서 얻은 자기 폭에 Label을 EXACTLY로 다시 측정합니다. `seed-40`: 40에 2자 → 3줄, stack·Label measured (40,87)±3, 렌더 (0,0,40,87)±3이고 Label measured 높이는 `GetHeightForWidth(40)`과 같으며(허용오차 0.001, 어느 폭이 쓰였는지를 고정) 전제 `GetHeightForWidth(40)>GetHeightForWidth(300)`입니다(14행). `seed-75`: seed 폭 75에서 4자(65.67≤75<82.09) → 2줄, (75,58)±2, `GetHeightForWidth(75)`와 같음, 전제 `GetHeightForWidth(75)>GetHeightForWidth(300)`입니다(14행). Label·text 로직은 바꾸지 않고 공개 API만 읽습니다.
+- `text-stretched`: 300×300 stage의 300×200 vertical stack에 multi-line Label(DejaVu Sans 24, CHARACTER wrap, WRAP×WRAP, FILL 정렬)을 둡니다. `fill`(`A`): 결정된 cross 폭 300에서 FILL은 EXACTLY로 측정되어 measured 폭 300, 높이는 그 폭의 1줄 29±1, 렌더 (0,0,300,29)±1입니다(6행). `maximum`(text `AAAAAA`, 최대 폭 25): EXACTLY 300이 최대 폭으로 clamp되어 폭 25, 25에서 1자씩 6줄이므로 높이 174±6, FILL slot은 x=0에서 clamp되어 렌더 (0,0,25,174)±6입니다(6행). `minimum`(최대 폭 해제, 최소 폭 300, stack 폭 40): EXACTLY 40이 최소 폭으로 올라가 폭 300, 높이 29±1이고 x=0에서 40 폭 stack을 넘어 렌더 (0,0,300,29)±1입니다(6행). `conflict`(최소 폭 100, 최대 폭 25, stack 폭 300): 최소가 최대보다 크면 최대가 이기므로(`View::SetMaximumWidth`의 max-wins) EXACTLY 300은 min(max(300,100),25)=25로 clamp되고, Label은 이 할당 폭 25에서 높이를 계산합니다. 25에는 1자씩 들어가 6줄이므로 measured 폭 25, 높이 174±6이며 높이는 `GetHeightForWidth(25)`와 같습니다(허용오차 0.001). FILL slot (0,0,300,h)는 x=0에서 clamp되어 렌더 (0,0,25,174)±6이고, 전제 `GetHeightForWidth(25)>GetHeightForWidth(100)`입니다(8행). Label 자신의 폭 clamp는 최소를 우선하므로(자연 폭 98.5 → 100), 할당 폭이 아니라 그 폭에서 높이를 구하면 100에서 25보다 적은 줄 수(기준 장비에서 2줄, 56)의 높이가 됩니다. 앞의 세 step은 할당 폭과 Label 자신의 폭에서 구한 높이가 같아 이 차이를 판별하지 못하며, 이 step의 높이 행(`stretched.conflict.height`, `stretched.conflict.height-at-width`, 렌더 높이)만 판별합니다.
 - `fixed-korean-font/run`은 10행입니다. 동봉 NanumGothic의 `가`(U+AC00)는 cmap glyph1086, advance=940/1000*24±1입니다. 실제 model ready, glyph count1, Window target(0,0,100,60)을 확인하십시오. 앱의 동봉 font 기본값은 앱 프로세스에만 적용되고 앱을 실행한 shell의 환경은 바꾸지 않으므로, 환경 변수 없이 실행한 `fc-match` 결과는 판정 근거가 아닙니다. 시작 시 `manual-test fonts: FONTCONFIG_FILE=` 줄이 출력한 경로를 명시하여 `FONTCONFIG_FILE='<그 줄이 출력한 절대 경로>' fc-match -f '%{file}\n' NanumGothic`을 실행하고, 결과가 동봉 `res/layout-validation/NanumGothic.ttf`인지 확인한 뒤 그 실제 파일을 기록하십시오.
 
 `image-failure-recovery`는 `invalid` 7행과 `recovered` 6행입니다. invalid bytes resource에서 fixed Measure80×30, statusFAILED, Arrange(3,5,80,30), 유효한 73×41 이미지로 교체하고 WRAP으로 변경한 Measure73×41을 확인하십시오.
@@ -52,7 +54,8 @@ FontClient::GetDescription으로 실제 glyph font ID의 파일 경로를 조회
 
 ## 단계 구성
 
-- `text-intrinsic`은 `natural`(300×300 stage: A 24px 폭 1401/2048×24±1, 높이 29±1) → `narrow`(AAAAAA, CHARACTER wrap, MATCH_PARENT, stage 폭 25: measured 폭 0, 높이 174±6, 렌더 (0,0,25,174)±6) → `wide`(stage 폭 40: 87±3) → `fixed-width`(요청 폭 25, stage 300) → `changed-text`(A: 25×29) → `font-size`(WRAP, 36px: 폭 1401/2048×36±2, 높이 43±1) → `empty`(0×0)의 7 step이며 각 step은 measured 2행 + 렌더 4행입니다.
+- `text-intrinsic`은 `natural`(300×300 stage: A 24px 폭 1401/2048×24±1, 높이 29±1) → `narrow`(AAAAAA, CHARACTER wrap, MATCH_PARENT, stage 폭 25: measured 폭 25(slot), 높이 174±6, 렌더 (0,0,25,174)±6) → `wide`(stage 폭 40: 폭 40, 87±3) → `fixed-width`(요청 폭 25, stage 300) → `changed-text`(A: 25×29) → `font-size`(WRAP, 36px: 폭 1401/2048×36±2, 높이 43±1) → `empty`(0×0)의 7 step이며 각 step은 measured 2행 + 렌더 4행입니다.
+- `text-two-step`은 `seed-40`(40: 3줄) → `seed-75`(75: 2줄)이고, `text-stretched`는 `fill`(300×29) → `maximum`(25×174) → `minimum`(300×29) → `conflict`(25×174)입니다.
 - `image-37`/`image-73`은 `wrap`(natural 2행 + measured + 렌더) → `fixed-width` → `fixed-height` → `both-fixed`(+status)의 4 step이고, `image-failure-recovery`는 `invalid`(80×30, margin (3,0,5,0): 렌더 (3,5,80,30), status FAILED) → `recovered`(73×41)입니다.
 
 ## 고정 실행 계약과 종료 증거
@@ -61,7 +64,7 @@ FontClient::GetDescription으로 실제 glyph font ID의 파일 경로를 조회
 
 아래 목록은 검토된 manifest의 정확한 ID와 필수 행 수입니다. 설명의 축약 이름보다 이 목록을 우선하십시오. 각 step의 전체 stdout 행은 완료 시 자동 출력되므로 그대로 보존하십시오. stdout와 stderr를 함께 수집하십시오.
 
-Profile `diagnostic / release`: 7 scenario, 27 action, 269 checks. 이 표에 없는 scenario는 컴파일된 계약에 선언되지 않으며 실행·판정 대상이 아닙니다.
+Profile `diagnostic / release`: 9 scenario, 33 action, 323 checks. 이 표에 없는 scenario는 컴파일된 계약에 선언되지 않으며 실행·판정 대상이 아닙니다.
 
 | Scenario ID | 순서대로 실행할 action ID : required_checks |
 |---|---|
@@ -72,6 +75,8 @@ Profile `diagnostic / release`: 7 scenario, 27 action, 269 checks. 이 표에 �
 | `image-73` | `wrap` : 8 → `fixed-width` : 6 → `fixed-height` : 6 → `both-fixed` : 7 |
 | `image-async` | `load-37` : 12 → `replace-73` : 12 → `return-37` : 12 |
 | `image-failure-recovery` | `invalid` : 7 → `recovered` : 6 |
+| `text-two-step` | `seed-40` : 14 → `seed-75` : 14 |
+| `text-stretched` | `fill` : 6 → `maximum` : 6 → `minimum` : 6 → `conflict` : 8 |
 
 마지막 결과 수집 후 `< Back`으로 나가 같은 `(tc,pid,run)`의 `LR_CASE_END`를 수집하십시오. `reason=exit`, `cleanup_passed=true`이고 `completed_scenarios == required_scenarios`이며 모든 count(failures 포함)가 마지막 `LR_RESULT`와 같아야 합니다. PASS는 그 완료 조건과 failures=0이 함께 성립할 때만입니다. `layout-validation-coverage.md`에 알려진 제품 결함 행이 문서화된 TC는 failures>0으로 종결되며, `check-log`가 `observations-valid-with-failures`로 그 행을 **정확히** 나열해야 합니다. 그 밖의 실패 행이나 `invalid-evidence`는 회귀 또는 무효 증거이며 PASS가 아닙니다. END 누락·cleanup 오류도 PASS가 아닙니다.
 

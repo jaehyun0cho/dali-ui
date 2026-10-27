@@ -7,6 +7,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  */
 #include <dali-ui-foundation/public-api/views/view-impl.h>
+#include <vector>
 #include "layout-validation-transition-fixtures.h"
 using namespace LayoutValidation;
 using namespace LayoutValidation::TransitionFixtures;
@@ -82,6 +83,53 @@ public:
       r.Truth("unregister.controller.live", Diagnostics::GetWindowSnapshot(s->window).valid);
       r.Equal("unregister.no-producer", s->measureCalls, 0);
     }}}}};
+    // A standalone child of the vertical 300x200 stack root queues its own turn, then switches to
+    // DEFAULT in the same batch: the switch withdraws its root registration and the queued turn is
+    // never drained; the stack lays it out after the 20-high sibling.
+    cases.push_back({"CT02.mode-switch-cancels-self-turn", "Switching a standalone child to DEFAULT releases its root registration and cancels its queued own turn", {{"mount", 8, [](Run& r)
+    {
+      auto s = NewState(r, true);
+      s->child.SetLayoutMode(LayoutMode::STANDALONE);
+      s->child.SetRequestedX(40);
+      s->child.SetRequestedY(30);
+      s->root.Add(s->sibling);
+      s->root.Add(s->child);
+      r.Attach(s->root);
+      r.AfterLayout({s->child, s->sibling}, [s](Run& v)
+      {
+        v.Rect("switch.standalone.target", v.Snapshot(s->child), {40, 30, 80, 40});
+        v.Rect("switch.sibling.target", v.Snapshot(s->sibling), {0, 0, 60, 20});
+      });
+    }},
+                                                                                                                                                                                                {"switch-before-turn", 12, [](Run& r)
+    {
+      auto s = r.State<State>();
+      Watch(s);
+      std::vector<Diagnostics::Event> events(16384);
+      CaptureScope                    captureScope(events.data(), events.size(), 4602);
+      const auto                      p0 = Diagnostics::GetWindowSnapshot(s->window).pendingRoots;
+      s->child.InvalidateMeasure();
+      const auto queued = Diagnostics::GetWindowSnapshot(s->window);
+      s->child.SetLayoutMode(LayoutMode::DEFAULT);
+      const auto withdrawn = Diagnostics::GetWindowSnapshot(s->window);
+      LayoutController::Get(s->window).ProcessLayouts();
+      const auto capture = captureScope.Finish();
+      uint32_t   drains  = 0;
+      for(std::size_t i = 0; i < capture.count && i < events.size(); ++i)
+        if(events[i].kind == Diagnostics::EventKind::ROOT_DRAIN && events[i].nodeId == 2) ++drains;
+      r.Equal("switch.self-turn.queued", static_cast<int64_t>(queued.pendingRoots) - static_cast<int64_t>(p0), 1);
+      r.Equal("switch.registration.withdrawn", static_cast<int64_t>(queued.registeredRoots) - static_cast<int64_t>(withdrawn.registeredRoots), 1);
+      r.Equal("switch.cancelled-turn.drains", drains, 0);
+      r.Truth("switch.trace.complete", !capture.overflow);
+      r.Rect("switch.default.target", LayoutValidation::Bounds(s->child), {0, 20, 80, 40});
+      r.Rect("switch.default.logical", Diagnostics::GetViewSnapshot(s->child).arrangedBounds, {0, 20, 80, 40});
+    }},
+                                                                                                                                                                                                {"steady", 4, [](Run& r)
+    {
+      auto s = r.State<State>();
+      r.AfterFrame([s](Run& v)
+      { v.Rect("switch.steady.current", Current(s->child), {0, 20, 80, 40}); }, {}, s->child);
+    }}}});
     return cases;
   }
 };

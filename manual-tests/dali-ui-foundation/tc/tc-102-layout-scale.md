@@ -33,6 +33,7 @@
 
 - `C20.scale-exact-key`: Window에 등록된 root의 scale1→1.0005는 constraint epsilon과 달리 정확한 key 변경입니다. producer가 1회 증가하고 scale key=1.0005여야 합니다. 같은 scale의 다음 호출은 hit입니다.
 - `C13.actor-scale-repair`: diagnostics가 제공한 실제 property index의 값을 9로 손상시킵니다. 다음 cache-hit Measure가 producer 재실행 없이 actor scale1과 sync bit를 복원해야 합니다. index를 숫자로 하드코딩하지 않습니다.
+- `C13.scaled-clamp.{s}`: scale s(1/1.25/1.5/2)에서 scale 비적용 300×200 stage에 ENABLED MATCH×MATCH Leaf(margin (10,0,20,0), max 120×80)를 붙입니다. margin과 min/max는 natural 단위이므로 visual로는 s배입니다. slot은 (10s, 20s, 300−10s, 200−20s)이고 measured·렌더 크기는 (min(300−10s,120s), min(200−20s,80s))입니다. s=1: (120,80), 위치 (10,20); s=1.25: (150,100), (12.5,25); s=1.5: (180,120), (15,30); s=2: (240,160), (20,40)입니다. 각 6행입니다.
 
 ## 근거와 검증 경계
 
@@ -50,7 +51,7 @@ effective scale 상속·override·master switch와 scale 변경 cache를 검사�
 
 아래 목록은 검토된 manifest의 정확한 ID와 필수 행 수입니다. 설명의 축약 이름보다 이 목록을 우선하십시오. 각 step의 전체 stdout 행은 완료 시 자동 출력되므로 그대로 보존하십시오. stdout와 stderr를 함께 수집하십시오.
 
-Profile `diagnostic / release`: 8 scenario, 13 action, 96 checks. 이 표에 없는 scenario는 컴파일된 계약에 선언되지 않으며 실행·판정 대상이 아닙니다.
+Profile `diagnostic / release`: 12 scenario, 17 action, 120 checks. 이 표에 없는 scenario는 컴파일된 계약에 선언되지 않으며 실행·판정 대상이 아닙니다.
 
 | Scenario ID | 순서대로 실행할 action ID : required_checks |
 |---|---|
@@ -62,6 +63,10 @@ Profile `diagnostic / release`: 8 scenario, 13 action, 96 checks. 이 표에 없
 | `R03.scale-finite` | `run` : 4 |
 | `C20.scale-exact-key` | `mount` : 4 → `sub-epsilon-scale` : 4 → `same-scale` : 1 |
 | `C13.actor-scale-repair` | `mount` : 5 → `corrupt-and-repair` : 4 |
+| `C13.scaled-clamp.1.000000` | `run` : 6 |
+| `C13.scaled-clamp.1.250000` | `run` : 6 |
+| `C13.scaled-clamp.1.500000` | `run` : 6 |
+| `C13.scaled-clamp.2.000000` | `run` : 6 |
 
 마지막 결과 수집 후 `< Back`으로 나가 같은 `(tc,pid,run)`의 `LR_CASE_END`를 수집하십시오. `reason=exit`, `cleanup_passed=true`이고 `completed_scenarios == required_scenarios`이며 모든 count(failures 포함)가 마지막 `LR_RESULT`와 같아야 합니다. PASS는 그 완료 조건과 failures=0이 함께 성립할 때만입니다. `layout-validation-coverage.md`에 알려진 제품 결함 행이 문서화된 TC는 failures>0으로 종결되며, `check-log`가 `observations-valid-with-failures`로 그 행을 **정확히** 나열해야 합니다. 그 밖의 실패 행이나 `invalid-evidence`는 회귀 또는 무효 증거이며 PASS가 아닙니다. END 누락·cleanup 오류도 PASS가 아닙니다.
 

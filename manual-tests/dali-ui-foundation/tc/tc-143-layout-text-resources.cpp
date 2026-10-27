@@ -198,6 +198,22 @@ struct SyncImage
   ImageView image;
   View      stage;
 };
+struct LaidOutText
+{
+  Label label;
+  View  stage, stack, seed;
+};
+// A multi-line DejaVu Sans 24 Label with CHARACTER wrap: glyph 'A' advances 1401/2048 x 24 =
+// 16.418 px, so floor(w / 16.418) characters fit a line of width w and k lines are 29k +- k high.
+Label WrappingLabel(const char* text)
+{
+  Label label = Label::New(text);
+  label.SetFontFamily("DejaVu Sans");
+  label.SetFontSize(24);
+  label.SetMultiLine(true);
+  label.SetLineWrapMode(Text::LineWrapMode::CHARACTER);
+  return label;
+}
 class Tc143 : public Case
 {
 public:
@@ -278,7 +294,7 @@ public:
          s->stage.SetRequestedWidth(25);
          r.AfterRender({s->stage, s->label}, [=](Run& r) {
            const auto narrow = s->label.GetMeasuredSize();
-           r.Near("intrinsic.match.minimum", narrow.width, 0);
+           r.Near("intrinsic.match.slot", narrow.width, 25);
            r.Near("intrinsic.six.lines", narrow.height, 174, 6);
            r.Rendered("intrinsic.six.rendered", s->label, LayoutRect(0, 0, 25, 174), 6);
          });
@@ -288,7 +304,7 @@ public:
          s->stage.SetRequestedWidth(40);
          r.AfterRender({s->stage, s->label}, [=](Run& r) {
            const auto wide = s->label.GetMeasuredSize();
-           r.Near("intrinsic.match.wide.minimum", wide.width, 0);
+           r.Near("intrinsic.match.wide.slot", wide.width, 40);
            r.Near("intrinsic.three.lines", wide.height, 87, 3);
            r.Rendered("intrinsic.three.rendered", s->label, LayoutRect(0, 0, 40, 87), 3);
          });
@@ -445,6 +461,101 @@ public:
          r.AfterRender({s->stage, s->image}, [=](Run& r) {
            r.Size("recovered.intrinsic", s->image.GetMeasuredSize(), MeasuredSize(73, 41));
            r.Rendered("recovered.rendered", s->image, LayoutRect(3, 5, 73, 41));
+         });
+       }},
+    }));
+    // The wrapping stack takes its width from the seed, then measures the MATCH_PARENT Label
+    // exactly at that width, so the Label's height follows the laid-out width (6 A's: 2 per line
+    // at 40 -> 3 lines, 4 per line at 75 -> 2 lines; 1 line at the 300 budget).
+    result.push_back(Steps("text-two-step", "A MATCH_PARENT Label in a wrapping stack is measured at the width the stack resolves", {
+      {"seed-40", 14, [](Run& r) {
+         auto s   = std::make_shared<LaidOutText>();
+         s->stack = StackLayout::New(StackOrientation::VERTICAL);
+         s->seed  = Leaf(40, 0, "seed");
+         s->label = WrappingLabel("AAAAAA");
+         s->label.SetRequestedWidth(MATCH_PARENT);
+         s->label.SetRequestedHeight(WRAP_CONTENT);
+         s->stack.Add(s->seed);
+         s->stack.Add(s->label);
+         s->stage = Mount(r, s->stack, 300, 300);
+         r.SetState(s);
+         r.AfterRender({s->stage, s->stack, s->seed, s->label}, [=](Run& r) {
+           r.Size("two-step.stack", s->stack.GetMeasuredSize(), MeasuredSize(40, 87), 3);
+           r.Rendered("two-step.stack.rendered", s->stack, LayoutRect(0, 0, 40, 87), 3);
+           r.Size("two-step.label", s->label.GetMeasuredSize(), MeasuredSize(40, 87), 3);
+           r.Rendered("two-step.label.rendered", s->label, LayoutRect(0, 0, 40, 87), 3);
+           r.Near("two-step.label.height-at-width", s->label.GetMeasuredSize().height, s->label.GetHeightForWidth(40));
+           r.Truth("two-step.precondition", s->label.GetHeightForWidth(40) > s->label.GetHeightForWidth(300));
+         });
+       }},
+      {"seed-75", 14, [](Run& r) {
+         auto s = r.State<LaidOutText>();
+         s->seed.SetRequestedWidth(75);
+         r.AfterRender({s->stage, s->stack, s->seed, s->label}, [=](Run& r) {
+           r.Size("two-step.stack", s->stack.GetMeasuredSize(), MeasuredSize(75, 58), 2);
+           r.Rendered("two-step.stack.rendered", s->stack, LayoutRect(0, 0, 75, 58), 2);
+           r.Size("two-step.label", s->label.GetMeasuredSize(), MeasuredSize(75, 58), 2);
+           r.Rendered("two-step.label.rendered", s->label, LayoutRect(0, 0, 75, 58), 2);
+           r.Near("two-step.label.height-at-width", s->label.GetMeasuredSize().height, s->label.GetHeightForWidth(75));
+           r.Truth("two-step.precondition", s->label.GetHeightForWidth(75) > s->label.GetHeightForWidth(300));
+         });
+       }},
+    }));
+    // A FILL Label in a stack of determined width is measured EXACTLY at the stack's width (its
+    // height at that width), clamped by its own minimum/maximum, and laid out at that clamped
+    // width from the start edge of its slot. With a minimum above the maximum the maximum wins, and
+    // the Label's height follows that assigned width (25: one 'A' per line), not the width its own
+    // minimum-first clamp would pick (100: fewer lines, two on the reference machine).
+    result.push_back(Steps("text-stretched", "A stretched Label reports the assigned width clamped by its own limits and its height at that width", {
+      {"fill", 6, [](Run& r) {
+         auto s   = std::make_shared<LaidOutText>();
+         s->stack = StackLayout::New(StackOrientation::VERTICAL);
+         Fixed(s->stack, 300, 200);
+         s->label = WrappingLabel("A");
+         s->label.SetRequestedWidth(WRAP_CONTENT);
+         s->label.SetRequestedHeight(WRAP_CONTENT);
+         s->label.SetLayoutParams(StackLayoutParams::New().SetAlignment(LayoutAlignment::FILL));
+         s->stack.Add(s->label);
+         s->stage = Mount(r, s->stack, 300, 300);
+         r.SetState(s);
+         r.AfterRender({s->stage, s->stack, s->label}, [=](Run& r) {
+           r.Near("stretched.measured.width", s->label.GetMeasuredSize().width, 300);
+           r.Near("stretched.measured.height", s->label.GetMeasuredSize().height, 29, 1);
+           r.Rendered("stretched.rendered", s->label, LayoutRect(0, 0, 300, 29), 1);
+         });
+       }},
+      {"maximum", 6, [](Run& r) {
+         auto s = r.State<LaidOutText>();
+         s->label.SetText("AAAAAA");
+         s->label.SetMaximumWidth(25);
+         r.AfterRender({s->stage, s->stack, s->label}, [=](Run& r) {
+           r.Near("stretched.maximum.width", s->label.GetMeasuredSize().width, 25);
+           r.Near("stretched.maximum.height", s->label.GetMeasuredSize().height, 174, 6);
+           r.Rendered("stretched.maximum.rendered", s->label, LayoutRect(0, 0, 25, 174), 6);
+         });
+       }},
+      {"minimum", 6, [](Run& r) {
+         auto s = r.State<LaidOutText>();
+         s->label.SetMaximumWidth(std::numeric_limits<float>::max());
+         s->label.SetMinimumWidth(300);
+         s->stack.SetRequestedWidth(40);
+         r.AfterRender({s->stage, s->stack, s->label}, [=](Run& r) {
+           r.Near("stretched.minimum.width", s->label.GetMeasuredSize().width, 300);
+           r.Near("stretched.minimum.height", s->label.GetMeasuredSize().height, 29, 1);
+           r.Rendered("stretched.minimum.rendered", s->label, LayoutRect(0, 0, 300, 29), 1);
+         });
+       }},
+      {"conflict", 8, [](Run& r) {
+         auto s = r.State<LaidOutText>();
+         s->label.SetMinimumWidth(100);
+         s->label.SetMaximumWidth(25);
+         s->stack.SetRequestedWidth(300);
+         r.AfterRender({s->stage, s->stack, s->label}, [=](Run& r) {
+           r.Near("stretched.conflict.width", s->label.GetMeasuredSize().width, 25);
+           r.Near("stretched.conflict.height", s->label.GetMeasuredSize().height, 174, 6);
+           r.Near("stretched.conflict.height-at-width", s->label.GetMeasuredSize().height, s->label.GetHeightForWidth(25));
+           r.Rendered("stretched.conflict.rendered", s->label, LayoutRect(0, 0, 25, 174), 6);
+           r.Truth("stretched.conflict.precondition", s->label.GetHeightForWidth(25) > s->label.GetHeightForWidth(100));
          });
        }},
     }));
