@@ -169,11 +169,25 @@ reasoning applies to the arrange cache, with the input bounds and the effective
 layout direction as the keyed inputs.
 
 The effective scale is part of the measure cache key, so a scale change alone
-forces a re-measure. The effective scale is resolved in one place,
-`ViewDataImpl::ComputeEffectiveScale()`; when the process-wide scaling master
-switch (`LayoutScaleManager::SetScalable(false)`) is off it returns `1.0` for every
-view regardless of the view's `UiScalePolicy`, so the whole tree behaves as
-unscaled.
+forces a re-measure. The effective scale is still resolved in exactly one place,
+`ViewDataImpl::ComputeEffectiveScale()`, and it is the product of two independent
+terms: the per-window scale (`LayoutScaleManager::SetWindowScale()`) and the UI-scale
+term the view's `UiScalePolicy` selects. When the process-wide scaling master
+switch (`LayoutScaleManager::SetScalable(false)`) is off, both terms are `1.0` for
+every view regardless of its policies, so the whole tree behaves as unscaled.
+A view that inherits both terms and has a parent returns its parent's memoized
+product unchanged -- the fast path nearly every view takes. Any other view
+resolves each term on its own -- from its own policy, or by walking its ancestors'
+policies to the nearest one that decides that term -- and multiplies the two once;
+it never divides an ancestor's product, because the cache key is compared exactly.
+The window scale therefore enters each view's product exactly once and never
+compounds to `scale^depth` down an inheritance chain. The window term has a
+framework-internal policy too, `WindowScalePolicy` (view-data-impl.h): the views
+that are handed already-scaled geometry -- the text cursor, handles and markers,
+the editable inline replacement layer and a drag preview the detector positions
+itself -- set it to `DISABLED` next to `UiScalePolicy::DISABLED`; application code
+cannot set it (the detector sets it on an application-supplied preview only while it
+positions that preview itself, and restores it afterwards).
 
 The **arrange cache** uses `ArrangePolicy::IF_CHANGED` by default.
 `View::Arrange()` may serve a stored result when the input bounds, effective layout

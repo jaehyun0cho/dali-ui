@@ -450,24 +450,160 @@ inline bool FloatEqual(float a, float b, float epsilon = 0.001f)
   return std::abs(a - b) < epsilon;
 }
 
-// THE single place the global UI-scale master switch is read. Every scale that
-// enters the layout system does so through one of the two calls to this function
-// in ComputeEffectiveScale() -- every other Measure/Arrange site, every
-// measure-cache scale key and the actor-side VIEW_EFFECTIVE_SCALE
-// push obtain the scale via GetEffectiveScale(), which memoizes what
-// ComputeEffectiveScale() returns. So collapsing the system scale to 1.0f here
-// is what makes the whole system behave as unscaled, with no change at any call
-// site. The scale stored in LayoutScaleManager is left untouched and is re-applied
-// as soon as scaling is re-enabled.
+// THE single read of the SYSTEM term: the global UI-scale master switch and the scale
+// stored in LayoutScaleManager. Every scale that enters the layout system does so through
+// ComputeEffectiveScale() -- every other Measure/Arrange site, every measure-cache scale
+// key and the actor-side VIEW_EFFECTIVE_SCALE push obtain the scale via
+// GetEffectiveScale(), which memoizes what ComputeEffectiveScale() returns -- and that
+// function reads this term only here: at a fast-path root, and through
+// ResolveSystemScaleTerm() for a node that left the fast path. Collapsing the system
+// scale to 1.0f here is one half of what makes the whole system behave as unscaled with
+// no change at any call site; the other half is the same switch read for the per-window
+// term, inside LayoutScaleManagerImpl::ResolveWindowScale(), behind the gate GetWindowScale()
+// below tests. Both stored values are left untouched and are re-applied as soon as
+// scaling is re-enabled.
 //
-// Reading the switch HERE rather than at the top of ComputeEffectiveScale() is
-// what keeps the two policies that never consult the system scale -- DISABLED,
-// and INHERIT with a parent -- free of the handle's refcount touch, exactly as
-// they were before the switch existed.
+// Reading the switch HERE rather than at the top of ComputeEffectiveScale() is what
+// keeps the paths that never consult the system scale free of the handle's refcount
+// touch, exactly as they were before the switch existed. The fast path -- INHERIT for
+// both terms, with a parent -- keeps that unconditionally: it is a pass-through of its
+// parent's memoized value and calls neither this function nor the window one. A node
+// whose system term is DISABLED keeps it too: its term is the constant 1.0f, and its
+// window term costs one inline static load while no window scale is recorded anywhere
+// in the process -- which is every application that does not use that feature. Once a
+// window scale IS recorded, such a node pays a policy ascent and at most one
+// manager-handle touch and one Window lookup per effective-scale cache MISS.
 inline float GetSystemScale()
 {
   LayoutScaleManager manager = LayoutScaleManager::Get();
   return manager.IsScalable() ? manager.GetUiScale() : 1.0f;
+}
+
+// The SECOND scale term: the per-window scale. A view's final scale is
+//     windowScale * uiScale
+// where the uiScale term is whichever of 1.0f / GetSystemScale() the view's
+// UiScalePolicy selects, and the windowScale term whichever of 1.0f / this function its
+// framework-internal WindowScalePolicy selects. For an application view that is this
+// function -- application code cannot set its WindowScalePolicy, so it is INHERIT --
+// unless the framework opted it, or an ancestor, out of the window term (a drag preview
+// while DragAndDropDetector positions it, and that preview's subtree). That is why it is
+// a term of its own and not folded into GetSystemScale(): a view that opts out of the
+// system term (UiScalePolicy::DISABLED) must still receive this one.
+//
+// The master switch gates this term too: LayoutScaleManagerImpl::ResolveWindowScale()
+// returns 1.0f while SetScalable(false) is in force, which is what makes the switch the
+// complete kill switch its public documentation describes. That read lives there and
+// not here because the resolver already holds the manager handle it needs; testing it
+// here would cost a handle on every call.
+//
+// The gate is tested HERE, inline, ahead of the cross-TU call, so that while no
+// application has ever set a window scale the whole term costs one static load and one
+// branch: no singleton handle, no actor temporary and no Window lookup. Calling the
+// resolver ungated would still be correct, just not free.
+//
+// INVARIANT (W1): the window scale enters a view's effective scale exactly ONCE. It is
+// read only where a product is FORMED -- at a fast-path root, and at a node that leaves
+// ComputeEffectiveScale()'s fast path (through ResolveWindowScaleTerm()) -- and NEVER on
+// the fast path itself, which returns the parent's ALREADY-multiplied memoized value;
+// multiplying there would compound the scale to scale^depth down an INHERIT chain. A
+// node that leaves the fast path cannot compound it either: it reads its ancestors'
+// POLICIES, never their products.
+inline float GetWindowScale(const ViewImpl& viewImpl)
+{
+  if(!Internal::LayoutScaleManagerImpl::HasAnyWindowScale())
+  {
+    return 1.0f;
+  }
+  return Internal::LayoutScaleManagerImpl::ResolveWindowScale(viewImpl);
+}
+
+// The SYSTEM term of a node that left ComputeEffectiveScale()'s fast path: its own
+// UiScalePolicy when that is not INHERIT, else the nearest ancestor's that is not, else
+// the root's -- the system scale. DISABLED is 1.0f; ENABLED and the root read
+// GetSystemScale(), the single read site of this term. The ascent stops at the first
+// non-View parent, exactly as GetParentView() does for the fast path, and it reads
+// POLICIES only, never an ancestor's memoized product: that product carries the window
+// term too, and recovering one term from it would take a division the exactly-compared
+// measure-cache scale key cannot afford.
+//
+// O(depth), and only on an effective-scale cache MISS. A node whose own UiScalePolicy is
+// DISABLED or ENABLED -- every application view that leaves the fast path -- does not
+// ascend at all: it returns before the ascent's View handle is even constructed, at the
+// cost the DISABLED and ENABLED branches had before WindowScalePolicy existed.
+float ResolveSystemScaleTerm(const ViewDataImpl& viewData)
+{
+  UiScalePolicy policy = viewData.GetUiScalePolicy();
+  if(policy != UiScalePolicy::INHERIT)
+  {
+    return (policy == UiScalePolicy::ENABLED) ? GetSystemScale() : 1.0f;
+  }
+
+  const ViewDataImpl* node = &viewData;
+  Ui::View            ancestor; // keeps the node being read alive across the ascent
+  while(policy == UiScalePolicy::INHERIT)
+  {
+    ancestor = node->GetParentView();
+    if(!ancestor)
+    {
+      return GetSystemScale();
+    }
+    node   = &ViewDataImpl::Get(GetImpl(ancestor));
+    policy = node->GetUiScalePolicy();
+  }
+  return (policy == UiScalePolicy::ENABLED) ? GetSystemScale() : 1.0f;
+}
+
+// The PER-WINDOW term of a node that left ComputeEffectiveScale()'s fast path: its own
+// WindowScalePolicy when that is not INHERIT, else the nearest ancestor's that is not,
+// else the root's -- the scale of the view's window. DISABLED is 1.0f; ENABLED and the
+// root read GetWindowScale() of THIS view, the single read site of this term (a deciding
+// ancestor is connected to this view, so it is in the same window). Same ascent rules as
+// ResolveSystemScaleTerm(): it stops at the first non-View parent and reads policies,
+// never products.
+//
+// Gated FIRST, ahead of the ascent: while no window scale is recorded anywhere in the
+// process -- every application that does not use the feature -- the term is 1.0f
+// whatever the policies say, so it costs one static load, as the plain `return 1.0f` the
+// DISABLED branch had before the window scale existed. Once a window scale IS recorded, a
+// node whose own policy decides -- DISABLED or ENABLED, the framework's opted-out views --
+// returns before any handle is constructed, and an INHERIT node pays the O(depth) policy
+// ascent on a cache MISS, with the Window lookup only when the deciding policy is ENABLED
+// or the ascent reached the root. Misses are not rare: InvalidateMeasure() drops the
+// memoized scale, so a view re-measured along a dirty path resolves again on every layout
+// pass. Application code cannot set this policy, so an application view that leaves the
+// fast path (its UiScalePolicy is ENABLED or DISABLED) is INHERIT here and its ascent
+// reaches the root -- unless the framework opted an ancestor out of the window term (a
+// drag preview while DragAndDropDetector positions it, with its application subtree),
+// which is exactly the case the ascent exists for.
+//
+// The final GetWindowScale() re-tests the gate (one more static load) on purpose: it
+// keeps that wrapper the ONLY window-term read in this file.
+float ResolveWindowScaleTerm(const ViewDataImpl& viewData, const ViewImpl& viewImpl)
+{
+  if(!Internal::LayoutScaleManagerImpl::HasAnyWindowScale())
+  {
+    return 1.0f;
+  }
+
+  WindowScalePolicy policy = viewData.GetWindowScalePolicy();
+  if(policy != WindowScalePolicy::INHERIT)
+  {
+    return (policy == WindowScalePolicy::DISABLED) ? 1.0f : GetWindowScale(viewImpl);
+  }
+
+  const ViewDataImpl* node = &viewData;
+  Ui::View            ancestor; // keeps the node being read alive across the ascent
+  while(policy == WindowScalePolicy::INHERIT)
+  {
+    ancestor = node->GetParentView();
+    if(!ancestor)
+    {
+      break;
+    }
+    node   = &ViewDataImpl::Get(GetImpl(ancestor));
+    policy = node->GetWindowScalePolicy();
+  }
+  return (policy == WindowScalePolicy::DISABLED) ? 1.0f : GetWindowScale(viewImpl);
 }
 
 // Sanitize size property inputs. RequestedWidth/Height accept any
@@ -2470,6 +2606,27 @@ void ViewDataImpl::SetUiScalePolicy(UiScalePolicy policy)
 UiScalePolicy ViewDataImpl::GetUiScalePolicy() const
 {
   return mScalePolicy;
+}
+
+void ViewDataImpl::SetWindowScalePolicy(WindowScalePolicy policy)
+{
+  // SetUiScalePolicy()'s exact shape, for the same reason. The policy decides the window
+  // term of this view AND of every INHERIT descendant -- a descendant on the INHERIT fast
+  // path memoizes this view's product, and a descendant that left the fast path read this
+  // view's policy on its ascent -- so the whole subtree's cached scale and every layout
+  // result derived from it are dropped, and a measure pass is scheduled. Unchanged policy,
+  // nothing to drop.
+  if(mWindowScalePolicy != policy)
+  {
+    mWindowScalePolicy = policy;
+    ResetSubtreeScaleAndLayoutCaches();
+    InvalidateMeasure();
+  }
+}
+
+WindowScalePolicy ViewDataImpl::GetWindowScalePolicy() const
+{
+  return mWindowScalePolicy;
 }
 
 float ViewDataImpl::GetEffectiveScale() const
@@ -5965,34 +6122,43 @@ void ViewDataImpl::ApplyLayoutDirection(float parentWidth)
 
 float ViewDataImpl::ComputeEffectiveScale() const
 {
-  if(mScalePolicy == UiScalePolicy::DISABLED)
+  // FAST PATH: INHERIT for BOTH terms -- the branch nearly every view takes, every
+  // application view whose UiScalePolicy is INHERIT -- at exactly the cost the INHERIT
+  // branch had before WindowScalePolicy existed: two one-byte compares and ONE parent
+  // lookup. ONE parent lookup, the same collapse InvalidateMeasure makes: Ui::Layout
+  // derives from Ui::View and LayoutImpl from ViewImpl, so Ui::View::DownCast also matches
+  // a Layout parent and GetImpl reaches the very same ViewImpl -- and GetEffectiveScale is
+  // a non-virtual ViewImpl member, so the Layout branch resolved to this exact call. The
+  // dropped branch cost a second Actor::GetParent() plus a Layout::DownCast that FAILS for
+  // the common plain-View parent, once per node on every effective-scale cache miss.
+  //
+  // Returning the parent's memoized PRODUCT is exact, not an approximation: a node that
+  // inherits both terms has, term for term, its parent's terms, so it has its parent's
+  // product -- bit for bit, because nothing is recombined. That is also why no other node
+  // may take this shortcut: a node that overrides either term cannot recover the OTHER
+  // term from the parent's product without a division, and the measure cache compares its
+  // scale key exactly (MeasureKeyOrPropagation::scaleKey).
+  if(mScalePolicy == UiScalePolicy::INHERIT && mWindowScalePolicy == WindowScalePolicy::INHERIT)
   {
-    return 1.0f;
-  }
-  if(mScalePolicy == UiScalePolicy::ENABLED)
-  {
-    return GetSystemScale();
+    Ui::View parentView = GetParentView();
+    if(parentView)
+    {
+      return GetImpl(parentView).GetEffectiveScale();
+    }
+
+    // Root: both terms are taken here, each through its single read site, so the master
+    // switch -- read by both -- reaches every node in the tree exactly as a gate at the
+    // top of this function would: an inheriting node just resolves to 1.0f through its
+    // ancestor's already-memoized scale instead of returning it directly. Invariant W1:
+    // see GetWindowScale().
+    return GetWindowScale(mViewImpl) * GetSystemScale();
   }
 
-  // INHERIT: walk up the parent chain. ONE parent lookup, the same collapse
-  // InvalidateMeasure makes: Ui::Layout derives from Ui::View and LayoutImpl from
-  // ViewImpl, so Ui::View::DownCast also matches a Layout parent and GetImpl reaches
-  // the very same ViewImpl -- and GetEffectiveScale is a non-virtual ViewImpl member,
-  // so the Layout branch resolved to this exact call. The dropped branch cost a second
-  // Actor::GetParent() plus a Layout::DownCast that FAILS for the common plain-View
-  // parent, once per node on every effective-scale cache miss.
-  Ui::View parentView = GetParentView();
-  if(parentView)
-  {
-    return GetImpl(parentView).GetEffectiveScale();
-  }
-
-  // Root: inherit from LayoutScaleManager. Every INHERIT chain terminates either
-  // here or at a DISABLED/ENABLED ancestor, so the switch read inside
-  // GetSystemScale() reaches every node in the tree exactly as a gate at the top
-  // of this function would -- an INHERIT node just resolves to 1.0f through its
-  // ancestor's already-memoized scale instead of returning it directly.
-  return GetSystemScale();
+  // A node that sets either policy away from INHERIT -- an application view whose
+  // UiScalePolicy is ENABLED or DISABLED, or a framework view that opts out of the window
+  // term. Each term is resolved on its own, from the POLICIES on the ancestor chain, and
+  // the product is formed once, here.
+  return ResolveWindowScaleTerm(*this, mViewImpl) * ResolveSystemScaleTerm(*this);
 }
 
 void ViewDataImpl::DropCachedEffectiveScale()

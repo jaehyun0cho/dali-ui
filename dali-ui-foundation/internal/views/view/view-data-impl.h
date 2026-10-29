@@ -91,6 +91,30 @@ enum class TriStateProperty
 };
 
 /**
+ * @brief Framework-internal policy for the PER-WINDOW term of a view's effective scale.
+ *
+ * The window-term counterpart of UiScalePolicy, which selects the SYSTEM term, value for value:
+ * INHERIT takes the term from the parent (a root takes the scale of its window), ENABLED always
+ * takes the scale of the view's window whatever the parent says, and DISABLED takes 1.0 -- with
+ * descendant INHERIT views following it.
+ *
+ * Internal on purpose: no installed header declares it and View/ViewImpl expose no setter for it,
+ * so application code cannot move a view off INHERIT here, and the public contract "the window scale
+ * applies to UiScalePolicy::DISABLED views too" stays true for application code. It exists for the
+ * views the framework hands geometry that is ALREADY scaled -- the text cursor, the grab and
+ * selection handles and their markers, the editable inline replacement layer, and an
+ * application-supplied drag preview while the detector positions it (saved and restored around the
+ * drag). UiScalePolicy::DISABLED takes them out of the system term; DISABLED here takes them out of
+ * the window term, which would otherwise multiply those values a second time.
+ */
+enum class WindowScalePolicy : uint8_t
+{
+  INHERIT  = 0, ///< Take the window term from the parent; a root takes its window's scale (default).
+  ENABLED  = 1, ///< Always take the window's scale, ignoring the parent's policy.
+  DISABLED = 2, ///< The window term is 1.0; descendant INHERIT views also take 1.0.
+};
+
+/**
  * @brief Layout-transition changes accumulated since the preceding layout pass.
  *
  * The layout transition dispatcher consumes this state once per pass to
@@ -350,6 +374,16 @@ public:
   UiScalePolicy GetUiScalePolicy() const;
   float         GetEffectiveScale() const;
   /**
+   * @brief Sets how the PER-WINDOW term of this view's effective scale is resolved.
+   *
+   * Framework-internal (see WindowScalePolicy); not reachable from View, ViewImpl or any installed
+   * header. Mirrors SetUiScalePolicy() exactly, invalidation included.
+   *
+   * @param[in] policy The window-term policy
+   */
+  void              SetWindowScalePolicy(WindowScalePolicy policy);
+  WindowScalePolicy GetWindowScalePolicy() const;
+  /**
    * @brief Records and propagates a measure invalidation under the uniform layout
    * processing policy.
    *
@@ -588,7 +622,8 @@ public:
    * every descendant.
    *
    * Used by the paths that can move the effective scale of a whole subtree at
-   * once -- a UiScalePolicy change, a global UI scale change, and a reparent --
+   * once -- a UiScalePolicy or WindowScalePolicy change, a global UI scale or
+   * master-switch change, a per-window scale change, and a reparent --
    * where the change re-roots the INHERIT chain, so every descendant's cached
    * scale (and therefore every cached measure/arrange result derived from it)
    * is potentially stale.
@@ -1951,9 +1986,10 @@ private:
   ViewImpl&                            mViewImpl;
   ViewState                            mState;
   UiScalePolicy                        mScalePolicy{UiScalePolicy::INHERIT};
-  LayoutMode                           mLayoutMode;           ///< Layout mode of the view. PACKING: parked here, next to the other one-byte policy enum, because it fills the pad mScalePolicy would otherwise leave; its logical home is the layout group further down, which cross-references it.
-  mutable float                        mEffectiveScale{1.0f}; ///< Cached effective scale. Carries NO validity sentinel of its own; whether this value is usable is recorded by mEffectiveScaleValid. Mutable because the lazy (re)compute happens inside the const GetEffectiveScale().
-  float                                mRequestedWidth;       ///< Requested width (WRAP_CONTENT = -1.0f, MATCH_PARENT = -2.0f). PACKING: parked here to fill the 4-byte pad in front of mTraits; it belongs logically with mRequestedHeight, which sits in the layout group further down.
+  LayoutMode                           mLayoutMode;                                    ///< Layout mode of the view. PACKING: parked here, next to the other one-byte policy enum, because it fills the pad mScalePolicy would otherwise leave; its logical home is the layout group further down, which cross-references it.
+  WindowScalePolicy                    mWindowScalePolicy{WindowScalePolicy::INHERIT}; ///< Framework-internal policy for the PER-WINDOW term of the effective scale; see WindowScalePolicy. PACKING: the third one-byte policy enum parked beside mScalePolicy and mLayoutMode: the three sit in the pad between the 4-byte mState and the 4-aligned mEffectiveScale, where two bytes were free, so it costs no byte on a 32- or a 64-bit build.
+  mutable float                        mEffectiveScale{1.0f};                          ///< Cached effective scale. Carries NO validity sentinel of its own; whether this value is usable is recorded by mEffectiveScaleValid. Mutable because the lazy (re)compute happens inside the const GetEffectiveScale().
+  float                                mRequestedWidth;                                ///< Requested width (WRAP_CONTENT = -1.0f, MATCH_PARENT = -2.0f). PACKING: parked here to fill the 4-byte pad in front of mTraits; it belongs logically with mRequestedHeight, which sits in the layout group further down.
   TraitEntries                         mTraits;
   Internal::CoreInteractionObject*     mCoreInteractionObject;
   std::unique_ptr<VisualData>          mVisualData; ///< Visual context, allocated on first use by EnsureVisualData(). Null means EITHER visuals are disabled (DISABLE_VISUALS) OR no visual has been touched yet (a mutation requested before the owner handle existed does not count: CanUseVisuals() drops it, as the pre-lazy code did) -- read paths answer both the same way.
