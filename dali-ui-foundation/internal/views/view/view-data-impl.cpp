@@ -67,6 +67,7 @@
 #include <dali-ui-foundation/internal/common/attachment-container.h>
 #include <dali-ui-foundation/internal/focus-manager/focus-manager-impl.h>
 #include <dali-ui-foundation/internal/input-event-impl.h>
+#include <dali-ui-foundation/internal/layout-scale-manager-impl.h>
 #include <dali-ui-foundation/internal/layouts/absolute-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/flex-layout-params-impl.h>
 #include <dali-ui-foundation/internal/layouts/grid-layout-params-impl.h>
@@ -89,10 +90,10 @@
 #include <dali-ui-foundation/internal/views/view/view-gradient-color-binding.h>
 #include <dali-ui-foundation/internal/views/view/view-internal-depth-slots.h>
 #include <dali-ui-foundation/internal/visuals/visual-property-map-helper.h>
+#include <dali-ui-foundation/public-api/configuration/layout-scale-manager.h>
 #include <dali-ui-foundation/public-api/configuration/ui-color-manager.h>
 #include <dali-ui-foundation/public-api/configuration/ui-config.h>
 #include <dali-ui-foundation/public-api/configuration/ui-localization-manager.h>
-#include <dali-ui-foundation/public-api/configuration/ui-scale-manager.h>
 #include <dali-ui-foundation/public-api/focus-manager/focus-manager.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout-manager.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout-params.h>
@@ -456,7 +457,7 @@ inline bool FloatEqual(float a, float b, float epsilon = 0.001f)
 // push obtain the scale via GetEffectiveScale(), which memoizes what
 // ComputeEffectiveScale() returns. So collapsing the system scale to 1.0f here
 // is what makes the whole system behave as unscaled, with no change at any call
-// site. The scale stored in UiScaleManager is left untouched and is re-applied
+// site. The scale stored in LayoutScaleManager is left untouched and is re-applied
 // as soon as scaling is re-enabled.
 //
 // Reading the switch HERE rather than at the top of ComputeEffectiveScale() is
@@ -465,8 +466,8 @@ inline bool FloatEqual(float a, float b, float epsilon = 0.001f)
 // they were before the switch existed.
 inline float GetSystemScale()
 {
-  UiScaleManager manager = UiScaleManager::Get();
-  return manager.IsScalable() ? manager.GetScale() : 1.0f;
+  LayoutScaleManager manager = LayoutScaleManager::Get();
+  return manager.IsScalable() ? manager.GetUiScale() : 1.0f;
 }
 
 // Sanitize size property inputs. RequestedWidth/Height accept any
@@ -4034,7 +4035,7 @@ void ViewDataImpl::OnChildRemoved(Actor& child)
 
       // Removal re-roots the removed subtree's effective-scale chain: an INHERIT
       // node's ComputeEffectiveScale walks its parent chain, and severing this
-      // link re-roots that chain (ultimately at UiScaleManager's global scale).
+      // link re-roots that chain (ultimately at LayoutScaleManager's global scale).
       // So the whole removed subtree's cached effective scale is now stale. The
       // InvalidateMeasure() below drops it on the direct child ONLY and
       // propagates upward, never into the subtree -- the mirror of OnChildAdded's
@@ -4103,7 +4104,7 @@ void ViewDataImpl::OnViewSceneConnection()
   // reach the view: a standalone view whose parent is never arranged -- one inside a
   // regular child of a producer that never arranges its children (a Label:
   // LabelImpl::OnArrange returns its bounds), or under a parent whose own parent
-  // ignores it -- is placed by no parent pass, and UiScaleManager's root registration
+  // ignores it -- is placed by no parent pass, and LayoutScaleManager's root registration
   // is only a map insert that schedules nothing. Its own self pass is therefore the
   // only route that brings it to the current scale and window, and keeps a window
   // resize reaching it (the controller invalidates its tracked roots and nothing
@@ -4111,12 +4112,12 @@ void ViewDataImpl::OnViewSceneConnection()
   // self pass after the parent's pass is a measure + arrange cache hit:
   // ArrangeStandaloneChild and LayoutController::ProcessLayoutRoot derive the same
   // constraint and slot from the same parent layout target.
-  // RegisterWithLayoutController() also registers the view with UiScaleManager, so
+  // RegisterWithLayoutController() also registers the view with LayoutScaleManager, so
   // future scale changes reach it.
   const bool isLayoutRoot = !GetParentView();
 
   // Off-scene scale gap. While this view is a detached layout root it is not in
-  // UiScaleManager's root set, so a global SetScale() cannot reach it -- its
+  // LayoutScaleManager's root set, so a global SetUiScale() cannot reach it -- its
   // cached effective scale, and the whole subtree's for INHERIT chains, may be
   // stale (computed against the scale in force before it was detached). On
   // (re)connection re-derive the subtree's effective scale so the layout pass
@@ -4170,14 +4171,15 @@ void ViewDataImpl::OnViewSceneDisconnection()
 
   OnSceneDisconnection();
 
-  // Remove from UiScaleManager if this view was registered as a layout root.
+  // Remove from LayoutScaleManager if this view was registered as a layout root.
   // Two cases match the registration paths in RegisterWithLayoutController:
   //   (a) tree root: no parent view -- which also means no parent LAYOUT, since
   //       Ui::Layout derives from Ui::View and View::DownCast matches both
   //   (b) standalone: boundary views self-register regardless of their parent
   if(!GetParentView() || IntegrationView::IsLayoutModeStandalone(mViewImpl))
   {
-    UiScaleManager::Get().UnregisterLayoutRoot(View::DownCast(mViewImpl.Self()));
+    LayoutScaleManager layoutScaleManager = LayoutScaleManager::Get();
+    GetImpl(layoutScaleManager).UnregisterLayoutRoot(View::DownCast(mViewImpl.Self()));
   }
 }
 
@@ -5985,7 +5987,7 @@ float ViewDataImpl::ComputeEffectiveScale() const
     return GetImpl(parentView).GetEffectiveScale();
   }
 
-  // Root: inherit from UiScaleManager. Every INHERIT chain terminates either
+  // Root: inherit from LayoutScaleManager. Every INHERIT chain terminates either
   // here or at a DISABLED/ENABLED ancestor, so the switch read inside
   // GetSystemScale() reaches every node in the tree exactly as a gate at the top
   // of this function would -- an INHERIT node just resolves to 1.0f through its
@@ -6230,9 +6232,10 @@ void ViewDataImpl::RegisterWithLayoutController()
     // layout root, not an application asking for a layout.
     controller.RequestLayoutInternal(&mViewImpl);
 
-    // Register as a layout root in UiScaleManager so it gets invalidated when
+    // Register as a layout root in LayoutScaleManager so it gets invalidated when
     // the system scale changes. Duplicate registration is silently ignored.
-    UiScaleManager::Get().RegisterLayoutRoot(Ui::View::DownCast(self));
+    LayoutScaleManager layoutScaleManager = LayoutScaleManager::Get();
+    GetImpl(layoutScaleManager).RegisterLayoutRoot(Ui::View::DownCast(self));
   }
 }
 
@@ -8041,7 +8044,8 @@ void ViewDataImpl::SetProperty(BaseObject* object, Property::Index index, const 
               // self turn that a batch already collected is skipped at its tracked check.
               // A view with no View parent stays a root and keeps both registrations.
               LayoutController::ReleaseLayoutRootInternal(&viewImpl);
-              UiScaleManager::Get().UnregisterLayoutRoot(Ui::View::DownCast(viewImpl.Self()));
+              LayoutScaleManager layoutScaleManager = LayoutScaleManager::Get();
+              GetImpl(layoutScaleManager).UnregisterLayoutRoot(Ui::View::DownCast(viewImpl.Self()));
             }
 
             // Both directions: a propagation record written while the view had its

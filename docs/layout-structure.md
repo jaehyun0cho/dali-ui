@@ -170,8 +170,8 @@ layout direction as the keyed inputs.
 
 The effective scale is part of the measure cache key, so a scale change alone
 forces a re-measure. The effective scale is resolved in one place,
-`ViewDataImpl::ComputeEffectiveScale()`; when the process-wide UI-scale master
-switch (`UiScaleManager::SetScalable(false)`) is off it returns `1.0` for every
+`ViewDataImpl::ComputeEffectiveScale()`; when the process-wide scaling master
+switch (`LayoutScaleManager::SetScalable(false)`) is off it returns `1.0` for every
 view regardless of the view's `UiScalePolicy`, so the whole tree behaves as
 unscaled.
 

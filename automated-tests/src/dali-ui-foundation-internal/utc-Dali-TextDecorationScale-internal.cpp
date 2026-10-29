@@ -113,16 +113,16 @@ const Size         BOX(320.f, 160.f);
 struct ScaleGuard
 {
   ScaleGuard()
-  : scale(UiScaleManager::Get().GetScale()),
-    scalable(UiScaleManager::Get().IsScalable())
+  : scale(LayoutScaleManager::Get().GetUiScale()),
+    scalable(LayoutScaleManager::Get().IsScalable())
   {
-    UiScaleManager::Get().SetScalable(true);
-    UiScaleManager::Get().SetScale(1.f);
+    LayoutScaleManager::Get().SetScalable(true);
+    LayoutScaleManager::Get().SetUiScale(1.f);
   }
   ~ScaleGuard()
   {
-    UiScaleManager::Get().SetScale(scale);
-    UiScaleManager::Get().SetScalable(scalable);
+    LayoutScaleManager::Get().SetUiScale(scale);
+    LayoutScaleManager::Get().SetScalable(scalable);
   }
   float scale;
   bool  scalable;
@@ -330,7 +330,7 @@ void ControlMatrix(UiTestApplication& application, Control control)
         for(unsigned index = 0u; index < 5u; ++index, ++combination)
         {
           const float scale = SCALES[index];
-          UiScaleManager::Get().SetScale(scale);
+          LayoutScaleManager::Get().SetUiScale(scale);
           application.SendNotification();
           application.Render();
           auto  controller = ControllerFor(control);
@@ -368,7 +368,7 @@ void ControlMatrix(UiTestApplication& application, Control control)
       control.SetTextLineThrough(Text::LineThrough::None());
       control.SetTextShadow(Text::Shadow::None());
       control.SetTextOutline(Text::Outline::None());
-      UiScaleManager::Get().SetScale(1.5f);
+      LayoutScaleManager::Get().SetUiScale(1.5f);
       application.SendNotification();
       application.Render();
       auto& plain = Model(ControllerFor(control));
@@ -479,7 +479,7 @@ void PolicyMatrix(UiTestApplication& application, Control control)
         CheckGeometry(RenderModel(worker), scale, width, authoring != 0);
       }
     };
-    UiScaleManager::Get().SetScale(2.f);
+    LayoutScaleManager::Get().SetUiScale(2.f);
     control.SetUiScalePolicy(UiScalePolicy::INHERIT);
     check(2.f);
     control.SetUiScalePolicy(UiScalePolicy::DISABLED);
@@ -492,12 +492,12 @@ void PolicyMatrix(UiTestApplication& application, Control control)
     check(1.f);
     enabledRoot.SetUiScalePolicy(UiScalePolicy::ENABLED);
     check(2.f);
-    UiScaleManager::Get().SetScale(1.5f);
+    LayoutScaleManager::Get().SetUiScale(1.5f);
     check(1.5f);
     branch.Unparent();
     disabledRoot.Add(branch);
     check(1.f);
-    UiScaleManager::Get().SetScale(2.f);
+    LayoutScaleManager::Get().SetUiScale(2.f);
     check(1.f);
     branch.SetUiScalePolicy(UiScalePolicy::ENABLED);
     check(2.f);
@@ -507,7 +507,7 @@ void PolicyMatrix(UiTestApplication& application, Control control)
     branch.Unparent();
     enabledRoot.Add(branch);
     check(2.f);
-    UiScaleManager::Get().SetScale(1.f);
+    LayoutScaleManager::Get().SetUiScale(1.f);
     check(1.f);
   }
   control.Unparent();
@@ -561,7 +561,7 @@ int UtcDaliTextDecorationScaleAsyncP(void)
         for(unsigned index = 0u; index < 5u; ++index)
         {
           const float scale = SCALES[index];
-          UiScaleManager::Get().SetScale(scale);
+          LayoutScaleManager::Get().SetUiScale(scale);
           application.SendNotification();
           application.Render();
           auto p = Parameters(label);
@@ -598,7 +598,7 @@ int UtcDaliTextDecorationScaleAsyncP(void)
           }
         }
       }
-      UiScaleManager::Get().SetScale(1.5f);
+      LayoutScaleManager::Get().SetUiScale(1.5f);
       application.SendNotification();
       application.Render();
       auto beforeParameters = Parameters(label);
@@ -608,7 +608,7 @@ int UtcDaliTextDecorationScaleAsyncP(void)
       label.SetTextLineThrough(Text::LineThrough::None());
       label.SetTextShadow(Text::Shadow::None());
       label.SetTextOutline(Text::Outline::None());
-      UiScaleManager::Get().SetScale(2.f);
+      LayoutScaleManager::Get().SetUiScale(2.f);
       application.SendNotification();
       application.Render();
       auto p     = Parameters(label);
@@ -616,7 +616,7 @@ int UtcDaliTextDecorationScaleAsyncP(void)
       DALI_TEST_CHECK(!plain.overlayStylePixelData);
       DALI_TEST_CHECK(!plain.stylePixelData);
       Configure(label, authoring, type);
-      UiScaleManager::Get().SetScale(1.5f);
+      LayoutScaleManager::Get().SetUiScale(1.5f);
       application.SendNotification();
       application.Render();
       p              = Parameters(label);
@@ -710,7 +710,7 @@ int UtcDaliTextDecorationScaleOverlapReplacementP(void)
   for(unsigned index = 0; index < 5u; ++index)
   {
     float scale = SCALES[index];
-    UiScaleManager::Get().SetScale(scale);
+    LayoutScaleManager::Get().SetUiScale(scale);
     application.SendNotification();
     application.Render();
     auto& state = Text::Controller::Impl::GetImplementation(*ControllerFor(label)).GetReplacementRenderState();
@@ -740,7 +740,7 @@ int UtcDaliTextDecorationScaleOutlineLayoutP(void)
   for(unsigned index = 0; index < 5u; ++index)
   {
     float scale = SCALES[index];
-    UiScaleManager::Get().SetScale(scale);
+    LayoutScaleManager::Get().SetUiScale(scale);
     oracle.SetFontSize(24.f * scale);
     oracle.SetRequestedWidth(BOX.x * scale);
     oracle.SetRequestedHeight(BOX.y * scale);
@@ -901,7 +901,7 @@ int UtcDaliTextDecorationScalePolicyAsyncP(void)
   label.AsyncRenderFinishedSignal().Connect(&OnDecorationRenderFinished);
   parent.Add(label);
   application.GetScene().Add(parent);
-  UiScaleManager::Get().SetScale(2.f);
+  LayoutScaleManager::Get().SetUiScale(2.f);
   auto awaitScale = [&](float scale)
   {
     const unsigned before   = asyncCompletions;
@@ -932,7 +932,7 @@ int UtcDaliTextDecorationScalePolicyAsyncP(void)
   parent.SetUiScalePolicy(UiScalePolicy::ENABLED);
   awaitScale(2.f);
   // Supersede a pending request with the final disabled policy.
-  UiScaleManager::Get().SetScale(1.25f);
+  LayoutScaleManager::Get().SetUiScale(1.25f);
   application.SendNotification();
   application.Render();
   label.SetUiScalePolicy(UiScalePolicy::DISABLED);
@@ -952,7 +952,7 @@ int UtcDaliTextDecorationScaleLabelAsyncRuntimeP(void)
   for(float scale : SCALES)
   {
     const unsigned previous = asyncCompletions;
-    UiScaleManager::Get().SetScale(scale);
+    LayoutScaleManager::Get().SetUiScale(scale);
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
     do
     {
