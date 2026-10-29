@@ -184,10 +184,8 @@ The window scale therefore enters each view's product exactly once and never
 compounds to `scale^depth` down an inheritance chain. The window term has a
 framework-internal policy too, `WindowScalePolicy` (view-data-impl.h): the views
 that are handed already-scaled geometry -- the text cursor, handles and markers,
-the editable inline replacement layer and a drag preview the detector positions
-itself -- set it to `DISABLED` next to `UiScalePolicy::DISABLED`; application code
-cannot set it (the detector sets it on an application-supplied preview only while it
-positions that preview itself, and restores it afterwards).
+and the editable inline replacement layer -- set it to `DISABLED` next to
+`UiScalePolicy::DISABLED`; application code cannot set it.
 
 The **arrange cache** uses `ArrangePolicy::IF_CHANGED` by default.
 `View::Arrange()` may serve a stored result when the input bounds, effective layout
