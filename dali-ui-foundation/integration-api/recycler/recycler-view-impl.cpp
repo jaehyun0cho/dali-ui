@@ -128,14 +128,16 @@ struct RecyclerViewImpl::RecyclerImpl : public Recycler
     return rv.GetCrossExtent();
   }
 
+  // The cache extent is set in natural units; the layouter works in rendered pixels, the units of
+  // the viewport and of every item it measures.
   float GetCacheBefore() const override
   {
-    return rv.mCacheBefore;
+    return rv.mCacheBefore * rv.GetEffectiveLayoutScale();
   }
 
   float GetCacheAfter() const override
   {
-    return rv.mCacheAfter;
+    return rv.mCacheAfter * rv.GetEffectiveLayoutScale();
   }
 
   Insets GetDecorationOffsets(uint32_t position) const override
