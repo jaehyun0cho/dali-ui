@@ -519,7 +519,8 @@ void Controller::TextUpdater::InsertText(Controller& controller, const std::stri
 
       if(addFontSizeRun)
       {
-        fontDescriptionRun.size        = static_cast<PointSize26Dot6>(inputStyle.size * impl.GetEffectiveTextScale() * 64.f);
+        // Stored unscaled like FontSpan runs; font validation applies the effective text scale once.
+        fontDescriptionRun.size        = static_cast<PointSize26Dot6>(inputStyle.size * 64.f);
         fontDescriptionRun.sizeDefined = true;
       }
 
