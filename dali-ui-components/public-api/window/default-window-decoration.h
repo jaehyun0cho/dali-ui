@@ -400,7 +400,9 @@ public:
    * The decoration does not apply this itself, because the window's size
    * constraints belong to the application.
    * @SINCE_3_0.0
-   * @return Smallest frame size that lays out without overlap, excluding shadow
+   * @return Smallest frame size that lays out without overlap, excluding shadow, in window
+   *         surface pixels at the frame's current effective scale. It grows with the window
+   *         scale and the UI scale, so apply it again after either changes.
    */
   Dali::Vector2 GetMinimumFrameSize() const;
 

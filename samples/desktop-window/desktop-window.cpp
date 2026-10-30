@@ -16,6 +16,8 @@
 
 #include "desktop-window.h"
 
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali/integration-api/debug.h>
 
 #include <algorithm>
@@ -69,8 +71,12 @@ DesktopWindow::DesktopWindow(Dali::Window window, CloseCallback onClose)
   // is no earlier normal geometry for the window system to restore to. Supply
   // one. It is consulted only for that first restore - ordinary maximize and
   // restore geometry stays compositor owned, which is what keeps repeated
-  // toggling from drifting.
-  options.SetInitialRestoreFrameSize(Vector2(RESTORE_FRAME_WIDTH, RESTORE_FRAME_HEIGHT));
+  // toggling from drifting. Frame sizes are window surface pixels, so the natural
+  // size is taken at the scale the window lays out at: the window scale times the
+  // UI scale.
+  Ui::Extension::LayoutScaleManager scaleManager = Ui::Extension::LayoutScaleManager::Get();
+  const float        scale        = scaleManager.IsScalable() ? scaleManager.GetWindowScale(window) * scaleManager.GetUiScale() : 1.0f;
+  options.SetInitialRestoreFrameSize(Vector2(RESTORE_FRAME_WIDTH, RESTORE_FRAME_HEIGHT) * scale);
 
   // A product that does not offer a control turns its feature off here, so the
   // decision is made once rather than per application.
@@ -333,9 +339,13 @@ Dali::Vector2 DesktopWindow::RequiredFrameSize() const
 
 void DesktopWindow::ApplyMinimumFrameSize()
 {
+  // Frame constraints are surface pixels. The columns and the product minimum are
+  // natural units, so they are taken at the content root's effective scale.
+  const float   scale    = Dali::Ui::Extension::View::GetEffectiveLayoutScale(Dali::Ui::GetImpl(mWindowFrame.GetContentRoot()));
   const Vector2 required = RequiredFrameSize();
-  mWindowFrame.SetMinimumFrameSize(Vector2(std::max(mConfiguredMinimum.width, required.width),
-                                           std::max(mConfiguredMinimum.height, required.height)));
+  const Vector2 minimum(std::max(mConfiguredMinimum.width, required.width),
+                        std::max(mConfiguredMinimum.height, required.height));
+  mWindowFrame.SetMinimumFrameSize(minimum * scale);
 }
 
 Dali::Ui::WindowFrameCommandDisposition DesktopWindow::OnCommand(Dali::Ui::WindowFrame /*sender*/, const Dali::Ui::WindowFrameCommandRequest& /*request*/)

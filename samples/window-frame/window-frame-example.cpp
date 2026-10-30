@@ -613,7 +613,8 @@ private:
    * @brief Applies a minimum the installed frame can actually lay out.
    *
    * Each frame has its own floor, so the minimum is set after installing rather
-   * than once at startup. DefaultWindowDecoration reports its own through
+   * than once at startup, and again after a window scale change because it is in
+   * surface pixels. DefaultWindowDecoration reports its own through
    * GetMinimumFrameSize(); the custom frame below computes its own the same way,
    * and both grow past what the application content alone would need.
    */
@@ -623,8 +624,11 @@ private:
     {
       return;
     }
-    Vector2       minimum(APP_MINIMUM_FRAME_WIDTH, APP_MINIMUM_FRAME_HEIGHT);
-    const Vector2 required = mDefaultDecoration ? mDefaultDecoration.GetMinimumFrameSize() : CustomFrameMinimumSize();
+    // Frame constraints are surface pixels. The application minimum and the custom frame's
+    // columns are natural units; DefaultWindowDecoration already reports pixels.
+    const float   scale    = Dali::Ui::Extension::View::GetEffectiveLayoutScale(Dali::Ui::GetImpl(mWindowFrame.GetContentRoot()));
+    Vector2       minimum  = Vector2(APP_MINIMUM_FRAME_WIDTH, APP_MINIMUM_FRAME_HEIGHT) * scale;
+    const Vector2 required = mDefaultDecoration ? mDefaultDecoration.GetMinimumFrameSize() : CustomFrameMinimumSize() * scale;
     minimum.width          = std::max(minimum.width, required.width);
     minimum.height         = std::max(minimum.height, required.height);
     mWindowFrame.SetMinimumFrameSize(minimum);
@@ -777,11 +781,14 @@ private:
     }
     else if(event.GetKeyName() == "1")
     {
+      // The frame minimum is in surface pixels at the current scale, so it follows the new one.
       Ui::Extension::LayoutScaleManager::Get().SetWindowScale(mWindow, 1.0f);
+      ApplyFrameMinimumSize();
     }
     else if(event.GetKeyName() == "2")
     {
       Ui::Extension::LayoutScaleManager::Get().SetWindowScale(mWindow, 2.0f);
+      ApplyFrameMinimumSize();
     }
   }
 
