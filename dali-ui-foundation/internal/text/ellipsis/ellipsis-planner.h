@@ -48,6 +48,7 @@ struct EndEllipsisInputView
   float                                   lineWidth{0.0f};
   float                                   positionOffset{0.0f};
   float                                   modelCharacterSpacing{0.0f};
+  FontId                                  defaultFontId{0u}; ///< Default font for font-free replacement glyphs; 0 uses the font client default.
 };
 
 /**
