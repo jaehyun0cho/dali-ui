@@ -124,6 +124,18 @@ public:
 
   static Dali::Ui::Insets GetEffectiveShadowOutsets(const WindowFrameLayoutOptions& options);
 
+  /**
+   * @brief Returns @p layout with its decoration insets and resize-handle sizes multiplied by @p scale.
+   *
+   * WindowFrameLayout lengths are natural units; this gives them in window surface pixels.
+   */
+  static WindowFrameLayout ScaleLayout(const WindowFrameLayout& layout, float scale);
+
+  /**
+   * @brief Returns @p insets multiplied by @p scale.
+   */
+  static Dali::Ui::Insets ScaleInsets(const Dali::Ui::Insets& insets, float scale);
+
   static Dali::Ui::LayoutRect SurfaceToFrameLocal(const Dali::Ui::LayoutRect& surfaceRect, const Dali::Ui::LayoutRect& frameBounds);
 
   static Dali::Vector2 ContentToFrameSize(const Dali::Vector2& contentSize, const WindowFrameLayout& layout);

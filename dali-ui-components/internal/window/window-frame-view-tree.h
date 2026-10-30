@@ -35,11 +35,19 @@ public:
 
   void SetDecoration(const WindowFrameDecoration& decoration);
   void SetFrameStyle(const WindowFrameStyle& style);
+
+  /**
+   * @brief Lays the frame out in a window surface of @p positionSize.
+   *
+   * @p frameLayout and the shadow outsets of @p style are natural units, taken at @p scale surface
+   * pixels each; every view gets its bounds in its own natural units.
+   */
   void ApplyLayout(const Dali::PositionSize& positionSize,
                    const WindowFrameLayout&  frameLayout,
                    bool                      maximized,
                    bool                      decorationOverlay,
-                   const WindowFrameStyle&   style);
+                   const WindowFrameStyle&   style,
+                   float                     scale);
   void SetDecorationVisible(bool visible);
 
   Dali::Ui::AbsoluteLayout GetSurfaceRoot() const;

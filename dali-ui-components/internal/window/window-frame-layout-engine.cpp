@@ -129,6 +129,20 @@ Dali::Ui::Insets WindowFrameLayoutEngine::GetEffectiveShadowOutsets(const Window
   return options.maximized ? Dali::Ui::Insets() : NonNegative(options.shadowOutsets);
 }
 
+WindowFrameLayout WindowFrameLayoutEngine::ScaleLayout(const WindowFrameLayout& layout, float scale)
+{
+  WindowFrameLayout scaled(layout);
+  scaled.SetDecorationInsets(ScaleInsets(layout.GetDecorationInsets(), scale));
+  scaled.SetBottomLeftResizeHandleSize(layout.GetBottomLeftResizeHandleSize() * scale);
+  scaled.SetBottomRightResizeHandleSize(layout.GetBottomRightResizeHandleSize() * scale);
+  return scaled;
+}
+
+Dali::Ui::Insets WindowFrameLayoutEngine::ScaleInsets(const Dali::Ui::Insets& insets, float scale)
+{
+  return Dali::Ui::Insets(insets.start * scale, insets.end * scale, insets.top * scale, insets.bottom * scale);
+}
+
 Dali::Ui::LayoutRect WindowFrameLayoutEngine::SurfaceToFrameLocal(const Dali::Ui::LayoutRect& surfaceRect, const Dali::Ui::LayoutRect& frameBounds)
 {
   return Dali::Ui::LayoutRect(surfaceRect.x - frameBounds.x,
