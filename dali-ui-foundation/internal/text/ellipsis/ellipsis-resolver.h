@@ -88,8 +88,10 @@ EndEllipsisSourceRetention ResolveEndEllipsisRetention(
  *
  * The caller supplies a model for which effective elision is enabled and
  * LayoutEngine has either marked an END candidate or produced no visible line.
- * @p syntheticReplacementDefaultFontId is used only when a synthetic
- * replacement boundary has no font-backed source glyph.
+ * @p syntheticReplacementDefaultFontId is used only when the ellipsis has no
+ * font-backed style source: a synthetic replacement boundary without a
+ * font-backed source glyph uses only this font, and any other style source
+ * without a font tries it before the font client default.
  *
  * @return true when an authoritative END result, including an intentional omission, was resolved.
  */
