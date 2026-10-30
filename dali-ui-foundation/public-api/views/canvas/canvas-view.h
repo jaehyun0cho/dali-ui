@@ -74,6 +74,13 @@ public: // Creation & Destruction
   /**
    * @brief Creates an initialized CanvasView with a zero viewbox.
    *
+   * Unless a viewbox is set with SetViewBox() or the VIEW_BOX property first, the first layout
+   * that gives the view a size sets the viewbox, once, to that size in natural units: the
+   * arranged size divided by the effective scale (see ViewImpl::GetEffectiveLayoutScale()). Drawables
+   * are then given in natural units of that first size (the units of the requested size),
+   * whatever the window scale and UI scale at that layout. The viewbox then stays fixed, so the
+   * content stretches with later resizes.
+   *
    * @return A handle to a newly allocated CanvasView
    */
   static CanvasView New();

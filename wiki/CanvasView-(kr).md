@@ -44,6 +44,8 @@ icon.SetRequestedHeight(48.0f);
 
 이 예제에서는 drawable이 24 x 24 좌표계를 사용하고, 결과는 48 x 48 레이아웃 크기로 렌더링됩니다.
 
+`CanvasView::New()`로 만든 canvas는 자체 view box가 없습니다. 첫 레이아웃에서 view box가 View의 natural 크기, 즉 배치된 크기를 유효 스케일(윈도우별 스케일 × 시스템 스케일)로 나눈 값으로 한 번 정해집니다. 따라서 drawable은 그 레이아웃의 스케일과 관계없이 첫 크기의 `SetRequestedWidth()`와 같은 단위를 쓰고, 이후 크기가 바뀌면 이전처럼 콘텐츠가 늘어납니다. `SetViewBox()`로 지정한 view box는 이 값을 대체합니다.
+
 ---
 
 ## Rasterization 제어
@@ -79,7 +81,7 @@ Drop shadow와 Gaussian blur는 동시에 적용되지 않습니다. 하나를 �
 
 | API | 목적 |
 |---|---|
-| `CanvasView::New()` | zero view box를 가진 canvas 생성 |
+| `CanvasView::New()` | 첫 레이아웃의 natural 크기를 view box로 쓰는 canvas 생성 |
 | `CanvasView::New(Vector2)` | 지정한 논리 view box를 가진 canvas 생성 |
 | `AddDrawable()` / `RemoveDrawable()` | ThorVG drawable 객체 관리 |
 | `RemoveAllDrawables()` | canvas 비우기 |

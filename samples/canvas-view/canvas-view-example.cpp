@@ -109,8 +109,9 @@ private:
     mH           = static_cast<float>(posSize.height);
 
     // Canvas fills the full window area; AbsoluteLayout overlay lets the
-    // button bar sit on top without shrinking the canvas.
-    mCanvasView = CanvasView::New();
+    // button bar sit on top without shrinking the canvas. The drawables are
+    // given in window pixels, so the viewbox is the window size.
+    mCanvasView = CanvasView::New(Vector2(mW, mH));
     mCanvasView.SetLayoutParams(AbsoluteLayoutParams::New()
                                   .SetBounds(LayoutRect(0.f, 0.f, 1.f, 1.f))
                                   .SetFlags(AbsoluteLayoutFlags::SIZE_PROPORTIONAL |

@@ -44,6 +44,8 @@ icon.SetRequestedHeight(48.0f);
 
 In this example, drawables use a 24 x 24 coordinate system and are rendered into a 48 x 48 layout size.
 
+A canvas created with `CanvasView::New()` has no view box of its own. Its first layout sets the view box, once, to the view's natural size: the arranged size divided by the effective scale (window scale × UI scale). Drawables therefore use the units of `SetRequestedWidth()` at that first size, whatever the scale at that layout, and the content stretches with later resizes as before. A view box set with `SetViewBox()` replaces it.
+
 ---
 
 ## Rasterization Control
@@ -79,7 +81,7 @@ Drop shadow and Gaussian blur are mutually exclusive scene effects. Setting one 
 
 | API | Purpose |
 |---|---|
-| `CanvasView::New()` | Creates a canvas with a zero view box |
+| `CanvasView::New()` | Creates a canvas whose view box is its natural size at its first layout |
 | `CanvasView::New(Vector2)` | Creates a canvas with the given logical view box |
 | `AddDrawable()` / `RemoveDrawable()` | Manages ThorVG drawable objects |
 | `RemoveAllDrawables()` | Clears the canvas |

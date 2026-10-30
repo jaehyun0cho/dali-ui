@@ -200,7 +200,15 @@ LayoutRect CanvasViewImpl::OnArrange(const LayoutRect& bounds)
   const Vector2 newSize(bounds.width, bounds.height);
   if(DALI_LIKELY(mCanvasRenderer) && newSize != mSize && newSize.width > 0.f && newSize.height > 0.f)
   {
-    mCanvasRenderer.SetSize(newSize);
+    // Without a viewbox of its own, the renderer latches the first size it accepts, in rendered
+    // pixels, as the viewbox. Latch that size in natural units instead (divided by the effective
+    // scale), so drawables use the units of the view's requested size. A natural size below one
+    // unit is rejected by the renderer, which then keeps the pixel size.
+    const bool latchNaturalViewBox = (mCanvasRenderer.GetViewBox() == Vector2::ZERO);
+    if(mCanvasRenderer.SetSize(newSize) && latchNaturalViewBox)
+    {
+      mCanvasRenderer.SetViewBox(newSize / GetEffectiveLayoutScale());
+    }
     mSize = newSize;
     // Mark as needing re-rasterization; defer to the next Process() cycle
     // so we never touch visuals during the layout pass.
