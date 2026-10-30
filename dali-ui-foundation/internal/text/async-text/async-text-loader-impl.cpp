@@ -1015,7 +1015,8 @@ void AsyncTextLoader::UpdateReplacementProcessing(AsyncTextParameters& parameter
   {
     finalView.ResolveFinalElision(mModule.GetFontClient(),
                                   replacementState.finalElision,
-                                  finalGeneration);
+                                  finalGeneration,
+                                  defaultFontId);
   }
 
   ReplacementRenderState& result = replacementState;

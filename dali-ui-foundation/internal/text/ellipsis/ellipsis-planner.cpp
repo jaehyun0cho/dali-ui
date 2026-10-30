@@ -260,7 +260,8 @@ EndEllipsisPlan ResolveEndEllipsisPlan(const EndEllipsisInputView&  input,
                                                                        ellipsisFontId,
                                                                        ellipsisFontId == 0u &&
                                                                          IsSyntheticReplacementGlyph(glyphToRemove),
-                                                                       ellipsisGlyph);
+                                                                       ellipsisGlyph,
+                                                                       input.defaultFontId);
     if(hasEllipsisMetrics)
     {
       if(!firstPenSet)

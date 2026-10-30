@@ -33,12 +33,14 @@ namespace DALI_NAMESPACE::Ui::Text
  * @param[in] fontId The preferred font identifier.
  * @param[in] allowDefaultFont Whether the default font may be used.
  * @param[out] metrics The resolved ellipsis metrics.
+ * @param[in] defaultFontId The layout's default font, used before the font client default; 0 when unknown.
  * @return true if metrics were resolved.
  */
 bool ResolveFontClientEllipsisMetrics(TextAbstraction::FontClient& fontClient,
                                       FontId                       fontId,
                                       bool                         allowDefaultFont,
-                                      TextAbstraction::GlyphInfo&  metrics);
+                                      TextAbstraction::GlyphInfo&  metrics,
+                                      FontId                       defaultFontId = 0u);
 
 } //namespace DALI_NAMESPACE::Ui::Text
 

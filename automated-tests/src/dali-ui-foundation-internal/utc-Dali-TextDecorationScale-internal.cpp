@@ -38,6 +38,7 @@
 #include <dali-ui-foundation/internal/text/cursor-helper-functions.h>
 #include <dali-ui-foundation/internal/text/decoration-scale.h>
 #include <dali-ui-foundation/internal/text/decorator/text-decorator.h>
+#include <dali-ui-foundation/internal/text/ellipsis/ellipsis-metrics.h>
 #include <dali-ui-foundation/internal/text/rendering/styles/underline-helper-functions.h>
 #include <dali-ui-foundation/internal/text/rendering/text-typesetter.h>
 #include <dali-ui-foundation/internal/text/replacement/replacement-glyph-helper.h>
@@ -1266,5 +1267,24 @@ int UtcDaliTextDecorationScaleReplacementDefaultFontP(void)
   // The image-only line takes the metrics of the default font at twice the point size.
   DALI_TEST_EQUALS(scaled.x, 2.f * unscaled.x, 1.f, TEST_LOCATION);
   DALI_TEST_EQUALS(scaled.y, 2.f * unscaled.y, 1.f, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliTextDecorationScaleEllipsisDefaultFontP(void)
+{
+  UiTestApplication                application;
+  TextAbstraction::FontClient      fontClient = TextAbstraction::FontClient::Get();
+  TextAbstraction::FontDescription description;
+  const Text::FontId               scaledDefault = fontClient.GetFontId(description, TextAbstraction::FontClient::DEFAULT_POINT_SIZE * 2u);
+  TextAbstraction::GlyphInfo       unscaled;
+  TextAbstraction::GlyphInfo       scaled;
+  DALI_TEST_CHECK(Text::ResolveFontClientEllipsisMetrics(fontClient, 0u, true, unscaled));
+  DALI_TEST_CHECK(Text::ResolveFontClientEllipsisMetrics(fontClient, 0u, true, scaled, scaledDefault));
+  // The ellipsis comes from the layout's default font at twice the size.
+  DALI_TEST_EQUALS(fontClient.GetPointSize(scaled.fontId), 2u * fontClient.GetPointSize(unscaled.fontId), TEST_LOCATION);
+  DALI_TEST_CHECK(scaled.advance > unscaled.advance);
+  // No default is used when it is not allowed.
+  TextAbstraction::GlyphInfo none;
+  DALI_TEST_CHECK(!Text::ResolveFontClientEllipsisMetrics(fontClient, 0u, false, none, scaledDefault));
   END_TEST;
 }

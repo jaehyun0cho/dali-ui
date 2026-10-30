@@ -22,13 +22,19 @@ namespace DALI_NAMESPACE::Ui::Text
 bool ResolveFontClientEllipsisMetrics(TextAbstraction::FontClient& fontClient,
                                       FontId                       fontId,
                                       bool                         allowDefaultFont,
-                                      TextAbstraction::GlyphInfo&  metrics)
+                                      TextAbstraction::GlyphInfo&  metrics,
+                                      FontId                       defaultFontId)
 {
   if(fontId == 0u && allowDefaultFont)
   {
-    TextAbstraction::FontDescription defaultFontDescription;
-    fontId = fontClient.GetFontId(defaultFontDescription,
-                                  TextAbstraction::FontClient::DEFAULT_POINT_SIZE);
+    // The layout's default font carries the effective text scale; the font client default does not.
+    fontId = defaultFontId;
+    if(fontId == 0u)
+    {
+      TextAbstraction::FontDescription defaultFontDescription;
+      fontId = fontClient.GetFontId(defaultFontDescription,
+                                    TextAbstraction::FontClient::DEFAULT_POINT_SIZE);
+    }
   }
   if(fontId == 0u)
   {

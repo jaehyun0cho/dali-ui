@@ -78,16 +78,21 @@ FontId FindEllipsisFontId(const GlyphInfo* glyphs, Length numberOfGlyphs, GlyphI
 FontId ResolveEllipsisFontId(TextAbstraction::FontClient& fontClient,
                              const GlyphInfo*             glyphs,
                              Length                       numberOfGlyphs,
-                             GlyphIndex                   glyphIndex)
+                             GlyphIndex                   glyphIndex,
+                             FontId                       defaultFontId = 0u)
 {
   FontId fontId = FindEllipsisFontId(glyphs, numberOfGlyphs, glyphIndex);
   if(fontId == 0u && glyphs && glyphIndex < numberOfGlyphs && IsSyntheticReplacementGlyph(glyphs[glyphIndex]))
   {
-    // Replacement-only lines deliberately have no font run. Use the normal
-    // default font solely for the generated ellipsis; the synthetic identity
-    // and font-free shaping contract remain unchanged.
-    TextAbstraction::FontDescription defaultFontDescription;
-    fontId = fontClient.GetFontId(defaultFontDescription, TextAbstraction::FontClient::DEFAULT_POINT_SIZE);
+    // Replacement-only lines deliberately have no font run. Use the layout's default
+    // font, or the font client default, solely for the generated ellipsis; the
+    // synthetic identity and font-free shaping contract remain unchanged.
+    fontId = defaultFontId;
+    if(fontId == 0u)
+    {
+      TextAbstraction::FontDescription defaultFontDescription;
+      fontId = fontClient.GetFontId(defaultFontDescription, TextAbstraction::FontClient::DEFAULT_POINT_SIZE);
+    }
   }
   return fontId;
 }
@@ -344,7 +349,8 @@ void View::SetFinalElisionResult(const FinalElisionResult* result)
 
 void View::ResolveFinalElision(TextAbstraction::FontClient& fontClient,
                                FinalElisionResult&          result,
-                               uint64_t                     layoutGeneration) const
+                               uint64_t                     layoutGeneration,
+                               FontId                       defaultFontId) const
 {
   // A completed layout generation owns one immutable final sequence. Render,
   // geometry and replacement consumers may ask for it repeatedly, but they
@@ -404,7 +410,8 @@ void View::ResolveFinalElision(TextAbstraction::FontClient& fontClient,
                                                      glyphCount,
                                                      finalToSourceGlyphIndices.Begin(),
                                                      &ellipsisFinalGlyphIndex,
-                                                     true);
+                                                     true,
+                                                     defaultFontId);
     result.glyphs.Resize(finalGlyphCount);
     result.viewGlyphPositions.Resize(finalGlyphCount);
     finalToSourceGlyphIndices.Resize(finalGlyphCount);
@@ -628,7 +635,8 @@ Length View::GetGlyphsUncached(GlyphInfo*                   glyphs,
                                Length                       numberOfGlyphs,
                                GlyphIndex*                  sourceGlyphIndices,
                                GlyphIndex*                  ellipsisFinalGlyphIndex,
-                               bool                         hasActiveReplacement) const
+                               bool                         hasActiveReplacement,
+                               FontId                       defaultFontId) const
 {
   TextAbstraction::FontClient localFontClient;
   auto                        getFontClient = [&]() -> TextAbstraction::FontClient&
@@ -795,7 +803,8 @@ Length View::GetGlyphsUncached(GlyphInfo*                   glyphs,
                                                                 ? ResolveEllipsisFontId(ellipsisFontClient,
                                                                                         glyphs,
                                                                                         numberOfGlyphs,
-                                                                                        indexOfFirstGlyph)
+                                                                                        indexOfFirstGlyph,
+                                                                                        defaultFontId)
                                                                 : glyphInfo.fontId;
             if(0u == ellipsisFontId)
             {
@@ -854,6 +863,7 @@ Length View::GetGlyphsUncached(GlyphInfo*                   glyphs,
             input.startIndex              = startIndexOfEllipsis;
             input.lineWidth               = ellipsisLine->width;
             input.modelCharacterSpacing   = modelCharacterSpacing;
+            input.defaultFontId           = defaultFontId;
             const EndEllipsisPlan plan    = ResolveEndEllipsisPlan(input, getFontClient());
             numberOfRemovedGlyphs         = plan.numberOfRemovedGlyphs;
             ellipsisInserted              = plan.resolved;
