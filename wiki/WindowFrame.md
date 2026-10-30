@@ -244,8 +244,10 @@ than guessing:
 mWindowFrame.SetMinimumFrameSize(mDefaultDecoration.GetMinimumFrameSize());
 ```
 
-With default options that is `276 x 55`. Turning off controls or the resize
-handles removes their columns and lowers it. The decoration does not apply this
+With default options that is `276 x 55` at an effective scale of 1.0. The size
+is in surface pixels at the frame's current scale (`552 x 110` at 2.0), so apply
+it again after the window scale or the UI scale changes. Turning off controls or
+the resize handles removes their columns and lowers it. The decoration does not apply this
 itself, because the window's size constraints belong to the application; take
 the larger of it and your own minimum when you have one.
 

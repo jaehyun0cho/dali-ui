@@ -110,7 +110,8 @@ public:
    *
    * The frame needs a floor of its own - the corner handles and every control
    * column - and the larger of the two is applied. Adding a bar action raises
-   * the frame's floor, so this is reapplied automatically.
+   * the frame's floor, so this is reapplied automatically. The size is in
+   * natural units; it is applied at the window's effective scale.
    */
   void SetMinimumFrameSize(const Dali::Vector2& size);
 

@@ -621,8 +621,11 @@ private:
     {
       return;
     }
-    Vector2       minimum(APP_MINIMUM_FRAME_WIDTH, APP_MINIMUM_FRAME_HEIGHT);
-    const Vector2 required = mDefaultDecoration ? mDefaultDecoration.GetMinimumFrameSize() : CustomFrameMinimumSize();
+    // Frame constraints are surface pixels. The application minimum and the custom frame's
+    // columns are natural units; DefaultWindowDecoration already reports pixels.
+    const float   scale    = Dali::Ui::GetImpl(mWindowFrame.GetContentRoot()).GetEffectiveLayoutScale();
+    Vector2       minimum  = Vector2(APP_MINIMUM_FRAME_WIDTH, APP_MINIMUM_FRAME_HEIGHT) * scale;
+    const Vector2 required = mDefaultDecoration ? mDefaultDecoration.GetMinimumFrameSize() : CustomFrameMinimumSize() * scale;
     minimum.width          = std::max(minimum.width, required.width);
     minimum.height         = std::max(minimum.height, required.height);
     mWindowFrame.SetMinimumFrameSize(minimum);

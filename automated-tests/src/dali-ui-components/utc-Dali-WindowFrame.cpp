@@ -1088,6 +1088,29 @@ int UtcDaliDefaultWindowDecorationMinimumFrameSizeFollowsOptionsP(void)
   END_TEST;
 }
 
+int UtcDaliDefaultWindowDecorationMinimumFrameSizeFollowsScaleP(void)
+{
+  UiTestApplication      application;
+  Window                 window = application.GetWindow();
+  ScopedWindowFrameScale scale(window, 2.0f, 1.0f);
+  WindowFrameOptions     options;
+  options.SetInitialStatePolicy(WindowFrameInitialStatePolicy::USE_CURRENT);
+  WindowFrame             windowFrame       = WindowFrame::New(window, WindowFrame::CloseCallback::New(&NoOpClose), options);
+  DefaultWindowDecoration defaultDecoration = DefaultWindowDecoration::New(windowFrame);
+
+  // 276 x 55 natural units in surface pixels at an effective scale of 2.0, before and after Attach().
+  DALI_TEST_EQUALS(defaultDecoration.GetMinimumFrameSize(), Vector2(552.0f, 110.0f), TEST_LOCATION);
+  windowFrame.Attach();
+  DALI_TEST_EQUALS(defaultDecoration.GetMinimumFrameSize(), Vector2(552.0f, 110.0f), TEST_LOCATION);
+
+  // The window scale counts as well.
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  LayoutScaleManager::Get().SetWindowScale(window, 1.5f);
+  DALI_TEST_EQUALS(defaultDecoration.GetMinimumFrameSize(), Vector2(414.0f, 82.5f), TEST_LOCATION);
+  windowFrame.Detach();
+  END_TEST;
+}
+
 int UtcDaliWindowFrameOppositeCommandBeforeStateArrivesP(void)
 {
   UiTestApplication  application;

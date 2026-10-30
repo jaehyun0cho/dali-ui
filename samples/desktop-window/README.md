@@ -110,6 +110,10 @@ one action                 + 44                            = 320
 ```
 
 The demo asks for `300 x 200` and ends up with `320 x 200` after its one action.
+These numbers are natural units, which are surface pixels at an effective scale
+of 1.0. Frame size constraints are window surface pixels, so
+`ApplyMinimumFrameSize()` multiplies the result by the content root's effective
+scale (`640 x 400` at 2.0).
 
 ## Launching full size
 
@@ -117,7 +121,9 @@ With `WindowFrameInitialStatePolicy::AUTO` a window that comes up at screen size
 is treated as maximized from the start. There is no earlier normal geometry for
 the window system to restore to, so the constructor supplies one through
 `WindowFrameOptions::SetInitialRestoreFrameSize()`. Keep it at or above what the bar
-needs; below that the close control ends up under the corner resize handle.
+needs; below that the close control ends up under the corner resize handle. The
+size is in window surface pixels, so the constructor multiplies its natural
+`400 x 260` by the scale the window lays out at (window scale x UI scale).
 
 It is consulted only for that first restore. Ordinary maximize and restore
 geometry stays compositor-owned, which is what stops repeated toggling from
