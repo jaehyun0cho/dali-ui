@@ -531,3 +531,265 @@ int UtcDaliTextDecoratorDecorationsIgnoreWindowScaleP(void)
   LayoutScaleManager::Get().SetScalable(originalScalable);
   END_TEST;
 }
+
+// The handle views opt out of the view scale because their positions are already scaled, so
+// the decorator sizes them itself: the image size multiplied by its UI scale, which also drives
+// the touch hit-area margin and the flip checks.
+int UtcDaliTextDecoratorHandleSizeFollowsUiScaleP(void)
+{
+  UiTestApplication application;
+  Actor             root = Actor::New();
+  root.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
+  root.SetProperty(Actor::Property::PIVOT, Pivot::TOP_LEFT);
+  root.SetProperty(Actor::Property::SIZE, Vector2(240.0f, 160.0f));
+  application.GetScene().Add(root);
+
+  TestDecoratorController controller(root);
+  Text::DecoratorPtr      decorator = Text::Decorator::New(controller, controller);
+  decorator->SetBoundingBox(BoundsInteger(0, 0, 240, 160));
+  decorator->SetHandleImage(Text::GRAB_HANDLE,
+                            Text::HANDLE_IMAGE_RELEASED,
+                            GetRepositoryResourcePath("samples/text/res/cursor_handle.png"));
+  decorator->SetPosition(Text::GRAB_HANDLE, 60.0f, 100.0f, 20.0f);
+  decorator->SetHandleActive(Text::GRAB_HANDLE, true);
+
+  // The second pass sees the rendered world position of the decoration layer.
+  NoopRelayoutContainer container;
+  auto                  relayout = [&]()
+  {
+    for(int pass = 0; pass < 2; ++pass)
+    {
+      decorator->Relayout(Vector2(240.0f, 160.0f), container);
+      application.SendNotification();
+      application.Render();
+    }
+  };
+  relayout();
+
+  std::vector<ImageView> views;
+  CollectImageViews(root, views);
+  DALI_TEST_EQUALS(views.size(), 1u, TEST_LOCATION);
+  ImageView   handle = views.front();
+  const float width  = handle.GetRequestedWidth();
+  const float height = handle.GetRequestedHeight();
+  DALI_TEST_CHECK(width > 0.0f && height > 0.0f); // The image size, 32x32 for the sample image.
+  Insets margin = handle.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 0.125f * width, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, 0.5f * height, 0.001f, TEST_LOCATION);
+  // 120 + 32 fits in the 160-pixel box: not flipped.
+  DALI_TEST_EQUALS(handle.GetProperty<Quaternion>(Actor::Property::ORIENTATION), Quaternion(Radian(0.0f), Vector3::XAXIS), 0.001f, TEST_LOCATION);
+
+  // A new UI scale re-sizes the handle and its touch area at once.
+  decorator->SetUiScale(2.0f);
+  DALI_TEST_EQUALS(handle.GetRequestedWidth(), 2.0f * width, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handle.GetRequestedHeight(), 2.0f * height, 0.001f, TEST_LOCATION);
+  margin = handle.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 0.25f * width, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, height, 0.001f, TEST_LOCATION);
+
+  relayout();
+  DALI_TEST_EQUALS(handle.GetCurrentProperty<Vector3>(Actor::Property::SIZE).GetVectorXY(), Vector2(2.0f * width, 2.0f * height), 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(Ui::Extension::View::GetEffectiveLayoutScale(GetImpl(handle)), 1.0f, 0.001f, TEST_LOCATION); // The opt-out is kept.
+  // 120 + 64 exceeds the 160-pixel box: the handle flips above the line.
+  DALI_TEST_EQUALS(handle.GetProperty<Quaternion>(Actor::Property::ORIENTATION), Quaternion(Radian(Math::PI), Vector3::XAXIS), 0.001f, TEST_LOCATION);
+
+  application.GetScene().Remove(root);
+  END_TEST;
+}
+
+// A handle view is sized for the image it shows, when that image is set on it: the released and
+// the pressed image may differ in size and be given in any order. An image whose size cannot be
+// read leaves the view at its natural size.
+int UtcDaliTextDecoratorHandleSizeFollowsShownImageP(void)
+{
+  UiTestApplication application;
+  Actor             root = Actor::New();
+  root.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
+  root.SetProperty(Actor::Property::PIVOT, Pivot::TOP_LEFT);
+  root.SetProperty(Actor::Property::SIZE, Vector2(240.0f, 160.0f));
+  application.GetScene().Add(root);
+
+  const std::string releasedImage = GetRepositoryResourcePath("samples/text/res/selection_handle_left.png"); // 24x24
+  const std::string pressedImage  = GetRepositoryResourcePath("samples/text/res/cursor_handle.png");         // 32x32
+  const std::string svgImage      = GetRepositoryResourcePath("samples/image-view/res/svg-blocks.svg");
+
+  TestDecoratorController controller(root);
+  Text::DecoratorPtr      decorator = Text::Decorator::New(controller, controller);
+  decorator->SetBoundingBox(BoundsInteger(0, 0, 240, 160));
+  decorator->SetUiScale(2.0f);
+  // The pressed image is given last; the released handle is still sized for the released image.
+  decorator->SetHandleImage(Text::GRAB_HANDLE, Text::HANDLE_IMAGE_RELEASED, releasedImage);
+  decorator->SetHandleImage(Text::GRAB_HANDLE, Text::HANDLE_IMAGE_PRESSED, pressedImage);
+  decorator->SetPosition(Text::GRAB_HANDLE, 60.0f, 20.0f, 20.0f);
+  decorator->SetHandleActive(Text::GRAB_HANDLE, true);
+
+  // The second pass sees the rendered world position of the decoration layer.
+  NoopRelayoutContainer container;
+  auto                  relayout = [&]()
+  {
+    for(int pass = 0; pass < 2; ++pass)
+    {
+      decorator->Relayout(Vector2(240.0f, 160.0f), container);
+      application.SendNotification();
+      application.Render();
+    }
+  };
+  relayout();
+
+  std::vector<ImageView> views;
+  CollectImageViews(root, views);
+  DALI_TEST_EQUALS(views.size(), 1u, TEST_LOCATION);
+  ImageView handleView = views.front();
+
+  // Released: 24x24 at scale 2, with the touch area of that size.
+  DALI_TEST_EQUALS(handleView.GetResourceUrl(), releasedImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), 48.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), 48.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetCurrentProperty<Vector3>(Actor::Property::SIZE).GetVectorXY(), Vector2(48.0f, 48.0f), 0.001f, TEST_LOCATION);
+  Insets margin = handleView.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 6.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, 24.0f, 0.001f, TEST_LOCATION);
+  // 20 + 20 + 48 fits in the 160-pixel box: not flipped.
+  DALI_TEST_EQUALS(handleView.GetProperty<Quaternion>(Actor::Property::ORIENTATION), Quaternion(Radian(0.0f), Vector3::XAXIS), 0.001f, TEST_LOCATION);
+
+  // Pressed: 32x32 at scale 2.
+  const Bounds  screenBounds = handleView.CalculateScreenBounds();
+  const Vector2 panStart(screenBounds.x + 0.5f * screenBounds.width, screenBounds.y + 0.5f * screenBounds.height);
+  const Vector2 panEnd(panStart.x + 30.0f, panStart.y);
+  uint32_t      panTime = 100u;
+  TestStartPan(application, panStart, panEnd, panTime);
+  DALI_TEST_EQUALS(handleView.GetResourceUrl(), pressedImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), 64.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), 64.0f, 0.001f, TEST_LOCATION);
+  margin = handleView.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 8.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, 32.0f, 0.001f, TEST_LOCATION);
+
+  // Deactivating a pressed handle puts the released image back, and its size with it.
+  decorator->SetHandleActive(Text::GRAB_HANDLE, false);
+  DALI_TEST_EQUALS(handleView.GetResourceUrl(), releasedImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), 48.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), 48.0f, 0.001f, TEST_LOCATION);
+
+  // The end of the pan shows the released image as well: it is shown already, nothing changes.
+  controller.mEvents.clear();
+  TestEndPan(application, panEnd, panTime);
+  DALI_TEST_CHECK(!controller.mEvents.empty());
+  DALI_TEST_EQUALS(controller.mEvents.back().type, Text::GRAB_HANDLE, TEST_LOCATION);
+  DALI_TEST_EQUALS(controller.mEvents.back().state, Text::HANDLE_RELEASED, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetResourceUrl(), releasedImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), 48.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), 48.0f, 0.001f, TEST_LOCATION);
+
+  // The size of an SVG cannot be read: the view goes back to its natural size, whatever the scale,
+  // and its touch area is not extended any more.
+  decorator->SetHandleImage(Text::GRAB_HANDLE, Text::HANDLE_IMAGE_RELEASED, svgImage);
+  decorator->SetHandleActive(Text::GRAB_HANDLE, true);
+  relayout();
+  DALI_TEST_EQUALS(handleView.GetResourceUrl(), svgImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), Ui::WRAP_CONTENT, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), Ui::WRAP_CONTENT, 0.001f, TEST_LOCATION);
+  margin = handleView.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 0.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, 0.0f, 0.001f, TEST_LOCATION);
+  decorator->SetUiScale(1.0f);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), Ui::WRAP_CONTENT, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), Ui::WRAP_CONTENT, 0.001f, TEST_LOCATION);
+  margin = handleView.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 0.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, 0.0f, 0.001f, TEST_LOCATION);
+
+  // An image of a known size again: the view is sized for it at the scale of now, 24x24 at scale 1.
+  decorator->SetHandleImage(Text::GRAB_HANDLE, Text::HANDLE_IMAGE_RELEASED, releasedImage);
+  relayout();
+  DALI_TEST_EQUALS(handleView.GetResourceUrl(), releasedImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedWidth(), 24.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handleView.GetRequestedHeight(), 24.0f, 0.001f, TEST_LOCATION);
+  margin = handleView.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+  DALI_TEST_EQUALS(margin.start, 3.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(margin.bottom, 12.0f, 0.001f, TEST_LOCATION);
+
+  application.GetScene().Remove(root);
+  END_TEST;
+}
+
+// A flipped selection handle shows the image of the other selection handle, so its view takes
+// the size of that image, also when the UI scale changes.
+int UtcDaliTextDecoratorFlippedHandleSizeFollowsShownImageP(void)
+{
+  UiTestApplication application;
+  Actor             root = Actor::New();
+  root.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
+  root.SetProperty(Actor::Property::PIVOT, Pivot::TOP_LEFT);
+  root.SetProperty(Actor::Property::SIZE, Vector2(240.0f, 160.0f));
+  application.GetScene().Add(root);
+
+  const std::string leftImage  = GetRepositoryResourcePath("samples/text/res/selection_handle_left.png"); // 24x24
+  const std::string rightImage = GetRepositoryResourcePath("samples/text/res/flag_us_alt.png");           // 64x46
+
+  TestDecoratorController controller(root);
+  Text::DecoratorPtr      decorator = Text::Decorator::New(controller, controller);
+  decorator->SetBoundingBox(BoundsInteger(0, 0, 240, 160));
+  decorator->SetHandleImage(Text::LEFT_SELECTION_HANDLE, Text::HANDLE_IMAGE_RELEASED, leftImage);
+  decorator->SetHandleImage(Text::RIGHT_SELECTION_HANDLE, Text::HANDLE_IMAGE_RELEASED, rightImage);
+  decorator->SetPosition(Text::LEFT_SELECTION_HANDLE, 60.0f, 20.0f, 20.0f);
+  decorator->SetPosition(Text::RIGHT_SELECTION_HANDLE, 100.0f, 20.0f, 20.0f);
+  decorator->SetHandleActive(Text::LEFT_SELECTION_HANDLE, true);
+  decorator->SetHandleActive(Text::RIGHT_SELECTION_HANDLE, true);
+  // The character direction flips the left handle, which then shows the right handle's image.
+  decorator->SetSelectionHandleFlipState(false, true, false);
+
+  // The second pass sees the rendered world position of the decoration layer.
+  NoopRelayoutContainer container;
+  auto                  relayout = [&]()
+  {
+    for(int pass = 0; pass < 2; ++pass)
+    {
+      decorator->Relayout(Vector2(240.0f, 160.0f), container);
+      application.SendNotification();
+      application.Render();
+    }
+  };
+  relayout();
+
+  // No marker image is set, so the two handles are the only image views.
+  std::vector<ImageView> views;
+  CollectImageViews(root, views);
+  DALI_TEST_EQUALS(views.size(), 2u, TEST_LOCATION);
+  for(const ImageView& handleView : views)
+  {
+    DALI_TEST_EQUALS(handleView.GetResourceUrl(), rightImage, TEST_LOCATION);
+    DALI_TEST_EQUALS(handleView.GetRequestedWidth(), 64.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(handleView.GetRequestedHeight(), 46.0f, 0.001f, TEST_LOCATION);
+    const Insets margin = handleView.GetProperty<Insets>(Actor::Property::TOUCH_HIT_AREA_MARGIN);
+    DALI_TEST_EQUALS(margin.start, 8.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(margin.bottom, 23.0f, 0.001f, TEST_LOCATION);
+  }
+
+  // A new UI scale re-sizes each view for the image it shows.
+  decorator->SetUiScale(2.0f);
+  for(const ImageView& scaledView : views)
+  {
+    DALI_TEST_EQUALS(scaledView.GetRequestedWidth(), 128.0f, 0.001f, TEST_LOCATION);
+    DALI_TEST_EQUALS(scaledView.GetRequestedHeight(), 92.0f, 0.001f, TEST_LOCATION);
+  }
+
+  // Flipped no more, the left handle shows its own image again and takes its size:
+  // 60 - 48 stays in the box, and so does 100 + 128 for the right handle.
+  decorator->SetSelectionHandleFlipState(false, false, false);
+  relayout();
+  const auto leftView = std::find_if(views.begin(), views.end(), [&leftImage](const ImageView& candidate)
+  {
+    return candidate.GetResourceUrl() == leftImage.c_str();
+  });
+  DALI_TEST_CHECK(leftView != views.end());
+  DALI_TEST_EQUALS(leftView->GetRequestedWidth(), 48.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(leftView->GetRequestedHeight(), 48.0f, 0.001f, TEST_LOCATION);
+  const ImageView& rightView = (leftView == views.begin()) ? views.back() : views.front();
+  DALI_TEST_EQUALS(rightView.GetResourceUrl(), rightImage, TEST_LOCATION);
+  DALI_TEST_EQUALS(rightView.GetRequestedWidth(), 128.0f, 0.001f, TEST_LOCATION);
+  DALI_TEST_EQUALS(rightView.GetRequestedHeight(), 92.0f, 0.001f, TEST_LOCATION);
+
+  application.GetScene().Remove(root);
+  END_TEST;
+}

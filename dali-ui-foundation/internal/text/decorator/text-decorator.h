@@ -382,6 +382,9 @@ public:
   /**
    * @brief Sets the image file name for one of the handles.
    *
+   * @note A handle view is sized for the image it shows, when that image is set on it: an existing
+   * view keeps its image and its size until a relayout or a touch shows the new image.
+   *
    * @param[in] handleType One of the handles.
    * @param[in] handleImageType A different image can be set for the pressed/released states.
    * @param[in] imageFileName The image filename to use.
