@@ -952,9 +952,9 @@ style.SetFrameCornerRadius(
             <div class="install-arrow">+</div>
             <div class="install-node"><b>End / Bottom outset</b><small>frame 뒤와 아래에 확보한 effect 공간</small></div>
           </div>
-          <div class="code-wrap"><button class="copy" type="button">복사</button><pre><code class="language-text">surface width  = start outset + frame width  + end outset
-surface height = top outset   + frame height + bottom outset</code></pre></div>
-          <div class="callout warning"><strong>Outset은 blur 값이 아니라 geometry입니다.</strong>Color shadow나 N-patch image가 잘리지 않을 만큼 지정합니다. 음수 성분은 0으로 보정되고 maximized 상태에서는 모든 client shadow outset이 0이 됩니다.</div>
+          <div class="code-wrap"><button class="copy" type="button">복사</button><pre><code class="language-text">surface width  = (start outset + end outset) × 유효 스케일 + frame width
+surface height = (top outset + bottom outset) × 유효 스케일 + frame height</code></pre></div>
+          <div class="callout warning"><strong>Outset은 blur 값이 아니라 geometry입니다.</strong>Color shadow나 N-patch image가 잘리지 않을 만큼 지정합니다. 음수 성분은 0으로 보정되고 maximized 상태에서는 모든 client shadow outset이 0이 됩니다. Outset은 frame이 유효 스케일(윈도우별 스케일 × 시스템 스케일)을 곱하는 natural 단위이고, frame과 surface 크기는 surface 픽셀입니다.</div>
           <h3 style="margin:30px 0 14px">Color shadow와 frame 표현</h3>
           <div class="grid-2">
             <div class="code-wrap"><button class="copy" type="button">복사</button><pre><code class="language-cpp">WindowFrameStyle style;

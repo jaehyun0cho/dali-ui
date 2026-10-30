@@ -95,6 +95,17 @@ enum class WindowFrameSizePolicy
  * CommandInterceptor and every signal pass the originating WindowFrame as
  * their first argument. This allows one observer or policy object to serve
  * multiple frames.
+ *
+ * Window sizes and frame geometry are in window surface pixels: GetGeometry(),
+ * GetFrameSize(), GetContentSize(), RequestFrameResize(), RequestContentResize(), the
+ * minimum and maximum frame sizes, and WindowFrameOptions::SetInitialRestoreFrameSize().
+ * The lengths the frame lays out -- WindowFrameLayout decoration insets and resize-handle
+ * sizes, and WindowFrameStyle shadow outsets -- are natural units multiplied by the frame's
+ * effective scale, the window scale times the UI scale (see Extension::LayoutScaleManager). At an
+ * effective scale of 2.0 a 56-unit top inset takes 112 surface pixels, and the frame still
+ * fills the window surface. To use a surface-pixel value as a layout value inside
+ * GetContentRoot(), divide it by the content root's effective scale
+ * (Extension::View::GetEffectiveLayoutScale()).
  * @SINCE_3_0.0
  */
 class DALI_UI_COMPONENTS_API WindowFrame : public Dali::BaseHandle
@@ -239,7 +250,7 @@ public:
   /**
    * @brief Returns current surface, frame, and content geometry.
    * @SINCE_3_0.0
-   * @return Current geometry
+   * @return Current geometry, in window surface pixels
    */
   WindowFrameGeometry GetGeometry() const;
 
@@ -400,7 +411,7 @@ public:
   /**
    * @brief Sets minimum frame size.
    * @SINCE_3_0.0
-   * @param[in] size Minimum size excluding shadow
+   * @param[in] size Minimum size excluding shadow, in window surface pixels
    * @return true when applied, or false when it conflicts with the maximum
    * @note Native constraints are active only while WindowFrame is attached.
    */
@@ -409,7 +420,7 @@ public:
   /**
    * @brief Sets maximum frame size.
    * @SINCE_3_0.0
-   * @param[in] size Maximum size excluding shadow
+   * @param[in] size Maximum size excluding shadow, in window surface pixels
    * @return true when applied, or false when it conflicts with the minimum
    */
   bool SetMaximumFrameSize(const Dali::Vector2& size);
@@ -448,7 +459,7 @@ public:
    * The target excludes shadow outsets. While attached, native resize is
    * deferred to the next event-loop tick and repeated requests are coalesced.
    * @SINCE_3_0.0
-   * @param[in] size Target frame size
+   * @param[in] size Target frame size, in window surface pixels
    * @return true when accepted for resize, or false when no window is available
    *         or maximized geometry is compositor-owned
    */
@@ -462,7 +473,7 @@ public:
    * tick to avoid re-entering window event processing. Repeated requests are
    * coalesced and a pending request is dropped by Detach().
    * @SINCE_3_0.0
-   * @param[in] size Target application content size
+   * @param[in] size Target application content size, in window surface pixels
    * @return true when accepted for resize, or false when no window is available
    *         or maximized geometry is compositor-owned
    */
@@ -471,14 +482,14 @@ public:
   /**
    * @brief Returns current frame size excluding shadow outsets.
    * @SINCE_3_0.0
-   * @return Frame size
+   * @return Frame size, in window surface pixels
    */
   Dali::Vector2 GetFrameSize() const;
 
   /**
    * @brief Returns current layout-managed content size.
    * @SINCE_3_0.0
-   * @return Content size
+   * @return Content size, in window surface pixels
    */
   Dali::Vector2 GetContentSize() const;
 
