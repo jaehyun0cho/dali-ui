@@ -2348,7 +2348,7 @@ void Controller::Impl::CopyCharacterSpacingFromLogicalToVisualModels()
     }
 
     CharacterSpacingGlyphRun characterSpacingGlyphRun;
-    characterSpacingGlyphRun.value                   = it->value;
+    characterSpacingGlyphRun.value                   = ResolveDecorationDistance(it->value, mUiScale);
     characterSpacingGlyphRun.glyphRun.glyphIndex     = charactersToGlyph[characterIndex];
     characterSpacingGlyphRun.glyphRun.numberOfGlyphs = glyphsPerCharacter[characterIndex];
 

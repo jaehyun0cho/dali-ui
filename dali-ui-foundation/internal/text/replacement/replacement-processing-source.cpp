@@ -213,7 +213,7 @@ void CopyTextProcessingProperties(const Model& source, Model& target)
   // resolved values, so the processing model applies the scale only once.
   targetVisual.SetDecorationUiScale(sourceVisual.GetDecorationUiScale());
   targetVisual.SetTextColor(source.GetDefaultColor());
-  targetVisual.SetCharacterSpacing(source.GetCharacterSpacing());
+  targetVisual.SetCharacterSpacing(sourceVisual.GetCharacterSpacing());
   targetVisual.SetShadowEnabled(source.IsShadowEnabled());
   targetVisual.SetShadowOffset(sourceVisual.GetShadowOffset());
   targetVisual.SetShadowColor(source.GetShadowColor());
