@@ -442,6 +442,7 @@ struct Engine::Impl
     input.lineWidth             = lineLayout.length;
     input.positionOffset        = alignmentLine.alignmentOffset;
     input.modelCharacterSpacing = visualModel.GetEffectiveCharacterSpacing();
+    input.defaultFontId         = replacementData.defaultFontId;
     if(resolveMetricRetention)
     {
       LineRun candidateLine;
