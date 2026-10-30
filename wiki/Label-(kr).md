@@ -238,9 +238,7 @@ UI scale은 Label, InputField, InputEditor의 measure/relayout 과정에서 font
 | TextFit `Text::Fit::Candidate` | font size / line height에 반영 |
 | Margin / Padding | text layout 영역 계산에 반영 |
 | Marquee | MarqueeGap 등 marquee 관련 layout 값에 반영 |
-
-> [!NOTE]
-> TBD: Underline, Shadow, Outline 등 FontStyle 관련 값의 UI scale 적용.
+| Text style | underline/line-through 두께와 dash, shadow offset, outline width/offset, bevel intensity에 반영. shadow와 outline의 blur radius에는 반영하지 않음 |
 
 <br/>
 
