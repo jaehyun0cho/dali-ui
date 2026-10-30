@@ -15,6 +15,7 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/internal/graphics/builtin-shader-extern-gen.h>
 #include <dali-ui-test-suite-utils.h>
 
 #define private public
@@ -180,5 +181,27 @@ int UtcDaliWireframeVisualProxyAndCacheP(void)
   WireframeVisualPtr transformed =
     WireframeVisual::New(GetArcWireframeFactoryCache(), Ui::Internal::Visual::BasePtr(arc.Get()), properties);
   DALI_TEST_CHECK(transformed->mImpl->mRenderer);
+  END_TEST;
+}
+
+int UtcDaliArcVisualThicknessFollowsEffectiveScaleP(void)
+{
+  UiTestApplication application;
+  Property::Map properties;
+  properties.Insert(Ui::Integration::ArcVisual::Property::THICKNESS, 8.0f);
+  ArcVisualPtr visual = ArcVisual::New(GetArcWireframeFactoryCache(), properties);
+
+  // The control size is in pixels at scale 2: the ring of thickness 8 is 16 pixels wide, so its centre
+  // line sits 8 pixels inside the 100-pixel short side.
+  visual->SetTransformAndSize(Property::Map(), Vector2(200.0f, 100.0f), 2.0f);
+  DALI_TEST_EQUALS(visual->mRadius, 42.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(visual->mImpl->mRenderer.GetProperty<float>(visual->mThicknessIndex), 8.0f, TEST_LOCATION);
+
+  // The cap shaders draw THICKNESS times the view's effective scale, passed by the vertex shader.
+  DALI_TEST_CHECK(std::string(SHADER_ARC_VISUAL_SHADER_VERT).find("vViewEffectiveScale = viewEffectiveScale;") != std::string::npos);
+  for(const std::string_view fragment : {SHADER_ARC_VISUAL_BUTT_CAP_SHADER_FRAG, SHADER_ARC_VISUAL_ROUND_CAP_SHADER_FRAG})
+  {
+    DALI_TEST_CHECK(std::string(fragment).find("highp float currentThickness = thickness * vViewEffectiveScale;") != std::string::npos);
+  }
   END_TEST;
 }
