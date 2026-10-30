@@ -214,6 +214,9 @@ private:
  * Insets reserve space inside the visible frame for the top, bottom, left, and
  * right slots. Resize-handle sizes are independent because the corner handles
  * can overlap the bottom slot.
+ *
+ * Insets and handle sizes are natural units: the frame multiplies them by its
+ * effective scale, the window scale times the UI scale.
  * @SINCE_3_0.0
  */
 class DALI_UI_COMPONENTS_API WindowFrameLayout

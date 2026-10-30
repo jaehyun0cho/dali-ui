@@ -75,6 +75,9 @@ public:
 
   /**
    * @brief Sets surface space reserved outside the frame for shadow.
+   *
+   * The outsets are natural units: the frame multiplies them by its effective
+   * scale.
    * @SINCE_3_0.0
    * @param[in] outsets Non-negative outsets
    */

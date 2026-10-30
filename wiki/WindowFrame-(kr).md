@@ -316,11 +316,13 @@ layout.SetDecorationInsets(Insets(8.0f, 8.0f, 64.0f, 56.0f));
 
 위 값은 다음 배치를 뜻합니다.
 
-- 왼쪽 보더: 8 px
-- 오른쪽 보더: 8 px
-- 위 보더: 64 px
-- 아래 보더: 56 px
+- 왼쪽 보더: 8 단위
+- 오른쪽 보더: 8 단위
+- 위 보더: 64 단위
+- 아래 보더: 56 단위
 - 일반 inset mode의 콘텐츠: 이 영역을 제외한 중앙 영역
+
+Inset은 slot의 View와 같은 natural 단위입니다. 유효 스케일(윈도우별 스케일 × 시스템 스케일)이 2.0이면 64 단위의 위 보더는 surface 픽셀 128을 차지합니다.
 
 이 값은 slot의 배치와 `ContentRoot` 크기 계산에 함께 사용됩니다. 앱 개발자가 동일한 값을 다시 빼면 콘텐츠가 이중으로 축소되므로, 콘텐츠는 root 내부 `(0, 0)` 기준으로 배치해야 합니다.
 
@@ -333,7 +335,7 @@ layout.SetBottomLeftResizeHandleSize(Vector2(36.0f, 36.0f));
 layout.SetBottomRightResizeHandleSize(Vector2(36.0f, 36.0f));
 ```
 
-시각 이미지가 작더라도 터치하기 쉬운 크기의 view를 제공하는 것이 좋습니다. 핸들의 native 요청 여부는 `RESIZE` feature gate와 `WindowFrameInteractiveResizePolicy`에 의해 결정됩니다.
+시각 이미지가 작더라도 터치하기 쉬운 크기의 view를 제공하는 것이 좋습니다. 핸들의 native 요청 여부는 `RESIZE` feature gate와 `WindowFrameInteractiveResizePolicy`에 의해 결정됩니다. 핸들 크기도 natural 단위입니다.
 
 ### 3.4 값 의미와 기본값
 
@@ -502,9 +504,11 @@ Normal 상태에서는 frame root, background, View shadow에 corner radius가 �
 Shadow outsets는 frame 바깥에 effect를 그리기 위해 native surface 내부에 확보하는 공간입니다. Blur 속성이 아니라 geometry이며 View shadow나 N-patch가 잘리지 않을 만큼 충분히 지정해야 합니다. `GetFrameSize()`에는 포함되지 않지만 normal 상태에서 client shadow가 활성화되면 native surface 크기에 포함됩니다.
 
 ```text
-surface width  = start outset + frame width  + end outset
-surface height = top outset   + frame height + bottom outset
+surface width  = (start outset + end outset) × 유효 스케일 + frame width
+surface height = (top outset + bottom outset) × 유효 스케일 + frame height
 ```
+
+Outset은 frame이 유효 스케일을 곱하는 natural 단위이고, frame과 surface 크기는 surface 픽셀입니다.
 
 음수 outset은 `0`으로 보정됩니다. Maximized 상태에서는 client shadow outset을 모두 제거하고 normal로 복원되면 설정값을 다시 적용합니다.
 
@@ -585,6 +589,10 @@ Constraint와 size API의 세부 동작은 다음과 같습니다.
 - `ClearMinimumFrameSize()`와 `ClearMaximumFrameSize()`는 선택한 constraint만 제거합니다.
 - `RequestFrameResize()`와 `RequestContentResize()`는 maximized geometry를 덮어쓰지 않으며, 이 경우 `false`를 반환합니다. Normal 크기를 적용하려면 먼저 restore해야 합니다.
 - Size getter는 현재 layout geometry를 반환하므로 constraint 보정이나 compositor 처리 뒤에는 요청값과 다를 수 있습니다.
+
+#### 유효 스케일이 1.0이 아닐 때의 단위
+
+크기·geometry API는 윈도우 surface 픽셀을 씁니다. Decoration inset, 핸들 크기, shadow outset은 frame이 유효 스케일(윈도우별 스케일 × 시스템 스케일)을 곱하는 natural 단위이므로 frame은 항상 윈도우를 채웁니다. 2.0에서 outset 10 단위·위 inset 40 단위인 800 x 600 surface의 frame은 `760 x 560`이고 콘텐츠는 위에서 100 픽셀 아래부터 시작합니다. 이 값으로 콘텐츠를 배치하려면 content root의 유효 스케일로 나누십시오. 두 스케일 중 하나가 바뀌면 frame이 다시 배치됩니다.
 
 ### Geometry snapshot
 
