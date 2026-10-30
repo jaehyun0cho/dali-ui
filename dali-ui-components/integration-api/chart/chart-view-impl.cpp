@@ -282,7 +282,9 @@ LayoutRect ChartViewImpl::OnArrange(const LayoutRect& bounds)
 
   // Self geometry is applied centrally by ViewImpl::Arrange (ApplySelfBoundsIfChanged).
   const Vector2 newSize(bounds.width, bounds.height);
-  if(newSize != mSize && newSize.width > 0.0f && newSize.height > 0.0f)
+  // A scale change can keep the arranged size and still change the canvas size.
+  if(newSize.width > 0.0f && newSize.height > 0.0f &&
+     (newSize != mSize || newSize / GetCanvasScale() != mLastLayout.totalSize))
   {
     mSize                  = newSize;
     mNeedsBackgroundUpdate = true;
@@ -727,7 +729,8 @@ void ChartViewImpl::RebuildDataAnimated(const std::vector<std::vector<float>>& o
 
   if(t >= 1.0f)
   {
-    size_t used = 0;
+    const float canvasScale = GetCanvasScale();
+    size_t      used        = 0;
     for(const auto& info : labels)
     {
       auto label = GetOrCreateLabel(mDataLabels, used);
@@ -737,7 +740,7 @@ void ChartViewImpl::RebuildDataAnimated(const std::vector<std::vector<float>>& o
       label.SetProperty(Ui::Label::Property::HORIZONTAL_ALIGNMENT, "CENTER");
       label.SetProperty(Actor::Property::PIVOT, Pivot::BOTTOM_CENTER);
       label.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
-      label.SetProperty(Actor::Property::POSITION, info.position);
+      label.SetProperty(Actor::Property::POSITION, info.position * canvasScale);
       const auto measured = label.Measure(std::max(1.0f, mSize.x), std::max(1.0f, mSize.y));
       label.SetProperty(Actor::Property::SIZE, Vector2(measured.width + 1.0f, measured.height + 1.0f));
       label.SetProperty(Actor::Property::VISIBLE, true);
@@ -1093,7 +1096,7 @@ void ChartViewImpl::OnPanGesture(Actor /*actor*/, Dali::PanGesture pan)
     return;
   }
 
-  const Vector2      localDelta = pan.GetPosition() - mPanStartLocalPos;
+  const Vector2      localDelta = (pan.GetPosition() - mPanStartLocalPos) / GetCanvasScale();
   const Rect<float>& pa         = mLastLayout.plotArea;
 
   if(panX)
@@ -1151,6 +1154,7 @@ void ChartViewImpl::OnPinchGesture(Actor /*actor*/, Dali::PinchGesture gesture)
     const Vector2& screenCenter = gesture.GetScreenCenterPoint();
     Vector2        local;
     Self().ScreenToLocal(local.x, local.y, screenCenter.x, screenCenter.y);
+    local /= GetCanvasScale();
     mPinchStartDataCenter = Vector2(mScale.ToDataX(local.x), mScale.ToDataY(local.y));
     HideOverlay();
     return;
@@ -1220,6 +1224,7 @@ bool ChartViewImpl::OnWheel(Actor /*actor*/, Dali::WheelEvent event)
   const Vector2& screenPt = event.GetPoint();
   Vector2        local;
   Self().ScreenToLocal(local.x, local.y, screenPt.x, screenPt.y);
+  local /= GetCanvasScale();
 
   const Rect<float>& pa = mLastLayout.plotArea;
   if(local.x < pa.x || local.x > pa.x + pa.width ||
@@ -1399,6 +1404,7 @@ void ChartViewImpl::ClearAnnotations()
 
 void ChartViewImpl::RebuildAnnotations()
 {
+  const float canvasScale = GetCanvasScale();
   mAnnotationViews.resize(mAnnotations.size());
   for(size_t i = 0; i < mAnnotations.size(); ++i)
   {
@@ -1448,16 +1454,16 @@ void ChartViewImpl::RebuildAnnotations()
       view.SetProperty(Actor::Property::PIVOT, Pivot::TOP_LEFT);
       view.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
     }
-    Vector2 size = annotation.mSize;
+    Vector2 size = annotation.mSize * canvasScale;
     if(annotation.mType == Ui::ChartAnnotation::Type::TEXT)
     {
       auto label = Ui::Label::DownCast(view);
       label.SetText(annotation.mText);
       label.SetTextColor(Ui::UiColor(annotation.mColor));
       label.SetTextOverflowMode(annotation.mTextOverflowMode);
-      const float available = std::max(1.0f, mSize.x - 20.0f);
-      const float width     = annotation.mTextMaximumWidth > 0.0f ? std::min(available, annotation.mTextMaximumWidth) : available;
-      const auto  measured  = label.Measure(width, std::max(1.0f, mSize.y - 20.0f));
+      const float available = std::max(1.0f, mSize.x - 20.0f * canvasScale);
+      const float width     = annotation.mTextMaximumWidth > 0.0f ? std::min(available, annotation.mTextMaximumWidth * canvasScale) : available;
+      const auto  measured  = label.Measure(width, std::max(1.0f, mSize.y - 20.0f * canvasScale));
       size                  = Vector2(std::min(width, measured.width), measured.height);
     }
     else if(annotation.mType == Ui::ChartAnnotation::Type::IMAGE)
@@ -1475,7 +1481,7 @@ void ChartViewImpl::RebuildAnnotations()
       view.SetBackgroundColor(Ui::UiColor(annotation.mColor));
       view.SetCornerRadius(std::min(size.x, size.y) * 0.5f);
     }
-    Vector2 position = anchor + annotation.mOffset - size * 0.5f;
+    Vector2 position = (anchor + annotation.mOffset) * canvasScale - size * 0.5f;
     position.x       = std::clamp(position.x, 0.0f, std::max(0.0f, mSize.x - size.x));
     position.y       = std::clamp(position.y, 0.0f, std::max(0.0f, mSize.y - size.y));
     view.SetProperty(Actor::Property::POSITION, position);
@@ -1817,22 +1823,34 @@ Property::Value ChartViewImpl::GetProperty(BaseObject* object, Property::Index p
 // Internal helpers
 // =============================================================================
 
+float ChartViewImpl::GetCanvasScale() const
+{
+  return GetEffectiveLayoutScale();
+}
+
+Vector2 ChartViewImpl::GetCanvasSize() const
+{
+  return mSize / GetCanvasScale();
+}
+
 void ChartViewImpl::SyncLayerSizes()
 {
+  // The canvases cover the chart and draw in its natural units.
+  const Vector2 canvasSize = GetCanvasSize();
   if(mBackgroundCanvas)
   {
     mBackgroundCanvas.SetProperty(Actor::Property::SIZE, mSize);
-    mBackgroundCanvas.SetProperty(Ui::CanvasView::Property::VIEW_BOX, mSize);
+    mBackgroundCanvas.SetProperty(Ui::CanvasView::Property::VIEW_BOX, canvasSize);
   }
   if(mDataCanvas)
   {
     mDataCanvas.SetProperty(Actor::Property::SIZE, mSize);
-    mDataCanvas.SetProperty(Ui::CanvasView::Property::VIEW_BOX, mSize);
+    mDataCanvas.SetProperty(Ui::CanvasView::Property::VIEW_BOX, canvasSize);
   }
   if(mOverlayCanvas)
   {
     mOverlayCanvas.SetProperty(Actor::Property::SIZE, mSize);
-    mOverlayCanvas.SetProperty(Ui::CanvasView::Property::VIEW_BOX, mSize);
+    mOverlayCanvas.SetProperty(Ui::CanvasView::Property::VIEW_BOX, canvasSize);
   }
 }
 
@@ -1868,7 +1886,7 @@ void ChartViewImpl::RebuildBackground()
   }
   UpdateScale();
 
-  mLastLayout = mLayoutManager.ComputeLayout(mSize, mModel, mScale);
+  mLastLayout = mLayoutManager.ComputeLayout(GetCanvasSize(), mModel, mScale);
   mBackgroundRenderer.Render(mBackgroundCanvas, mModel, mScale, mLastLayout);
   mBackgroundCanvas.RequestRasterization();
 
@@ -1899,7 +1917,8 @@ void ChartViewImpl::RebuildData()
   mLastRenderedBars = mDataRenderer.GetRenderedBars();
   mDataCanvas.RequestRasterization();
 
-  size_t used = 0;
+  const float canvasScale = GetCanvasScale();
+  size_t      used        = 0;
   for(const auto& info : labelInfos)
   {
     Ui::Label label = GetOrCreateLabel(mDataLabels, used);
@@ -1909,7 +1928,7 @@ void ChartViewImpl::RebuildData()
     label.SetProperty(Ui::Label::Property::HORIZONTAL_ALIGNMENT, "CENTER");
     label.SetProperty(Actor::Property::PIVOT, info.pivot);
     label.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
-    label.SetProperty(Actor::Property::POSITION, info.position);
+    label.SetProperty(Actor::Property::POSITION, info.position * canvasScale);
     const auto measured = label.Measure(std::max(1.0f, mSize.x), std::max(1.0f, mSize.y));
     label.SetProperty(Actor::Property::SIZE, Vector2(measured.width + 1.0f, measured.height + 1.0f));
     label.SetProperty(Actor::Property::VISIBLE, true);
@@ -1929,6 +1948,7 @@ void ChartViewImpl::PlaceTickLabels(std::vector<Ui::Label>&                     
                                     const std::vector<ChartLayoutManager::TickLabel>& ticks,
                                     const TickLabelStyle&                             ls)
 {
+  const float canvasScale = GetCanvasScale();
   for(size_t i = 0; i < ticks.size(); ++i)
   {
     Ui::Label label = GetOrCreateLabel(pool, i);
@@ -1943,7 +1963,7 @@ void ChartViewImpl::PlaceTickLabels(std::vector<Ui::Label>&                     
     }
     label.SetProperty(Actor::Property::PIVOT, ls.pivot);
     label.SetProperty(Actor::Property::PARENT_ORIGIN, ls.parentOrigin);
-    label.SetProperty(Actor::Property::POSITION, Vector3(ticks[i].position.x, ticks[i].position.y, 0.0f));
+    label.SetProperty(Actor::Property::POSITION, Vector3(ticks[i].position.x * canvasScale, ticks[i].position.y * canvasScale, 0.0f));
     label.SetProperty(Actor::Property::ORIENTATION, Quaternion(Degree(ticks[i].angle), Vector3::ZAXIS));
     const auto measured = label.Measure(std::max(1.0f, mSize.x), std::max(1.0f, mSize.y));
     label.SetProperty(Actor::Property::SIZE, Vector2(measured.width + 1.0f, measured.height + 1.0f));
@@ -1954,7 +1974,8 @@ void ChartViewImpl::PlaceTickLabels(std::vector<Ui::Label>&                     
 
 void ChartViewImpl::PlaceTextLabels(const ChartLayoutManager::LayoutResult& layout)
 {
-  const StyleConfig& style = mModel.mStyle;
+  const StyleConfig& style       = mModel.mStyle;
+  const float        canvasScale = GetCanvasScale(); // labels are placed in rendered pixels
 
   auto placeOrHide = [&](Ui::Label& label, bool visible,
                          const std::function<void(Ui::Label&)>& configure)
@@ -2025,7 +2046,7 @@ void ChartViewImpl::PlaceTextLabels(const ChartLayoutManager::LayoutResult& layo
     l.SetProperty(Ui::Label::Property::HORIZONTAL_ALIGNMENT, "CENTER");
     l.SetProperty(Actor::Property::PIVOT, pivot);
     l.SetProperty(Actor::Property::PARENT_ORIGIN, origin);
-    l.SetProperty(Actor::Property::POSITION, pos);
+    l.SetProperty(Actor::Property::POSITION, pos * canvasScale);
   });
 
   // X-axis title
@@ -2037,7 +2058,7 @@ void ChartViewImpl::PlaceTextLabels(const ChartLayoutManager::LayoutResult& layo
     l.SetTextColor(style.render.labelColor);
     l.SetProperty(Ui::Label::Property::FONT_SIZE, style.layout.axisLabelSize);
     l.SetProperty(Ui::Label::Property::HORIZONTAL_ALIGNMENT, "CENTER");
-    l.SetProperty(Actor::Property::POSITION, layout.xAxisTitlePos);
+    l.SetProperty(Actor::Property::POSITION, layout.xAxisTitlePos * canvasScale);
   });
 
   // Y-axis title (rotated 90 degrees counter-clockwise)
@@ -2050,7 +2071,7 @@ void ChartViewImpl::PlaceTextLabels(const ChartLayoutManager::LayoutResult& layo
     l.SetTextColor(style.render.labelColor);
     l.SetProperty(Ui::Label::Property::FONT_SIZE, style.layout.axisLabelSize);
     l.SetProperty(Ui::Label::Property::HORIZONTAL_ALIGNMENT, "CENTER");
-    l.SetProperty(Actor::Property::POSITION, layout.yAxisTitlePos);
+    l.SetProperty(Actor::Property::POSITION, layout.yAxisTitlePos * canvasScale);
   });
 
   const float fs = style.layout.axisLabelSize;
@@ -2075,7 +2096,7 @@ void ChartViewImpl::PlaceTextLabels(const ChartLayoutManager::LayoutResult& layo
       label.SetHorizontalTextAlignment(Ui::Text::Alignment::CENTER);
       label.SetProperty(Actor::Property::PIVOT, Pivot::TOP_LEFT);
       label.SetProperty(Actor::Property::PARENT_ORIGIN, ParentOrigin::TOP_LEFT);
-      label.SetProperty(Actor::Property::POSITION, Vector3(item.textPos.x, item.textPos.y, 0.0f));
+      label.SetProperty(Actor::Property::POSITION, Vector3(item.textPos.x * canvasScale, item.textPos.y * canvasScale, 0.0f));
       const auto measured = label.Measure(std::max(1.0f, mSize.x), std::max(1.0f, mSize.y));
       label.SetProperty(Actor::Property::SIZE, Vector2(measured.width + 1.0f, measured.height + 1.0f));
       label.SetProperty(Actor::Property::VISIBLE, true);
@@ -2153,7 +2174,7 @@ bool ChartViewImpl::OnTouch(Actor actor, TouchEvent event)
   }
 
   const PointState::Type state = event.GetState(0);
-  const Vector2          local = event.GetLocalPosition(0u);
+  const Vector2          local = event.GetLocalPosition(0u) / GetCanvasScale(); // canvas units
 
   // PIE: angular slice hit test
   if(mModel.mChartType == static_cast<int>(Ui::ChartView::Type::PIE))
@@ -2231,7 +2252,8 @@ int ChartViewImpl::HitTestPie(const Vector2& local, int& outSeriesIdx) const
 
 void ChartViewImpl::PerformHitAtPos(const Vector2& localPos, bool emitSignal)
 {
-  const float threshold = mModel.mStyle.interaction.hitThreshold;
+  // The hit threshold is a touch distance in screen pixels.
+  const float threshold = mModel.mStyle.interaction.hitThreshold / GetCanvasScale();
   const int   strategy  = mModel.mStyle.interaction.findingStrategy;
 
   if(strategy == 0) // NEAREST
@@ -2404,11 +2426,12 @@ void ChartViewImpl::UpdateTooltip(const std::vector<HitResult>& hits, bool singl
     text = BuildMultiTooltipText(hits);
   }
   mTooltipLabel.SetText(Dali::String(text.c_str()));
-  const float   padding   = mModel.mStyle.render.tooltipPadding;
-  const float   maxWidth  = std::max(1.0f, mSize.x - 20.0f);
-  const float   maxHeight = std::max(1.0f, mSize.y - 20.0f);
-  Ui::View      content   = mTooltipContent ? mTooltipContent : mTooltipLabel;
-  const auto    measured  = content.Measure(std::max(1.0f, maxWidth - 2.0f * padding), std::max(1.0f, maxHeight - 2.0f * padding));
+  const float   canvasScale = GetCanvasScale();
+  const float   padding     = mModel.mStyle.render.tooltipPadding * canvasScale;
+  const float   maxWidth    = std::max(1.0f, mSize.x - 20.0f * canvasScale);
+  const float   maxHeight   = std::max(1.0f, mSize.y - 20.0f * canvasScale);
+  Ui::View      content     = mTooltipContent ? mTooltipContent : mTooltipLabel;
+  const auto    measured    = content.Measure(std::max(1.0f, maxWidth - 2.0f * padding), std::max(1.0f, maxHeight - 2.0f * padding));
   const Vector2 size(std::min(maxWidth, measured.width + 2.0f * padding),
                      std::min(maxHeight, measured.height + 2.0f * padding));
   const Vector2 position = ComputeTooltipPosition(hits.front().canvasPos, size);
@@ -2436,16 +2459,21 @@ Vector2 ChartViewImpl::ComputeTooltipPosition(const Vector2& hitPos, const Vecto
 {
   constexpr float MARGIN = 10.0f;
 
-  float x = hitPos.x - tooltipSize.x * 0.5f;
-  float y = hitPos.y - tooltipSize.y - MARGIN;
+  // The tooltip is placed in rendered pixels; the hit position is in canvas units.
+  const float   canvasScale = GetCanvasScale();
+  const float   margin      = MARGIN * canvasScale;
+  const Vector2 anchor      = hitPos * canvasScale;
 
-  if(y < MARGIN)
+  float x = anchor.x - tooltipSize.x * 0.5f;
+  float y = anchor.y - tooltipSize.y - margin;
+
+  if(y < margin)
   {
-    y = hitPos.y + MARGIN;
+    y = anchor.y + margin;
   }
 
-  x = std::max(MARGIN, std::min(x, mSize.x - tooltipSize.x - MARGIN));
-  y = std::clamp(y, MARGIN, std::max(MARGIN, mSize.y - tooltipSize.y - MARGIN));
+  x = std::max(margin, std::min(x, mSize.x - tooltipSize.x - margin));
+  y = std::clamp(y, margin, std::max(margin, mSize.y - tooltipSize.y - margin));
   return Vector2(x, y);
 }
 
@@ -2469,7 +2497,7 @@ int ChartViewImpl::FindLegendItemAt(const Vector2& pos) const
     if(i < mLegendLabels.size())
     {
       auto label = mLegendLabels[i];
-      width      = label.Measure(mSize.x, mSize.y).width;
+      width      = label.Measure(mSize.x, mSize.y).width / GetCanvasScale();
     }
     const bool xHit = pos.x >= item.iconCenter.x - ChartLayoutManager::LEGEND_SWATCH &&
                       pos.x <= item.textPos.x + width + HIT_PADDING;
@@ -2550,7 +2578,7 @@ bool ChartViewImpl::OnHover(Actor actor, HoverEvent event)
   }
 
   const PointState::Type state = event.GetState(0);
-  const Vector2          local = event.GetLocalPosition(0u);
+  const Vector2          local = event.GetLocalPosition(0u) / GetCanvasScale(); // canvas units
 
   if(state == PointState::STARTED || state == PointState::MOTION)
   {

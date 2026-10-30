@@ -57,6 +57,8 @@ float ChartLayoutManager::EstimateTextWidth(const Dali::String& text, float poin
   if(!mMeasureLabel)
   {
     mMeasureLabel = Ui::Label::New();
+    // The layout works in natural units, so text is measured at scale 1.0.
+    mMeasureLabel.SetUiScalePolicy(Ui::UiScalePolicy::DISABLED);
   }
   mMeasureLabel.SetProperty(Ui::Label::Property::MULTI_LINE, true);
   mMeasureLabel.SetText(text);

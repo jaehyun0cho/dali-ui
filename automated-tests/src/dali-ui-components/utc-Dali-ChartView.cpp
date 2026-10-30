@@ -30,6 +30,8 @@
 #include <dali.h>
 #include <dali/devel-api/events/pan-gesture-devel.h>
 #include <dali/devel-api/events/pinch-gesture-devel.h>
+#include <dali/integration-api/events/hover-event-integ.h>
+#include <dali/integration-api/events/touch-event-integ.h>
 #include <samples/chart-view/chart-case-presenter.h>
 #include <stdlib.h>
 #include <algorithm>
@@ -128,6 +130,85 @@ void RenderChart(UiTestApplication& application, ChartView chartView)
 Dali::Ui::Integration::ChartViewImpl& GetChartImpl(ChartView& view)
 {
   return static_cast<Dali::Ui::Integration::ChartViewImpl&>(view.GetImplementation());
+}
+
+class ScopedChartUiScale
+{
+public:
+  explicit ScopedChartUiScale(float scale)
+  : mManager(LayoutScaleManager::Get()),
+    mOriginalScale(mManager.GetUiScale())
+  {
+    mManager.SetUiScale(scale);
+  }
+
+  ~ScopedChartUiScale()
+  {
+    mManager.SetUiScale(mOriginalScale);
+  }
+
+  ScopedChartUiScale(const ScopedChartUiScale&)            = delete;
+  ScopedChartUiScale& operator=(const ScopedChartUiScale&) = delete;
+
+private:
+  LayoutScaleManager mManager;
+  float              mOriginalScale;
+};
+
+Label FindChartLabel(ChartView chart, const char* text)
+{
+  for(uint32_t index = 0u; index < chart.GetChildCount(); ++index)
+  {
+    Label label = Label::DownCast(chart.GetChildAt(index));
+    if(label && label.GetText() == text)
+    {
+      return label;
+    }
+  }
+  return Label();
+}
+
+ChartView NewScaleProbeChart()
+{
+  ChartView chart = ChartView::New(ChartView::Type::LINE, Vector2(480.0f, 360.0f));
+  chart.SetTitle("Revenue");
+  ChartAxis xAxis = ChartAxis::New();
+  xAxis.SetLabels({"Jan", "Feb", "Mar"});
+  chart.SetXAxis(xAxis);
+  LineSeries line = LineSeries::New();
+  line.SetName("Sales");
+  line.SetValues({1.0f, 3.0f, 2.0f});
+  chart.AddSeries(line);
+  return chart;
+}
+
+// Feeds one touch point at @p screenPosition through the event pipeline, hit-testing included.
+void ProcessChartTouch(UiTestApplication& application, PointState::Type state, const Vector2& screenPosition, uint32_t time)
+{
+  Dali::Integration::TouchEvent touchEvent;
+  Dali::Integration::Point      point;
+  point.SetState(state);
+  point.SetDeviceId(1);
+  point.SetScreenPosition(screenPosition);
+  point.SetDeviceClass(Device::Class::TOUCH);
+  point.SetDeviceSubclass(Device::Subclass::NONE);
+  touchEvent.points.push_back(point);
+  touchEvent.time = time;
+  application.ProcessEvent(touchEvent);
+}
+
+// Feeds one hover point at @p screenPosition through the event pipeline, hit-testing included.
+void ProcessChartHover(UiTestApplication& application, PointState::Type state, const Vector2& screenPosition, uint32_t time)
+{
+  Dali::Integration::HoverEvent hoverEvent(time);
+  Dali::Integration::Point      point;
+  point.SetState(state);
+  point.SetDeviceId(2);
+  point.SetScreenPosition(screenPosition);
+  point.SetDeviceClass(Device::Class::MOUSE);
+  point.SetDeviceSubclass(Device::Subclass::NONE);
+  hoverEvent.points.push_back(point);
+  application.ProcessEvent(hoverEvent);
 }
 } // namespace
 
@@ -1505,5 +1586,145 @@ int UtcDaliChartViewRemoveBarDuringAnimation(void)
   application.Render();
   application.RunIdles();
   DALI_TEST_EQUALS(impl.mModel.mSeriesList.size(), 1u, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliChartViewCanvasUsesNaturalUnitsAtUiScaleP(void)
+{
+  UiTestApplication application(Components::UiConfig::New());
+
+  ChartView reference = NewScaleProbeChart();
+  RenderChart(application, reference);
+  const Vector3 titleAtOne = FindChartLabel(reference, "Revenue").GetProperty<Vector3>(Actor::Property::POSITION);
+  const Vector3 tickAtOne  = FindChartLabel(reference, "Feb").GetProperty<Vector3>(Actor::Property::POSITION);
+  application.GetScene().Remove(reference);
+
+  ScopedChartUiScale scale(2.0f);
+  ChartView          chart = NewScaleProbeChart();
+  RenderChart(application, chart);
+
+  // Laid out at twice its requested size; every canvas keeps the requested size as view box.
+  DALI_TEST_EQUALS(chart.GetProperty<Vector3>(Actor::Property::SIZE).width, 960.0f, 0.01f, TEST_LOCATION);
+  for(uint32_t index = 0u; index < 3u; ++index)
+  {
+    CanvasView canvas = CanvasView::DownCast(chart.GetChildAt(index));
+    DALI_TEST_CHECK(canvas);
+    DALI_TEST_EQUALS(canvas.GetViewBox(), Vector2(480.0f, 360.0f), TEST_LOCATION);
+    DALI_TEST_EQUALS(canvas.GetProperty<Vector3>(Actor::Property::SIZE).width, 960.0f, 0.01f, TEST_LOCATION);
+  }
+
+  // The natural layout is the one at 1.0, so labels sit at twice the distance in the bands it reserved.
+  const Vector3 title = FindChartLabel(chart, "Revenue").GetProperty<Vector3>(Actor::Property::POSITION);
+  const Vector3 tick  = FindChartLabel(chart, "Feb").GetProperty<Vector3>(Actor::Property::POSITION);
+  DALI_TEST_EQUALS(title.x, titleAtOne.x * 2.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(title.y, titleAtOne.y * 2.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(tick.x, tickAtOne.x * 2.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(tick.y, tickAtOne.y * 2.0f, 0.01f, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliChartViewHitThresholdUsesScreenPixelsAtUiScaleP(void)
+{
+  UiTestApplication  application(Components::UiConfig::New());
+  ScopedChartUiScale scale(2.0f);
+  ChartView          chart = ChartView::New(ChartView::Type::LINE, Vector2(480.0f, 360.0f));
+  LineSeries         line  = LineSeries::New();
+  line.SetValues({2.0f, 5.0f, 9.0f, 4.0f});
+  chart.AddSeries(line);
+  RenderChart(application, chart);
+
+  auto&             impl     = GetChartImpl(chart);
+  int               selected = -1;
+  ConnectionTracker tracker;
+  chart.DataPointSelectedSignal().Connect(&tracker, [&selected](ChartView, const ChartPointEventArgs& point)
+  { selected = point.GetPointIndex(); });
+
+  // Hits are tested in canvas units; one unit covers two screen pixels at a scale of 2.0.
+  // 10 units (20 pixels) from the point is a hit.
+  const Vector2 point = impl.mScale.ToCanvas(1.0f, 5.0f);
+  impl.PerformHitAtPos(point + Vector2(0.0f, 10.0f), true);
+  DALI_TEST_EQUALS(selected, 1, TEST_LOCATION);
+
+  // The hit threshold stays 30 screen pixels: 20 units (40 pixels) away misses.
+  selected = -1;
+  impl.PerformHitAtPos(point + Vector2(0.0f, 20.0f), true);
+  DALI_TEST_EQUALS(selected, -1, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliChartViewTouchAndHoverUseCanvasUnitsAtUiScaleP(void)
+{
+  UiTestApplication  application(Components::UiConfig::New());
+  ScopedChartUiScale scale(2.0f);
+  ChartView          chart = ChartView::New(ChartView::Type::LINE, Vector2(480.0f, 360.0f));
+  LineSeries         line  = LineSeries::New();
+  line.SetValues({2.0f, 5.0f, 9.0f, 4.0f});
+  chart.AddSeries(line);
+  RenderChart(application, chart);
+
+  int               selected = -1;
+  int               tooltip  = -1;
+  ConnectionTracker tracker;
+  chart.DataPointSelectedSignal().Connect(&tracker, [&selected](ChartView, const ChartPointEventArgs& point)
+  { selected = point.GetPointIndex(); });
+  chart.TooltipUpdatedSignal().Connect(&tracker, [&tooltip](ChartView, const Dali::Vector<ChartPointEventArgs>& points)
+  { tooltip = points.Count() > 0u ? points[0].GetPointIndex() : -1; });
+
+  // The chart is at the scene origin and laid out at twice its natural size, so point 1 is at
+  // twice its canvas position on screen. Read without the division, the same screen position
+  // would be that whole distance away from point 1 in canvas units.
+  const Vector2 screen = GetChartImpl(chart).mScale.ToCanvas(1.0f, 5.0f) * 2.0f;
+  DALI_TEST_CHECK(screen.x < static_cast<float>(TestApplication::DEFAULT_SURFACE_WIDTH));
+  DALI_TEST_CHECK(screen.y < static_cast<float>(TestApplication::DEFAULT_SURFACE_HEIGHT));
+
+  // A touch there selects point 1.
+  ProcessChartTouch(application, PointState::DOWN, screen, 100u);
+  DALI_TEST_EQUALS(selected, 1, TEST_LOCATION);
+  ProcessChartTouch(application, PointState::UP, screen, 150u);
+
+  // A hover there shows the tooltip of point 1.
+  tooltip = -1;
+  ProcessChartHover(application, PointState::STARTED, screen, 200u);
+  DALI_TEST_EQUALS(tooltip, 1, TEST_LOCATION);
+  ProcessChartHover(application, PointState::FINISHED, screen, 250u);
+  END_TEST;
+}
+
+int UtcDaliChartViewRebuildsWhenOnlyTheScaleChangesP(void)
+{
+  UiTestApplication  application(Components::UiConfig::New());
+  ScopedChartUiScale scale(1.0f);
+
+  // A host that ignores the UI scale keeps the chart at 480 x 360 pixels while the chart
+  // itself follows the UI scale.
+  View host = View::New();
+  host.SetUiScalePolicy(UiScalePolicy::DISABLED);
+  host.SetRequestedWidth(480.0f);
+  host.SetRequestedHeight(360.0f);
+  ChartView chart = ChartView::New(ChartView::Type::LINE, Vector2(480.0f, 360.0f));
+  chart.SetUiScalePolicy(UiScalePolicy::ENABLED);
+  chart.SetRequestedWidth(MATCH_PARENT);
+  chart.SetRequestedHeight(MATCH_PARENT);
+  LineSeries line = LineSeries::New();
+  line.SetValues({1.0f, 3.0f, 2.0f});
+  chart.AddSeries(line);
+  host.Add(chart);
+  application.GetScene().Add(host);
+  application.SendNotification();
+  application.Render();
+  application.RunIdles();
+  application.SendNotification();
+  application.Render();
+  CanvasView canvas = CanvasView::DownCast(chart.GetChildAt(0u));
+  DALI_TEST_EQUALS(canvas.GetViewBox(), Vector2(480.0f, 360.0f), TEST_LOCATION);
+
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+  application.SendNotification();
+  application.Render();
+  application.RunIdles();
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(chart.GetProperty<Vector3>(Actor::Property::SIZE).width, 480.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(canvas.GetViewBox(), Vector2(240.0f, 180.0f), TEST_LOCATION);
   END_TEST;
 }

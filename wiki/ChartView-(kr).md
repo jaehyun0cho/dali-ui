@@ -110,6 +110,8 @@ window.Add(chart);
 
 > 💡 **팁**: `ChartView`는 표준 `View`이며 dali-ui 레이아웃 시스템에 참여합니다. 픽셀 단위의 정밀한 위치 지정이 필요할 때는 `AbsoluteLayout` 안에 배치하세요.
 
+> **단위**: 차트는 `SetRequestedWidth()`와 같은 natural 단위로 그려지므로 여백, 선 굵기, 마커 반지름, 대시, 주석 크기, `USER_SPACE` gradient 좌표가 레이블과 함께 윈도우별 스케일과 시스템 스케일을 따릅니다. hit threshold만 화면 픽셀입니다.
+
 <br/>
 
 ---
@@ -166,7 +168,7 @@ chart.AddSeries(LineSeries::New()
 ### 라인 스타일
 
 ```cpp
-series.SetLineWidth(3.0f);          // 라인 획 너비 (픽셀 단위)
+series.SetLineWidth(3.0f);          // 라인 획 너비 (natural 단위)
 series.SetSmoothness(0.8f);         // 0.0 = 직선 세그먼트, 1.0 = 완전히 부드러운 베지어 곡선
 ```
 
@@ -510,7 +512,7 @@ xAxis.SetTickMarksVisible(true); // 글자를 숨기면서 눈금은 유지합�
 
 ```cpp
 yAxis.SetGridColor(Vector4(0.0f, 0.5f, 1.0f, 0.6f));
-yAxis.SetGridDash(4.0f, 4.0f);             // 점선 그리드: 4px 대시, 4px 간격
+yAxis.SetGridDash(4.0f, 4.0f);             // 점선 그리드: 4 단위 대시, 4 단위 간격
 yAxis.SetAxisLineColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
 yAxis.SetAxisLineWidth(2.0f);
 ```
@@ -821,7 +823,7 @@ chart.SetLegendToggleEnabled(false);   // 시그널 전용 모드: LegendItemTap
 ### 히트 임계값
 
 ```cpp
-chart.SetHitThreshold(30.0f);   // 탭이 히트로 인식되는 픽셀 거리 (기본값 30)
+chart.SetHitThreshold(30.0f);   // 탭이 히트로 인식되는 화면 픽셀 거리 (기본값 30, 스케일 미적용)
 ```
 
 <br/>
@@ -1144,8 +1146,8 @@ target_compile_options(my-chart-app PRIVATE
 | `GRID_COLOR` | `(0.9, 0.9, 0.9, 1.0)` |
 | `AXIS_LABEL_SIZE` | `11.0` pt |
 | `TITLE_SIZE` | `16.0` pt |
-| `LINE_WIDTH` | `2.5` px |
-| `MARKER_RADIUS` | `4.0` px |
+| `LINE_WIDTH` | `2.5` 단위 |
+| `MARKER_RADIUS` | `4.0` 단위 |
 | `TOUCH_ENABLED` | `true` |
 | `HOVER_ENABLED` | `true` |
 | `ANIMATION_DURATION` | `0.0` ms (비활성화) |
@@ -1159,6 +1161,8 @@ target_compile_options(my-chart-app PRIVATE
 | 줌 클램프 활성화 | `true` |
 | 팬 시 Y 자동 맞춤 | `false` |
 | 업데이트 스로틀 | `16.0` ms |
+
+길이 값은 hit threshold(화면 픽셀)를 제외하면 natural 단위입니다.
 
 ### 게이지 기본값
 

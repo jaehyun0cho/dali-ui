@@ -156,6 +156,13 @@ private:
  * Uses multiple CanvasView layers (ThorVG) for rendering and Ui::Label
  * actors for text elements (axis labels, title, legend, tooltip).
  *
+ * The chart is drawn in natural units: its canvases use the chart's size divided by its
+ * effective scale (ViewImpl::GetEffectiveLayoutScale()) as view box, kept in step with the chart's
+ * size and scale. Lengths the chart API takes in pixels -- the creation size, style paddings,
+ * line widths, marker radii, dash lengths, corner radii, annotation sizes and offsets -- and
+ * USER_SPACE gradient points are natural units multiplied by that scale, like the label text.
+ * SetHitThreshold() is a touch distance and stays in screen pixels.
+ *
  * @code
  *   auto chart = ChartView::New(ChartView::Type::LINE, Vector2(600, 400));
  *   chart.AddSeries(lineSeries);
@@ -528,14 +535,14 @@ public:
    *
    * The default is 30.0.
    *
-   * @param[in] pixels The maximum hit distance, in pixels
+   * @param[in] pixels The maximum hit distance, in screen pixels; it does not follow the effective scale
    */
   void SetHitThreshold(float pixels);
 
   /**
    * @brief Retrieves the maximum distance from a touch/hover position to a data point still counted as a hit.
    *
-   * @return The maximum hit distance, in pixels
+   * @return The maximum hit distance, in screen pixels
    */
   float GetHitThreshold() const;
 
