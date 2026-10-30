@@ -16,6 +16,7 @@
 
 #include <dali-ui-components/public-api/window/default-window-decoration.h>
 #include <dali-ui-components/public-api/window/window-frame.h>
+#include <dali-ui-foundation/public-api/configuration/layout-scale-manager.h>
 #include <dali-ui-foundation/public-api/views/image/image-view.h>
 #include <dali-ui-test-suite-utils.h>
 
@@ -174,6 +175,101 @@ struct StateObserver : public ConnectionTracker
   WindowFrame::WindowState observedState{WindowFrame::WindowState::NORMAL};
   bool                     emitted{false};
 };
+
+// Sets the UI scale and the window scale for one test and restores both.
+class ScopedWindowFrameScale
+{
+public:
+  ScopedWindowFrameScale(Window window, float uiScale, float windowScale)
+  : mWindow(window),
+    mOriginalUiScale(LayoutScaleManager::Get().GetUiScale()),
+    mOriginalWindowScale(LayoutScaleManager::Get().GetWindowScale(window))
+  {
+    LayoutScaleManager::Get().SetUiScale(uiScale);
+    LayoutScaleManager::Get().SetWindowScale(mWindow, windowScale);
+  }
+
+  ~ScopedWindowFrameScale()
+  {
+    LayoutScaleManager::Get().SetWindowScale(mWindow, mOriginalWindowScale);
+    LayoutScaleManager::Get().SetUiScale(mOriginalUiScale);
+  }
+
+  ScopedWindowFrameScale(const ScopedWindowFrameScale&)            = delete;
+  ScopedWindowFrameScale& operator=(const ScopedWindowFrameScale&) = delete;
+
+private:
+  Window mWindow;
+  float  mOriginalUiScale;
+  float  mOriginalWindowScale;
+};
+
+void RenderFrame(UiTestApplication& application)
+{
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+}
+
+// Top and bottom slots and a bottom-right handle over a 10-unit shadow, in an 800 x 600 window.
+WindowFrame NewScaleProbeFrame(Window window, View top, View bottom, View handle)
+{
+  WindowFrameOptions options;
+  options.SetInitialStatePolicy(WindowFrameInitialStatePolicy::USE_CURRENT);
+  WindowFrame windowFrame = WindowFrame::New(window, WindowFrame::CloseCallback::New(&NoOpClose), options);
+
+  WindowFrameDecoration decoration;
+  decoration.SetTopSlot(top);
+  decoration.SetBottomSlot(bottom);
+  decoration.SetBottomRightResizeHandle(handle);
+  WindowFrameLayout layout;
+  layout.SetDecorationInsets(Insets(8.0f, 8.0f, 40.0f, 30.0f));
+  layout.SetBottomLeftResizeHandleSize(Vector2::ZERO);
+  layout.SetBottomRightResizeHandleSize(Vector2(20.0f, 20.0f));
+  WindowFrameStyle style;
+  style.SetShadow(Dali::Ui::Shadow());
+  style.SetShadowOutsets(Insets(10.0f, 10.0f, 10.0f, 10.0f));
+  windowFrame.SetDecoration(decoration, layout, style, WindowFrameSizePolicy::KEEP_WINDOW_SIZE);
+  return windowFrame;
+}
+
+// The probe frame's reported geometry and laid-out views at @p scale, in surface pixels.
+void CheckScaleProbeFrame(WindowFrame windowFrame, View bottom, View handle, float scale)
+{
+  const float outset      = 10.0f * scale;
+  const float frameWidth  = 800.0f - 2.0f * outset;
+  const float frameHeight = 600.0f - 2.0f * outset;
+  const float contentW    = frameWidth - 16.0f * scale;
+  const float contentH    = frameHeight - 70.0f * scale;
+
+  const WindowFrameGeometry geometry = windowFrame.GetGeometry();
+  DALI_TEST_EQUALS(geometry.GetFrameBounds().x, outset, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(geometry.GetFrameBounds().width, frameWidth, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(geometry.GetFrameBounds().height, frameHeight, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(geometry.GetContentBounds().y, outset + 40.0f * scale, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(windowFrame.GetFrameSize().width, frameWidth, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(windowFrame.GetContentSize().width, contentW, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(windowFrame.GetContentSize().height, contentH, 0.01f, TEST_LOCATION);
+
+  const Vector3 contentSize = windowFrame.GetContentRoot().GetProperty<Vector3>(Actor::Property::SIZE);
+  DALI_TEST_EQUALS(contentSize.width, contentW, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(contentSize.height, contentH, 0.01f, TEST_LOCATION);
+  const Vector3 bottomSize = bottom.GetProperty<Vector3>(Actor::Property::SIZE);
+  DALI_TEST_EQUALS(bottomSize.width, frameWidth, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(bottomSize.height, 30.0f * scale, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(bottom.GetProperty<float>(Actor::Property::POSITION_Y), frameHeight - 30.0f * scale, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handle.GetProperty<Vector3>(Actor::Property::SIZE).width, 20.0f * scale, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(handle.GetProperty<float>(Actor::Property::POSITION_X), frameWidth - 20.0f * scale, 0.01f, TEST_LOCATION);
+}
+
+// The probe frame's bottom slot as the pass that applies a new scale leaves it: still bounded
+// for @p oldScale but laid out at @p newScale, until the frame lays itself out again.
+void CheckStaleProbeFrame(View bottom, float oldScale, float newScale)
+{
+  const float oldFrameWidth = 800.0f - 20.0f * oldScale;
+  DALI_TEST_EQUALS(bottom.GetProperty<Vector3>(Actor::Property::SIZE).width, oldFrameWidth / oldScale * newScale, 0.01f, TEST_LOCATION);
+}
 
 } // unnamed namespace
 
@@ -708,6 +804,78 @@ int UtcDaliWindowFrameOverlayInsetsAndAutoHideP(void)
   windowFrame.SetOverlayAutoHideDelay(1u);
   DALI_TEST_EQUALS(windowFrame.GetOverlayAutoHideDelay(), 1u, TEST_LOCATION);
 
+  windowFrame.Detach();
+  END_TEST;
+}
+
+int UtcDaliWindowFrameFitsWindowAtUiScaleP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  window.SetPositionSize(PositionSize(0, 0, 800, 600));
+  ScopedWindowFrameScale scale(window, 2.0f, 1.0f);
+
+  View        top         = View::New();
+  View        bottom      = View::New();
+  View        handle      = View::New();
+  WindowFrame windowFrame = NewScaleProbeFrame(window, top, bottom, handle);
+  DALI_TEST_CHECK(windowFrame.Attach());
+  RenderFrame(application);
+
+  // Decoration, handle and shadow take twice their natural size; the surface does not grow.
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 2.0f);
+  windowFrame.Detach();
+  END_TEST;
+}
+
+int UtcDaliWindowFrameRelayoutsOnScaleChangeP(void)
+{
+  UiTestApplication application;
+  Window            window = application.GetWindow();
+  window.SetPositionSize(PositionSize(0, 0, 800, 600));
+  ScopedWindowFrameScale scale(window, 1.0f, 1.0f);
+
+  View        top         = View::New();
+  View        bottom      = View::New();
+  View        handle      = View::New();
+  WindowFrame windowFrame = NewScaleProbeFrame(window, top, bottom, handle);
+  windowFrame.Attach();
+  RenderFrame(application);
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 1.0f);
+
+  // The pass that applies a new scale keeps the old bounds and schedules the frame layout
+  // for the next tick.
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+  RenderFrame(application);
+  CheckStaleProbeFrame(bottom, 1.0f, 2.0f);
+  Test::EmitGlobalTimerSignal();
+  RenderFrame(application);
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 2.0f);
+
+  // Detach() drops the relayout timer, so the tick after each change below lays the frame
+  // out again only if that change scheduled it.
+  windowFrame.Detach();
+  windowFrame.Attach();
+  RenderFrame(application);
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 2.0f);
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  RenderFrame(application);
+  CheckStaleProbeFrame(bottom, 2.0f, 1.0f);
+  Test::EmitGlobalTimerSignal();
+  RenderFrame(application);
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 1.0f);
+
+  // The window scale reaches the frame the same way.
+  windowFrame.Detach();
+  windowFrame.Attach();
+  RenderFrame(application);
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 1.0f);
+  LayoutScaleManager::Get().SetWindowScale(window, 2.0f);
+  RenderFrame(application);
+  CheckStaleProbeFrame(bottom, 1.0f, 2.0f);
+  Test::EmitGlobalTimerSignal();
+  RenderFrame(application);
+  CheckScaleProbeFrame(windowFrame, bottom, handle, 2.0f);
   windowFrame.Detach();
   END_TEST;
 }

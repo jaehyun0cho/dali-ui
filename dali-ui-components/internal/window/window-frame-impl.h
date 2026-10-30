@@ -65,6 +65,14 @@ public:
   WindowFrameGeometry             GetGeometry() const;
 
   /**
+   * @brief Returns the effective scale the frame's own lengths are laid out at.
+   *
+   * Decoration insets, resize-handle sizes and shadow outsets are natural units; each takes
+   * this many window surface pixels.
+   */
+  float GetFrameScale() const;
+
+  /**
    * @brief Returns the decoration insets a layout actually produced.
    */
   static Dali::Ui::Insets GetLaidOutDecorationInsets(const WindowFrameLayoutResult& layout);
@@ -124,6 +132,7 @@ private:
   std::optional<Dali::Vector2>            GetMinimumSurfaceSize() const;
   std::optional<Dali::Vector2>            GetMaximumSurfaceSize() const;
   Dali::Ui::Insets                        GetNormalShadowOutsets() const;
+  WindowFrameLayout                       GetSurfaceLayout() const;
   bool                                    AreSizeConstraintsValid() const;
   Dali::Vector2                           ClampSurfaceSize(const Dali::Vector2& size) const;
   void                                    ApplyContentSize(const Dali::Vector2& size);
@@ -167,7 +176,9 @@ private:
   void OnCloseControlClicked(Dali::Ui::View view, Dali::Ui::InputEvent event);
   bool OnOverlayAutoHideTimerTick();
   bool OnDeferredResizeTimerTick();
+  bool OnScaleRelayoutTimerTick();
   bool OnSurfaceInterceptTouched(Dali::Actor actor, Dali::TouchEvent event);
+  void OnSurfaceRootPropertySet(Dali::Handle handle, Dali::Property::Index index, const Dali::Property::Value& value);
   void OnWindowResized(Dali::Window window, Dali::Window::WindowSize size);
   void OnWindowMoved(Dali::Window window, Dali::Window::WindowPosition position);
   void OnMoveCompleted(Dali::Window window, Dali::Window::WindowPosition position);
@@ -199,7 +210,10 @@ private:
   WindowFramePresentationController                  mPresentationController;
   Dali::Timer                                        mOverlayAutoHideTimer;
   Dali::Timer                                        mDeferredResizeTimer;
+  Dali::Timer                                        mScaleRelayoutTimer;
   std::optional<Dali::Vector2>                       mDeferredContentSize;
+  float                                              mAppliedScale{1.0f};
+  Dali::Property::Index                              mEffectiveScalePropertyIndex{Dali::Property::INVALID_INDEX};
   bool                                               mAttached{false};
   bool                                               mNativeMinimumConstraintApplied{false};
   bool                                               mNativeMaximumConstraintApplied{false};

@@ -85,7 +85,7 @@ public:
   /**
    * @brief Sets normal frame size used for the first restore after an initial
    *        full-size launch.
-   * @param[in] size Restore frame size
+   * @param[in] size Restore frame size, in window surface pixels
    */
   void SetInitialRestoreFrameSize(const Dali::Vector2& size);
 

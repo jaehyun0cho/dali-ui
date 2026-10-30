@@ -25,7 +25,9 @@ decoration. Resize cycles through `FREE`, `KEEP_ASPECT_RATIO`, and `DISABLED`.
 
 The sample requests a `400 x 260` visible frame through `RequestFrameResize()`. A client
 shadow adds its transparent outsets to the normal native surface; the default
-`(14, 14, 14, 18)` outsets produce a `428 x 292` default surface.
+`(14, 14, 14, 18)` outsets produce a `428 x 292` default surface at an effective
+scale of 1.0; WindowFrame sizes are window surface pixels, and the outsets are
+natural units multiplied by the effective scale.
 
 The minimum is set per installed frame by `ApplyFrameMinimumSize()`, because each
 frame has its own floor. The application's own content needs `200 x 130`; a

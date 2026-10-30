@@ -169,3 +169,25 @@ int UtcDaliWindowFrameGeometryComparison(void)
   DALI_TEST_EQUALS(first.GetDecorationOverlayInsets().top, 0.0f, EPSILON, TEST_LOCATION);
   END_TEST;
 }
+
+int UtcDaliWindowFrameGeometryScaleLayout(void)
+{
+  const WindowFrameLayout scaled = WindowFrameLayoutEngine::ScaleLayout(MakeLayout(Dali::Ui::Insets(8.0f, 8.0f, 40.0f, 30.0f),
+                                                                                   Dali::Vector2(28.0f, 28.0f),
+                                                                                   Dali::Vector2(20.0f, 24.0f)),
+                                                                        2.0f);
+  const Dali::Ui::Insets  insets = scaled.GetDecorationInsets();
+  DALI_TEST_EQUALS(insets.start, 16.0f, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(insets.end, 16.0f, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(insets.top, 80.0f, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(insets.bottom, 60.0f, EPSILON, TEST_LOCATION);
+  CheckSize(scaled.GetBottomLeftResizeHandleSize(), 56.0f, 56.0f, TEST_LOCATION);
+  CheckSize(scaled.GetBottomRightResizeHandleSize(), 40.0f, 48.0f, TEST_LOCATION);
+
+  const Dali::Ui::Insets outsets = WindowFrameLayoutEngine::ScaleInsets(Dali::Ui::Insets(12.0f, 12.0f, 9.0f, 15.0f), 2.0f);
+  DALI_TEST_EQUALS(outsets.start, 24.0f, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(outsets.end, 24.0f, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(outsets.top, 18.0f, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(outsets.bottom, 30.0f, EPSILON, TEST_LOCATION);
+  END_TEST;
+}

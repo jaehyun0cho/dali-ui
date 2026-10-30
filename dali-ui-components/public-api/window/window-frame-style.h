@@ -70,6 +70,9 @@ public:
 
   /**
    * @brief Sets surface space reserved outside the frame for shadow.
+   *
+   * The outsets are natural units: the frame multiplies them by its effective
+   * scale.
    * @param[in] outsets Non-negative outsets
    */
   void SetShadowOutsets(const Dali::Ui::Insets& outsets);

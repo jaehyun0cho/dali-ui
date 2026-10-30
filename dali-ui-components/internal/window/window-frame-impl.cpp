@@ -164,6 +164,7 @@ void WindowFrameImpl::Detach()
   UnregisterAttachedFrame(mWindow, this);
   mOverlayAutoHideTimer.Reset();
   mDeferredResizeTimer.Reset();
+  mScaleRelayoutTimer.Reset();
   mDeferredContentSize.reset();
   mLastGeometry.reset();
   mLastDecorationVisibility.reset();
@@ -239,7 +240,7 @@ WindowFrameGeometry WindowFrameImpl::GetGeometry() const
   const bool                    overlay      = mOverlayController.IsOverlayEnabled() && maximized;
   const WindowFrameLayoutResult layout       = WindowFrameLayoutEngine::Calculate(static_cast<float>(positionSize.width),
                                                                                   static_cast<float>(positionSize.height),
-                                                                                  mLayout,
+                                                                                  GetSurfaceLayout(),
                                                                                   WindowFrameLayoutOptions{maximized, overlay, GetNormalShadowOutsets()});
   return WindowFrameGeometry{Dali::Ui::LayoutRect(static_cast<float>(positionSize.x),
                                                   static_cast<float>(positionSize.y),
@@ -248,6 +249,19 @@ WindowFrameGeometry WindowFrameImpl::GetGeometry() const
                              layout.GetFrame(),
                              layout.GetContent(),
                              overlay ? GetLaidOutDecorationInsets(layout) : Dali::Ui::Insets()};
+}
+
+float WindowFrameImpl::GetFrameScale() const
+{
+  // The surface root is an INHERIT root of mWindow, so it is laid out at the window scale
+  // times the UI scale. Before Attach() it is in no window yet; the same product is then
+  // read for the window it is about to join.
+  if(mAttached)
+  {
+    return Dali::Ui::GetImpl(mFrame.GetSurfaceRoot()).GetEffectiveLayoutScale();
+  }
+  Dali::Ui::LayoutScaleManager manager = Dali::Ui::LayoutScaleManager::Get();
+  return manager.IsScalable() ? manager.GetWindowScale(mWindow) * manager.GetUiScale() : 1.0f;
 }
 
 WindowFrameDecorationResult WindowFrameImpl::SetDecoration(const WindowFrameDecoration& decoration, const WindowFrameLayout& layout, WindowFrameSizePolicy sizePolicy)
@@ -508,7 +522,7 @@ bool WindowFrameImpl::GetMaximumFrameSize(Dali::Vector2& size) const
 
 bool WindowFrameImpl::RequestFrameResize(const Dali::Vector2& size)
 {
-  return RequestContentResize(WindowFrameLayoutEngine::FrameToContentSize(size, mLayout));
+  return RequestContentResize(WindowFrameLayoutEngine::FrameToContentSize(size, GetSurfaceLayout()));
 }
 
 bool WindowFrameImpl::RequestContentResize(const Dali::Vector2& size)
@@ -539,7 +553,7 @@ void WindowFrameImpl::ApplyContentSize(const Dali::Vector2& size)
   }
 
   const Dali::Vector2 contentSize(std::max(0.0f, size.width), std::max(0.0f, size.height));
-  const Dali::Vector2 nativeSize = ClampSurfaceSize(WindowFrameLayoutEngine::ContentToSurfaceSize(contentSize, mLayout, GetNormalShadowOutsets()));
+  const Dali::Vector2 nativeSize = ClampSurfaceSize(WindowFrameLayoutEngine::ContentToSurfaceSize(contentSize, GetSurfaceLayout(), GetNormalShadowOutsets()));
 
   Dali::PositionSize positionSize = mWindow.GetPositionSize();
   positionSize.width              = static_cast<int32_t>(std::ceil(nativeSize.width));
@@ -588,7 +602,7 @@ Dali::Vector2 WindowFrameImpl::GetContentSize() const
   const Dali::PositionSize       positionSize = mWindow.GetPositionSize();
   const bool                     maximized    = IsMaximized();
   const WindowFrameLayoutOptions options{maximized, mOverlayController.IsOverlayEnabled() && maximized, GetNormalShadowOutsets()};
-  return WindowFrameLayoutEngine::SurfaceToContentSize(Dali::Vector2(static_cast<float>(positionSize.width), static_cast<float>(positionSize.height)), mLayout, options);
+  return WindowFrameLayoutEngine::SurfaceToContentSize(Dali::Vector2(static_cast<float>(positionSize.width), static_cast<float>(positionSize.height)), GetSurfaceLayout(), options);
 }
 
 WindowFrameCommandResult WindowFrameImpl::RequestMinimize()
@@ -777,7 +791,13 @@ std::optional<Dali::Vector2> WindowFrameImpl::GetMaximumSurfaceSize() const
 
 Dali::Ui::Insets WindowFrameImpl::GetNormalShadowOutsets() const
 {
-  return ResolveWindowFrameStyle(mFrameStyle, false).shadowOutsets;
+  // In window surface pixels; the style keeps natural units.
+  return WindowFrameLayoutEngine::ScaleInsets(ResolveWindowFrameStyle(mFrameStyle, false).shadowOutsets, GetFrameScale());
+}
+
+WindowFrameLayout WindowFrameImpl::GetSurfaceLayout() const
+{
+  return WindowFrameLayoutEngine::ScaleLayout(mLayout, GetFrameScale());
 }
 
 bool WindowFrameImpl::AreSizeConstraintsValid() const
@@ -830,6 +850,11 @@ void WindowFrameImpl::ConnectWindowSignals()
   mWindow.FocusChangedSignal().Connect(this, &WindowFrameImpl::OnFocusChanged);
   mWindow.VisibilityChangedSignal().Connect(this, &WindowFrameImpl::OnVisibilityChanged);
   mFrame.GetSurfaceRoot().InterceptTouchEventSignal().Connect(this, &WindowFrameImpl::OnSurfaceInterceptTouched);
+
+  // The layout pass pushes a changed effective scale to this property of the surface root.
+  Dali::Ui::AbsoluteLayout surfaceRoot = mFrame.GetSurfaceRoot();
+  mEffectiveScalePropertyIndex         = surfaceRoot.GetPropertyIndex("viewEffectiveScale");
+  surfaceRoot.PropertySetSignal().Connect(this, &WindowFrameImpl::OnSurfaceRootPropertySet);
 }
 
 void WindowFrameImpl::ApplyLayout()
@@ -842,7 +867,9 @@ void WindowFrameImpl::ApplyLayout()
   const Dali::PositionSize positionSize = mWindow.GetPositionSize();
   const bool               maximized    = IsMaximized();
   const bool               overlay      = mOverlayController.IsOverlayEnabled() && maximized;
-  mFrame.ApplyLayout(positionSize, mLayout, maximized, overlay, mFrameStyle);
+  const float              scale        = GetFrameScale();
+  mFrame.ApplyLayout(positionSize, mLayout, maximized, overlay, mFrameStyle, scale);
+  mAppliedScale = scale;
 
   ApplyResizeHandleState();
   ApplyMoveRegionState();
@@ -1274,6 +1301,19 @@ bool WindowFrameImpl::OnDeferredResizeTimerTick()
   return false;
 }
 
+bool WindowFrameImpl::OnScaleRelayoutTimerTick()
+{
+  Dali::BaseHandle self(this);
+  if(mAttached)
+  {
+    // The frame's lengths now take a different number of surface pixels: both the native
+    // constraints and the view bounds change.
+    ApplySizeConstraints();
+    ApplyLayout();
+  }
+  return false;
+}
+
 bool WindowFrameImpl::OnSurfaceInterceptTouched(Dali::Actor /*actor*/, Dali::TouchEvent event)
 {
   Dali::BaseHandle self(this);
@@ -1289,6 +1329,27 @@ bool WindowFrameImpl::OnSurfaceInterceptTouched(Dali::Actor /*actor*/, Dali::Tou
     }
   }
   return false;
+}
+
+void WindowFrameImpl::OnSurfaceRootPropertySet(Dali::Handle /*handle*/, Dali::Property::Index index, const Dali::Property::Value& value)
+{
+  float scale{1.0f};
+  if(index != mEffectiveScalePropertyIndex || !value.Get(scale) || scale == mAppliedScale)
+  {
+    return;
+  }
+
+  // The push happens inside the layout pass, where new layout params would only park more
+  // work, so the frame is laid out again on the next event-loop tick.
+  if(!mScaleRelayoutTimer)
+  {
+    mScaleRelayoutTimer = Dali::Timer::New(1u);
+    mScaleRelayoutTimer.TickSignal().Connect(this, &WindowFrameImpl::OnScaleRelayoutTimerTick);
+  }
+  if(!mScaleRelayoutTimer.IsRunning())
+  {
+    mScaleRelayoutTimer.Start();
+  }
 }
 
 void WindowFrameImpl::OnWindowResized(Dali::Window /*window*/, Dali::Window::WindowSize /*size*/)

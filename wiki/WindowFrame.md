@@ -334,11 +334,13 @@ layout.SetDecorationInsets(Insets(8.0f, 8.0f, 64.0f, 56.0f));
 
 This configuration means:
 
-- Left border: 8 px
-- Right border: 8 px
-- Top border: 64 px
-- Bottom border: 56 px
+- Left border: 8 units
+- Right border: 8 units
+- Top border: 64 units
+- Bottom border: 56 units
 - Normal inset content: the center area after removing those insets
+
+Insets are natural units, like the views in the slots: at an effective scale of 2.0 (window scale × UI scale) the 64-unit top border takes 128 surface pixels.
 
 The layout drive both slot layout and `ContentRoot` size. Subtracting the same values in application code shrinks content twice. Place content from `(0, 0)` inside the root instead.
 
@@ -351,7 +353,7 @@ layout.SetBottomLeftResizeHandleSize(Vector2(36.0f, 36.0f));
 layout.SetBottomRightResizeHandleSize(Vector2(36.0f, 36.0f));
 ```
 
-A handle view should provide a comfortable touch target even when the icon is smaller. Native interaction also depends on the `RESIZE` feature and `WindowFrameInteractiveResizePolicy`.
+A handle view should provide a comfortable touch target even when the icon is smaller. Native interaction also depends on the `RESIZE` feature and `WindowFrameInteractiveResizePolicy`. Handle sizes are natural units too.
 
 ### 3.4 Value semantics and defaults
 
@@ -523,9 +525,11 @@ In normal state, frame corner radius is applied to the frame root, background, a
 Shadow outsets reserve native surface space outside the frame for an effect. They are geometry, not blur parameters, and should be large enough to prevent a View shadow or N-patch image from being clipped. They are excluded from `GetFrameSize()` but included in native surface size while a client shadow is active in normal state.
 
 ```text
-surface width  = start outset + frame width  + end outset
-surface height = top outset   + frame height + bottom outset
+surface width  = (start outset + end outset) × effective scale + frame width
+surface height = (top outset + bottom outset) × effective scale + frame height
 ```
+
+Outsets are natural units that the frame multiplies by its effective scale; frame and surface sizes are surface pixels.
 
 Negative outset components are resolved as zero. Maximized state removes all client shadow outsets; restoring to normal reapplies the configured values.
 
@@ -606,6 +610,10 @@ Constraint and size details:
 - `ClearMinimumFrameSize()` and `ClearMaximumFrameSize()` remove only the selected constraint.
 - `RequestFrameResize()` and `RequestContentResize()` do not override maximized geometry; they return `false` there. Restore first when a programmatic normal size must be applied.
 - The size getters report the current laid-out geometry, which can differ from a request after constraint clamping or compositor processing.
+
+#### Units at an effective scale other than 1.0
+
+The size and geometry APIs use window surface pixels. Decoration insets, handle sizes and shadow outsets are natural units that the frame multiplies by its effective scale (window scale × UI scale), so the frame always fills the window. At 2.0, an 800 x 600 surface with 10-unit outsets and a 40-unit top inset has a `760 x 560` frame whose content starts 100 pixels down. To place content with these values, divide them by the content root's effective scale. The frame lays itself out again when either scale changes.
 
 ### Geometry snapshots
 

@@ -676,13 +676,15 @@ private:
     UpdateWindowControlIcons();
     UpdateContentInsets();
 
-    const Vector2 frameSize = mWindowFrame.GetFrameSize();
+    // The thresholds below are natural units; the frame reports surface pixels.
+    const float   scale     = Dali::Ui::GetImpl(mWindowFrame.GetContentRoot()).GetEffectiveLayoutScale();
+    const Vector2 frameSize = mWindowFrame.GetFrameSize() / scale;
     if(mMoveRegion)
     {
       mMoveRegion.SetVisible(frameSize.width >= 300.0f);
     }
 
-    const Vector2 contentSize = mWindowFrame.GetContentSize();
+    const Vector2 contentSize = mWindowFrame.GetContentSize() / scale;
     if(mContentHeading) mContentHeading.SetVisible(contentSize.width >= 344.0f && contentSize.height >= 54.0f);
     if(mContentDescription) mContentDescription.SetVisible(contentSize.width >= 344.0f && contentSize.height >= 80.0f);
     if(mContentAccent) mContentAccent.SetVisible(contentSize.width >= 144.0f && contentSize.height >= 93.0f);
@@ -722,7 +724,10 @@ private:
     // drawn on top of it, so the background deliberately stays full size and
     // extends under the title bar. Only the text that has to stay readable is
     // moved clear of the decoration.
-    const Insets obscured = mWindowFrame.GetGeometry().GetDecorationOverlayInsets();
+    // The geometry is in surface pixels; the content rows are laid out in natural units.
+    const float  scale    = Dali::Ui::GetImpl(mWindowFrame.GetContentRoot()).GetEffectiveLayoutScale();
+    const Insets overlay  = mWindowFrame.GetGeometry().GetDecorationOverlayInsets();
+    const Insets obscured(overlay.start / scale, overlay.end / scale, overlay.top / scale, overlay.bottom / scale);
     PlaceContentRow(mContentHeading, 24.0f, 16.0f, 320.0f, 38.0f, obscured);
     PlaceContentRow(mContentDescription, 24.0f, 52.0f, 320.0f, 28.0f, obscured);
     PlaceContentRow(mContentAccent, 24.0f, 88.0f, 120.0f, 5.0f, obscured);

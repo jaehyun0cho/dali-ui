@@ -21,9 +21,12 @@ namespace DALI_NAMESPACE::Ui::Internal
 {
 namespace
 {
-Dali::Ui::AbsoluteLayoutParams MakeBoundsLayoutParams(const Dali::Ui::LayoutRect& rect)
+// AbsoluteLayoutManager multiplies a child's bounds by the child's own effective scale, so a
+// rectangle in window surface pixels is handed to @p view in that view's natural units.
+Dali::Ui::AbsoluteLayoutParams MakeBoundsLayoutParams(const Dali::Ui::View& view, const Dali::Ui::LayoutRect& rect)
 {
-  return Dali::Ui::AbsoluteLayoutParams::New().SetBounds(rect);
+  const float scale = Dali::Ui::GetImpl(view).GetEffectiveLayoutScale();
+  return Dali::Ui::AbsoluteLayoutParams::New().SetBounds(Dali::Ui::LayoutRect(rect.x / scale, rect.y / scale, rect.width / scale, rect.height / scale));
 }
 } //namespace
 
@@ -141,45 +144,48 @@ void WindowFrameViewTree::ApplyLayout(const Dali::PositionSize& positionSize,
                                       const WindowFrameLayout&  frameLayout,
                                       bool                      maximized,
                                       bool                      decorationOverlay,
-                                      const WindowFrameStyle&   style)
+                                      const WindowFrameStyle&   style,
+                                      float                     scale)
 {
   if(!mSurfaceRoot)
   {
     return;
   }
 
+  // The surface is laid out in window surface pixels, so the frame's own natural lengths are
+  // taken at the frame's effective scale before they meet it.
   const ResolvedWindowFrameStyle resolvedStyle = ResolveWindowFrameStyle(style, maximized);
   const WindowFrameLayoutResult  layout        = WindowFrameLayoutEngine::Calculate(static_cast<float>(positionSize.width),
                                                                                     static_cast<float>(positionSize.height),
-                                                                                    frameLayout,
-                                                                                    WindowFrameLayoutOptions{maximized, decorationOverlay, resolvedStyle.shadowOutsets});
+                                                                                    WindowFrameLayoutEngine::ScaleLayout(frameLayout, scale),
+                                                                                    WindowFrameLayoutOptions{maximized, decorationOverlay, WindowFrameLayoutEngine::ScaleInsets(resolvedStyle.shadowOutsets, scale)});
   const Dali::Ui::LayoutRect     frame         = layout.GetFrame();
   const Dali::Ui::LayoutRect     effect        = layout.GetEffect();
   const Dali::Ui::LayoutRect     frameLocalBounds(0.0f, 0.0f, frame.width, frame.height);
 
-  mFrameEffectVisual.SetLayoutParams(MakeBoundsLayoutParams(effect));
+  mFrameEffectVisual.SetLayoutParams(MakeBoundsLayoutParams(mFrameEffectVisual, effect));
   mFrameEffectVisual.SetVisible(resolvedStyle.shadowVisible);
   if(mFrameEffectContent)
   {
     const Dali::Ui::LayoutRect effectContentBounds = resolvedStyle.shadowSource == WindowFrameShadowSource::COLOR ? frame : effect;
-    mFrameEffectContent.SetLayoutParams(MakeBoundsLayoutParams(effectContentBounds));
+    mFrameEffectContent.SetLayoutParams(MakeBoundsLayoutParams(mFrameEffectContent, effectContentBounds));
     if(resolvedStyle.shadowSource == WindowFrameShadowSource::COLOR)
     {
       mFrameEffectContent.SetCornerRadius(maximized ? Dali::Vector4::ZERO : style.GetFrameCornerRadius());
     }
   }
-  mFrameRoot.SetLayoutParams(MakeBoundsLayoutParams(frame));
+  mFrameRoot.SetLayoutParams(MakeBoundsLayoutParams(mFrameRoot, frame));
   mFrameRoot.SetCornerRadius(maximized ? Dali::Vector4::ZERO : style.GetFrameCornerRadius());
   mFrameBackground.SetCornerRadius(maximized ? Dali::Vector4::ZERO : style.GetFrameCornerRadius());
-  mFrameBackground.SetLayoutParams(MakeBoundsLayoutParams(frameLocalBounds));
-  mContentRoot.SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetContent(), frame)));
-  mDecorationRoot.SetLayoutParams(MakeBoundsLayoutParams(frameLocalBounds));
-  if(mDecoration.GetTopSlot()) mDecoration.GetTopSlot().SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetTop(), frame)));
-  if(mDecoration.GetBottomSlot()) mDecoration.GetBottomSlot().SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetBottom(), frame)));
-  if(mDecoration.GetLeftSlot()) mDecoration.GetLeftSlot().SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetLeft(), frame)));
-  if(mDecoration.GetRightSlot()) mDecoration.GetRightSlot().SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetRight(), frame)));
-  if(mDecoration.GetBottomLeftResizeHandle()) mDecoration.GetBottomLeftResizeHandle().SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetBottomLeftResizeHandle(), frame)));
-  if(mDecoration.GetBottomRightResizeHandle()) mDecoration.GetBottomRightResizeHandle().SetLayoutParams(MakeBoundsLayoutParams(WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetBottomRightResizeHandle(), frame)));
+  mFrameBackground.SetLayoutParams(MakeBoundsLayoutParams(mFrameBackground, frameLocalBounds));
+  mContentRoot.SetLayoutParams(MakeBoundsLayoutParams(mContentRoot, WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetContent(), frame)));
+  mDecorationRoot.SetLayoutParams(MakeBoundsLayoutParams(mDecorationRoot, frameLocalBounds));
+  if(mDecoration.GetTopSlot()) mDecoration.GetTopSlot().SetLayoutParams(MakeBoundsLayoutParams(mDecoration.GetTopSlot(), WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetTop(), frame)));
+  if(mDecoration.GetBottomSlot()) mDecoration.GetBottomSlot().SetLayoutParams(MakeBoundsLayoutParams(mDecoration.GetBottomSlot(), WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetBottom(), frame)));
+  if(mDecoration.GetLeftSlot()) mDecoration.GetLeftSlot().SetLayoutParams(MakeBoundsLayoutParams(mDecoration.GetLeftSlot(), WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetLeft(), frame)));
+  if(mDecoration.GetRightSlot()) mDecoration.GetRightSlot().SetLayoutParams(MakeBoundsLayoutParams(mDecoration.GetRightSlot(), WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetRight(), frame)));
+  if(mDecoration.GetBottomLeftResizeHandle()) mDecoration.GetBottomLeftResizeHandle().SetLayoutParams(MakeBoundsLayoutParams(mDecoration.GetBottomLeftResizeHandle(), WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetBottomLeftResizeHandle(), frame)));
+  if(mDecoration.GetBottomRightResizeHandle()) mDecoration.GetBottomRightResizeHandle().SetLayoutParams(MakeBoundsLayoutParams(mDecoration.GetBottomRightResizeHandle(), WindowFrameLayoutEngine::SurfaceToFrameLocal(layout.GetBottomRightResizeHandle(), frame)));
 }
 
 void WindowFrameViewTree::SetDecorationVisible(bool visible)
