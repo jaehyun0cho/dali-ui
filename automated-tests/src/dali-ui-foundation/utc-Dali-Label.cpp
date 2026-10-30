@@ -35,6 +35,7 @@
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali-ui-foundation/extension-api/layout-scale-manager.h>
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/integration-api/label-impl.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali-ui/ui-async-task-manager.h>
@@ -5395,6 +5396,55 @@ int UtcDaliLabelStandaloneWrapContentKeepsNaturalSizeUnderZeroSizedParentP(void)
   settle();
   DALI_TEST_EQUALS(label.GetProperty<float>(Actor::Property::SIZE_WIDTH), natural.GetWidth(), 0.01f, TEST_LOCATION);
   DALI_TEST_EQUALS(label.GetProperty<float>(Actor::Property::SIZE_HEIGHT), natural.GetHeight(), 0.01f, TEST_LOCATION);
+
+  END_TEST;
+}
+
+int UtcDaliLabelGetLineCountScalesWidthLimitsP(void)
+{
+  UiTestApplication application;
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+
+  const char* text = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+
+  // 300 units are 600 pixels at scale 2; the maximum width of 150 units clamps them to 300 pixels.
+  Label label = Label::New(text);
+  label.SetMultiLine(true);
+  label.SetSystemFontSizeScaleEnabled(false);
+  label.SetPadding(Insets());
+  label.SetFontSize(20.0f);
+  label.SetRequestedWidth(300.0f);
+  label.SetMaximumWidth(150.0f);
+
+  // Unscaled oracle with the same rendered font size and width.
+  Label oracle = Label::New(text);
+  Ui::Extension::View::SetUiScalePolicy(oracle, Ui::Extension::UiScalePolicy::DISABLED);
+  oracle.SetMultiLine(true);
+  oracle.SetSystemFontSizeScaleEnabled(false);
+  oracle.SetPadding(Insets());
+  oracle.SetFontSize(40.0f);
+  oracle.SetRequestedWidth(300.0f);
+
+  application.GetScene().Add(label);
+  application.GetScene().Add(oracle);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_EQUALS(label.GetCurrentSize().width, 300.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_CHECK(oracle.GetLineCount() > 1);
+  // The line count is taken at the laid-out 300 pixels, not at the unscaled maximum of 150.
+  DALI_TEST_EQUALS(label.GetLineCount(), oracle.GetLineCount(), TEST_LOCATION);
+
+  // Until the next layout the label keeps the width, padding and fonts of its last layout; a new UI
+  // scale moves the effective scale at once but must not clamp the laid-out 300 pixels to 150.
+  const int shownLineCount = oracle.GetLineCount();
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  auto& labelImpl = static_cast<Dali::Ui::Integration::LabelImpl&>(label.GetImplementation());
+  DALI_TEST_EQUALS(Ui::Extension::View::GetEffectiveLayoutScale(labelImpl), 1.0f, 0.001f, TEST_LOCATION); // The transition is real.
+  DALI_TEST_EQUALS(label.GetProperty<float>(Actor::Property::SIZE_WIDTH), 300.0f, 0.01f, TEST_LOCATION);   // Not laid out again.
+  DALI_TEST_EQUALS(label.GetLineCount(), shownLineCount, TEST_LOCATION);
 
   END_TEST;
 }
