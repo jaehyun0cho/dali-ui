@@ -27,6 +27,7 @@
 #include <dali-ui-foundation/internal/visuals/visual-factory-impl.h>
 #include <dali-ui/ui-event-thread-callback.h>
 #define private public
+#include <dali-ui-foundation/internal/visuals/animated-vector-image/animated-vector-image-visual.h>
 #include <dali-ui-foundation/internal/visuals/animated-vector-image/vector-animation-task.h>
 #undef private
 #include <dali-ui-foundation/public-api/views/image/lottie-animation-view.h>
@@ -904,5 +905,27 @@ int UtcDaliLottieAnimationViewImplLegacyPlaybackRange(void)
   view.GetPlaybackRange(startFrame, endFrame);
   DALI_TEST_EQUALS(startFrame, 0, TEST_LOCATION);
   DALI_TEST_EQUALS(endFrame, view.GetTotalFrameCount(), TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliLottieAnimationVisualNaturalSizeFallbackFollowsScaleP(void)
+{
+  UiTestApplication application;
+  Property::Map map;
+  map.Insert(Ui::Integration::Visual::Property::TYPE, Ui::Integration::InternalVisualType::IMAGE);
+  map.Insert(Ui::Integration::ImageVisual::Property::URL, "animation.json");
+  auto  visual = Ui::Integration::VisualFactory::Get().CreateVisual(map);
+  auto& lottie = static_cast<Ui::Internal::AnimatedVectorImageVisual&>(Ui::GetImplementation(visual).GetVisualObject());
+
+  // Off scene with the ATTACHED policy nothing loads, so there is no default size yet.
+  Vector2 naturalSize;
+  lottie.GetNaturalSize(naturalSize);
+  DALI_TEST_EQUALS(naturalSize, Vector2::ZERO, TEST_LOCATION);
+
+  // A fitting pass at scale 2, and the size the visual was last rasterized at, in pixels.
+  lottie.SetTransformAndSize(Property::Map(), Vector2(200.0f, 100.0f), 2.0f);
+  lottie.mVisualSize = Vector2(200.0f, 100.0f);
+  lottie.GetNaturalSize(naturalSize);
+  DALI_TEST_EQUALS(naturalSize, Vector2(100.0f, 50.0f), TEST_LOCATION);
   END_TEST;
 }
