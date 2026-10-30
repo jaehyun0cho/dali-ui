@@ -992,6 +992,8 @@ public: // Setters for chaining
    * @brief Sets the bevel style.
    *
    * Pass Text::Bevel::None() to clear the bevel style.
+   * The intensity is multiplied by the label's effective scale; GetTextBevel() returns the
+   * value that was set.
    *
    * @SINCE_3_0.0
    * @param[in] bevel The bevel configuration.

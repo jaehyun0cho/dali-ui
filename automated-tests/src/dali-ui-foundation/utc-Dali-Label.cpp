@@ -5440,3 +5440,48 @@ int UtcDaliLabelGetLineCountScalesWidthLimitsP(void)
   LayoutScaleManager::Get().SetUiScale(1.0f);
   END_TEST;
 }
+
+int UtcDaliLabelTextBevelFollowsUiScaleP(void)
+{
+  UiTestApplication application;
+  application.GetGlAbstraction().SetCheckFramebufferStatusResult(GL_FRAMEBUFFER_COMPLETE);
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+
+  const Vector2 direction(-0.75f, 0.25f);
+  const float   strength = 2.5f;
+  const Vector4 lightColor(0.8f, 0.7f, 0.6f, 0.5f);
+  const Vector4 shadowColor(0.1f, 0.2f, 0.3f, 0.4f);
+
+  Text::Bevel bevel;
+  bevel.SetDirection(direction);
+  bevel.SetIntensity(strength);
+  bevel.SetLightColor(UiColor(lightColor));
+  bevel.SetShadowColor(UiColor(shadowColor));
+
+  Label label = Label::New("Emboss state must survive synchronous and asynchronous rendering");
+  label.SetRequestedWidth(420.0f);
+  label.SetRequestedHeight(96.0f);
+  label.SetTextBevel(bevel);
+  DALI_TEST_CHECK(label.GetTextBevel() == bevel);
+
+  // The bevel offset follows the UI scale (2) like the glyphs; the getter keeps the value that was set.
+  application.GetScene().Add(label);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_CHECK(HasValidTextTexture(label));
+  CheckEmbossRendererProperties(label, direction, strength * 2.0f, lightColor, shadowColor);
+  DALI_TEST_EQUALS(label.GetTextBevel().GetIntensity(), strength, TEST_LOCATION);
+
+  label.AsyncRenderFinishedSignal().Connect(&OnAsyncRenderFinished);
+  label.SetAsyncRendering(true);
+  gAsyncRenderFinished = false;
+  label.SetText("Emboss values are copied into each asynchronous request");
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_CHECK(WaitForAsyncRender(application));
+  CheckEmbossRendererProperties(label, direction, strength * 2.0f, lightColor, shadowColor);
+  DALI_TEST_EQUALS(label.GetTextBevel().GetIntensity(), strength, TEST_LOCATION);
+
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  END_TEST;
+}
