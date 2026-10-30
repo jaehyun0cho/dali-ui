@@ -643,6 +643,8 @@ public:
    * @brief Sets the additional spacing between letters in pixels.
    *
    * Positive values increase the spacing, while negative values reduce it.
+   * The spacing is multiplied by the label's effective scale; GetLetterSpacing()
+   * returns the value that was set.
    *
    * @param[in] spacing The additional letter spacing in pixels.
    */

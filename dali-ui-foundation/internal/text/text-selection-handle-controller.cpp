@@ -140,7 +140,7 @@ void SelectionHandleController::Reposition(Controller::Impl& impl)
   const Length         numberOfGlyphs       = *(glyphsPerCharacterBuffer + selectionEndMinusOne);
   const GlyphIndex     glyphEnd =
     *(charactersToGlyphBuffer + selectionEndMinusOne) + ((numberOfGlyphs > 0) ? numberOfGlyphs - 1u : 0u);
-  const float             modelCharacterSpacing     = visualModel->GetCharacterSpacing();
+  const float             modelCharacterSpacing     = visualModel->GetEffectiveCharacterSpacing();
   Vector<CharacterIndex>& glyphToCharacterMap       = visualModel->mGlyphsToCharacters;
   const CharacterIndex*   glyphToCharacterMapBuffer = glyphToCharacterMap.Begin();
 

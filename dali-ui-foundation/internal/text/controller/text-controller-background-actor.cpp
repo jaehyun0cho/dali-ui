@@ -100,7 +100,7 @@ Actor CreateControllerBackgroundActor(const View& textView, const VisualModelPtr
     const ColorIndex* const backgroundColorIndicesBuffer = textView.GetBackgroundColorIndices();
     const Vector4&          defaultBackgroundColor =
       textVisualModel->IsBackgroundEnabled() ? textVisualModel->GetBackgroundColor() : Color::TRANSPARENT;
-    const float             modelCharacterSpacing     = textVisualModel->GetCharacterSpacing();
+    const float             modelCharacterSpacing     = textVisualModel->GetEffectiveCharacterSpacing();
     Vector<CharacterIndex>& glyphToCharacterMap       = textVisualModel->mGlyphsToCharacters;
     const CharacterIndex*   glyphToCharacterMapBuffer = glyphToCharacterMap.Begin();
     float                   calculatedAdvance         = 0.f;

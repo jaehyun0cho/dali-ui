@@ -116,7 +116,7 @@ void GetGlyphMetricsFromCharacterIndex(CharacterIndex index, const VisualModelPt
   const GlyphInfo* const  glyphInfoBuffer           = visualModel->mGlyphs.Begin();
   Vector<CharacterIndex>& glyphToCharacterMap       = visualModel->mGlyphsToCharacters;
   const CharacterIndex*   glyphToCharacterMapBuffer = glyphToCharacterMap.Begin();
-  const float             modelCharacterSpacing     = visualModel->GetCharacterSpacing();
+  const float             modelCharacterSpacing     = visualModel->GetEffectiveCharacterSpacing();
 
   // Get the character-spacing runs.
   const Vector<CharacterSpacingGlyphRun>& characterSpacingGlyphRuns = visualModel->GetCharacterSpacingGlyphRuns();
