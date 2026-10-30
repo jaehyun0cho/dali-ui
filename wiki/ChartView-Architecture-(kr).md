@@ -211,7 +211,7 @@ Layout 부모가 아닌 경우 이를 올바르게 전파하지 못하므로 SIZ
 0×0(WRAP_CONTENT 자연 크기 = 0)으로 초기화됩니다.
 
 대신, OnArrange는 최종 self bounds를 반환하고(프레임워크가 반환된
-LayoutRect를 Self()에 적용) Rebuild*() 함수를 직접 호출합니다.
+LayoutRect를 Self()에 적용) Rebuild*() 함수가 idle 콜백에서 실행되도록 예약합니다.
 ViewImpl::OnInitialize에서 설정된 PIVOT=TOP_LEFT 덕분에 POSITION은
 피벗 연산 없이 왼쪽 상단 모서리로 매핑됩니다.
 
@@ -231,13 +231,17 @@ LayoutRect ChartViewImpl::OnArrange(const LayoutRect& bounds)
   // from the returned bounds; this override does not set Self() directly.
   const Vector2 newSize(bounds.width, bounds.height);
 
-  if(newSize != mSize && newSize.width > 0.0f && newSize.height > 0.0f)
+  // A scale change can keep the arranged size and still change the canvas size.
+  if(newSize.width > 0.0f && newSize.height > 0.0f &&
+     (newSize != mSize || newSize / GetCanvasScale() != mLastLayout.totalSize))
   {
-    mSize = newSize;
-    mNeedsBackgroundUpdate = mNeedsDataUpdate = true;
+    mSize                  = newSize;
+    mNeedsBackgroundUpdate = true;
+    mNeedsDataUpdate       = true;
   }
-  if(mNeedsBackgroundUpdate) { RebuildBackground(); mNeedsBackgroundUpdate = false; }
-  if(mNeedsDataUpdate)       { RebuildData();       mNeedsDataUpdate       = false; }
+
+  // RebuildBackground() / RebuildData() run from an idle callback (FlushRedraw).
+  QueueRedraw();
 
   return bounds;
 }
@@ -367,15 +371,15 @@ ComputeLayout(totalSize, model, scale)
 
 `LayoutResult`는 `ChartViewImpl::mLastLayout`에 캐시되며 세 렌더러와 `ChartHitTester` 모두가 재사용합니다.
 
-주요 상수:
+주요 상수(natural 단위이며 canvas view box가 렌더링 픽셀로 변환):
 
 | 상수 | 값 | 목적 |
 |------|----|------|
-| `PADDING` | 10 px | 차트 외부 여백 |
-| `TICK_LENGTH` | 5 px | 눈금 표시 길이 |
-| `TICK_LABEL_GAP` | 4 px | 눈금과 레이블 사이 간격 |
-| `LEGEND_SWATCH` | 12 px | 범례 색상 스워치 크기 |
-| `LEGEND_GAP` | 6 px | 스워치와 레이블 텍스트 사이 간격 |
+| `PADDING` | 10 단위 | 차트 외부 여백 |
+| `TICK_LENGTH` | 5 단위 | 눈금 표시 길이 |
+| `TICK_LABEL_GAP` | 4 단위 | 눈금과 레이블 사이 간격 |
+| `LEGEND_SWATCH` | 12 단위 | 범례 색상 스워치 크기 |
+| `LEGEND_GAP` | 6 단위 | 스워치와 레이블 텍스트 사이 간격 |
 
 ---
 
@@ -420,7 +424,7 @@ class ChartModel
 
 ## 8. ScaleEngine
 
-`ScaleEngine`은 **데이터 좌표**와 **캔버스 픽셀 좌표** 사이를 매핑합니다. `ComputeAutoRange()` 호출 후(또는 줌/패닝이 뷰포트를 변경한 후) `ChartViewImpl::UpdateScale()`에 의해 갱신됩니다.
+`ScaleEngine`은 **데이터 좌표**와 **캔버스 좌표**(차트의 natural 단위) 사이를 매핑합니다. `ComputeAutoRange()` 호출 후(또는 줌/패닝이 뷰포트를 변경한 후) `ChartViewImpl::UpdateScale()`에 의해 갱신됩니다.
 
 ```cpp
 class ScaleEngine
@@ -451,7 +455,7 @@ class ScaleEngine
 
 ## 9. HitTester
 
-`ChartHitTester`는 터치 위치에 가장 가까운 데이터 포인트를 찾습니다. 세 `CanvasView` 레이어가 `Self()`와 동일한 원점 및 크기를 공유하므로, **액터 로컬 좌표**에서 동작하며 이는 캔버스 픽셀 좌표와 동일합니다.
+`ChartHitTester`는 캔버스 좌표에서 터치 위치에 가장 가까운 데이터 포인트를 찾습니다. 세 `CanvasView` 레이어는 차트의 natural 크기를 view box로 `Self()`를 덮으므로 `ChartViewImpl`은 액터 로컬 터치 위치와 화면 거리인 hit threshold를 유효 스케일로 나눈 뒤 히트 테스트를 합니다.
 
 ```cpp
 class ChartHitTester
