@@ -16,6 +16,8 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/public-api/views/canvas/canvas-view.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
@@ -25,6 +27,7 @@
 
 using namespace Dali;
 using namespace Dali::Ui;
+using Dali::Ui::Extension::LayoutScaleManager;
 
 void utc_dali_canvasview_startup(void)
 {
@@ -646,5 +649,121 @@ int UtcDaliCanvasViewShapeGradientFillP(void)
   application.GetScene().Remove(view);
   application.SendNotification();
   application.Render();
+  END_TEST;
+}
+
+// =============================================================================
+// Zero viewbox and the effective scale
+// =============================================================================
+
+namespace
+{
+class ScopedCanvasUiScale
+{
+public:
+  explicit ScopedCanvasUiScale(float scale)
+  : mManager(LayoutScaleManager::Get()),
+    mOriginalScale(mManager.GetUiScale())
+  {
+    mManager.SetUiScale(scale);
+  }
+
+  ~ScopedCanvasUiScale()
+  {
+    mManager.SetUiScale(mOriginalScale);
+  }
+
+  ScopedCanvasUiScale(const ScopedCanvasUiScale&)            = delete;
+  ScopedCanvasUiScale& operator=(const ScopedCanvasUiScale&) = delete;
+
+private:
+  LayoutScaleManager mManager;
+  float              mOriginalScale;
+};
+
+void RenderCanvas(UiTestApplication& application)
+{
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+}
+} // namespace
+
+int UtcDaliCanvasViewZeroViewBoxUsesNaturalUnitsAtUiScaleP(void)
+{
+  UiTestApplication   application;
+  ScopedCanvasUiScale scale(2.0f);
+  CanvasView          view = CanvasView::New();
+  view.SetRequestedWidth(100.0f);
+  view.SetRequestedHeight(50.0f);
+  application.GetScene().Add(view);
+  RenderCanvas(application);
+
+  // Laid out at twice its requested size; the viewbox is latched in requested units.
+  const Vector3 size = view.GetProperty<Vector3>(Actor::Property::SIZE);
+  DALI_TEST_EQUALS(size.width, 200.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetViewBox(), Vector2(100.0f, 50.0f), TEST_LOCATION);
+
+  // The viewbox is latched once: a resize stretches the content as before.
+  view.SetRequestedWidth(150.0f);
+  RenderCanvas(application);
+  DALI_TEST_EQUALS(view.GetProperty<Vector3>(Actor::Property::SIZE).width, 300.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetViewBox(), Vector2(100.0f, 50.0f), TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliCanvasViewZeroViewBoxLatchesOnceP(void)
+{
+  UiTestApplication   application;
+  ScopedCanvasUiScale scale(2.0f);
+
+  // A host that ignores the UI scale keeps the canvas at 400 x 300 pixels while the
+  // canvas itself follows the UI scale.
+  View host = View::New();
+  Ui::Extension::View::SetUiScalePolicy(host, Ui::Extension::UiScalePolicy::DISABLED);
+  host.SetRequestedWidth(400.0f);
+  host.SetRequestedHeight(300.0f);
+  CanvasView view = CanvasView::New();
+  Ui::Extension::View::SetUiScalePolicy(view, Ui::Extension::UiScalePolicy::ENABLED);
+  view.SetRequestedWidth(MATCH_PARENT);
+  view.SetRequestedHeight(MATCH_PARENT);
+  host.Add(view);
+  application.GetScene().Add(host);
+  RenderCanvas(application);
+
+  // The first layout latches the natural size: 400 x 300 pixels at a scale of 2.0.
+  DALI_TEST_EQUALS(view.GetProperty<Vector3>(Actor::Property::SIZE).width, 400.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetViewBox(), Vector2(200.0f, 150.0f), TEST_LOCATION);
+
+  // Neither a scale change nor a resize moves it; a viewbox that followed every layout
+  // would become 400 x 300 and then 600 x 300 here.
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  RenderCanvas(application);
+  DALI_TEST_EQUALS(view.GetViewBox(), Vector2(200.0f, 150.0f), TEST_LOCATION);
+  host.SetRequestedWidth(600.0f);
+  RenderCanvas(application);
+  DALI_TEST_EQUALS(view.GetProperty<Vector3>(Actor::Property::SIZE).width, 600.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(view.GetViewBox(), Vector2(200.0f, 150.0f), TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliCanvasViewExplicitViewBoxIgnoresUiScaleP(void)
+{
+  UiTestApplication   application;
+  ScopedCanvasUiScale scale(2.0f);
+  CanvasView          fixedBox = CanvasView::New(Vector2(24.0f, 24.0f));
+  fixedBox.SetRequestedWidth(48.0f);
+  fixedBox.SetRequestedHeight(48.0f);
+  CanvasView setBox = CanvasView::New();
+  setBox.SetViewBox(Vector2(30.0f, 30.0f));
+  setBox.SetRequestedWidth(60.0f);
+  setBox.SetRequestedHeight(60.0f);
+  application.GetScene().Add(fixedBox);
+  application.GetScene().Add(setBox);
+  RenderCanvas(application);
+
+  DALI_TEST_EQUALS(fixedBox.GetViewBox(), Vector2(24.0f, 24.0f), TEST_LOCATION);
+  DALI_TEST_EQUALS(setBox.GetViewBox(), Vector2(30.0f, 30.0f), TEST_LOCATION);
   END_TEST;
 }

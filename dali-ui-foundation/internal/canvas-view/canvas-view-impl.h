@@ -82,8 +82,9 @@ protected: // Construction & Destruction
   /**
    * @brief Constructor.
    *
-   * @param[in] viewBox Initial viewbox size.  Pass Vector2::ZERO if the viewbox
-   *                    should match the view's layout size.
+   * @param[in] viewBox Initial viewbox size.  Pass Vector2::ZERO to take the view's
+   *                    natural size at its first layout (the arranged size divided by
+   *                    the effective scale) as the viewbox.
    */
   explicit CanvasViewImpl(const Vector2& viewBox);
 
