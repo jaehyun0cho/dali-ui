@@ -144,7 +144,7 @@ public: // API
    * @brief Sets the spacing between children in the stack.
    *
    * @SINCE_3_0.0
-   * @param[in] spacing The spacing to set (in pixels)
+   * @param[in] spacing The spacing to set, in natural units (multiplied by this layout's effective scale)
    */
   void SetSpacing(float spacing);
 

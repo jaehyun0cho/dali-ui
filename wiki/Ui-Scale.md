@@ -18,7 +18,7 @@ The runtime scale APIs — `Extension::LayoutScaleManager` (`dali-ui-foundation/
 
 ## How It Works
 
-Every view in the tree carries an **effective scale** — a single `float` multiplier that is applied to all layout measurements (sizes, margins, padding, positions) during the Measure and Arrange passes.
+Every view in the tree carries an **effective scale** — a single `float` multiplier that is applied to all layout measurements (sizes, margins, padding, positions) during the Measure and Arrange passes. Visuals, text and components apply the same multiplier to their own lengths; see [What Follows the Scale](#what-follows-the-scale).
 
 The **UI scale** (also called the system scale) is the process-wide scale held by `LayoutScaleManager` and set with `LayoutScaleManager::SetUiScale()`, usually by an OS or accessibility handler. `LayoutScaleManager::GetUiScale()` returns that stored value; a view's own effective scale is `Extension::View::GetEffectiveLayoutScale()`.
 
@@ -172,7 +172,7 @@ Extension::View::SetUiScalePolicy(panel, Extension::UiScalePolicy::DISABLED);
 
 Because children inherit the `1.0` term from a `DISABLED` ancestor, only the subtree under `panel` stops following the system scale. Sibling views continue to scale normally.
 
-> **Note:** This is not an opt-out of *all* scaling. If the view's `Window` carries a window scale, it still applies, so the subtree renders at the window scale rather than at natural pixel size. No public policy opts out of the window scale as well; only the master switch turns it off, for every view. (The framework itself opts out only the views it manages in physical pixels: the text cursor and handles, and the inline replacement layer.)
+> **Note:** This is not an opt-out of *all* scaling. If the view's `Window` carries a window scale, it still applies, so the subtree renders at the window scale rather than at natural pixel size. No public policy opts out of the window scale as well; only the master switch turns it off, for every view. (The framework itself opts out only the views it manages in physical pixels: the text cursor and handles, and the inline replacement layer. These views are given geometry that the text control has already scaled.)
 
 ```
 LayoutScaleManager UI scale = 2.0, no window scale
@@ -225,8 +225,29 @@ effectiveScale = windowScale × uiScale = 1.25 × 2.0 = 2.5
 visual width = 150 × effectiveScale = 150 × 2.5 = 375 px
 ```
 
-Static scale (`ScalingFactor`) converts design units to device pixels once at startup.
+Static scale (`ScalingFactor`) converts design units to natural units once at startup (see [Unit & Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Unit-&-Scale)).
 Dynamic scale (`effectiveScale`) stretches or shrinks the entire layout tree at runtime; the window scale is the part of it that applies to one window only.
+
+<br/>
+
+## What Follows the Scale
+
+dali-ui applies one rule to lengths. Every length that an application, a style or a framework default supplies in design terms — a size, offset, distance, radius, thickness, spacing, or a speed in pixels per second — is in natural units, and it is multiplied by the effective scale of the view that owns it exactly once, before it becomes rendered geometry (the blur radii and the extra size of a visual that a fitting mode places, listed below, are the exceptions). This covers:
+
+- **Layout**: a view's requested size and position (`SetRequestedX()` / `SetRequestedY()`), margin, minimum and maximum size and `AbsoluteLayoutParams` bounds follow the view's own scale; a container's padding, `StackLayout` and `GridLayout` spacing and `GridLength::Absolute()` tracks follow the container's. A `LayoutTransition` `LayoutBoundsLength::Pixel()` offset follows the scale of the view that enters or exits. See [Unit & Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Unit-&-Scale) and [Layout Transition](https://github.sec.samsung.net/NUI/dali-ui/wiki/Layout-Transition).
+- **Scrolling**: the `ScrollView` padding, key scroll step, focus scroll peek, mouse wheel step, overscroll limits and keyboard edge bump, the `PageScrollView` page size, and the `RecyclerView` item extent and spacing, decoration offsets, group body margins and cache extent. See [ScrollView](https://github.sec.samsung.net/NUI/dali-ui/wiki/ScrollView#49-scale-and-units).
+- **Visuals**: corner radius, borderline width, `USER_SPACE` gradient points and radius, the fixed frame of an n-patch image, the thickness of the arc visual, and the extra size of a visual that no fitting mode places. See [ImageView](https://github.sec.samsung.net/NUI/dali-ui/wiki/ImageView).
+- **Text**: besides the font size, `USER_SPACE` text gradient points and radius, bevel intensity, letter spacing, the marquee speed (a marquee loop takes the same time at every scale) and the text handle images (when the image size can be read) follow the text control's scale. See [Label](https://github.sec.samsung.net/NUI/dali-ui/wiki/Label#ui-scale) and [Text Gradient](https://github.sec.samsung.net/NUI/dali-ui/wiki/Text-Gradient).
+- **Components and canvases**: `WindowFrame` decoration insets, resize-handle sizes and shadow outsets follow the frame's scale, and the frame still fills its window. `ChartView` draws in natural units, so its paddings, line widths, marker radii, dashes and `USER_SPACE` gradient points follow the scale with its labels. `MarkdownView` list markers are scaled once. A `CanvasView` without a view box of its own takes one once, at the first layout that gives it a size: its natural size, the arranged size divided by the effective scale. See [WindowFrame](https://github.sec.samsung.net/NUI/dali-ui/wiki/WindowFrame), [ChartView](https://github.sec.samsung.net/NUI/dali-ui/wiki/ChartView), [MarkdownView](https://github.sec.samsung.net/NUI/dali-ui/wiki/MarkdownView) and [CanvasView](https://github.sec.samsung.net/NUI/dali-ui/wiki/CanvasView).
+
+These stay physical and do not follow the scale:
+
+- **Input and gestures**: the pan threshold, the drag (the content follows the finger 1:1), fling velocities, the drag-and-drop start distance and auto-scroll edge zones, and the `ChartView` hit threshold.
+- **Texel and texture quantities**: decode sizes (`DESIRED_WIDTH` / `DESIRED_HEIGHT`, or the view's pixel size when an image is loaded with the view size), render-effect framebuffers, anti-aliasing margins and 1-pixel minimums.
+- **Blur radii**: the blur radius of `GaussianBlurEffect` and `BackgroundBlurEffect`, and of a text shadow or outline. A blur costs more as its radius grows, so these radii stay in pixels at every scale.
+- **Extra size under a fitting mode**: a fitting mode writes the transform of the visual it places in pixels, and the extra size of that visual is added in pixels too.
+- **APIs that take or return rendered geometry**: the `Dali::Ui::Extension::View` geometry setters, `ViewAnimationSpec` position and size, `LayoutAnimatorContext` bounds, and scroll positions (`ScrollView::ScrollTo()` / `GetScrollPosition()`, `RecyclerView::ScrollBy()` / `GetScrollOffset()`). Scroll positions already include the scale and are not converted when it changes.
+- **Window and surface sizes**: a layout root is measured against its window's pixel size, and the `WindowFrame` size and geometry APIs use window surface pixels.
 
 <br/>
 
@@ -235,6 +256,8 @@ Dynamic scale (`effectiveScale`) stretches or shrinks the entire layout tree at 
 If your custom view (implemented via `ViewImpl`) caches pixel-unit values, those caches must be invalidated when scale changes. Since `InvalidateMeasure()` is called automatically on the root when `SetUiScale()` fires, derived views that override `OnMeasure` / `OnArrange` receive fresh constraints and `effectiveScale` on each layout pass — no extra work is required.
 
 For views that cache values outside the layout pass, subscribe to property change notifications or call `Ui::Extension::View::GetEffectiveLayoutScale(*this)` lazily inside `OnMeasure` (inside a `ViewImpl` subclass write the `Ui::` qualifier: an unqualified `Extension::` names `CustomActorImpl::Extension` there).
+
+Follow the rule of [What Follows the Scale](#what-follows-the-scale): multiply each natural length your view supplies by `Extension::View::GetEffectiveLayoutScale()` exactly once. The constraints `OnMeasure` receives, the size it returns and the bounds `OnArrange` receives already include the scale, so do not scale them again. A custom visual shader replaces the built-in scaling: it receives the scale as the uniform `viewEffectiveScale` and must multiply natural lengths by it itself.
 
 <br/>
 
@@ -255,6 +278,7 @@ For views that cache values outside the layout pass, subscribe to property chang
 | Force a view to always track system scale | `Extension::View::SetUiScalePolicy(view, Extension::UiScalePolicy::ENABLED)` |
 | Reset to default inherited behavior | `Extension::View::SetUiScalePolicy(view, Extension::UiScalePolicy::INHERIT)` |
 | Query a view's effective scale (framework use) | `Extension::View::GetEffectiveLayoutScale(viewImpl)` |
+| Compare a scroll position (rendered pixels) with a design distance | Multiply the distance by `Extension::View::GetEffectiveLayoutScale(viewImpl)` |
 
 <br/>
 
