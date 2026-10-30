@@ -17,6 +17,7 @@
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali-ui/ui-event-thread-callback.h>
+#include <dali/integration-api/adaptor-framework/input-method-context-integ.h>
 #include <dali/integration-api/pixel-data-integ.h>
 #include <chrono>
 #include <cmath>
@@ -33,6 +34,7 @@
 #include <dali-ui-foundation/integration-api/input-editor-impl.h>
 #include <dali-ui-foundation/integration-api/input-field-impl.h>
 #include <dali-ui-foundation/integration-api/label-impl.h>
+#include <dali-ui-foundation/integration-api/text/input-style.h>
 #include <dali-ui-foundation/internal/text/async-text/async-text-loader-impl.h>
 #include <dali-ui-foundation/internal/text/controller/text-controller-impl.h>
 #include <dali-ui-foundation/internal/text/cursor-helper-functions.h>
@@ -1081,5 +1083,62 @@ int UtcDaliTextCursorInsetScaleEditorDisabledP(void)
 {
   UiTestApplication application;
   CheckCursorInsetScale<InputEditor>(application, false);
+  END_TEST;
+}
+
+int UtcDaliTextDecorationScaleTypingFontSizeP(void)
+{
+  UiTestApplication  application;
+  auto               controller = Text::Controller::New();
+  Text::DecoratorPtr decorator  = Text::Decorator::New(*controller, *controller);
+  InputMethodContext inputMethodContext;
+  controller->EnableTextInput(decorator, inputMethodContext);
+  controller->SetSelectionEnabled(true);
+  controller->SetDefaultFontSize(20.f, Text::Controller::PIXEL_SIZE);
+  controller->SetText("abc");
+  if(controller->SetUiScale(2.f)) controller->InvalidateFontData();
+  controller->Relayout(BOX);
+  controller->KeyboardFocusGainEvent();
+  controller->Relayout(BOX);
+  auto& impl = Text::Controller::Impl::GetImplementation(*controller);
+  auto& runs = impl.mModel->mLogicalModel->mFontDescriptionRuns;
+
+  // Typing: the inserted run keeps the size that was set.
+  impl.mEventData->mPrimaryCursorPosition = 3u;
+  controller->SetInputFontSize(30.f, Text::Controller::PIXEL_SIZE);
+  const float    typedPoint = controller->GetInputFontSize(Text::Controller::POINT_SIZE);
+  Dali::KeyEvent key        = Dali::KeyEvent::New();
+  key.SetKeyName("z");
+  key.SetLogicalKey("z");
+  key.SetKeyString("z");
+  key.SetKeyCode(122);
+  key.SetState(Dali::KeyEvent::DOWN);
+  DALI_TEST_CHECK(controller->KeyEvent(key));
+  controller->Relayout(BOX);
+  DALI_TEST_CHECK(!runs.Empty() && runs[runs.Count() - 1u].sizeDefined);
+  const uint32_t typedSize = runs[runs.Count() - 1u].size;
+  DALI_TEST_EQUALS(typedSize, static_cast<uint32_t>(typedPoint * 64.f), TEST_LOCATION);
+  Ui::Integration::Text::InputStyle style;
+  impl.mModel->mLogicalModel->RetrieveStyle(3u, style);
+  DALI_TEST_EQUALS(style.size, typedPoint, 1.f / 64.f, TEST_LOCATION);
+
+  // Font validation applies the effective text scale (2) once.
+  uint32_t typedFontSize = 0u;
+  for(const auto& fontRun : impl.mModel->mLogicalModel->mFontRuns)
+  {
+    if(fontRun.characterRun.characterIndex <= 3u &&
+       3u < fontRun.characterRun.characterIndex + fontRun.characterRun.numberOfCharacters)
+    {
+      typedFontSize = TextAbstraction::FontClient::Get().GetPointSize(fontRun.fontId);
+    }
+  }
+  DALI_TEST_EQUALS(typedFontSize, static_cast<uint32_t>(typedSize * controller->GetEffectiveTextScale()), TEST_LOCATION);
+
+  // Selecting: the selection run keeps the size that was set too.
+  controller->SelectWholeText();
+  controller->Relayout(BOX);
+  controller->SetInputFontSize(40.f, Text::Controller::PIXEL_SIZE);
+  const float selectedPoint = controller->GetInputFontSize(Text::Controller::POINT_SIZE);
+  DALI_TEST_EQUALS(static_cast<uint32_t>(runs[runs.Count() - 1u].size), static_cast<uint32_t>(selectedPoint * 64.f), TEST_LOCATION);
   END_TEST;
 }
