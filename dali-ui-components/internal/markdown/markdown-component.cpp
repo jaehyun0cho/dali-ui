@@ -407,20 +407,23 @@ private:
     {
       mMarkerLabel.SetHorizontalTextAlignment(Text::Alignment::END);
       ApplyMarkerText(node);
-      const Vector3 markerNaturalSize = mMarkerLabel.GetNaturalSize();
-      const float   markerLabelWidth  = std::max(markerColumnWidth, markerNaturalSize.width);
-      mMarkerLabel.SetRequestedWidth(markerLabelWidth);
+      // The label measures its own text at its effective scale. The marker column is a
+      // minimum in natural units, so a wider marker widens the column.
+      mMarkerLabel.SetRequestedWidth(WRAP_CONTENT);
+      mMarkerLabel.SetMinimumWidth(markerColumnWidth);
       mMarkerLabel.SetMargin(Insets());
       mMarkerHost.Add(mMarkerLabel);
       mMarkerLabelAttached = true;
-      markerHostWidth      = markerLabelWidth;
-      markerHostHeight     = std::max(markerHostHeight, markerNaturalSize.height);
+      markerHostWidth      = WRAP_CONTENT;
+      markerHostHeight     = WRAP_CONTENT;
     }
     else
     {
       mMarkerText.clear();
     }
 
+    // At least one body line tall; an ordered marker's host wraps its label.
+    mMarkerHost.SetMinimumHeight(lineHeight);
     mMarkerHost.SetRequestedWidth(markerHostWidth);
     mMarkerHost.SetRequestedHeight(markerHostHeight);
   }
