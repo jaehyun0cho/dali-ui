@@ -220,8 +220,9 @@ void UpdateReplacementRenderState(Controller::Impl& impl, const Size& contentSiz
   result.processingModel->mVisualModel->mControlSize = contentSize;
 
   const uint32_t pointsPerUnit = impl.GetFontClient().GetNumberOfPointsPerOneUnitOfPointSize();
-  float          pointSize     = static_cast<float>(TextAbstraction::FontClient::DEFAULT_POINT_SIZE) /
-                    static_cast<float>(pointsPerUnit);
+  // Without font defaults, use the default size that font validation uses: scaled by the effective text scale.
+  float pointSize = static_cast<float>(TextAbstraction::FontClient::DEFAULT_POINT_SIZE) /
+                    static_cast<float>(pointsPerUnit) * impl.GetEffectiveTextScale();
   if(impl.mFontDefaults != nullptr)
   {
     pointSize = (impl.IsTextFitEnabled() || impl.IsTextFitCandidatesEnabled())
