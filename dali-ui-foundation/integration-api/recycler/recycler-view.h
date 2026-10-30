@@ -74,6 +74,7 @@ public:
   void SetCacheExtent(float before, float after);
   void GetCacheExtent(float& before, float& after) const;
 
+  // Scroll distances and offsets are rendered pixels: they include this view's effective scale.
   void  ScrollToPosition(uint32_t position, bool animation = true);
   void  ScrollBy(float distance, bool animation = true);
   void  SetScrollOffset(float offset);

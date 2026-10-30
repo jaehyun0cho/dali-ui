@@ -14,7 +14,7 @@ dali-ui는 세 가지 독립적인 스케일 메커니즘을 제공하며, 이�
 
 ## 동작 원리
 
-트리 내 모든 뷰는 **유효 스케일(effective scale)** 을 보유합니다. 이 단일 `float` 배율은 Measure 및 Arrange 패스에서 모든 레이아웃 크기(사이즈, 마진, 패딩, 위치)에 곱해집니다.
+트리 내 모든 뷰는 **유효 스케일(effective scale)** 을 보유합니다. 이 단일 `float` 배율은 Measure 및 Arrange 패스에서 모든 레이아웃 크기(사이즈, 마진, 패딩, 위치)에 곱해집니다. 비주얼, 텍스트, 컴포넌트도 자신의 길이에 같은 배율을 곱합니다. [스케일을 따르는 값](#스케일을-따르는-값)을 참고하세요.
 
 **시스템 스케일**(UI 스케일)은 `LayoutScaleManager`가 보유하는 프로세스 전역 스케일이며, 보통 OS나 접근성 설정 핸들러가 `LayoutScaleManager::SetUiScale()`로 설정합니다. `LayoutScaleManager::GetUiScale()`은 이 저장값을 반환하고, 각 뷰의 유효 스케일은 `ViewImpl::GetEffectiveLayoutScale()`로 조회합니다.
 
@@ -184,7 +184,7 @@ panel.SetUiScalePolicy(UiScalePolicy::DISABLED);
 
 `DISABLED` 뷰의 자식들은 그 `1.0` 항을 상속하므로, `panel` 하위 서브트리만 시스템 스케일 추적을 멈춥니다. 형제 뷰들은 정상적으로 스케일링됩니다.
 
-> **참고:** 이것은 *모든* 스케일에서 제외되는 것이 아닙니다. 뷰가 속한 `Window`에 윈도우 스케일이 설정되어 있으면 그대로 적용되므로, 서브트리는 자연 픽셀 크기가 아니라 윈도우 스케일로 렌더링됩니다. 윈도우 스케일까지 제외하는 공개 정책은 없으며, 마스터 스위치만이 모든 뷰에 대해 이를 끕니다. (프레임워크 자신은 물리 픽셀로 관리하는 뷰 — 텍스트 커서와 핸들, 인라인 치환 레이어 — 만 윈도우 스케일에서 제외합니다.)
+> **참고:** 이것은 *모든* 스케일에서 제외되는 것이 아닙니다. 뷰가 속한 `Window`에 윈도우 스케일이 설정되어 있으면 그대로 적용되므로, 서브트리는 자연 픽셀 크기가 아니라 윈도우 스케일로 렌더링됩니다. 윈도우 스케일까지 제외하는 공개 정책은 없으며, 마스터 스위치만이 모든 뷰에 대해 이를 끕니다. (프레임워크 자신은 물리 픽셀로 관리하는 뷰 — 텍스트 커서와 핸들, 인라인 치환 레이어 — 만 윈도우 스케일에서 제외합니다. 이 뷰들은 텍스트 컨트롤이 이미 스케일을 적용한 geometry를 받습니다.)
 
 ```
 LayoutScaleManager 시스템 스케일 = 2.0, 윈도우 스케일 없음
@@ -237,8 +237,27 @@ effectiveScale = windowScale × uiScale = 1.25 × 2.0 = 2.5
 시각적 너비 = 150 × effectiveScale = 150 × 2.5 = 375 px
 ```
 
-정적 스케일(`ScalingFactor`)은 디자인 단위를 시작 시점에 한 번 디바이스 픽셀로 변환합니다.
+정적 스케일(`ScalingFactor`)은 디자인 단위를 시작 시점에 한 번 자연 단위로 변환합니다([Unit & Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Unit-&-Scale-(kr)) 참고).
 동적 스케일(`effectiveScale`)은 런타임에 레이아웃 트리 전체를 늘리거나 줄이며, 윈도우 스케일은 그중 한 윈도우에만 적용되는 항입니다.
+
+<br/>
+
+## 스케일을 따르는 값
+
+dali-ui는 길이에 하나의 규칙을 적용합니다. 애플리케이션, 스타일 또는 프레임워크 기본값이 디자인 기준으로 지정하는 모든 길이(크기, offset, 거리, 반지름, 두께, 간격, 초당 픽셀 단위의 속도)는 자연 단위(natural unit)이며, 렌더링 geometry가 되기 전에 그 길이를 소유한 뷰의 유효 스케일이 정확히 한 번 곱해집니다. 이 규칙은 다음 값에 적용됩니다.
+
+- **레이아웃**: 뷰의 요청 크기와 요청 위치(`SetRequestedX()` / `SetRequestedY()`), margin, 최소/최대 크기, `AbsoluteLayoutParams` bounds는 뷰 자신의 스케일을 따르고, 컨테이너의 padding, `StackLayout`과 `GridLayout`의 간격, `GridLength::Absolute()` 트랙은 컨테이너의 스케일을 따릅니다. `LayoutTransition`의 `LayoutBoundsLength::Pixel()` offset은 ENTER / EXIT 되는 뷰의 스케일을 따릅니다. [Unit & Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Unit-&-Scale-(kr))과 [Layout Transition](https://github.sec.samsung.net/NUI/dali-ui/wiki/Layout-Transition-(kr))을 참고하세요.
+- **스크롤**: `ScrollView`의 padding, key scroll step, focus scroll peek, 마우스 휠 스텝, 오버스크롤 한계와 키보드 경계 bump, `PageScrollView`의 page size, `RecyclerView`의 아이템 extent와 간격, decoration offset, group body margin, cache extent. [ScrollView](https://github.sec.samsung.net/NUI/dali-ui/wiki/ScrollView-(kr)#49-스케일과-단위)를 참고하세요.
+- **비주얼과 렌더 이펙트**: corner radius, borderline 폭, `USER_SPACE` gradient 좌표와 반지름, `GaussianBlurEffect`와 `BackgroundBlurEffect`의 blur radius, n-patch 이미지의 고정 테두리, arc 비주얼의 두께, 비주얼의 extra size(fitting mode가 배치하는 경우 포함). [ImageView](https://github.sec.samsung.net/NUI/dali-ui/wiki/ImageView-(kr))와 [Render Effect](https://github.sec.samsung.net/NUI/dali-ui/wiki/Render-Effect-(kr))를 참고하세요.
+- **텍스트**: font size 외에도 `USER_SPACE` text gradient 좌표와 반지름, shadow와 outline의 blur radius, bevel intensity, letter spacing, marquee 속도(스케일과 관계없이 marquee 한 loop의 시간이 같음), 텍스트 핸들 이미지(이미지 크기를 읽을 수 있는 경우)가 텍스트 컨트롤의 스케일을 따릅니다. [Label](https://github.sec.samsung.net/NUI/dali-ui/wiki/Label-(kr)#ui-scale)과 [Text Gradient](https://github.sec.samsung.net/NUI/dali-ui/wiki/Text-Gradient-(kr))를 참고하세요.
+- **컴포넌트와 canvas**: `WindowFrame`의 decoration inset, 리사이즈 핸들 크기, shadow outset은 frame의 스케일을 따르며, frame은 여전히 윈도우를 채웁니다. `ChartView`는 자연 단위로 그리므로 여백, 선 굵기, 마커 반지름, 대시, `USER_SPACE` gradient 좌표가 레이블과 함께 스케일을 따릅니다. `MarkdownView`의 목록 마커는 한 번만 스케일됩니다. 자체 view box가 없는 `CanvasView`는 처음으로 크기를 받는 레이아웃에서 한 번, 자연 크기(배치된 크기를 유효 스케일로 나눈 값)를 view box로 정합니다. [WindowFrame](https://github.sec.samsung.net/NUI/dali-ui/wiki/WindowFrame-(kr)), [ChartView](https://github.sec.samsung.net/NUI/dali-ui/wiki/ChartView-(kr)), [MarkdownView](https://github.sec.samsung.net/NUI/dali-ui/wiki/MarkdownView-(kr)), [CanvasView](https://github.sec.samsung.net/NUI/dali-ui/wiki/CanvasView-(kr))를 참고하세요.
+
+다음 값은 물리 단위로 유지되며 스케일을 따르지 않습니다.
+
+- **입력과 제스처**: 팬 임계값, 드래그(콘텐츠가 손가락을 1:1로 따라감), 플링 속도, 드래그 앤 드롭의 시작 거리와 자동 스크롤 경계 영역, `ChartView`의 hit threshold.
+- **텍셀과 텍스처 값**: 디코드 크기(`DESIRED_WIDTH` / `DESIRED_HEIGHT`, 또는 뷰 크기로 이미지를 로드할 때의 뷰 픽셀 크기), 렌더 이펙트 프레임버퍼, 안티앨리어싱 여백, 1픽셀 최소값.
+- **렌더링 geometry를 받거나 반환하는 API**: `Dali::Ui::Extension::View`의 geometry setter, `ViewAnimationSpec`의 position과 size, `LayoutAnimatorContext`의 bounds, 스크롤 위치(`ScrollView::ScrollTo()` / `GetScrollPosition()`, `RecyclerView::ScrollBy()` / `GetScrollOffset()`). 스크롤 위치에는 스케일이 이미 반영되어 있으며, 스케일이 바뀌어도 변환되지 않습니다.
+- **윈도우와 surface 크기**: 레이아웃 루트는 윈도우의 픽셀 크기를 기준으로 측정되며, `WindowFrame`의 크기·geometry API는 윈도우 surface 픽셀을 사용합니다.
 
 <br/>
 
@@ -247,6 +266,8 @@ effectiveScale = windowScale × uiScale = 1.25 × 2.0 = 2.5
 `ViewImpl`을 상속해 커스텀 뷰를 구현한 경우, 픽셀 단위 값을 내부에 캐시하고 있다면 스케일 변경 시 해당 캐시를 무효화해야 합니다. `SetUiScale()`이 호출되면 루트에서 `InvalidateMeasure()`가 자동으로 실행되므로, `OnMeasure` / `OnArrange`를 오버라이드한 뷰는 매 레이아웃 패스마다 새로운 constraint와 `effectiveScale`을 받습니다 — 별도 처리는 필요 없습니다.
 
 레이아웃 패스 외부에서 값을 캐시하는 뷰는 프로퍼티 변경 알림을 구독하거나, `OnMeasure` 내에서 `GetEffectiveLayoutScale()`을 지연 호출 방식으로 사용하세요.
+
+[스케일을 따르는 값](#스케일을-따르는-값)의 규칙을 따르세요. 뷰가 제공하는 자연 단위 길이마다 `GetEffectiveLayoutScale()`을 정확히 한 번 곱합니다. `OnMeasure`가 받는 constraint와 반환하는 크기, `OnArrange`가 받는 bounds에는 스케일이 이미 반영되어 있으므로 다시 곱하지 마세요. 비주얼의 custom shader는 내장 스케일 처리를 대체합니다. 스케일을 `viewEffectiveScale` uniform으로 받으며, 자연 단위 길이에 직접 곱해야 합니다.
 
 <br/>
 
@@ -265,6 +286,7 @@ effectiveScale = windowScale × uiScale = 1.25 × 2.0 = 2.5
 | 특정 뷰를 항상 시스템 스케일에 추적 | `view.SetUiScalePolicy(UiScalePolicy::ENABLED)` |
 | 기본 상속 동작으로 초기화 | `view.SetUiScalePolicy(UiScalePolicy::INHERIT)` |
 | 뷰의 유효 스케일 조회 (프레임워크용) | `viewImpl.GetEffectiveLayoutScale()` |
+| 스크롤 위치(렌더링 픽셀)를 디자인 거리와 비교 | 거리에 `viewImpl.GetEffectiveLayoutScale()`을 곱함 |
 
 <br/>
 

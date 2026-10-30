@@ -34,7 +34,7 @@ class AbsoluteLayoutImpl;
  * bounds (x, y, width, height).
  *
  * Supports:
- * - Absolute positioning with pixel values
+ * - Absolute positioning in natural units (multiplied by each child's effective scale)
  * - Proportional positioning (0.0 to 1.0 relative to parent)
  * - Proportional sizing (0.0 to 1.0 relative to parent)
  *

@@ -104,7 +104,8 @@ namespace Transform
  * @brief Selects which of a visual's transform values are proportional to the attached View's size.
  *
  * A value whose flag is set is a fraction of the attached View's size, where 1.0f is the full
- * size. A value whose flag is unset is an absolute length in pixels.
+ * size. A value whose flag is unset is an absolute length in natural units, multiplied by the
+ * effective scale of the attached View.
  *
  * The default is ALL, so every offset and size value is proportional unless changed.
  *
@@ -113,7 +114,8 @@ namespace Transform
 enum class ProportionFlags : uint8_t
 {
   /**
-   * @brief Every offset and size value is an absolute length in pixels.
+   * @brief Every offset and size value is an absolute length in natural units, multiplied by the
+   * effective scale of the attached View.
    */
   NONE = 0x0,
 

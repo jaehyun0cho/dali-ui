@@ -402,9 +402,9 @@ public: // Measure / Arrange API
    * constraint is its size -- and under any other parent a MATCH_PARENT axis is assigned when
    * that parent's own size is determined (explicit, or itself assigned).
    *
-   * @param[in] widthConstraint The width constraint for measurement
-   * @param[in] heightConstraint The height constraint for measurement
-   * @return The measured size
+   * @param[in] widthConstraint The width constraint for measurement, in visual (scale-applied) units
+   * @param[in] heightConstraint The height constraint for measurement, in visual (scale-applied) units
+   * @return The measured size, in visual (scale-applied) units
    */
   MeasuredSize Measure(float widthConstraint, float heightConstraint);
 

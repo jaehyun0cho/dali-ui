@@ -54,6 +54,11 @@ class ScrollViewImpl;
  * The content rests at this view's padding (View::SetPadding()). Like every layout length the
  * padding is in natural units and is multiplied by the view's effective scale.
  *
+ * Scroll positions -- SetScrollPosition(), GetScrollPosition(), ScrollTo(), ScrollToX(),
+ * ScrollToY() and the DraggingSignal() deltas -- are rendered pixels: they include the view's
+ * effective scale, and a scale change does not convert them. The lengths the view is configured
+ * with (padding, SetFocusScrollPeek(), SetKeyScrollStep()) are natural units.
+ *
  * Basic usage:
  * @code
  * // Create a ScrollView
@@ -143,14 +148,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the scroll position.
    *
-   * @param[in] position The scroll position to set
+   * @param[in] position The scroll position to set, in rendered pixels
    */
   void SetScrollPosition(const Vector2& position);
 
   /**
    * @brief Gets the current scroll position.
    *
-   * @return The current scroll position
+   * @return The current scroll position, in rendered pixels
    */
   Vector2 GetScrollPosition() const;
 
@@ -449,7 +454,7 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls the content to the specified position.
    *
-   * @param[in] position The position to scroll to
+   * @param[in] position The position to scroll to, in rendered pixels
    * @param[in] animation Whether to animate the scroll
    */
   void ScrollTo(const Vector2& position, bool animation = true);
@@ -466,7 +471,7 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls to the specified X position (for horizontal scrolling).
    *
-   * @param[in] position The X position
+   * @param[in] position The X position, in rendered pixels
    * @param[in] animation Whether to animate the scroll
    */
   void ScrollToX(float position, bool animation = true);
@@ -474,7 +479,7 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls to the specified Y position (for vertical scrolling).
    *
-   * @param[in] position The Y position
+   * @param[in] position The Y position, in rendered pixels
    * @param[in] animation Whether to animate the scroll
    */
   void ScrollToY(float position, bool animation = true);
@@ -509,7 +514,7 @@ public:
   /**
    * @brief Dragging signal type.
    */
-  using DraggingSignalType = Signal<void(ScrollView, float, float)>; // scrollView, deltaX, deltaY
+  using DraggingSignalType = Signal<void(ScrollView, float, float)>; // scrollView, deltaX, deltaY (rendered pixels)
 
   /**
    * @brief Signal emitted when scroll starts.
