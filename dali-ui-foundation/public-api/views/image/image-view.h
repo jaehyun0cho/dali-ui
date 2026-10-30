@@ -343,7 +343,7 @@ public: // Size & Fitting Control
    * Direction: view size → image load size.
    *
    * @note Do NOT use together with aspect-ratio layout on the same ImageView.
-   *       ImageLoadWithViewSize causes GetNaturalSize to return the current view size
+   *       ImageLoadWithViewSize causes GetNaturalSize to return the current view size, in natural units,
    *       instead of the true image dimensions, making aspect-ratio adjustment ineffective.
    *
    * @param[in] enabled True to enable loading image with view size
