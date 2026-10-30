@@ -25,6 +25,8 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/integration-api/text/input-style.h>
 #include <dali-ui-foundation/integration-api/text/text-selectable-control-interface.h>
 #include <dali-ui-foundation/integration-api/input-editor-impl.h>
@@ -37,6 +39,7 @@ using namespace Dali;
 using namespace Dali::Ui;
 
 using Dali::Integration::ToStdString;
+using Dali::Ui::Extension::LayoutScaleManager;
 
 namespace
 {
@@ -2347,5 +2350,46 @@ int UtcDaliInputEditorReadOnlyImeFocusCycleP(void)
   DALI_TEST_EQUALS(control.GetText(), Dali::String("aaa"), TEST_LOCATION);
   manager.ClearFocus();
   DALI_TEST_CHECK(InputMethod::KeyboardEventReceivedSignal(context).Empty());
+  END_TEST;
+}
+
+int UtcDaliInputEditorGetLineCountScalesWidthLimitsP(void)
+{
+  UiTestApplication application;
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+
+  const char* text = "The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
+
+  // 300 units are 600 pixels at scale 2; the maximum width of 150 units clamps them to 300 pixels.
+  InputEditor editor = InputEditor::New();
+  editor.SetText(text);
+  editor.SetSystemFontSizeScaleEnabled(false);
+  editor.SetPadding(Insets());
+  editor.SetFontSize(20.0f);
+  editor.SetRequestedWidth(300.0f);
+  editor.SetMaximumWidth(150.0f);
+
+  // Unscaled oracle with the same rendered font size and width.
+  InputEditor oracle = InputEditor::New();
+  Ui::Extension::View::SetUiScalePolicy(oracle, Ui::Extension::UiScalePolicy::DISABLED);
+  oracle.SetText(text);
+  oracle.SetSystemFontSizeScaleEnabled(false);
+  oracle.SetPadding(Insets());
+  oracle.SetFontSize(40.0f);
+  oracle.SetRequestedWidth(300.0f);
+
+  application.GetScene().Add(editor);
+  application.GetScene().Add(oracle);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_EQUALS(editor.GetCurrentSize().width, 300.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_CHECK(oracle.GetLineCount() > 1);
+  // The line count is taken at the laid-out 300 pixels, not at the unscaled maximum of 150.
+  DALI_TEST_EQUALS(editor.GetLineCount(), oracle.GetLineCount(), TEST_LOCATION);
+
+  LayoutScaleManager::Get().SetUiScale(1.0f);
   END_TEST;
 }
