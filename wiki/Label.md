@@ -238,9 +238,7 @@ UI scale is reflected in font size and text layout related values during the mea
 | TextFit `Text::Fit::Candidate` | Reflected in font size / line height |
 | Margin / Padding | Reflected in text layout area calculation |
 | Marquee | Reflected in MarqueeGap and other marquee layout values |
-
-> [!NOTE]
-> TBD: UI scale application for FontStyle-related values such as Underline, Shadow, and Outline.
+| Text style | Reflected in underline and line-through thickness and dashes, shadow offset, outline width and offset, and bevel intensity; not in the shadow and outline blur radius |
 
 <br/>
 
