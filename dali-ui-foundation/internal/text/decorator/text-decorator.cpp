@@ -701,6 +701,20 @@ struct Decorator::Impl : public ConnectionTracker
     return mCursorWidth * mUiScale;
   }
 
+  /**
+   * @brief Retrieves the effective size of a handle image.
+   *
+   * The handle views opt out of the view scale (see CreateCursor()), so the
+   * image size is multiplied by the UI scale here, like the cursor width.
+   *
+   * @param[in] handle The handle.
+   * @return The handle size in pixels.
+   */
+  Size GetEffectiveHandleSize(const HandleImpl& handle) const
+  {
+    return handle.size * mUiScale;
+  }
+
   void CreateCursor(View& cursor, const Vector4& color)
   {
     cursor = View::New();
@@ -874,7 +888,7 @@ struct Decorator::Impl : public ConnectionTracker
 #endif
 
         grabHandle.actor.SetProperty(Actor::Property::COLOR_MULTIPLIER, mHandleColor);
-        SetHandleTouchHitAreaMargin(grabHandle);
+        ApplyHandleSize(grabHandle);
 
         grabHandle.actor.TouchEventSignal().Connect(this, &Decorator::Impl::OnGrabHandleTouched);
 
@@ -947,7 +961,7 @@ struct Decorator::Impl : public ConnectionTracker
         // primary.actor.SetDepthIndex(Dali::Ui::Integration::DepthIndex::DECORATION); ///< TODO : Add this as an ImageVisual in the View's own half of the decoration layer, once built-in visuals use containers.
         primary.actor.SetProperty(Actor::Property::COLOR_MULTIPLIER, mHandleColor);
 
-        SetHandleTouchHitAreaMargin(primary);
+        ApplyHandleSize(primary);
 
         primary.actor.TouchEventSignal().Connect(this, &Decorator::Impl::OnHandleOneTouched);
 
@@ -991,7 +1005,7 @@ struct Decorator::Impl : public ConnectionTracker
         // secondary.actor.SetDepthIndex(Dali::Ui::Integration::DepthIndex::DECORATION); ///< TODO : Add this as an ImageVisual in the View's own half of the decoration layer, once built-in visuals use containers.
         secondary.actor.SetProperty(Actor::Property::COLOR_MULTIPLIER, mHandleColor);
 
-        SetHandleTouchHitAreaMargin(secondary);
+        ApplyHandleSize(secondary);
 
         secondary.actor.TouchEventSignal().Connect(this, &Decorator::Impl::OnHandleTwoTouched);
 
@@ -1058,14 +1072,15 @@ struct Decorator::Impl : public ConnectionTracker
     // by the text controller is not the center of the actor.
     Vector2 grabHandleWorldPosition;
     CalculateHandleWorldCoordinates(grabHandle, grabHandleWorldPosition);
+    const Size grabHandleSize = GetEffectiveHandleSize(grabHandle);
 
     // Check if the grab handle exceeds the boundaries of the decoration box.
     // At the moment only the height is checked for the grab handle.
 
     grabHandle.verticallyFlipped =
       (grabHandle.verticallyFlippedPreferred &&
-       ((grabHandleWorldPosition.y - grabHandle.size.height) > mBoundingBox.y)) ||
-      (grabHandleWorldPosition.y + grabHandle.lineHeight + grabHandle.size.height > mBoundingBox.w);
+       ((grabHandleWorldPosition.y - grabHandleSize.height) > mBoundingBox.y)) ||
+      (grabHandleWorldPosition.y + grabHandle.lineHeight + grabHandleSize.height > mBoundingBox.w);
 
     // The grab handle 'y' position in local coords.
     // If the grab handle exceeds the bottom of the decoration box,
@@ -1092,6 +1107,7 @@ struct Decorator::Impl : public ConnectionTracker
     // by the text controller is not the center of the actor.
     Vector2 handleWorldPosition;
     CalculateHandleWorldCoordinates(handle, handleWorldPosition);
+    const Size handleSize = GetEffectiveHandleSize(handle);
 
     // Whether to flip the handle (horizontally).
     bool flipHandle = isPrimaryHandle ? mFlipLeftSelectionHandleDirection : mFlipRightSelectionHandleDirection;
@@ -1126,9 +1142,9 @@ struct Decorator::Impl : public ConnectionTracker
 
     // Check if the selection handle exceeds the boundaries of the decoration box.
     const bool exceedsLeftEdge =
-      (isPrimaryHandle ? !flipHandle : flipHandle) && (handleWorldPosition.x - handle.size.width < mBoundingBox.x);
+      (isPrimaryHandle ? !flipHandle : flipHandle) && (handleWorldPosition.x - handleSize.width < mBoundingBox.x);
     const bool exceedsRightEdge =
-      (isPrimaryHandle ? flipHandle : !flipHandle) && (handleWorldPosition.x + handle.size.width > mBoundingBox.z);
+      (isPrimaryHandle ? flipHandle : !flipHandle) && (handleWorldPosition.x + handleSize.width > mBoundingBox.z);
 
     // Does not flip if both conditions are true (double flip)
     flipHandle = flipHandle != (exceedsLeftEdge || exceedsRightEdge);
@@ -1158,8 +1174,8 @@ struct Decorator::Impl : public ConnectionTracker
 
     // Whether to flip the handle vertically.
     handle.verticallyFlipped =
-      (verticallyFlippedPreferred && ((handleWorldPosition.y - handle.size.height) > mBoundingBox.y)) ||
-      (handleWorldPosition.y + handle.lineHeight + handle.size.height > mBoundingBox.w);
+      (verticallyFlippedPreferred && ((handleWorldPosition.y - handleSize.height) > mBoundingBox.y)) ||
+      (handleWorldPosition.y + handle.lineHeight + handleSize.height > mBoundingBox.w);
 
     // The primary selection handle 'y' position in local coords.
     // If the handle exceeds the bottom of the decoration box,
@@ -1648,6 +1664,10 @@ struct Decorator::Impl : public ConnectionTracker
     const HandleImpl& primaryHandle   = mHandle[LEFT_SELECTION_HANDLE];
     const HandleImpl& secondaryHandle = mHandle[RIGHT_SELECTION_HANDLE];
 
+    const Size grabHandleSize      = GetEffectiveHandleSize(grabHandle);
+    const Size primaryHandleSize   = GetEffectiveHandleSize(primaryHandle);
+    const Size secondaryHandleSize = GetEffectiveHandleSize(secondaryHandle);
+
     if(grabHandle.active)
     {
       if(grabHandle.verticallyFlipped)
@@ -1656,7 +1676,7 @@ struct Decorator::Impl : public ConnectionTracker
         mHandleVerticalGreaterThanNotification.Reset();
 
         // The vertical distance from the center of the active layer to the top edje of the display.
-        const float topHeight = 0.5f * mControlSize.height - grabHandle.position.y + grabHandle.size.height;
+        const float topHeight = 0.5f * mControlSize.height - grabHandle.position.y + grabHandleSize.height;
 
         mHandleVerticalLessThanNotification = mActiveLayer.AddPropertyNotification(
           Actor::Property::WORLD_POSITION_Y, LessThanCondition(mBoundingBox.y + topHeight));
@@ -1674,7 +1694,7 @@ struct Decorator::Impl : public ConnectionTracker
 
         // The vertical distance from the center of the active layer to the bottom edje of the display.
         const float bottomHeight =
-          -0.5f * mControlSize.height + grabHandle.position.y + grabHandle.lineHeight + grabHandle.size.height;
+          -0.5f * mControlSize.height + grabHandle.position.y + grabHandle.lineHeight + grabHandleSize.height;
 
         mHandleVerticalGreaterThanNotification = mActiveLayer.AddPropertyNotification(
           Actor::Property::WORLD_POSITION_Y, GreaterThanCondition(mBoundingBox.w - bottomHeight));
@@ -1695,8 +1715,8 @@ struct Decorator::Impl : public ConnectionTracker
 
         // The vertical distance from the center of the active layer to the top edje of the display.
         const float topHeight =
-          0.5f * mControlSize.height + std::max(-primaryHandle.position.y + primaryHandle.size.height,
-                                                -secondaryHandle.position.y + secondaryHandle.size.height);
+          0.5f * mControlSize.height + std::max(-primaryHandle.position.y + primaryHandleSize.height,
+                                                -secondaryHandle.position.y + secondaryHandleSize.height);
 
         mHandleVerticalLessThanNotification = mActiveLayer.AddPropertyNotification(
           Actor::Property::WORLD_POSITION_Y, LessThanCondition(mBoundingBox.y + topHeight));
@@ -1715,8 +1735,8 @@ struct Decorator::Impl : public ConnectionTracker
         // The vertical distance from the center of the active layer to the bottom edje of the display.
         const float bottomHeight =
           -0.5f * mControlSize.height +
-          std::max(primaryHandle.position.y + primaryHandle.lineHeight + primaryHandle.size.height,
-                   secondaryHandle.position.y + secondaryHandle.lineHeight + secondaryHandle.size.height);
+          std::max(primaryHandle.position.y + primaryHandle.lineHeight + primaryHandleSize.height,
+                   secondaryHandle.position.y + secondaryHandle.lineHeight + secondaryHandleSize.height);
 
         mHandleVerticalGreaterThanNotification = mActiveLayer.AddPropertyNotification(
           Actor::Property::WORLD_POSITION_Y, GreaterThanCondition(mBoundingBox.w - bottomHeight));
@@ -1734,8 +1754,8 @@ struct Decorator::Impl : public ConnectionTracker
         // The vertical distance from the center of the active layer to the top edje of the display.
         const float topHeight =
           0.5f * mControlSize.height + (primaryHandle.verticallyFlipped
-                                          ? -primaryHandle.position.y + primaryHandle.size.height
-                                          : -secondaryHandle.position.y + secondaryHandle.size.height);
+                                          ? -primaryHandle.position.y + primaryHandleSize.height
+                                          : -secondaryHandle.position.y + secondaryHandleSize.height);
 
         mHandleVerticalLessThanNotification = mActiveLayer.AddPropertyNotification(
           Actor::Property::WORLD_POSITION_Y, LessThanCondition(mBoundingBox.y + topHeight));
@@ -1750,8 +1770,8 @@ struct Decorator::Impl : public ConnectionTracker
         const float bottomHeight =
           -0.5f * mControlSize.height +
           (primaryHandle.verticallyFlipped
-             ? secondaryHandle.position.y + secondaryHandle.lineHeight + secondaryHandle.size.height
-             : primaryHandle.position.y + primaryHandle.lineHeight + primaryHandle.size.height);
+             ? secondaryHandle.position.y + secondaryHandle.lineHeight + secondaryHandleSize.height
+             : primaryHandle.position.y + primaryHandle.lineHeight + primaryHandleSize.height);
 
         mHandleVerticalGreaterThanNotification = mActiveLayer.AddPropertyNotification(
           Actor::Property::WORLD_POSITION_Y, GreaterThanCondition(mBoundingBox.w - bottomHeight));
@@ -1783,8 +1803,8 @@ struct Decorator::Impl : public ConnectionTracker
     {
       // The horizontal distance from the center of the active layer to the left edje of the display.
       const float leftWidth =
-        0.5f * mControlSize.width + std::max(-primaryHandle.position.x + primaryHandle.size.width,
-                                             -secondaryHandle.position.x + secondaryHandle.size.width);
+        0.5f * mControlSize.width + std::max(-primaryHandle.position.x + primaryHandleSize.width,
+                                             -secondaryHandle.position.x + secondaryHandleSize.width);
 
       mHandleHorizontalLessThanNotification = mActiveLayer.AddPropertyNotification(
         Actor::Property::WORLD_POSITION_X, LessThanCondition(mBoundingBox.x + leftWidth));
@@ -1797,8 +1817,8 @@ struct Decorator::Impl : public ConnectionTracker
 
       // The horizontal distance from the center of the active layer to the right edje of the display.
       const float rightWidth =
-        -0.5f * mControlSize.width + std::max(primaryHandle.position.x + primaryHandle.size.width,
-                                              secondaryHandle.position.x + secondaryHandle.size.width);
+        -0.5f * mControlSize.width + std::max(primaryHandle.position.x + primaryHandleSize.width,
+                                              secondaryHandle.position.x + secondaryHandleSize.width);
 
       mHandleHorizontalGreaterThanNotification = mActiveLayer.AddPropertyNotification(
         Actor::Property::WORLD_POSITION_X, GreaterThanCondition(mBoundingBox.z - rightWidth));
@@ -1917,20 +1937,37 @@ struct Decorator::Impl : public ConnectionTracker
     HandleImpl& handle = mHandle[handleType];
     handle.size        = Size(dimensions.GetWidth(), dimensions.GetHeight());
 
-    if(handle.actor)
-    {
-      SetHandleTouchHitAreaMargin(handle);
-    }
+    ApplyHandleSize(handle);
 
     mHandleImages[handleType][handleImageType] = imageFileName;
+  }
+
+  /**
+   * @brief Sizes a handle view and its touch hit-area margin with the effective handle size.
+   *
+   * @param[in] handle The handle.
+   */
+  void ApplyHandleSize(HandleImpl& handle)
+  {
+    if(handle.actor)
+    {
+      const Size size = GetEffectiveHandleSize(handle);
+      if(size.width > 0.0f && size.height > 0.0f)
+      {
+        handle.actor.SetRequestedWidth(size.width);
+        handle.actor.SetRequestedHeight(size.height);
+      }
+      SetHandleTouchHitAreaMargin(handle);
+    }
   }
 
   void SetHandleTouchHitAreaMargin(HandleImpl& handle)
   {
     if(handle.actor)
     {
-      const float horizontalMargin = 0.5f * (DEFAULT_HANDLE_RELATIVE_HIT_AREA.x - 1.0f) * handle.size.width;
-      const float bottomMargin     = (DEFAULT_HANDLE_RELATIVE_HIT_AREA.y - 1.0f) * handle.size.height;
+      const Size  size             = GetEffectiveHandleSize(handle);
+      const float horizontalMargin = 0.5f * (DEFAULT_HANDLE_RELATIVE_HIT_AREA.x - 1.0f) * size.width;
+      const float bottomMargin     = (DEFAULT_HANDLE_RELATIVE_HIT_AREA.y - 1.0f) * size.height;
       handle.actor.SetProperty(Actor::Property::TOUCH_HIT_AREA_MARGIN,
                                Insets(horizontalMargin, horizontalMargin, 0.0f, bottomMargin));
     }
@@ -2348,6 +2385,11 @@ void Decorator::SetUiScale(float scale)
   }
 
   mImpl->mUiScale = scale;
+
+  // The handle views opt out of the view scale, so their size follows this scale.
+  mImpl->ApplyHandleSize(mImpl->mHandle[GRAB_HANDLE]);
+  mImpl->ApplyHandleSize(mImpl->mHandle[LEFT_SELECTION_HANDLE]);
+  mImpl->ApplyHandleSize(mImpl->mHandle[RIGHT_SELECTION_HANDLE]);
 }
 
 float Decorator::GetUiScale() const

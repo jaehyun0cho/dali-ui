@@ -630,6 +630,8 @@ public: // Setters for chaining
    *
    * Text editing handles include the cursor handle (shown below the insertion cursor)
    * and the left/right selection handles (shown at both ends of the selected text range).
+   * The handles are shown at their image size multiplied by the control's effective scale;
+   * an image whose size cannot be read, such as an SVG, keeps its unscaled natural size.
    *
    * @param[in] enabled True to enable text editing handles, false otherwise.
    */
