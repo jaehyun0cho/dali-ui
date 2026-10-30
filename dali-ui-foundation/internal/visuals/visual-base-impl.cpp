@@ -1128,6 +1128,18 @@ void Visual::Base::DoApplyFittingMode(const Vector2& controlSize, const Insets& 
       }
     }
 
+    // EXTRA_SIZE comes from the visual's own transform and stays in natural units, while this transform
+    // turns the effective scale off in the shader. Put the part of the extra size the scale adds into
+    // SIZE, so the visual is drawn at SIZE + EXTRA_SIZE * effectiveScale.
+    if(mImpl->mTransform && mImpl->mTransform->mExtraSize != Vector2::ZERO)
+    {
+      Property::Value* sizeValue = transformMap.Find(Ui::Integration::Visual::Transform::Property::SIZE);
+      if(sizeValue)
+      {
+        *sizeValue = sizeValue->Get<Vector2>() + mImpl->mTransform->mExtraSize * (effectiveScale - 1.0f);
+      }
+    }
+
     transformMap
       .Add(Ui::Integration::Visual::Transform::Property::OFFSET_POLICY,
            Vector2(Ui::Integration::Visual::Transform::Policy::ABSOLUTE, Ui::Integration::Visual::Transform::Policy::ABSOLUTE))
