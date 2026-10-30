@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali-ui-foundation/public-api/views/view.h>
 #include <dali-ui-foundation/public-api/visuals/animated-image-visual.h>
 #include <dali-ui-foundation/public-api/visuals/border-visual.h>
@@ -38,9 +39,11 @@
 #include <dali-ui/ui-environment-variable.h>
 #include <dali-ui/ui-texture-upload-manager.h>
 #include <dali/devel-api/adaptor-framework/texture-upload-manager.h>
+#include <dali/integration-api/rendering/visual-renderer.h>
 
 using namespace Dali;
 using namespace Dali::Ui;
+using Dali::Ui::Extension::LayoutScaleManager;
 
 void utc_dali_image_visual_startup(void)
 {
@@ -600,4 +603,42 @@ int UtcDaliImageVisualReloadPendingObserverMultipleTimesFromLoadComplete(void)
 int UtcDaliImageVisualReloadFromLoadCompleteSharedTexture(void)
 {
   return TestImageVisualReloadDuringCompletion(1u, true);
+}
+
+int UtcDaliImageVisualFittingExtraSizeFollowsEffectiveScaleP(void)
+{
+  UiTestApplication application;
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+
+  View view = View::New();
+  view.SetRequestedWidth(100.0f);
+  view.SetRequestedHeight(100.0f);
+
+  ImageVisual visual = ImageVisual::New();
+  visual.SetResourceUrl("../samples/image-view/res/contact-cards-mask.png"); // 128x128
+  visual.SetSynchronousLoading(true);
+  visual.SetFittingMode(Image::FittingMode::FIT_KEEP_ASPECT_RATIO);
+  visual.SetExtraWidth(10.0f);
+  view.AddVisual(visual, Visual::DepthLayer::BACKGROUND);
+  application.GetScene().Add(view);
+  for(int i = 0; i < 3; ++i)
+  {
+    application.SendNotification();
+    application.Render();
+    application.RunIdles();
+  }
+
+  DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), 200.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(visual.GetExtraWidth(), 10.0f, TEST_LOCATION); // stays natural
+  DALI_TEST_CHECK(view.GetRendererCount() > 0u);
+  Renderer renderer = view.GetRendererAt(0u);
+
+  // The fitting mode writes pixels and turns the shader scale off, so the fitted 200x200 carries the
+  // part the scale adds to the extra width: 200 + 10 * (2 - 1). Drawn: 210 + 10 = 200 + 10 * 2.
+  DALI_TEST_EQUALS(renderer.GetProperty<float>(renderer.GetPropertyIndex("visualTransformUseEffectiveScale")), 0.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(renderer.GetProperty<Vector2>(Dali::VisualRenderer::Property::TRANSFORM_SIZE), Vector2(210.0f, 200.0f), TEST_LOCATION);
+  DALI_TEST_EQUALS(renderer.GetProperty<Vector2>(Dali::VisualRenderer::Property::EXTRA_SIZE), Vector2(10.0f, 0.0f), TEST_LOCATION);
+
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  END_TEST;
 }
