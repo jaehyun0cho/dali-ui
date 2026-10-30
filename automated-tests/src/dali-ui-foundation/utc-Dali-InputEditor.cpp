@@ -25,6 +25,8 @@
 
 // INTERNAL INCLUDES
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/integration-api/text/input-style.h>
 #include <dali-ui-foundation/integration-api/text/text-selectable-control-interface.h>
 #include <dali-ui-foundation/integration-api/input-editor-impl.h>
@@ -37,6 +39,7 @@ using namespace Dali;
 using namespace Dali::Ui;
 
 using Dali::Integration::ToStdString;
+using Dali::Ui::Extension::LayoutScaleManager;
 
 namespace
 {
@@ -2347,5 +2350,50 @@ int UtcDaliInputEditorReadOnlyImeFocusCycleP(void)
   DALI_TEST_EQUALS(control.GetText(), Dali::String("aaa"), TEST_LOCATION);
   manager.ClearFocus();
   DALI_TEST_CHECK(InputMethod::KeyboardEventReceivedSignal(context).Empty());
+  END_TEST;
+}
+
+int UtcDaliInputEditorGetLineCountScalesWidthLimitsP(void)
+{
+  UiTestApplication application;
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+
+  // One-letter words: with any font a line holds about twice as many of them at twice the width.
+  const char* text =
+    "a b c d e f g h i j k l m n o p q r s t u v w x y z "
+    "a b c d e f g h i j k l m n o p q r s t u v w x y z "
+    "a b c d e f g h i j k l m n o p q r s t u v w x y z "
+    "a b c d e f g h i j k l m n o p q r s t u v w x y z";
+
+  // 300 units are 600 pixels at scale 2; the maximum width of 150 units clamps them to 300 pixels.
+  InputEditor editor = InputEditor::New();
+  editor.SetText(text);
+  editor.SetRequestedWidth(300.0f);
+  editor.SetMaximumWidth(150.0f);
+
+  application.GetScene().Add(editor);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  const float laidOutWidth = editor.GetProperty<float>(Actor::Property::SIZE_WIDTH);
+  DALI_TEST_EQUALS(laidOutWidth, 300.0f, 0.01f, TEST_LOCATION);
+
+  // Half the width needs more lines, so a clamp with the unscaled maximum of 150 would show.
+  const int halfWidthLineCount = editor.GetLineCount(laidOutWidth * 0.5f);
+  const int laidOutLineCount   = editor.GetLineCount(laidOutWidth);
+  DALI_TEST_CHECK(halfWidthLineCount > laidOutLineCount);
+  // The line count is taken at the laid-out width: the maximum is 150 units x 2.
+  DALI_TEST_EQUALS(editor.GetLineCount(), laidOutLineCount, TEST_LOCATION);
+
+  // Until the next layout the editor keeps the width, padding and fonts of its last layout; a new UI
+  // scale moves the effective scale at once but must not clamp the laid-out 300 pixels to 150.
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  auto& editorImpl = static_cast<Dali::Ui::Integration::InputEditorImpl&>(editor.GetImplementation());
+  DALI_TEST_EQUALS(Ui::Extension::View::GetEffectiveLayoutScale(editorImpl), 1.0f, 0.001f, TEST_LOCATION); // The transition is real.
+  DALI_TEST_EQUALS(editor.GetProperty<float>(Actor::Property::SIZE_WIDTH), 300.0f, 0.01f, TEST_LOCATION);  // Not laid out again.
+  DALI_TEST_EQUALS(editor.GetLineCount(), editor.GetLineCount(laidOutWidth), TEST_LOCATION);
+
   END_TEST;
 }
