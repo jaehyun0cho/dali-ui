@@ -44,6 +44,7 @@ struct VisualModel::ShadowData
   Vector2 offset{Vector2::ZERO};
   Vector2 effectiveOffset{Vector2::ZERO};
   float   blurRadius{DEFAULT_SHADOW_BLUR_RADIUS};
+  float   effectiveBlurRadius{DEFAULT_SHADOW_BLUR_RADIUS};
 };
 
 VisualModel::ShadowData& VisualModel::GetOrCreateShadowData()
@@ -61,6 +62,7 @@ struct VisualModel::OutlineData
   Vector2  offset{Vector2::ZERO};
   Vector2  effectiveOffset{Vector2::ZERO};
   float    blurRadius{DEFAULT_OUTLINE_BLUR_RADIUS};
+  float    effectiveBlurRadius{DEFAULT_OUTLINE_BLUR_RADIUS};
   uint16_t width{0u};
 };
 
@@ -430,7 +432,9 @@ void VisualModel::SetShadowBlurRadius(const float& shadowBlurRadius)
 {
   if(mShadowData || std::memcmp(&shadowBlurRadius, &DEFAULT_SHADOW_BLUR_RADIUS, sizeof(float)) != 0)
   {
-    GetOrCreateShadowData().blurRadius = shadowBlurRadius;
+    auto& data               = GetOrCreateShadowData();
+    data.blurRadius          = shadowBlurRadius;
+    data.effectiveBlurRadius = ResolveDecorationDistance(shadowBlurRadius, mDecorationUiScale);
   }
 }
 
@@ -464,7 +468,9 @@ void VisualModel::SetOutlineBlurRadius(const float& outlineBlurRadius)
 {
   if(mOutlineData || std::memcmp(&outlineBlurRadius, &DEFAULT_OUTLINE_BLUR_RADIUS, sizeof(float)) != 0)
   {
-    GetOrCreateOutlineData().blurRadius = outlineBlurRadius;
+    auto& data               = GetOrCreateOutlineData();
+    data.blurRadius          = outlineBlurRadius;
+    data.effectiveBlurRadius = ResolveDecorationDistance(outlineBlurRadius, mDecorationUiScale);
   }
 }
 
@@ -571,11 +577,13 @@ void VisualModel::SetDecorationUiScale(float scale)
   mDecorationUiScale = scale;
   if(mShadowData)
   {
-    mShadowData->effectiveOffset = ResolveDecorationOffset(mShadowData->offset, scale);
+    mShadowData->effectiveOffset     = ResolveDecorationOffset(mShadowData->offset, scale);
+    mShadowData->effectiveBlurRadius = ResolveDecorationDistance(mShadowData->blurRadius, scale);
   }
   if(mOutlineData)
   {
-    mOutlineData->effectiveOffset = ResolveDecorationOffset(mOutlineData->offset, scale);
+    mOutlineData->effectiveOffset     = ResolveDecorationOffset(mOutlineData->offset, scale);
+    mOutlineData->effectiveBlurRadius = ResolveDecorationDistance(mOutlineData->blurRadius, scale);
   }
 }
 
@@ -592,6 +600,16 @@ const Vector2& VisualModel::GetEffectiveShadowOffset() const
 const Vector2& VisualModel::GetEffectiveOutlineOffset() const
 {
   return mOutlineData ? mOutlineData->effectiveOffset : Vector2::ZERO;
+}
+
+const float& VisualModel::GetEffectiveShadowBlurRadius() const
+{
+  return mShadowData ? mShadowData->effectiveBlurRadius : DEFAULT_SHADOW_BLUR_RADIUS;
+}
+
+const float& VisualModel::GetEffectiveOutlineBlurRadius() const
+{
+  return mOutlineData ? mOutlineData->effectiveBlurRadius : DEFAULT_OUTLINE_BLUR_RADIUS;
 }
 
 uint16_t VisualModel::GetEffectiveOutlineWidth() const

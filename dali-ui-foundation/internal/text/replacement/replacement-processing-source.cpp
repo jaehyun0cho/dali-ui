@@ -217,7 +217,7 @@ void CopyTextProcessingProperties(const Model& source, Model& target)
   targetVisual.SetShadowEnabled(source.IsShadowEnabled());
   targetVisual.SetShadowOffset(sourceVisual.GetShadowOffset());
   targetVisual.SetShadowColor(source.GetShadowColor());
-  targetVisual.SetShadowBlurRadius(source.GetShadowBlurRadius());
+  targetVisual.SetShadowBlurRadius(sourceVisual.GetShadowBlurRadius());
   targetVisual.SetUnderlineEnabled(source.IsUnderlineEnabled());
   targetVisual.SetUnderlineType(source.GetUnderlineType());
   targetVisual.SetUnderlineColor(source.GetUnderlineColor());
@@ -228,7 +228,7 @@ void CopyTextProcessingProperties(const Model& source, Model& target)
   targetVisual.SetOutlineOffset(sourceVisual.GetOutlineOffset());
   targetVisual.SetOutlineColor(source.GetOutlineColor());
   targetVisual.SetOutlineWidth(sourceVisual.GetOutlineWidth());
-  targetVisual.SetOutlineBlurRadius(source.GetOutlineBlurRadius());
+  targetVisual.SetOutlineBlurRadius(sourceVisual.GetOutlineBlurRadius());
   targetVisual.SetBackgroundEnabled(source.IsBackgroundEnabled());
   targetVisual.SetBackgroundColor(source.GetBackgroundColor());
   targetVisual.SetStrikethroughEnabled(source.IsStrikethroughEnabled());

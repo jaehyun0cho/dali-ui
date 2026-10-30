@@ -292,6 +292,20 @@ public:
   const Vector2& GetEffectiveOutlineOffset() const;
 
   /**
+   * @brief Retrieves the authored shadow blur radius multiplied by the UI scale.
+   *
+   * @return The effective blur radius used by rendering.
+   */
+  const float& GetEffectiveShadowBlurRadius() const;
+
+  /**
+   * @brief Retrieves the authored outline blur radius multiplied by the UI scale.
+   *
+   * @return The effective blur radius used by rendering.
+   */
+  const float& GetEffectiveOutlineBlurRadius() const;
+
+  /**
    * @brief Retrieves the UI-scaled outline width in the existing integer representation.
    *
    * @return The nearest integer width, saturated to uint16_t. Zero remains zero.
