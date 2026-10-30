@@ -118,14 +118,16 @@ public: // Page API
    *
    * Set to (0, 0) (the default) to use the viewport size as the page size.
    *
-   * @param[in] size Page size in pixels.
+   * @param[in] size Page size in natural units, like a requested size: the view multiplies it by
+   *            its effective scale, so a page keeps its share of the content at every scale.
    */
   void SetPageSize(const Vector2& size);
 
   /**
    * @brief Gets the explicitly set page size.
    *
-   * Returns (0, 0) if no explicit page size has been set (viewport-size mode).
+   * Returns (0, 0) if no explicit page size has been set (viewport-size mode). The size is
+   * returned as set.
    */
   Vector2 GetPageSize() const;
 

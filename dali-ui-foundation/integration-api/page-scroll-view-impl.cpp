@@ -331,8 +331,10 @@ void PageScrollViewImpl::OnBeforeScrollAnimation(Vector2& targetPosition, float&
 
 Vector2 PageScrollViewImpl::GetEffectivePageSize() const
 {
+  // An explicit page size is set in natural units, like a requested size; the viewport it
+  // defaults to, the extents and the scroll positions are rendered pixels.
   if(mPageSize.x > 0.0f || mPageSize.y > 0.0f)
-    return mPageSize;
+    return mPageSize * GetEffectiveLayoutScale();
 
   return Vector2(GetViewportWidth(), GetViewportHeight());
 }
