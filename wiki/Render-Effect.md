@@ -207,7 +207,7 @@ blur.SetBlurDownscaleFactor(0.5f);
 
 `SetBlurDownscaleFactor()` specifies the input texture's downscale factor, clamped to `[0.25, 1.0]`. `1.0` uses the original resolution; smaller values use downscaled input.
 
-Downscaling and kernel optimization cause the effective radius to change in steps of `2 / downscaleFactor` pixels. For example, a factor of `0.25` produces 8-pixel steps, so small radius adjustments may have no visible effect.
+Downscaling and kernel optimization cause the effective radius to change in steps of `2 / downscaleFactor`. For example, a factor of `0.25` produces steps of 8, so small radius adjustments may have no visible effect. The radius and these steps are natural units: at an effective scale of 2, radius 40 blurs over 80 pixels.
 
 <br/>
 

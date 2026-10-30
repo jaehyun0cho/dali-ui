@@ -16,6 +16,7 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-test-suite-utils.h>
 #include <dali.h>
@@ -27,6 +28,7 @@
 
 using namespace Dali;
 using namespace Dali::Ui;
+using Dali::Ui::Extension::LayoutScaleManager;
 
 namespace
 {
@@ -145,6 +147,21 @@ std::vector<Dali::RenderTask> RenderTasksAddedSince(RenderTaskList taskList, con
     }
   }
   return added;
+}
+
+/// @brief Returns the actors drawing the two blur passes among the given tasks: they carry uAnimationRatio.
+std::vector<Actor> GetBlurPassActors(const std::vector<Dali::RenderTask>& tasks)
+{
+  std::vector<Actor> actors;
+  for(const Dali::RenderTask& task : tasks)
+  {
+    Actor actor = task.GetSourceActor();
+    if(actor && actor.GetPropertyIndex("uAnimationRatio") != Property::INVALID_INDEX)
+    {
+      actors.push_back(actor);
+    }
+  }
+  return actors;
 }
 
 /// @brief Renders once to settle a pending change, then measures the draw count of one further
@@ -1932,5 +1949,59 @@ int UtcDaliRenderEffectBlurOpacityAnimation(void)
     animation.Clear();
   }
 
+  END_TEST;
+}
+
+int UtcDaliRenderEffectBlurPassesFollowEffectiveScaleP(void)
+{
+  UiTestApplication application;
+  tet_infoline("UtcDaliRenderEffectBlurPassesFollowEffectiveScaleP");
+
+  RenderTaskList taskList = application.GetScene().GetRenderTaskList();
+  for(bool background : {true, false})
+  {
+    LayoutScaleManager::Get().SetUiScale(2.0f);
+    View view = CreateSizedView(application, 100.0f, 100.0f); // 200x200 pixels at scale 2
+
+    const std::vector<Dali::RenderTask> before = SnapshotRenderTasks(taskList);
+    if(background)
+    {
+      view.SetRenderEffect(BackgroundBlurEffect::New(40u));
+    }
+    else
+    {
+      view.SetRenderEffect(GaussianBlurEffect::New(40u));
+    }
+    application.SendNotification();
+    application.Render();
+
+    // The passes read viewEffectiveScale from their own actors: the owner's 2, so radius 40 spreads over 80 pixels.
+    std::vector<Actor> passes = GetBlurPassActors(RenderTasksAddedSince(taskList, before));
+    DALI_TEST_EQUALS(static_cast<uint32_t>(passes.size()), 2u, TEST_LOCATION);
+    for(Actor& pass : passes)
+    {
+      const Property::Index index = pass.GetPropertyIndex("viewEffectiveScale");
+      DALI_TEST_CHECK(index != Property::INVALID_INDEX);
+      DALI_TEST_EQUALS(pass.GetProperty<float>(index), 2.0f, TEST_LOCATION);
+    }
+
+    // A scale change refreshes the effect, and the passes follow it.
+    LayoutScaleManager::Get().SetUiScale(1.0f);
+    for(int i = 0; i < 2; ++i)
+    {
+      application.SendNotification();
+      application.Render();
+      application.RunIdles();
+    }
+    DALI_TEST_EQUALS(view.GetProperty<float>(Actor::Property::SIZE_WIDTH), 100.0f, TEST_LOCATION);
+    for(Actor& pass : passes)
+    {
+      DALI_TEST_EQUALS(pass.GetProperty<float>(pass.GetPropertyIndex("viewEffectiveScale")), 1.0f, TEST_LOCATION);
+    }
+
+    view.ClearRenderEffect();
+    view.Unparent();
+  }
+  LayoutScaleManager::Get().SetUiScale(1.0f);
   END_TEST;
 }

@@ -207,7 +207,7 @@ blur.SetBlurDownscaleFactor(0.5f);
 
 `SetBlurDownscaleFactor()`는 입력 텍스처의 축소 비율을 지정하며, 값은 `[0.25, 1.0]` 범위로 보정됩니다. `1.0`은 원래 해상도를 사용하고, 작은 값은 축소한 입력을 사용합니다.
 
-Downscale과 커널 최적화 때문에 실제 적용되는 radius는 `2 / downscaleFactor` 픽셀 단위로 변합니다. 예를 들어 factor가 `0.25`이면 8픽셀 간격이므로, radius를 조금씩 바꾸어도 화면 차이가 없을 수 있습니다.
+Downscale과 커널 최적화 때문에 실제 적용되는 radius는 `2 / downscaleFactor` 단위로 변합니다. 예를 들어 factor가 `0.25`이면 8 간격이므로, radius를 조금씩 바꾸어도 화면 차이가 없을 수 있습니다. radius와 이 간격은 natural 단위입니다. 유효 스케일이 2이면 radius 40은 80픽셀에 걸쳐 흐려집니다.
 
 <br/>
 

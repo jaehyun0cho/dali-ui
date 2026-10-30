@@ -69,12 +69,13 @@ public:
   /**
    * @brief Creates an initialized BackgroundBlurEffect.
    * @SINCE_3_0.0
-   * @param[in] blurRadius The radius of Gaussian kernel.
+   * @param[in] blurRadius The radius of Gaussian kernel, in natural units: the blur spreads over the radius
+   * multiplied by the effective scale of the owner View.
    * @return A handle to a newly allocated Dali resource
    * @note Due to the downscale factor and kernel optimizations, the actual applied blur changes only in fixed
    * increments.
    * @note The increment size is (2 / downscaleFactor). For example, with downscaleFactor = 0.25, the effective blur
-   * radius changes in steps of 8 pixels, so small adjustments below that threshold will have no visual effect.
+   * radius changes in steps of 8, so small adjustments below that threshold will have no visual effect.
    */
   static BackgroundBlurEffect New(uint32_t blurRadius);
 
@@ -113,11 +114,12 @@ public:
   /**
    * @brief Set blur radius value.
    * @SINCE_3_0.0
-   * @param[in] blurRadius The radius of Gaussian kernel.
+   * @param[in] blurRadius The radius of Gaussian kernel, in natural units: the blur spreads over the radius
+   * multiplied by the effective scale of the owner View.
    * @note Due to the downscale factor and kernel optimizations, the actual applied blur changes only in fixed
    * increments.
    * @note The increment size is (2 / downscaleFactor). For example, with downscaleFactor = 0.25, the effective blur
-   * radius changes in steps of 8 pixels, so small adjustments below that threshold will have no visual effect.
+   * radius changes in steps of 8, so small adjustments below that threshold will have no visual effect.
    */
   void SetBlurRadius(uint32_t blurRadius);
 
