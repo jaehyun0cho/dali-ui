@@ -230,8 +230,9 @@ mWindowFrame.SetMinimumFrameSize(mDefaultDecoration.GetMinimumFrameSize());
 mWindowFrame.SetMinimumFrameSize(mDefaultDecoration.GetMinimumFrameSize());
 ```
 
-기본 옵션에서는 `276 x 55`입니다. 컨트롤이나 리사이즈 핸들을 끄면 해당 열이 사라져
-값도 줄어듭니다. 보더가 이 값을 스스로 적용하지는 않습니다. 창의 크기 제약은 앱의
+기본 옵션에서는 유효 스케일 1.0 기준 `276 x 55`입니다. 값은 frame의 현재 스케일에서의
+surface 픽셀이므로(2.0에서는 `552 x 110`) 윈도우별 스케일이나 시스템 스케일이 바뀌면 다시
+적용하십시오. 컨트롤이나 리사이즈 핸들을 끄면 해당 열이 사라져 값도 줄어듭니다. 보더가 이 값을 스스로 적용하지는 않습니다. 창의 크기 제약은 앱의
 몫이기 때문입니다. 앱 자체 최소값이 있다면 둘 중 큰 값을 쓰십시오.
 
 `GetMoveRegion()`은 하단 bar에서 남은 폭을 채우는 move region을 돌려줍니다.
