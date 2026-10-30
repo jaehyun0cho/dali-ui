@@ -1469,8 +1469,10 @@ float InputEditorImpl::GetLetterSpacing() const
 // =============================================================================
 int InputEditorImpl::GetLineCount()
 {
-  const float width = Self().GetProperty(Actor::Property::SIZE_WIDTH).Get<float>();
-  const float clamp = ClampWithMinPriority(width, GetMinimumWidth(), GetMaximumWidth());
+  // The actor width is in rendered pixels; scale the authored limits as OnMeasure() does.
+  const float width          = Self().GetProperty(Actor::Property::SIZE_WIDTH).Get<float>();
+  const float effectiveScale = GetEffectiveLayoutScale();
+  const float clamp          = ClampWithMinPriority(width, GetMinimumWidth() * effectiveScale, GetMaximumWidth() * effectiveScale);
   return GetLineCount(clamp);
 }
 

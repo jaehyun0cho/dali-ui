@@ -1248,7 +1248,8 @@ public: // Setters for chaining
    * @brief Gets the number of lines of text within the current layout width.
    *
    * @note The line count is calculated based on the current width of the input editor,
-   * clamped between its minimum and maximum width.
+   * clamped between its minimum and maximum width, both multiplied by the
+   * input editor's effective scale as in layout.
    * If the width is not yet resolved (e.g., when using wrap content or match parent constraints),
    * it may be zero before layout is completed, which can result in an incorrect line count.
    * @return The number of lines.
