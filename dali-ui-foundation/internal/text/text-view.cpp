@@ -650,7 +650,7 @@ Length View::GetGlyphsUncached(GlyphInfo*                   glyphs,
   }
   Length                  numberOfLaidOutGlyphs       = 0u;
   Length                  numberOfActualLaidOutGlyphs = 0u;
-  const float             modelCharacterSpacing       = mImpl->mVisualModel->GetCharacterSpacing();
+  const float             modelCharacterSpacing       = mImpl->mVisualModel->GetEffectiveCharacterSpacing();
   Vector<CharacterIndex>& glyphToCharacterMap         = mImpl->mVisualModel->mGlyphsToCharacters;
   const CharacterIndex*   glyphToCharacterMapBuffer   = glyphToCharacterMap.Begin();
   float                   calculatedAdvance           = 0.f;
@@ -1219,7 +1219,7 @@ const Vector<BoundedParagraphRun>& View::GetBoundedParagraphRuns() const
 
 float View::GetCharacterSpacing() const
 {
-  return mImpl->mVisualModel->GetCharacterSpacing();
+  return mImpl->mVisualModel->GetEffectiveCharacterSpacing();
 }
 
 const Character* View::GetTextBuffer() const

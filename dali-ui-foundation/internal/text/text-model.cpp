@@ -321,7 +321,7 @@ const Vector<CharacterSpacingGlyphRun>& Model::GetCharacterSpacingGlyphRuns() co
 
 float Model::GetCharacterSpacing() const
 {
-  return mVisualModel->GetCharacterSpacing();
+  return mVisualModel->GetEffectiveCharacterSpacing();
 }
 
 const Character* Model::GetTextBuffer() const

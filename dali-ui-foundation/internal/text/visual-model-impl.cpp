@@ -730,6 +730,11 @@ const float VisualModel::GetCharacterSpacing() const
   return mCharacterSpacing;
 }
 
+float VisualModel::GetEffectiveCharacterSpacing() const
+{
+  return ResolveDecorationDistance(mCharacterSpacing, mDecorationUiScale);
+}
+
 bool VisualModel::IsBackgroundEnabled() const
 {
   return mBackgroundEnabled;

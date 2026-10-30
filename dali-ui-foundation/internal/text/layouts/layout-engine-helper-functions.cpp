@@ -36,7 +36,7 @@ void CalculateGlyphPositionsLTR(const VisualModelPtr& visualModel, const Logical
                                 Vector2* glyphPositionsBuffer, float& penX)
 {
   const GlyphInfo* const glyphsBuffer          = visualModel->mGlyphs.Begin();
-  const float            modelCharacterSpacing = visualModel->GetCharacterSpacing();
+  const float            modelCharacterSpacing = visualModel->GetEffectiveCharacterSpacing();
   const Character* const textBuffer            = logicalModel->mText.Begin();
 
   Vector<CharacterIndex>& glyphToCharacterMap       = visualModel->mGlyphsToCharacters;
@@ -84,7 +84,7 @@ void CalculateGlyphPositionsRTL(const VisualModelPtr& visualModel, const Logical
   const BidirectionalLineInfoRun& bidiLine                 = logicalModel->mBidirectionalLineInfo[bidiLineIndex];
   const GlyphInfo* const          glyphsBuffer             = visualModel->mGlyphs.Begin();
   const GlyphIndex* const         charactersToGlyphsBuffer = visualModel->mCharactersToGlyph.Begin();
-  const float                     modelCharacterSpacing    = visualModel->GetCharacterSpacing();
+  const float                     modelCharacterSpacing    = visualModel->GetEffectiveCharacterSpacing();
 
   // Get the character-spacing runs.
   const Vector<CharacterSpacingGlyphRun>& characterSpacingGlyphRuns = visualModel->GetCharacterSpacingGlyphRuns();
@@ -119,7 +119,7 @@ void TraversesCharactersForGlyphPositionsRTL(const VisualModelPtr& visualModel, 
 {
   const GlyphInfo* const  glyphsBuffer             = visualModel->mGlyphs.Begin();
   const GlyphIndex* const charactersToGlyphsBuffer = visualModel->mCharactersToGlyph.Begin();
-  const float             modelCharacterSpacing    = visualModel->GetCharacterSpacing();
+  const float             modelCharacterSpacing    = visualModel->GetEffectiveCharacterSpacing();
   const Length* const     glyphsPerCharacterBuffer = visualModel->mGlyphsPerCharacter.Begin();
 
   // Get the character-spacing runs.
