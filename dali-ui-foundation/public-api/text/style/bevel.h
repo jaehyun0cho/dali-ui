@@ -122,7 +122,9 @@ public:
   /**
    * @brief Sets the bevel intensity.
    *
-   * Higher values create a more pronounced bevel effect.
+   * Higher values create a more pronounced bevel effect. The intensity is the
+   * offset in pixels of the light and shadow samples; a Label multiplies it by
+   * its effective scale.
    *
    * @param[in] intensity The bevel intensity.
    */

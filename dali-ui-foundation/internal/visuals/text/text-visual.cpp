@@ -41,6 +41,7 @@
 #include <dali-ui-foundation/integration-api/visuals/visual-properties-integ.h>
 #include <dali-ui-foundation/internal/graphics/builtin-shader-extern-gen.h>
 #include <dali-ui-foundation/internal/text/color-glyph-helper.h>
+#include <dali-ui-foundation/internal/text/decoration-scale.h>
 #include <dali-ui-foundation/internal/text/marquee/marquee-renderer-state.h>
 #include <dali-ui-foundation/internal/text/replacement/inline-replacement-reveal-bridge.h>
 #include <dali-ui-foundation/internal/text/script-run.h>
@@ -1646,11 +1647,12 @@ void TextVisual::LoadComplete(bool loadingSuccess, const TextInformation& textIn
 
         if(renderInfo.isEmbossEnabled)
         {
+          // The bevel offset is in view pixels; follow the UI scale the texture was rendered with.
           float          sizeX             = std::max(layoutSize.x, Math::MACHINE_EPSILON_100);
           float          sizeY             = std::max(std::min((float)maxTextureSize, layoutSize.y), Math::MACHINE_EPSILON_100);
           const Vector2& embossSize        = Vector2(1.0f / sizeX, 1.0f / sizeY);
           const Vector2& embossDirection   = parameters.embossDirection;
-          const float    embossStrength    = parameters.embossStrength;
+          const float    embossStrength    = Text::ResolveDecorationDistance(parameters.embossStrength, parameters.decorationUiScale);
           const Vector4& embossLightColor  = parameters.embossLightColor;
           const Vector4& embossShadowColor = parameters.embossShadowColor;
 
@@ -3150,11 +3152,12 @@ void TextVisual::AddRenderer(Actor& actor, const Vector2& size, bool hasMultiple
 
       if(embossEnabled)
       {
+        // The bevel offset is in view pixels; follow the UI scale of the text.
         float          sizeX             = std::max(size.x, Math::MACHINE_EPSILON_100);
         float          sizeY             = std::max(std::min((float)maxTextureSize, size.y), Math::MACHINE_EPSILON_100);
         const Vector2& embossSize        = Vector2(1.0f / sizeX, 1.0f / sizeY);
         const Vector2& embossDirection   = mController->GetEmbossDirection();
-        const float    embossStrength    = mController->GetEmbossStrength();
+        const float    embossStrength    = Text::ResolveDecorationDistance(mController->GetEmbossStrength(), mController->GetUiScale());
         const Vector4& embossLightColor  = mController->GetEmbossLightColor();
         const Vector4& embossShadowColor = mController->GetEmbossShadowColor();
 
