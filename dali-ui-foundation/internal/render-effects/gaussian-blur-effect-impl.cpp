@@ -36,6 +36,7 @@
 #include <locale>
 
 // INTERNAL INCLUDES
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/integration-api/view-depth-index-ranges.h>
 #include <dali-ui-foundation/integration-api/view-integ.h>
 
@@ -60,6 +61,7 @@ static constexpr uint32_t MINIMUM_GPU_ARRAY_SIZE = 2u; // GPU cannot handle arra
 static constexpr std::string_view UNIFORM_BLUR_STRENGTH_NAME("uAnimationRatio");
 static constexpr std::string_view UNIFORM_BLUR_OPACITY_NAME("uOpacity");
 static constexpr std::string_view UNIFORM_BLUR_OFFSET_DIRECTION_NAME("uOffsetDirection");
+static constexpr std::string_view UNIFORM_VIEW_EFFECTIVE_SCALE_NAME("viewEffectiveScale");
 
 bool IsIntermediateDownsampleRequired(float downscaleFactor)
 {
@@ -408,6 +410,12 @@ void GaussianBlurEffectImpl::OnActivate()
   mVerticalBlurActor.RegisterProperty(UNIFORM_BLUR_OPACITY_NAME.data(), 1.0f);
   mVerticalBlurActor.RegisterProperty(UNIFORM_BLUR_STRENGTH_NAME.data(), 1.0f);
 
+  // The blur passes are drawn by internal actors, not by the owner View, so they would read the
+  // shader default viewEffectiveScale of 1.0: give them the owner's effective scale.
+  const float viewEffectiveScale = Ui::Extension::View::GetEffectiveLayoutScale(GetImpl(ownerView));
+  mHorizontalBlurActor.RegisterProperty(UNIFORM_VIEW_EFFECTIVE_SCALE_NAME.data(), viewEffectiveScale);
+  mVerticalBlurActor.RegisterProperty(UNIFORM_VIEW_EFFECTIVE_SCALE_NAME.data(), viewEffectiveScale);
+
   // Get size
   Vector2 size = GetTargetSize();
   DALI_LOG_INFO(
@@ -533,6 +541,14 @@ void GaussianBlurEffectImpl::OnRefresh()
   mHorizontalBlurActor.RegisterProperty(UNIFORM_BLUR_STRENGTH_NAME.data(), 1.0f);
   mVerticalBlurActor.RegisterProperty(UNIFORM_BLUR_OPACITY_NAME.data(), 1.0f);
   mVerticalBlurActor.RegisterProperty(UNIFORM_BLUR_STRENGTH_NAME.data(), 1.0f);
+
+  // A scale change refreshes the effect: keep the blur passes on the owner's effective scale.
+  if(Ui::View ownerView = GetOwnerView())
+  {
+    const float viewEffectiveScale = Ui::Extension::View::GetEffectiveLayoutScale(GetImpl(ownerView));
+    mHorizontalBlurActor.RegisterProperty(UNIFORM_VIEW_EFFECTIVE_SCALE_NAME.data(), viewEffectiveScale);
+    mVerticalBlurActor.RegisterProperty(UNIFORM_VIEW_EFFECTIVE_SCALE_NAME.data(), viewEffectiveScale);
+  }
 
   DestroyFrameBuffers();
 
