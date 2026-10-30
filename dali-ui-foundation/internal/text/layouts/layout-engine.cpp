@@ -441,7 +441,7 @@ struct Engine::Impl
                        1u;
     input.lineWidth             = lineLayout.length;
     input.positionOffset        = alignmentLine.alignmentOffset;
-    input.modelCharacterSpacing = visualModel.GetCharacterSpacing();
+    input.modelCharacterSpacing = visualModel.GetEffectiveCharacterSpacing();
     if(resolveMetricRetention)
     {
       LineRun candidateLine;
@@ -686,7 +686,7 @@ struct Engine::Impl
     const float outlineWidth =
       parameters.textModel->IsOutlineEnabled() ? static_cast<float>(parameters.textModel->GetOutlineWidth()) : 0.0f;
     const GlyphIndex lastGlyphOfParagraphPlusOne = parameters.startGlyphIndex + parameters.numberOfGlyphs;
-    const float      modelCharacterSpacing       = parameters.textModel->mVisualModel->GetCharacterSpacing();
+    const float      modelCharacterSpacing       = parameters.textModel->mVisualModel->GetEffectiveCharacterSpacing();
 
     // Get the character-spacing runs.
     const Vector<CharacterSpacingGlyphRun>& characterSpacingGlyphRuns =
@@ -998,7 +998,7 @@ struct Engine::Impl
     float targetWidth = parameters.boundingBox.width;
 
     // Character Spacing
-    const float             modelCharacterSpacing     = parameters.textModel->mVisualModel->GetCharacterSpacing();
+    const float             modelCharacterSpacing     = parameters.textModel->mVisualModel->GetEffectiveCharacterSpacing();
     float                   calculatedAdvance         = 0.f;
     Vector<CharacterIndex>& glyphToCharacterMap       = parameters.textModel->mVisualModel->mGlyphsToCharacters;
     const CharacterIndex*   glyphToCharacterMapBuffer = glyphToCharacterMap.Begin();

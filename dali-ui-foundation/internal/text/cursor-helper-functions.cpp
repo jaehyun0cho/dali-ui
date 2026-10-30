@@ -203,7 +203,7 @@ CharacterIndex GetClosestCursorIndex(VisualModelPtr visualModel, LogicalModelPtr
 
   // Get the character-spacing runs.
   const Vector<CharacterSpacingGlyphRun>& characterSpacingGlyphRuns = visualModel->GetCharacterSpacingGlyphRuns();
-  const float                             modelCharacterSpacing     = visualModel->GetCharacterSpacing();
+  const float                             modelCharacterSpacing     = visualModel->GetEffectiveCharacterSpacing();
 
   // Whether there is a hit on a line.
   bool matchedLine = false;
@@ -639,7 +639,7 @@ void GetCursorPosition(GetCursorPositionParameters& parameters, float defaultFon
     const Length* const         charactersPerGlyphBuffer = parameters.visualModel->mCharactersPerGlyph.Begin();
     const CharacterIndex* const glyphsToCharactersBuffer = parameters.visualModel->mGlyphsToCharacters.Begin();
     const Vector2* const        glyphPositionsBuffer     = parameters.visualModel->mGlyphPositions.Begin();
-    const float                 modelCharacterSpacing    = parameters.visualModel->GetCharacterSpacing();
+    const float                 modelCharacterSpacing    = parameters.visualModel->GetEffectiveCharacterSpacing();
 
     const Vector<CharacterSpacingGlyphRun>& characterSpacingGlyphRuns =
       parameters.visualModel->GetCharacterSpacingGlyphRuns();

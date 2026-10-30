@@ -5485,3 +5485,38 @@ int UtcDaliLabelTextBevelFollowsUiScaleP(void)
   LayoutScaleManager::Get().SetUiScale(1.0f);
   END_TEST;
 }
+
+int UtcDaliLabelLetterSpacingFollowsUiScaleP(void)
+{
+  UiTestApplication application;
+  LayoutScaleManager::Get().SetUiScale(2.0f);
+
+  // At UI scale 2, 20-pixel glyphs with 5-pixel spacing render like 40-pixel glyphs with 10-pixel spacing.
+  Label label = Label::New("Spacing");
+  label.SetSystemFontSizeScaleEnabled(false);
+  label.SetPadding(Insets());
+  label.SetFontSize(20.0f);
+  auto& impl = static_cast<Dali::Ui::Integration::LabelImpl&>(label.GetImplementation());
+  impl.SetLetterSpacing(5.0f);
+
+  Label oracle = Label::New("Spacing");
+  Ui::Extension::View::SetUiScalePolicy(oracle, Ui::Extension::UiScalePolicy::DISABLED);
+  oracle.SetSystemFontSizeScaleEnabled(false);
+  oracle.SetPadding(Insets());
+  oracle.SetFontSize(40.0f);
+  static_cast<Dali::Ui::Integration::LabelImpl&>(oracle.GetImplementation()).SetLetterSpacing(10.0f);
+
+  application.GetScene().Add(label);
+  application.GetScene().Add(oracle);
+  application.SendNotification();
+  application.Render();
+  application.SendNotification();
+  application.Render();
+
+  DALI_TEST_CHECK(oracle.GetCurrentSize().width > 0.0f);
+  DALI_TEST_EQUALS(label.GetCurrentSize().width, oracle.GetCurrentSize().width, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(impl.GetLetterSpacing(), 5.0f, TEST_LOCATION);
+
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  END_TEST;
+}
