@@ -1470,8 +1470,11 @@ float InputEditorImpl::GetLetterSpacing() const
 // =============================================================================
 int InputEditorImpl::GetLineCount()
 {
-  const float width = Self().GetProperty(Actor::Property::SIZE_WIDTH).Get<float>();
-  const float clamp = ClampWithMinPriority(width, GetMinimumWidth(), GetMaximumWidth());
+  // The width, the padding and the fonts all come from the last layout, so scale the authored
+  // limits by that layout's scale (the text UI scale) as OnMeasure() did, not by a scale set since.
+  const float width       = Self().GetProperty(Actor::Property::SIZE_WIDTH).Get<float>();
+  const float textUiScale = GetTextUiScale();
+  const float clamp       = ClampWithMinPriority(width, GetMinimumWidth() * textUiScale, GetMaximumWidth() * textUiScale);
   return GetLineCount(clamp);
 }
 
