@@ -1,37 +1,34 @@
 # Migration guide: `Dali::Ui::View` sibling-order policy APIs → `Dali::Actor` APIs
 
-Audience: application developers (and automated migration tools) updating **application code** that uses the
-deprecated `Dali::Ui::View` / `Dali::Ui::ViewImpl` sibling-order overloads taking a
-`LayoutOrderPolicy`, which a later dali-ui removes. Every claim below was checked against the
-sources listed in the Evidence appendix; re-check there if something looks wrong for your
-dali-core/dali-ui version.
+Audience: application developers (and automated migration tools) updating **application code** that used the
+removed `Dali::Ui::View` / `Dali::Ui::ViewImpl` sibling-order overloads taking a
+`LayoutOrderPolicy`. Every claim below was checked against the sources listed in the Evidence
+appendix; re-check there if something looks wrong for your dali-core/dali-ui version.
 
-Applies to: a dali-ui whose `dali-ui-foundation/public-api/views/view-types.h` declares
-`enum class LayoutOrderPolicy` with a `@deprecated` note (the overloads still work unchanged and
-will be removed in a later dali-ui), and every later dali-ui whose header no longer declares the
-enum. Identify the version by that header, **not** by the commit title or by the version number:
-the overloads existed at least since 2.5.26 (then declared in
-`dali-ui-foundation/public-api/view-types.h`, before the headers moved under `views/`); an earlier
-removal (`b62b35f0`, "Remove View sibling-order APIs duplicating Dali::Actor") shipped only in
-release 2.5.35.11198 and was reverted by `908f9ec0` before 2.5.35.11201; every release from
-2.5.35.11201 up to and including 2.5.45.11629 has the overloads without a deprecation note.
-(Whether this guide applies unchanged to 2.5.35.11198 was not checked.) Requires dali-core >= 2.5.35
+Applies to: a dali-ui whose `dali-ui-foundation/public-api/views/view-types.h` no longer
+declares `enum class LayoutOrderPolicy`. Identify the version by that header, **not** by the
+commit title or by the version number: the overloads existed at least since 2.5.26 (then declared
+in `dali-ui-foundation/public-api/view-types.h`, before the headers moved under `views/`); an
+earlier removal with the same title (`b62b35f0`) shipped only in release 2.5.35.11198 and was
+reverted by `908f9ec0` before 2.5.35.11201; every release from 2.5.35.11201 up to and including
+2.5.45.11629 has the overloads again, and a later dali-ui marked them `@deprecated` (the commit
+that added this guide) before they were removed. (Whether this guide applies unchanged to
+2.5.35.11198 was not checked.) Requires dali-core >= 2.5.35
 (`Actor::Property::DEPTH_INDEX` and `Actor::InsertAbove/InsertBelow` are `@SINCE_2_5.35`).
 `pkg-config --modversion dali3-core` prints the library version `3.0.0`, not the release number,
 and the release numbers are run-time constants (`CORE_MAJOR_VERSION` etc.), so check the dali-core
 headers instead: `grep -n "void SetDepthIndex" <prefix>/include/dali/public-api/actors/actor.h`
-must hit. The migrated code (plain inherited calls plus `SetDepthIndex`) compiles and behaves the
-same against every dali-ui that has the overloads, deprecated or not (`View` re-exposes the
-inherited methods with `using Dali::Actor::RaiseToTop;` etc.), so migrate now: the removal turns
-every remaining call into a compile error.
+must hit. The migrated code (plain inherited calls plus `SetDepthIndex`) also compiles and behaves
+the same against a dali-ui that still has the overloads (the old `View` re-exposed the inherited
+methods with `using Dali::Actor::RaiseToTop;` etc.), so an application can be migrated before the
+dali-ui upgrade.
 
-**Binary compatibility:** the deprecated overloads are exported out-of-line symbols of
-`libdali3-ui-foundation.so.3` (12 symbols, e.g. `Dali::Ui::View::RaiseToTop(Dali::Ui::LayoutOrderPolicy)`).
-They stay during the deprecation, so existing binaries keep working. The removal does not change
-the SONAME: a binary, plugin or prebuilt third-party library built against headers that still have
-the overloads then loads against the new library and fails with an `undefined symbol` error, at
-load time or at the first call. Rebuild everything that includes dali-ui headers once it is
-migrated; check prebuilt artifacts with `nm -D --undefined-only <file> | grep LayoutOrderPolicy` (§7).
+**Binary compatibility:** the removed overloads were exported out-of-line symbols of
+`libdali3-ui-foundation.so.3` (12 symbols, e.g. `Dali::Ui::View::RaiseToTop(Dali::Ui::LayoutOrderPolicy)`),
+and the SONAME did not change. A binary, plugin or prebuilt third-party library built against the
+old headers still loads against the new library and then fails with an `undefined symbol` error, at
+load time or at the first call. Everything that includes dali-ui headers must be rebuilt; check
+prebuilt artifacts with `nm -D --undefined-only <file> | grep LayoutOrderPolicy` (§7).
 
 ---
 
@@ -39,15 +36,15 @@ migrated; check prebuilt artifacts with `nm -D --undefined-only <file> | grep La
 
 | # | Old call | Parent of the view | New call |
 |---|---|---|---|
-| 1 | `v.Raise(LayoutOrderPolicy::UPDATE)` and the other five `UPDATE` overloads | any | `v.Raise()` etc.: the **inherited `Dali::Actor`** method, drop the argument. Same code path. One exception: `RaiseAbove`/`LowerBelow` whose target **can be empty** need `if(t)` (the deprecated overloads ignore an empty target, the inherited calls throw), see §3.1. |
-| 2 | `v.RaiseToTop(LayoutOrderPolicy::PRESERVE)` etc. | **not** a `Dali::Ui::View` (window root layer via `Window::Add`, a plain `Dali::Actor`/`Layer`) | `v.RaiseToTop()` etc.: the deprecated code only does something different when the parent is a `Ui::View`. Same empty-target exception as row 1. The dali-ui migrated its own two window-parented drag views this way (the grid sample's drag preview and the reorder sample's floated dragged card). |
+| 1 | `v.Raise(LayoutOrderPolicy::UPDATE)` and the other five `UPDATE` overloads | any | `v.Raise()` etc.: the **inherited `Dali::Actor`** method, drop the argument. Same code path. One exception: `RaiseAbove`/`LowerBelow` whose target **can be empty** need `if(t)` (the removed overloads ignored an empty target, the inherited calls throw), see §3.1. |
+| 2 | `v.RaiseToTop(LayoutOrderPolicy::PRESERVE)` etc. | **not** a `Dali::Ui::View` (window root layer via `Window::Add`, a plain `Dali::Actor`/`Layer`) | `v.RaiseToTop()` etc.: the removed code only did something different when the parent was a `Ui::View`. Same empty-target exception as row 1. The dali-ui migrated its own two window-parented drag views this way (the grid sample's drag preview and the reorder sample's floated dragged card). |
 | 3 | `v.RaiseToTop(LayoutOrderPolicy::PRESERVE)` etc. | an **application-owned** `Dali::Ui::View` layout container (not one of the dali-ui containers listed in §6) | `v.SetDepthIndex(n)` (`Actor::Property::DEPTH_INDEX`), reset with `v.SetDepthIndex(0)` when the lift is over. See §3.2 / §5. |
 | 4 | `v.RaiseToTop(LayoutOrderPolicy::PRESERVE)` etc. | a dali-ui container that stacks its own children by sibling order (`RecyclerView`, `ScrollView`, `Navigator`, `DialogContainer`) | Do **not** use `DEPTH_INDEX` on their direct children. The old raise only moved the child within the sibling order, and the container re-asserts its own stacking (scroll bar on top, modals above pages, content above scrim) on its next restack; a `DEPTH_INDEX` lift outranks every such restack until the application resets it. Use the container's own API, or keep a plain `RaiseToTop()` (§6). **This row wins over rows 3, 6 and 7.** RecyclerView **item** views (children of the internal scroller) may be lifted with a positive index, reset on bind (§5.1, §6). |
 | 5 | `RaiseToTop(PRESERVE)` immediately after a **fresh `Add`** of the same child (the child was not already in that parent) | any | Delete the call: `Actor::Add` appends, so the child was already last and the old call moved nothing. |
 | 6 | `RaiseToTop(PRESERVE)` after `InsertAbove`/`InsertBelow` of the child, or after `Add` of a child that was **already** in that parent | any | Usually **not** a no-op: the inserted child sits next to its anchor (a re-`Add` of an existing child does nothing), so the old call brought it to the front while a `Ui::View` parent kept its inserted layout slot. Exception: when the child provably ended up last anyway (`InsertAbove` with the last child as anchor, an `InsertAbove`/`InsertBelow` whose anchor had vanished so dali-core appended, a re-`Add` of the last child) the old call moved nothing; treat that as row 5. Application-owned `Ui::View` parent: keep the insert and add `v.SetDepthIndex(n)` (exactly what dali-ui's reorder sample does after `InsertBelow`); §6 container parent: row 4; other parent: plain `v.RaiseToTop()`. |
 | 7 | shared helper whose parent type varies at run time | — | branch on the parent type at run time, with the §6 containers excluded from the `DEPTH_INDEX` branch; see §3.2 `BringToFront`. |
-| 8 | inside a `ViewImpl` subclass: `RaiseToTop(LayoutOrderPolicy::X)` | — | `Self().RaiseToTop()` / `Self().SetDepthIndex(n)`; the `ViewImpl` overloads are deprecated as well, and `CustomActorImpl` has no sibling-order members. See §3.3. |
-| 9 | "Change the View's layout order but keep the actor sibling order" | — | **Not available through the public application API, and the deprecated overloads never did it either.** The layout order is derived from the actor sibling order (§1). Reorder the actor (changes both) or use `DEPTH_INDEX` (changes neither). |
+| 8 | inside a `ViewImpl` subclass: `RaiseToTop(LayoutOrderPolicy::X)` | — | `Self().RaiseToTop()` / `Self().SetDepthIndex(n)`; `ViewImpl` no longer has sibling-order members and `CustomActorImpl` never had them. See §3.3. |
+| 9 | "Change the View's layout order but keep the actor sibling order" | — | **Not available through the public application API, and the removed overloads never did it either.** The layout order is derived from the actor sibling order (§1). Reorder the actor (changes both) or use `DEPTH_INDEX` (changes neither). |
 
 The rows are not mutually exclusive. Precedence when more than one matches: rows 1 and 8 are
 about the call form; among the `PRESERVE` rows the parent decides first (row 2 for a non-View
@@ -76,7 +73,7 @@ through in §5.5 (focus-driven, selection-driven, and both at once).
 | Order | Owner | Query | Changed by |
 |---|---|---|---|
 | **A. Actor sibling order** | dali-core (`ActorParentImpl::mChildren`) | `Dali::Actor::GetChildCount()/GetChildAt(i)` | `Add`, `Remove`, `Raise`, `Lower`, `RaiseToTop`, `LowerToBottom`, `RaiseAbove`, `LowerBelow`, `InsertAbove`, `InsertBelow`, and the writable property `DevelActor::Property::SIBLING_ORDER` (it is implemented with the same Raise/Lower moves, so it is **not** a draw-order-only control). |
-| **B. View logical (layout) order** | dali-ui (`ViewDataImpl::mChildren`) | `Dali::Ui::View::GetChildViewCount()/GetChildViewAt(i)/IndexOfChildView(v)` | **Follows A automatically.** dali-ui connects `DevelActor::ChildOrderChangedSignal` and rebuilds B from `Actor::GetChildAt` order whenever the rebuilt View-only sequence differs from the current one; it then invalidates measure and, if a `LayoutTransition` is attached, tags the children `LayoutChangeCause::REORDERED`. Emissions that move no View (a `RaiseAbove` of a child already above its target but not yet top-most, a reorder among non-View actors) return early and do nothing as long as B matches the View sequence of A, which only a deprecated `PRESERVE` call breaks (see below). B excludes non-View actors and in-flight EXIT ghosts, nothing else. |
+| **B. View logical (layout) order** | dali-ui (`ViewDataImpl::mChildren`) | `Dali::Ui::View::GetChildViewCount()/GetChildViewAt(i)/IndexOfChildView(v)` | **Follows A automatically.** dali-ui connects `DevelActor::ChildOrderChangedSignal` and rebuilds B from `Actor::GetChildAt` order whenever the rebuilt View-only sequence differs from the current one; it then invalidates measure and, if a `LayoutTransition` is attached, tags the children `LayoutChangeCause::REORDERED`. Emissions that move no View (a `RaiseAbove` of a child already above its target but not yet top-most, a reorder among non-View actors) return early and do nothing, because in the current code B always matches the View sequence of A (the removed code could diverge, see below). B excludes non-View actors and in-flight EXIT ghosts, nothing else. |
 | **C. Draw + hit-test order** | dali-core depth tree | `GetDepthIndex()` per child | Equals A unless a child overrides `Actor::Property::DEPTH_INDEX`: children are stable-sorted by depth index (ascending = drawn later = on top); equal values keep order A. Touch/hover/wheel/gesture hit-testing walks the same order top-most first. |
 
 Other consumers of A that applications rarely think about (none of them reads `DEPTH_INDEX`):
@@ -89,27 +86,27 @@ Other consumers of A that applications rarely think about (none of them reads `D
   `BackgroundBlurEffect`, `GaussianBlurEffect`, `OffscreenRendering`) is computed by walking
   `Actor::GetChildAt`.
 
-What the deprecated overloads really do (from their implementation, see the Evidence appendix):
+What the removed overloads really did (from the removed implementation):
 
-- `UPDATE`: calls the inherited `Dali::Actor` method. Nothing else. → A changes, B resyncs, C follows.
-- `PRESERVE` **with a `Ui::View` parent**: calls the same inherited method while the parent's
-  A→B resync is suppressed for that one call. → A and C change, B keeps its previous order,
-  **but only until the next `ChildOrderChangedSignal` on that parent that is emitted outside a
-  `PRESERVE` call**. Because B then no longer matches the View sequence of A, that next emission
-  rebuilds B from A even when it moves no View: a plain `Raise`/`Lower`/`RaiseToTop`/
-  `LowerToBottom`/`RaiseAbove`/`LowerBelow` that moves something, but also a `RaiseAbove`/
-  `LowerBelow` that moves nothing (dali-core emits whenever the child is not already at that end
+- `UPDATE`: called the inherited `Dali::Actor` method. Nothing else. → A changed, B resynced, C followed.
+- `PRESERVE` **with a `Ui::View` parent**: called the same inherited method while the parent's
+  A→B resync was suppressed for that one call. → A and C changed, B kept its previous order,
+  **but only until the next `ChildOrderChangedSignal` on that parent that was emitted outside a
+  `PRESERVE` call**. Because B then no longer matched the View sequence of A, that next emission
+  rebuilt B from A even when it moved no View: a plain `Raise`/`Lower`/`RaiseToTop`/
+  `LowerToBottom`/`RaiseAbove`/`LowerBelow` that moved something, but also a `RaiseAbove`/
+  `LowerBelow` that moved nothing (dali-core emits whenever the child is not already at that end
   and the target is a sibling), an `InsertAbove`/`InsertBelow` of an already-parented sibling
   even at its current position, and a reorder among non-View actors. The "preserved" layout
-  order then silently snaps to the actor order. In 2.5.35 and 2.5.36 the handler had no
-  equality check at all, so there every unsuppressed emission rebuilt B. No emission happens,
-  so B stays stale, for `Raise`/`Lower`/`RaiseToTop`/`LowerToBottom` of a child already at that
+  order then silently snapped to the actor order. In 2.5.35 and 2.5.36 the handler had no
+  equality check at all, so there every unsuppressed emission rebuilt B. No emission happened,
+  so B stayed stale, for `Raise`/`Lower`/`RaiseToTop`/`LowerToBottom` of a child already at that
   end, for `RaiseAbove`/`LowerBelow` of a child already top-most/bottom-most or with a
   non-sibling target, for a fresh insert (it only places the newcomer), and for another
   `PRESERVE` call on the same parent (suppressed as well).
 - `PRESERVE` **with any other parent** (window root layer, plain actor): identical to `UPDATE`,
   i.e. the plain inherited call.
-- `RaiseAbove/LowerBelow` with an **empty** target: return silently, under both policies and
+- `RaiseAbove/LowerBelow` with an **empty** target: returned silently, under both policies and
   whatever the parent.
 
 `DEPTH_INDEX` changes only C, permanently and consistently: A and B stay as they are, so the
@@ -117,20 +114,19 @@ latent snap described above cannot happen.
 
 ---
 
-## 2. What is deprecated, and how to find the call sites
+## 2. What was removed, and how to find the call sites
 
-Deprecated in `dali-ui-foundation/public-api/views/view.h`, `view-types.h` and
-`public-api/views/view-impl.h` (each with a `@deprecated` note that names its replacement), and
-removed in a later dali-ui:
+Removed from `dali-ui-foundation/public-api/views/view.h`, `view-types.h` and
+`public-api/views/view-impl.h`:
 
 ```cpp
-enum class Dali::Ui::LayoutOrderPolicy { UPDATE, PRESERVE };            // deprecated
-void View::Raise(LayoutOrderPolicy);        void ViewImpl::Raise(LayoutOrderPolicy);        // deprecated
-void View::Lower(LayoutOrderPolicy);        void ViewImpl::Lower(LayoutOrderPolicy);        // deprecated
-void View::RaiseToTop(LayoutOrderPolicy);   void ViewImpl::RaiseToTop(LayoutOrderPolicy);   // deprecated
-void View::LowerToBottom(LayoutOrderPolicy);void ViewImpl::LowerToBottom(LayoutOrderPolicy);// deprecated
-void View::RaiseAbove(View, LayoutOrderPolicy);   void ViewImpl::RaiseAbove(View, LayoutOrderPolicy);   // deprecated
-void View::LowerBelow(View, LayoutOrderPolicy);   void ViewImpl::LowerBelow(View, LayoutOrderPolicy);   // deprecated
+enum class Dali::Ui::LayoutOrderPolicy { UPDATE, PRESERVE };            // gone
+void View::Raise(LayoutOrderPolicy);        void ViewImpl::Raise(LayoutOrderPolicy);        // gone
+void View::Lower(LayoutOrderPolicy);        void ViewImpl::Lower(LayoutOrderPolicy);        // gone
+void View::RaiseToTop(LayoutOrderPolicy);   void ViewImpl::RaiseToTop(LayoutOrderPolicy);   // gone
+void View::LowerToBottom(LayoutOrderPolicy);void ViewImpl::LowerToBottom(LayoutOrderPolicy);// gone
+void View::RaiseAbove(View, LayoutOrderPolicy);   void ViewImpl::RaiseAbove(View, LayoutOrderPolicy);   // gone
+void View::LowerBelow(View, LayoutOrderPolicy);   void ViewImpl::LowerBelow(View, LayoutOrderPolicy);   // gone
 ```
 
 Still available on every `Dali::Ui::View` handle (inherited from `Dali::Actor`, unchanged):
@@ -142,11 +138,8 @@ Inside a `ViewImpl` subclass reach them through `Self()`.
 Kept dali-ui APIs (not duplicates): `View::Remove(View, RemovePolicy)`, `View::RemoveAll(RemovePolicy)`,
 the inherited `Remove(Actor)`/`RemoveAll()`, `GetChildViewCount()`, `GetChildViewAt()`, `IndexOfChildView()`.
 
-During the deprecation every call compiles without a diagnostic: the deprecation is documented
-only, so the compiler does not find the call sites for you; the searches below do. After the
-removal the compiler reports (GCC 15, verified against dali-ui headers without the overloads; the
-spelling follows the call site, and in a UTF-8 locale GCC prints typographic quotes ‘…’ instead
-of '…'):
+Compiler output you will see (GCC 15, verified against the installed headers; the spelling
+follows the call site, and in a UTF-8 locale GCC prints typographic quotes ‘…’ instead of '…'):
 
 ```
 error: 'LayoutOrderPolicy' has not been declared             // unqualified argument `LayoutOrderPolicy::X` or parameter type (e.g. under `using namespace Dali::Ui;`)
@@ -160,7 +153,7 @@ error: 'p' was not declared in this scope                                      /
 error: no matching function for call to 'Dali::Ui::View::RaiseToTop(int&)'     // the CALL line, policy passed through a parameter / alias
 ```
 
-**Trap (after the removal):** a call that passes the policy through an `auto`-deduced (or template-deduced)
+**Trap:** a call that passes the policy through an `auto`-deduced (or template-deduced)
 constant or variable (`v.RaiseToTop(kKeep);` with `constexpr auto kKeep =
 LayoutOrderPolicy::PRESERVE;`) produces **no diagnostic at the call line**; only the constant's
 declaration fails. Explicitly typed locals, parameters, members and aliases do report the call
@@ -186,15 +179,15 @@ grep -rnE --exclude-dir=build --exclude-dir=.git "(\.|->)(Raise|Lower|RaiseToTop
 ```
 
 Calls split across lines are found by grep 1 (the type name is on the declaration of whatever
-is passed) and, after the removal, by the compiler. Generated code and scripting/binding layers that name the enum
+is passed) and by the compiler. Generated code and scripting/binding layers that name the enum
 as a string are covered by grep 1 only when they live in the searched tree; search them
 separately otherwise.
 
-A handle call such as `view.RaiseToTop()` (no argument) compiles before and after the removal
-with identical behaviour; it needs no edit. Inside a `ViewImpl` subclass the **only** unqualified
-form that compiles is the one-argument `RaiseToTop(policy)` (it resolves to the deprecated
-`ViewImpl` overload); the no-argument unqualified form does not compile, neither now nor after the
-removal (`CustomActorImpl` has no such member). Use `Self().RaiseToTop()`, see §3.3.
+A handle call such as `view.RaiseToTop()` (no argument) compiled before the change and keeps
+compiling with identical behaviour; it needs no edit. Inside a `ViewImpl` subclass the **only**
+unqualified form that ever compiled was the one-argument `RaiseToTop(policy)` (it resolved to the
+removed `ViewImpl` overload); the no-argument unqualified form did not compile before and does not
+compile now (`CustomActorImpl` has no such member). Use `Self().RaiseToTop()`, see §3.3.
 
 ---
 
@@ -214,7 +207,7 @@ v.LowerBelow(t, LayoutOrderPolicy::UPDATE);    if(t) { v.LowerBelow(t); }
 
 Behaviour is identical except for the two target-taking calls:
 
-- The deprecated overloads return silently on an **empty** `target`. The inherited
+- The removed overloads returned silently on an **empty** `target`. The inherited
   `Dali::Actor::RaiseAbove/LowerBelow` dereference the handle and hit
   `DALI_ASSERT_ALWAYS(actor && "Actor handle is empty")`, which logs and **throws
   `Dali::DaliException`** (uncaught, that terminates the application). Keep the `if(t)` guard
@@ -269,8 +262,8 @@ Classify each call site:
    `ScrollView`, `Navigator`, `DialogContainer`): no `DEPTH_INDEX`; see §6.
 5. **Parent type is only known at run time** (a shared helper that sometimes raises a
    window-parented drag view and sometimes a child of an application-owned container): reproduce
-   the deprecated overloads' decision at run time, **plus** the rule-4 exclusion that they do not
-   need (they raise a container child in A, which the container's next restack undoes; a
+   the removed decision at run time, **plus** the rule-4 exclusion that the removed code did not
+   need (it raised a container child in A, which the container's next restack undid; a
    `DEPTH_INDEX` lift would survive those restacks):
 
 ```cpp
@@ -284,7 +277,7 @@ card.SetDepthIndex(LIFTED_DEPTH_INDEX);
 // ... when the card must go back into normal stacking (blur / drag end / animation end):
 card.SetDepthIndex(DEFAULT_DEPTH_INDEX);
 
-// Rule 5: the deprecated PRESERVE overload decides by the parent type on every call. Same decision
+// Rule 5: the removed PRESERVE overload decided by the parent type on every call. Same decision
 // now, with the dali-ui containers of §6 (rule 4) sent to the plain call. Navigator and
 // DialogContainer live in dali-ui-components; drop those two tests (and the include) if the
 // application does not link that library.
@@ -339,9 +332,8 @@ int32_t d = view.GetProperty<int32_t>(Dali::Actor::Property::DEPTH_INDEX);
 
 ### 3.3 Inside a `ViewImpl` subclass
 
-The six `Dali::Ui::ViewImpl` policy methods are deprecated as well, and `Dali::CustomActorImpl`
-has no sibling-order or depth-index members, so after the removal an unqualified call no longer
-resolves. Use the handle:
+`Dali::Ui::ViewImpl` lost the six policy methods and `Dali::CustomActorImpl` has no
+sibling-order or depth-index members, so an unqualified call no longer resolves. Use the handle:
 
 ```cpp
 // Before (member of a ViewImpl subclass)
@@ -985,9 +977,8 @@ Differences to accept, and what to test:
 
 ## 7. Verification checklist after migrating an application
 
-1. The greps of §2 return no hit that is still a use of the deprecated API (the per-name grep 3
-   may legitimately hit unrelated identifiers); after the removal the application compiles against
-   the new dali-ui;
+1. The greps of §2 return no hit that is still a use of the removed API (the per-name grep 3
+   may legitimately hit unrelated identifiers); the application compiles against the new dali-ui;
    every binary, plugin and prebuilt library that includes dali-ui headers was rebuilt, and
    `nm -D --undefined-only <file> | grep LayoutOrderPolicy` is empty for each prebuilt artifact
    that is kept (header: Binary compatibility).
@@ -1045,11 +1036,11 @@ dali-core: commit 7a05f143c (Version 2.5.45); the installed headers carry the sa
 - `dali/internal/event/actors/actor-impl.cpp:125, 149` — `DALI_PROPERTY("depthIndex", INTEGER, true, false, false, …)` and `("siblingOrder", INTEGER, true, false, false, …)`: writable, not animatable, not constraint input.
 - `dali/internal/event/actors/actor-impl.cpp:1018-1039` — `SetDepthIndex`: early-return on same value, updates only the parent's non-zero counter, does not touch `mChildren`, no order signal, `RequestRenderTaskReorder()` (:1035, non-recursive; `:1474-1480` it requests a task reorder only when the actor itself is an off-screen renderable) and depth-tree rebuild.
 - `dali/internal/event/actors/actor-parent-impl.cpp:82` — `AddChild`: `if(&mOwner != oldParent)` (re-`Add` of an existing child does nothing); `:102-111` an anchor places the child directly next to it (`++iter` for "above"; `:109-111` a vanished anchor falls back to appending); `:115` plain `Add` appends (`push_back`); `:118-122, 165-170` — add/remove only adjust the non-zero counter; the child's own value is kept (so a value set on an unparented view takes effect at the later `Add`, §3.2 rule 0).
-- `dali/internal/event/actors/actor-parent-impl.cpp:132, 195, 225` — `Add`/`Remove`/`RemoveAll` emit only `ChildAdded`/`ChildRemoved`; `EmitOrderChangedAndRebuild` is called only from the reorder paths (:372, :397, :419, :441, :468, :494, :539). dali-ui's `OnChildAdded` (`dali-ui-foundation/internal/views/view/view-data-impl.cpp:3737-3759`, append fast path :3598-3601) inserts only the newcomer and `OnChildRemoved` (:3988-4062, `mChildren.Erase` :4054) only erases it. Basis for the §5.5 statement that a fresh `Add` or a `Remove` did not trigger the latent snap.
+- `dali/internal/event/actors/actor-parent-impl.cpp:132, 195, 225` — `Add`/`Remove`/`RemoveAll` emit only `ChildAdded`/`ChildRemoved`; `EmitOrderChangedAndRebuild` is called only from the reorder paths (:372, :397, :419, :441, :468, :494, :539). dali-ui's policy-era `OnChildAdded` (`<D>:dali-ui-foundation/internal/views/view/view-data-impl.cpp:3737-3759`, append fast path :3598-3601) inserts only the newcomer and `OnChildRemoved` (:3988-4062, `mChildren.Erase` :4054) only erases it. Basis for the §5.5 statement that a fresh `Add` or a `Remove` did not trigger the latent snap.
 - `dali/public-api/actors/actor.cpp:89-92` → `dali/internal/event/actors/actor-impl.cpp:1687-1690` (`Remove(child, notify)`, `notify = true` by default, `actor-impl.h:197`), `actor-parent-impl.cpp:146-178` (`removed->SetParent(nullptr, notify)` :176), `actor-impl.cpp:2084-2126` (`SetParent(nullptr)`: `mParent = nullptr`, then `DisconnectFromScene(notify)`), `:1803-1821` and `:1840-1849` (`SceneDisconnectedSignal` emitted synchronously, inside `Remove`). Basis for §5.5 `ItemStacking::Forget`: a focused item loses focus inside `Remove`.
 - `dali/internal/update/manager/render-instruction-processor.cpp:270, 284` — render item sort key = node depth-tree index (`isLayer3d ? 0 : node->GetDepthIndex()`) plus the renderer's own depth index; `:674-694` overlay renderables sorted with the same comparator. `dali/internal/event/events/hit-test-algorithm-impl.cpp:561-566` — overlay hit roots collected in depth order. Basis for §4.1 (visual depth composition) and the `OVERLAY_2D` statement.
 - `dali/public-api/dali-core-version.h:29-31` — `CORE_MAJOR/MINOR/MICRO_VERSION` are run-time constants; `pkg-config --modversion dali3-core dali3-ui-foundation` prints `3.0.0` on a 2.5.46 install (dali-ui takes it from `DALI_UI_VERSION`, `build/tizen/CMakeLists.txt:23-26`); installed `dali/public-api/actors/actor.h:2191` `void SetDepthIndex(int32_t depthIndex);` is the compile-time probe. `dali/devel-api/events/hit-test-algorithm.h:144` — devel `HitTest(...)` for headless touch-order checks.
-- Binary compatibility: `nm -DC <prefix>/lib/libdali3-ui-foundation.so.3.0.0 | grep -c LayoutOrderPolicy` = 12 for a release (hidden-visibility) build that has the overloads (six `View` and six `ViewImpl` members, e.g. `Dali::Ui::View::RaiseToTop(Dali::Ui::LayoutOrderPolicy)`) and 0 for one without them; both carry `SONAME libdali3-ui-foundation.so.3` (`readelf -d`; `build/tizen/dali-ui-foundation/CMakeLists.txt:2, 177-178`).
+- Binary compatibility: `nm -DC <prefix>/lib/libdali3-ui-foundation.so.3.0.0 | grep -c LayoutOrderPolicy` = 0 for a release (hidden-visibility) build without the overloads and 12 for one that still has them (six `View` and six `ViewImpl` members, e.g. `Dali::Ui::View::RaiseToTop(Dali::Ui::LayoutOrderPolicy)`); both carry `SONAME libdali3-ui-foundation.so.3` (`readelf -d`; `build/tizen/dali-ui-foundation/CMakeLists.txt:2, 177-178`).
 - `dali/internal/event/actors/actor-parent-impl.cpp:302-332` — `SetSiblingOrderOfChild` implements the `SIBLING_ORDER` property with `RaiseChildAbove/LowerChildBelow/RaiseChildToTop/LowerChildToBottom`.
 - `dali/internal/event/actors/actor-parent-impl.cpp:351-498` — `RaiseChild/LowerChild` swap with `(*mChildren)[i ± 1]` whatever actor it is; `RaiseChildToTop` (:401-421, guard :404) and `LowerChildToBottom` (:423-443, guard :426) no-op at the end of the list and emit only `if(changed)`; `RaiseChildAbove` moves only when `childIter < targetIter` (:445-470, :452) and `LowerChildBelow` only when `childIter > targetIter` (:472-496, :482), but both set their `raised`/`lowered` flag outside that inner guard while inside the outer one (:448 / :477: child not already at that end **and** target is a sibling), so within that outer condition the order signal is emitted even without a move; a non-sibling target or a child already top-most/bottom-most is a silent no-op; every real move calls `RequestRenderTaskReorderRecursively()` (:371, :396, :418, :440, :467, :493, :538; defined :753-766).
 - `dali/internal/event/actors/actor-parent-impl.cpp:498-540` — `InsertChild`: a child of **this** parent = pure reorder with order signal; a new child or one parented elsewhere = `AddChild(child, true, &target, above)` (:509-516), i.e. (re)parent at that position, `ChildAdded` emitted, no order signal.
@@ -1070,25 +1061,27 @@ dali-adaptor: commit 73b9e04ea (Version 2.5.45).
 - `dali/devel-api/adaptor-framework/actor-accessible.cpp:102` — the accessible connects `ChildOrderChangedSignal`; `:267-277` — accessibility children are collected in `Actor::GetChildAt` order.
 - `dali/internal/accessibility/bridge/bridge-accessible.cpp:559` — `CalculateNavigableAccessibleAtPoint` uses `HitTestAlgorithm` only when the layer is `LAYER_3D`; `:599-602` — otherwise walks `root->GetChildren()` from `rbegin()` (reverse sibling order); `:878-892` — `GetNavigableAtPoint` D-Bus method calls it.
 
-dali-ui: paths are relative to the repository root; line numbers are those of the commit that
-deprecated the overloads and added this guide (`git log --diff-filter=A --format=%h --
-docs/view-sibling-order-migration.md`) and drift in later trees. `git log --grep` on the title
-"Remove View sibling-order APIs duplicating Dali::Actor" shows an earlier removal `b62b35f0` and
-its revert `908f9ec0`.
+dali-ui: paths are relative to the repository root. Code that still exists is cited with the line
+numbers of the commit that removed the overloads (`git log -1 --format=%h -S'enum class
+LayoutOrderPolicy' -- dali-ui-foundation/public-api/views/view-types.h`). Code that the removal
+deleted is cited in the tree of the commit that deprecated the overloads and added this guide,
+written `<D>` below (`git log --diff-filter=A --format=%h -- docs/view-sibling-order-migration.md`).
+`git log --grep` on the title "Remove View sibling-order APIs duplicating Dali::Actor" also shows
+the earlier removal `b62b35f0` and its revert `908f9ec0`.
 
-- `dali-ui-foundation/internal/views/view/view-data-impl.cpp:3633-3735` (`ViewDataImpl::Raise` … `LowerBelow`; `RaiseToTop` :3665-3679) — `UPDATE` calls the inherited method; `PRESERVE` wraps the same call in `ScopedSkipChildrenUpdate` **only when `Ui::View::DownCast(self.GetParent())` succeeds**, otherwise falls through to the plain call; `RaiseAbove/LowerBelow` return on an empty target before any policy/parent check (:3699-3702, :3719-3722). `dali-ui-foundation/public-api/views/view.cpp:700-728` and `view-impl.cpp:656-684` forward the six `View` and `ViewImpl` overloads to them. Call sites migrated in the commit that added this guide: the two window-parented drag views of the layout-transition samples (`mWindow.Add(...)` then `RaiseToTop(PRESERVE)` → `RaiseToTop()`, non-View parent: the grid sample's preview `mDragPreview`, `layout-transition-grid-reorder-example.cpp:470-477, 688`, and the reorder sample's floated real card `mDraggedChild`, `layout-transition-reorder-example.cpp:512-513, 783`); `tc-80`/`tc-82` (`mTestArea.Add(...)` with `mTestArea = AbsoluteLayout::New()`, a fresh `Add` to a View parent, then `RaiseToTop(PRESERVE)` → `RaiseToTop()`, a no-op either way); the self-override sample (`UPDATE` → plain call); `text-render-scale` (`RaiseToTop(PRESERVE)` on focus → `SetDepthIndex(FOCUSED_CARD_DEPTH_INDEX)`, plus `SetDepthIndex(DEFAULT_CARD_DEPTH_INDEX)` on focus lost).
-- `dali-ui-foundation/internal/views/view/view-data-impl.cpp:3777` — `ChildOrderChangedSignal` connected to `ViewDataImpl::OnChildOrderChanged` (:6938-7009), which rebuilds the logical list from `Actor::GetChildAt` order, returns early when the View-only sequence is unchanged (:6980-6984, comment :6966-6978 on no-move emissions and non-View reorders), tags children `REORDERED` only `if(HasLayoutTransition())` (:6995-7000) and then calls `InvalidateMeasure()` (:7008). `:3751` — a fresh insert takes its logical index from its actor position (`ComputeLogicalChildIndex`). The file never reads or writes `Actor::Property::DEPTH_INDEX` (grep for `DEPTH_INDEX` and `SetDepthIndex`: 0 hits).
-- Policy-era handler, same file and function (:6938-7009) — `if(mSkipChildrenUpdate) return;` (:6940-6943), rebuild from `GetChildAt` (:6952), equality early return against the **current** (possibly stale) `mChildren` (:6980-6984), `mChildren = std::move(newChildren)` (:6986), `REORDERED` tagging `if(HasLayoutTransition())` (:6995), `InvalidateMeasure()` (:7008); `ScopedSkipChildrenUpdate` (:129-145) sets the flag for one call and restores the previous value; the six `PRESERVE` paths are its only users (:3641, :3657, :3673, :3689, :3709, :3729). The 2.5.36 handler (`git show 4132428e:dali-ui-foundation/internal/views/view/view-data-impl.cpp:3698-3744`) has no equality check and assigns unconditionally (:3723); the check came with `71d94429` (in 2.5.37.11314, not in 2.5.35.11201 or 2.5.36.11230). Basis for the §1 "latent snap" description.
-- Policy implementation bodies, same file: `RaiseToTop(policy)` (:3665-3679), `RaiseAbove(target, policy)` (:3697-3715), `LowerBelow(target, policy)` (:3717-3735): an empty target returns before any check; `PRESERVE` with a `Ui::View` parent takes `ScopedSkipChildrenUpdate` and calls the inherited `Actor` method, every other case calls it directly. With dali-core's guards (`actor-parent-impl.cpp:404, 452, 482`) this gives the §5.5 description of the old focus/selection code: the item moves to the end of A or directly after `next`, `LowerBelow(next)` puts it directly before `next` only when it is after `next` (its original slot only while `next` has not been moved).
-- Release history (`git log`, `packaging/dali-ui.spec`): `4a237fb4` = Release 2.5.26.10706 declares the enum at `dali-ui-foundation/public-api/view-types.h:44` (old path); `b62b35f0` (2026-08-20) removed it; `dabae505` = Release 2.5.35.11198 contains `b62b35f0` and not the revert (its `views/view-types.h` has no `LayoutOrderPolicy`); `908f9ec0` reverted; `ed0f889e` = Release 2.5.35.11201 and every later release up to `fb7895b0` = 2.5.45.11629 declare the enum again; the commit that added this guide deprecates it. Basis for the "Applies to" paragraph.
-- `dali-ui-foundation/internal/focus-manager/focus-manager-impl.cpp:421, 455` — one focus change calls `keyManager.RemoveFocus(previousGlobal)` and then `keyManager.SetFocus(view)`; `keyinput-focus-manager-impl.cpp:156, 207, 215` — focus-lost is notified before focus-gained, synchronously; `focus-manager-impl.cpp:720` → `view-data-impl.cpp:1809` (`EmitFocusChangedSignal`). Basis for the §4 "Reset timing" statement that blur and the next lift are one event.
+- `<D>:dali-ui-foundation/internal/views/view/view-data-impl.cpp:3633-3735` (`ViewDataImpl::Raise` … `LowerBelow`; `RaiseToTop` :3665-3679) — `UPDATE` called the inherited method; `PRESERVE` wrapped the same call in `ScopedSkipChildrenUpdate` **only when `Ui::View::DownCast(self.GetParent())` succeeded**, otherwise fell through to the plain call; `RaiseAbove/LowerBelow` returned on an empty target before any policy/parent check (:3699-3702, :3719-3722). `<D>:dali-ui-foundation/public-api/views/view.cpp:700-728` and `view-impl.cpp:656-684` forwarded the six `View` and `ViewImpl` overloads to them. Call sites migrated in `<D>`: the two window-parented drag views of the layout-transition samples (`mWindow.Add(...)` then `RaiseToTop(PRESERVE)` → `RaiseToTop()`, non-View parent: the grid sample's preview `mDragPreview`, `layout-transition-grid-reorder-example.cpp:470-477, 688`, and the reorder sample's floated real card `mDraggedChild`, `layout-transition-reorder-example.cpp:512-513, 783`); `tc-80`/`tc-82` (`mTestArea.Add(...)` with `mTestArea = AbsoluteLayout::New()`, a fresh `Add` to a View parent, then `RaiseToTop(PRESERVE)` → `RaiseToTop()`, a no-op either way); the self-override sample (`UPDATE` → plain call); `text-render-scale` (`RaiseToTop(PRESERVE)` on focus → `SetDepthIndex(FOCUSED_CARD_DEPTH_INDEX)`, plus `SetDepthIndex(DEFAULT_CARD_DEPTH_INDEX)` on focus lost).
+- `dali-ui-foundation/internal/views/view/view-data-impl.cpp:3644` — `ChildOrderChangedSignal` connected to `ViewDataImpl::OnChildOrderChanged` (:6800-6866), which rebuilds the logical list from `Actor::GetChildAt` order, returns early when the View-only sequence is unchanged (:6837-6841, comment :6823-6835 on no-move emissions and non-View reorders), tags children `REORDERED` only `if(HasLayoutTransition())` (:6852-6857) and then calls `InvalidateMeasure()` (:6865). `:3618` — a fresh insert takes its logical index from its actor position (`ComputeLogicalChildIndex`). The file never reads or writes `Actor::Property::DEPTH_INDEX` (grep for `DEPTH_INDEX` and `SetDepthIndex`: 0 hits).
+- Removed handler, `<D>:dali-ui-foundation/internal/views/view/view-data-impl.cpp:6938-7008` — `if(mSkipChildrenUpdate) return;` (:6940-6943), rebuild from `GetChildAt` (:6952), equality early return against the **current** (possibly stale) `mChildren` (:6980-6984), `mChildren = std::move(newChildren)` (:6986), `REORDERED` tagging `if(HasLayoutTransition())` (:6995), `InvalidateMeasure()` (:7008); `ScopedSkipChildrenUpdate` (:129-145) sets the flag for one call and restores the previous value; the six `PRESERVE` paths are its only users (:3641, :3657, :3673, :3689, :3709, :3729). The 2.5.36 handler (`git show 4132428e:dali-ui-foundation/internal/views/view/view-data-impl.cpp:3698-3744`) has no equality check and assigns unconditionally (:3723); the check came with `71d94429` (in 2.5.37.11314, not in 2.5.35.11201 or 2.5.36.11230). Basis for the §1 "latent snap" description.
+- Policy implementation bodies, same `<D>` file: `RaiseToTop(policy)` (:3665-3679), `RaiseAbove(target, policy)` (:3697-3715), `LowerBelow(target, policy)` (:3717-3735): an empty target returns before any check; `PRESERVE` with a `Ui::View` parent takes `ScopedSkipChildrenUpdate` and calls the inherited `Actor` method, every other case calls it directly. With dali-core's guards (`actor-parent-impl.cpp:404, 452, 482`) this gives the §5.5 description of the old focus/selection code: the item moved to the end of A or directly after `next`, `LowerBelow(next)` put it directly before `next` only when it was after `next` (its original slot only while `next` had not been moved).
+- Release history (`git log`, `packaging/dali-ui.spec`): `4a237fb4` = Release 2.5.26.10706 declares the enum at `dali-ui-foundation/public-api/view-types.h:44` (old path); `b62b35f0` (2026-08-20) removed it; `dabae505` = Release 2.5.35.11198 contains `b62b35f0` and not the revert (its `views/view-types.h` has no `LayoutOrderPolicy`); `908f9ec0` reverted; `ed0f889e` = Release 2.5.35.11201 and every later release up to `fb7895b0` = 2.5.45.11629 declare the enum again; `<D>` deprecates it and the removal commit removes it. Basis for the "Applies to" paragraph.
+- `dali-ui-foundation/internal/focus-manager/focus-manager-impl.cpp:421, 455` — one focus change calls `keyManager.RemoveFocus(previousGlobal)` and then `keyManager.SetFocus(view)`; `keyinput-focus-manager-impl.cpp:156, 207, 215` — focus-lost is notified before focus-gained, synchronously; `focus-manager-impl.cpp:720` → `view-data-impl.cpp:1785` (`EmitFocusChangedSignal`). Basis for the §4 "Reset timing" statement that blur and the next lift are one event.
 - `dali-ui-foundation/public-api/views/view.h:1625-1668` — `GetChildViewCount/GetChildViewAt/IndexOfChildView` docs (logical list excludes EXIT ghosts and non-View actors); `:1686-1699` — an ANIMATE_EXIT child stays in the actor tree as a ghost until its animation finishes; re-adding the same child to the same parent is ignored by the inherited `Actor::Add`.
 - `dali-ui-foundation/public-api/layouts/absolute-layout-manager.cpp:400-410`, `grid-layout-manager.cpp:1147-1152`, `flex-layout-manager.cpp:876-881` — layouts enumerate the logical list; `absolute-layout-manager.cpp:443-451` — each child's bounds come from its own `AbsoluteLayoutParams` (`GetChildBounds(params)`), so the result does not depend on child order (§3.2 rule 3 alternative); `layout-transition.h:141` — CHANGE fires only when an existing child's bounds change.
 - `dali-ui-foundation/public-api/layouts/stack-layout-manager.cpp:435-440, 650-655` — `StackLayout` measures and arranges its children in logical order (`GetChildViewCount`/`GetChildViewAt`); `stack-layout.h:70` — `StackLayout::New(StackOrientation)`. Basis for §5.5 (a lift never moves an item's slot).
 - `dali-ui-foundation/integration-api/recycler-view-impl.cpp:291-295` — only content-changed rebinds (`BindViewHolder` on `mActiveItems`) run while the item is parented; `:801-805, :826-830` — recycling calls `RecycleViewHolder` and then `mScroller.Remove`; `:864-865, :881-882` — created/recycled holders are bound before `mScroller.Add`. Basis for §3.2 rule 0.
-- `dali-ui-foundation/public-api/views/view.h:1715-1720` — `View` re-exposes `using Dali::Actor::Raise/Lower/RaiseToTop/LowerToBottom/RaiseAbove/LowerBelow;` next to the deprecated overloads (as every release with the overloads does, 2.5.26.10706 included), so the no-argument calls compile against every dali-ui that has the overloads (migrate-first note in the header).
+- `<D>:dali-ui-foundation/public-api/views/view.h:1715-1720` — the old `View` re-exposed `using Dali::Actor::Raise/Lower/RaiseToTop/LowerToBottom/RaiseAbove/LowerBelow;` (as every release with the overloads did, 2.5.26.10706 included), so the no-argument calls compiled against the old dali-ui too (migrate-first note in the header).
 - `dali-ui-foundation/public-api/layouts/layout-transition-types.h:73` — `LayoutChangeCause::REORDERED`.
-- `dali-ui-foundation/public-api/layouts/layout-transition.h:80-101, 527-540` — `OnFinished` fires only on normal completion; not fired on same-slot/cross-slot supersession, `Remove` (EXIT), reparent, destruction / scene disconnection (:101, :540); `:104-109` for `slot==EXIT` the view is already unparented when `OnFinished` fires; `:190-192` reparenting to a different parent cancels an in-flight EXIT. `dali-ui-foundation/internal/layouts/layout-transition-dispatcher.cpp:2681-2689` — EXIT end: `parentHandle.Remove(childHandle)` then `EmitLifecycle(... EXIT)`; `:2510-2517` — `OnViewDestroyed`, also reached from scene disconnection, cancels the active animation / pending EXIT / animator without a lifecycle; `:2341-2350` — no EXIT spec → immediate unparent. `view-data-impl.cpp:3525-3530` — deferred EXIT: the child leaves the logical list but its actor stays under the parent (ghost); `:4139-4148` — scene disconnection unregisters the view. Basis for the §5.1 EXIT rule.
+- `dali-ui-foundation/public-api/layouts/layout-transition.h:80-101, 527-540` — `OnFinished` fires only on normal completion; not fired on same-slot/cross-slot supersession, `Remove` (EXIT), reparent, destruction / scene disconnection (:101, :540); `:104-109` for `slot==EXIT` the view is already unparented when `OnFinished` fires; `:190-192` reparenting to a different parent cancels an in-flight EXIT. `dali-ui-foundation/internal/layouts/layout-transition-dispatcher.cpp:2681-2689` — EXIT end: `parentHandle.Remove(childHandle)` then `EmitLifecycle(... EXIT)`; `:2510-2517` — `OnViewDestroyed`, also reached from scene disconnection, cancels the active animation / pending EXIT / animator without a lifecycle; `:2341-2350` — no EXIT spec → immediate unparent. `view-data-impl.cpp:3501-3506` — deferred EXIT: the child leaves the logical list but its actor stays under the parent (ghost); `:4001-4010` — scene disconnection unregisters the view. Basis for the §5.1 EXIT rule.
 - `dali-ui-foundation/internal/focus-manager/focus-finder.cpp:351-359` (directional: reverse walk of `GetChildAt` at :352-354, `IsBetterCandidate` at :359), `:450-486` (FORWARD/BACKWARD: `stable_sort` by y then x).
 - `dali-ui-foundation/internal/render-effects/background-blur-effect-impl.cpp:131` (`OffScreenRenderable::Type::BACKWARD`), `:922` (`RenderUntil(stopperActor)`); `gaussian-blur-effect-impl.cpp:129`, `offscreen-rendering-impl.cpp:69`, `mask-effect-impl.cpp:117-120` (`FORWARD`; `public-api/render-effects/mask-effect.h:47` `MaskEffect : public RenderEffect`).
 - `dali-ui-foundation/integration-api/recycler-view-impl.cpp:242, 717` (scroll bar `RaiseToTop` at init and every arrange), `:723-732` (`EnsureScroller`: creates, adds and lowers the scroller once, early return on every later call from :237 init, :706 arrange, :1042), `:805, 830` (recycle → `mScroller.Remove`), `:864-865, 881-882` (`BindViewHolder` then `mScroller.Add`); `public-api/views/recycler/item-adapter.h:92-96, 114-115` — `BindViewHolderSignal`/`RecycleViewHolderSignal`; `public-api/views/recycler/group-adapter.h:105-106` — `BindHeaderViewHolderSignal`/`RecycleHeaderViewHolderSignal`; `public-api/views/recycler/group-body-decoration.cpp:132-133` — group background added to the scroller and lowered to the bottom.
@@ -1097,10 +1090,10 @@ its revert `908f9ec0`.
 - `dali-ui-components/integration-api/dialog/dialog-container-impl.cpp:218, 384` — modal content `RaiseToTop`, scrim `LowerToBottom`.
 - `samples/text/text-render-scale-example.cpp:64-67, 360, 407, 436-437` — lift on focus, reset on focus lost **before** the scale-back animation is started (`:79` 150 ms, `:369-371` and `:435-437` fire-and-forget `Animation` handles that are never stopped or cleared; `:222, :232` the cards are siblings in a horizontal `StackLayout`; `:465, :475` the user can raise the scale to 2.5, where neighbouring cards overlap); `samples/layout-transition/layout-transition-reorder-example.cpp:344, 669-673` — `InsertBelow` + `SetDepthIndex(TRANSITIONING_DEPTH_INDEX)`, comment: a settle with no CHANGE keeps the lift until the next completed transition.
 - `manual-tests/dali-ui-foundation/tc/tc-80-layout-transition-reorder.cpp:162, 526-527`, `tc-82-layout-transition-grid-reorder.cpp:195, 503-504` — `mTestArea` is an `AbsoluteLayout`; fresh `Add` then `RaiseToTop()`.
-- `automated-tests/src/dali-ui-foundation-internal/utc-Dali-View-order-internal.cpp:342-365` — `UtcDaliViewDepthIndexDoesNotChangeChildOrderInternalP`.
+- `automated-tests/src/dali-ui-foundation-internal/utc-Dali-View-order-internal.cpp:187-210` — `UtcDaliViewDepthIndexDoesNotChangeChildOrderInternalP`.
 - No live `Actor::SetDepthIndex` / `Actor::Property::DEPTH_INDEX` / `CHILDREN_DEPTH_INDEX_POLICY` / `LAYER_3D` use in `dali-ui-foundation` or `dali-ui-components` library code (grep, 2026-10-30). The remaining grep hits are a different mechanism or dead: `Visual::Base::SetDepthIndex`, `Renderer::Property::DEPTH_INDEX` (renderer-level depth index, 12 uses) and the visual depth-index ranges of `integration-api/view-depth-index-ranges.h`, and three commented-out `actor.SetDepthIndex(...)` TODO lines in `internal/text/decorator/text-decorator.cpp:862, 938, 981`. dali-ui therefore never overrides an application's actor depth indices.
-- Compiler messages in §2 reproduced with `LC_ALL=C g++ 15.2 -std=c++17 -fsyntax-only` against dali-ui headers from which the overloads were removed for the unqualified, qualified, `constexpr auto`, typed-local, parameter, data-member, alias and qualified-typed-local spellings (only the `auto` constant produced no call-line diagnostic), and a caller of a wrapper whose defaulted policy parameter was removed compiled without any diagnostic. Against the headers of this deprecation stage every one of these spellings compiles without a diagnostic, also under `-Wall -Werror`.
+- Compiler messages in §2 reproduced with `LC_ALL=C g++ 15.2 -std=c++17 -fsyntax-only` against the dali-ui headers of the removal for the unqualified, qualified, `constexpr auto`, typed-local, parameter, data-member, alias and qualified-typed-local spellings (only the `auto` constant produced no call-line diagnostic), and a caller of a wrapper whose defaulted policy parameter was removed compiled without any diagnostic. Against the headers of the deprecation stage (`<D>`) every one of these spellings compiles without a diagnostic, also under `-Wall -Werror`.
 - `dali-ui-foundation/internal/focus-manager/focus-manager-impl.cpp:418-429` — `RemoveFocus(previousGlobal/previousLocal)` for any different new target, inside or outside the stack; `:212` (`mClearFocusOnWindowFocusLost(true)`) and `:1896-1901` — window focus loss calls `ClearFocus(currentView, false)`; `:1463-1473` — public `ClearFocus()` (`public-api/focus-manager/focus-manager.h:194`; `:306` `SetClearFocusOnWindowFocusLost`) → `ClearFocus(View, bool)` (:1292-1327), which ends in `KeyInputFocusManager::RemoveFocus(view)` with no `SetFocus`; `:411` and `:2044-2066` — the focused view's `SceneDisconnectedSignal` → `InvalidateFocusView` → `ClearFocus`/`RemoveFocus`; `keyinput-focus-manager-impl.cpp:222-248` (`RemoveFocus` → `NotifyFocusLost`), `:148-157` (→ `NotifyKeyInputFocus(view, false)`), `:195, :321-324` (scene disconnection → `RemoveFocus`). Basis for §5.5: a focus-lost without a following focus-gained in the stack (`StackFocusLift::OnItemFocusLost` forgets the item) and the focus-lost delivered inside `Remove` (`ItemStacking::Forget`).
-- `dali-ui-foundation/internal/views/view/selectable-trait-impl.cpp:48` (`mToggleByClickEnabled(true)`), `:99-113` (`mSelected` committed, internal commit observer, then `SelectionChangedSignal`); `public-api/traits/selectable-trait.h:111, 119, 140-155` (`SelectionChangedSignal()`, `IsSelected() const`, toggle-by-click); `internal/views/view/selection-group-impl.cpp:187-195` (the new winner is recorded, then the previous one gets `SetSelected(false)`), `:212, :233` (`SelectedMemberChangedSignal(previous, current, event)`, `(member, View(), event)` on clear); `public-api/views/selection-group.h:47-63` (single selection; membership by parent auto-grouping or by name), `:124` (`Find(View parentView)`), `:185`, `:211` (`ClearSelection()`); `public-api/views/view.h:2032, 2039, 2056` (`AsSelectable()` attaches a trait when none exists, `IsSelectable() const`, `AsGroupSelectable()`). Basis for the §5.5 `Deselect(item)` mapping, the `SelectionGroup` alternative and the multi-selection note.
-- `dali-ui-foundation/internal/views/view/view-data-impl.cpp:5752-5753, 5904-5909` — direct children are mirrored when the effective layout direction is `RIGHT_TO_LEFT`; `public-api/layouts/stack-layout-manager.cpp` has no direction handling (grep for `RIGHT_TO_LEFT`/`LayoutDirection`/`Mirror` is empty). Basis for "logically next neighbour" in §5.5.
+- `dali-ui-foundation/internal/views/view/selectable-trait-impl.cpp:48` (`mToggleByClickEnabled(true)`), `:99-113` (`mSelected` committed, internal commit observer, then `SelectionChangedSignal`); `public-api/traits/selectable-trait.h:111, 119, 140-155` (`SelectionChangedSignal()`, `IsSelected() const`, toggle-by-click); `internal/views/view/selection-group-impl.cpp:187-195` (the new winner is recorded, then the previous one gets `SetSelected(false)`), `:212, :233` (`SelectedMemberChangedSignal(previous, current, event)`, `(member, View(), event)` on clear); `public-api/views/selection-group.h:47-63` (single selection; membership by parent auto-grouping or by name), `:124` (`Find(View parentView)`), `:185`, `:211` (`ClearSelection()`); `public-api/views/view.h:1857, 1864, 1881` (`AsSelectable()` attaches a trait when none exists, `IsSelectable() const`, `AsGroupSelectable()`). Basis for the §5.5 `Deselect(item)` mapping, the `SelectionGroup` alternative and the multi-selection note.
+- `dali-ui-foundation/internal/views/view/view-data-impl.cpp:5614-5615, 5766-5771` — direct children are mirrored when the effective layout direction is `RIGHT_TO_LEFT`; `public-api/layouts/stack-layout-manager.cpp` has no direction handling (grep for `RIGHT_TO_LEFT`/`LayoutDirection`/`Mirror` is empty). Basis for "logically next neighbour" in §5.5.
 - `samples/layout-transition/layout-transition-reorder-example.cpp:92` (`mStack = StackLayout::New()`), `:344` (`TRANSITIONING_DEPTH_INDEX = 1`), `:669-673` (`InsertBelow` then `SetDepthIndex(TRANSITIONING_DEPTH_INDEX)`), `:349-354` (`OnTransitionFinished` → `SetDepthIndex(DEFAULT_DEPTH_INDEX)`). Basis for the §5.5 drag-reorder bullet (a second owner lifting the same item).
