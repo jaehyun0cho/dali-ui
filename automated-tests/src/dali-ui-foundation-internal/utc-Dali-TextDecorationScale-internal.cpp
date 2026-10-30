@@ -276,8 +276,10 @@ void CheckGeometry(const Text::Model& model, float scale, uint16_t width, bool s
   DALI_TEST_EQUALS(model.GetShadowOffset(), Vector2(-2.f, 3.f) * scale, EPSILON, TEST_LOCATION);
   DALI_TEST_EQUALS(model.GetOutlineOffset(), Vector2(2.f, -3.f) * scale, EPSILON, TEST_LOCATION);
   DALI_TEST_EQUALS(model.GetOutlineWidth(), width, TEST_LOCATION);
-  DALI_TEST_EQUALS(model.GetShadowBlurRadius(), 1.25f, TEST_LOCATION);
-  DALI_TEST_EQUALS(model.GetOutlineBlurRadius(), 0.5f, TEST_LOCATION);
+  DALI_TEST_EQUALS(visual.GetShadowBlurRadius(), 1.25f, TEST_LOCATION);
+  DALI_TEST_EQUALS(visual.GetOutlineBlurRadius(), 0.5f, TEST_LOCATION);
+  DALI_TEST_EQUALS(model.GetShadowBlurRadius(), 1.25f * scale, EPSILON, TEST_LOCATION);
+  DALI_TEST_EQUALS(model.GetOutlineBlurRadius(), 0.5f * scale, EPSILON, TEST_LOCATION);
   if(spans)
   {
     DALI_TEST_CHECK(!visual.mUnderlineRuns.Empty());
@@ -343,6 +345,7 @@ void ControlMatrix(UiTestApplication& application, Control control)
           CheckGeometry(model, scale, OUTLINE_WIDTHS[index], authoring != 0);
           DALI_TEST_EQUALS(control.GetTextOutline().GetWidth(), 2.f, TEST_LOCATION);
           DALI_TEST_EQUALS(control.GetTextShadow().GetOffset(), Vector2(-2.f, 3.f), TEST_LOCATION);
+          DALI_TEST_EQUALS(control.GetTextShadow().GetBlurRadius(), 1.25f, TEST_LOCATION);
           auto& view = controller->GetView();
           DALI_TEST_EQUALS(view.GetOutlineWidth(), OUTLINE_WIDTHS[index], TEST_LOCATION);
           DALI_TEST_EQUALS(view.GetShadowOffset(), model.GetShadowOffset(), TEST_LOCATION);
@@ -584,6 +587,8 @@ int UtcDaliTextDecorationScaleAsyncP(void)
           expected.shadowOffset         = Vector2(-2.f, 3.f) * scale;
           expected.outlineOffset        = Vector2(2.f, -3.f) * scale;
           expected.outlineWidth         = OUTLINE_WIDTHS[index];
+          expected.shadowBlurRadius     = 1.25f * scale;
+          expected.outlineBlurRadius    = 0.5f * scale;
           if(authoring != 0)
           {
             uint32_t dpi = 0u, verticalDpi = 0u;
@@ -1137,5 +1142,37 @@ int UtcDaliTextDecorationScaleTypingFontSizeP(void)
   controller->SetInputFontSize(40.f, Text::Controller::PIXEL_SIZE);
   const float selectedPoint = controller->GetInputFontSize(Text::Controller::POINT_SIZE);
   DALI_TEST_EQUALS(static_cast<uint32_t>(runs[runs.Count() - 1u].size), static_cast<uint32_t>(selectedPoint * 64.f), TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliTextDecorationScaleBlurRadiusP(void)
+{
+  UiTestApplication application;
+  for(bool scaleFirst : {false, true})
+  {
+    auto visual = Text::VisualModel::New();
+    DALI_TEST_EQUALS(visual->GetEffectiveShadowBlurRadius(), 0.f, TEST_LOCATION);
+    DALI_TEST_EQUALS(visual->GetEffectiveOutlineBlurRadius(), 0.f, TEST_LOCATION);
+    if(scaleFirst) visual->SetDecorationUiScale(2.f);
+    visual->SetShadowBlurRadius(1.25f);
+    visual->SetOutlineBlurRadius(0.5f);
+    if(!scaleFirst) visual->SetDecorationUiScale(2.f);
+    DALI_TEST_EQUALS(visual->GetShadowBlurRadius(), 1.25f, TEST_LOCATION);
+    DALI_TEST_EQUALS(visual->GetOutlineBlurRadius(), 0.5f, TEST_LOCATION);
+    DALI_TEST_EQUALS(visual->GetEffectiveShadowBlurRadius(), 2.5f, TEST_LOCATION);
+    DALI_TEST_EQUALS(visual->GetEffectiveOutlineBlurRadius(), 1.f, TEST_LOCATION);
+    visual->SetDecorationUiScale(0.f); // Rejected; the previous scale stays.
+    DALI_TEST_EQUALS(visual->GetEffectiveShadowBlurRadius(), 2.5f, TEST_LOCATION);
+  }
+  // A replacement processing model copies the authored radius and the scale, not the resolved radius.
+  auto source = Text::Model::New();
+  auto target = Text::Model::New();
+  source->mVisualModel->SetDecorationUiScale(2.f);
+  source->mVisualModel->SetShadowBlurRadius(1.25f);
+  source->mVisualModel->SetOutlineBlurRadius(0.5f);
+  Text::CopyTextProcessingProperties(*source, *target);
+  DALI_TEST_EQUALS(target->mVisualModel->GetShadowBlurRadius(), 1.25f, TEST_LOCATION);
+  DALI_TEST_EQUALS(target->GetShadowBlurRadius(), 2.5f, TEST_LOCATION);
+  DALI_TEST_EQUALS(target->GetOutlineBlurRadius(), 1.f, TEST_LOCATION);
   END_TEST;
 }

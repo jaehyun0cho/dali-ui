@@ -839,6 +839,8 @@ public: // Setters for chaining
    * @brief Sets the shadow style.
    *
    * Pass Text::Shadow::None() to clear the shadow style.
+   * The offset and blur radius are multiplied by the label's effective scale;
+   * GetTextShadow() returns the values that were set.
    *
    * @param[in] shadow The shadow configuration.
    */
@@ -855,6 +857,8 @@ public: // Setters for chaining
    * @brief Sets the outline style.
    *
    * Pass Text::Outline::None() to clear the outline style.
+   * The width, offset and blur radius are multiplied by the label's effective scale;
+   * GetTextOutline() returns the values that were set.
    *
    * @param[in] outline The outline configuration.
    */

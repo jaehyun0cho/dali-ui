@@ -171,7 +171,7 @@ const Vector4& Model::GetShadowColor() const
 
 const float& Model::GetShadowBlurRadius() const
 {
-  return mVisualModel->GetShadowBlurRadius();
+  return mVisualModel->GetEffectiveShadowBlurRadius();
 }
 
 const Vector4& Model::GetUnderlineColor() const
@@ -241,7 +241,7 @@ bool Model::IsOutlineEnabled() const
 
 const float& Model::GetOutlineBlurRadius() const
 {
-  return mVisualModel->GetOutlineBlurRadius();
+  return mVisualModel->GetEffectiveOutlineBlurRadius();
 }
 
 const Vector4& Model::GetBackgroundColor() const
