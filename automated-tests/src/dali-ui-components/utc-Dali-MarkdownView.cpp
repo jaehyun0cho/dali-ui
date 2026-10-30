@@ -129,6 +129,30 @@ private:
   UiColorManager mManager;
 };
 
+// Sets the UI scale for one test and restores the previous one.
+class ScopedMarkdownUiScale
+{
+public:
+  explicit ScopedMarkdownUiScale(float scale)
+  : mManager(LayoutScaleManager::Get()),
+    mOriginalScale(mManager.GetUiScale())
+  {
+    mManager.SetUiScale(scale);
+  }
+
+  ~ScopedMarkdownUiScale()
+  {
+    mManager.SetUiScale(mOriginalScale);
+  }
+
+  ScopedMarkdownUiScale(const ScopedMarkdownUiScale&)            = delete;
+  ScopedMarkdownUiScale& operator=(const ScopedMarkdownUiScale&) = delete;
+
+private:
+  LayoutScaleManager mManager;
+  float              mOriginalScale;
+};
+
 const MarkdownRenderNode* FindFirstRole(const MarkdownRenderSnapshot& snapshot, MarkdownRenderRole role)
 {
   for(const auto& node : snapshot.nodes)
@@ -493,11 +517,14 @@ void CheckResponsiveListMarkerGeometry(float fontSize)
   DALI_TEST_CHECK(orderedMarker);
   const Vector3 orderedNaturalSize  = orderedMarker.GetNaturalSize();
   const float   orderedMinimumWidth = std::max(markerColumnWidth, 4.0f * fontSize * ORDERED_DIGIT_RATIO);
-  const float   orderedWidth        = std::max(orderedMinimumWidth, orderedNaturalSize.width);
-  const float   orderedHeight       = std::max(lineHeight, orderedNaturalSize.height);
-  DALI_TEST_EQUALS(orderedMarker.GetRequestedWidth(), orderedWidth, 0.01f, TEST_LOCATION);
-  DALI_TEST_EQUALS(orderedHost.GetRequestedWidth(), orderedWidth, 0.01f, TEST_LOCATION);
-  DALI_TEST_EQUALS(orderedHost.GetRequestedHeight(), orderedHeight, 0.01f, TEST_LOCATION);
+  // The label and its host wrap the marker text; the column and the line are minimums.
+  DALI_TEST_EQUALS(orderedMarker.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedMarker.GetMinimumWidth(), orderedMinimumWidth, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedHost.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedHost.GetRequestedHeight(), WRAP_CONTENT, TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedHost.GetMinimumHeight(), lineHeight, 0.01f, TEST_LOCATION);
+  DALI_TEST_CHECK(orderedMarker.GetSize().width + 0.01f >= orderedMinimumWidth);
+  DALI_TEST_CHECK(orderedHost.GetSize().height + 0.01f >= lineHeight);
   DALI_TEST_CHECK(orderedMarker.GetSize().width + 0.01f >= orderedNaturalSize.width);
   DALI_TEST_CHECK(orderedMarker.GetSize().height + 0.01f >= orderedNaturalSize.height);
   DALI_TEST_CHECK(orderedHost.GetSize().width + 0.01f >= orderedNaturalSize.width);
@@ -551,8 +578,8 @@ void CheckResponsiveListMarkerGeometry(float fontSize)
                    taskParentContent.GetChildViewAt(1u).GetPositionX(),
                    0.01f,
                    TEST_LOCATION);
-  DALI_TEST_EQUALS(GetListItemMarkerHost(GetListItemAtDepth(normalNested, 2u)).GetRequestedWidth(),
-                   GetListItemMarkerHost(GetListItemAtDepth(taskNested, 2u)).GetRequestedWidth(),
+  DALI_TEST_EQUALS(GetListItemMarkerHost(GetListItemAtDepth(normalNested, 2u)).GetSize().width,
+                   GetListItemMarkerHost(GetListItemAtDepth(taskNested, 2u)).GetSize().width,
                    0.01f,
                    TEST_LOCATION);
 }
@@ -1590,28 +1617,29 @@ int UtcDaliMarkdownViewCustomListMarkerStyleP(void)
   DALI_TEST_CHECK(!orderedMarker.IsSystemFontSizeScaleEnabled());
   DALI_TEST_CHECK(orderedMarker.GetTextColor() == markerToken);
   DALI_TEST_CHECK(orderedMarker.GetHorizontalTextAlignment() == Text::Alignment::END);
-  DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= orderedMarker.GetNaturalSize().width);
-  DALI_TEST_EQUALS(orderedHost.GetRequestedWidth(), orderedMarker.GetRequestedWidth(), TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedMarker.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedMarker.GetMinimumWidth(), 48.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedHost.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
   DALI_TEST_EQUALS(orderedHost.GetMargin().end, 12.0f, TEST_LOCATION);
-  const float oneDigitWidth = orderedMarker.GetRequestedWidth();
+  const float oneDigitWidth = orderedMarker.GetMinimumWidth();
 
   ordered.SetMarkdown("10. ordered");
   orderedItem = GetListItemAtDepth(ordered, 1u);
   DALI_TEST_CHECK(GetListItemMarkerHost(orderedItem) == orderedHost);
   DALI_TEST_CHECK(Label::DownCast(GetShapeMarker(orderedItem)) == orderedMarker);
   DALI_TEST_EQUALS(orderedMarker.GetText(), Dali::String("10."), TEST_LOCATION);
-  DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= orderedMarker.GetNaturalSize().width);
-  DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= oneDigitWidth);
-  const float twoDigitWidth = orderedMarker.GetRequestedWidth();
+  DALI_TEST_EQUALS(orderedMarker.GetMinimumWidth(), 49.5f, 0.01f, TEST_LOCATION);
+  DALI_TEST_CHECK(orderedMarker.GetMinimumWidth() >= oneDigitWidth);
+  const float twoDigitWidth = orderedMarker.GetMinimumWidth();
 
   ordered.SetMarkdown("100. ordered");
   orderedItem = GetListItemAtDepth(ordered, 1u);
   DALI_TEST_CHECK(GetListItemMarkerHost(orderedItem) == orderedHost);
   DALI_TEST_CHECK(Label::DownCast(GetShapeMarker(orderedItem)) == orderedMarker);
   DALI_TEST_EQUALS(orderedMarker.GetText(), Dali::String("100."), TEST_LOCATION);
-  DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= orderedMarker.GetNaturalSize().width);
-  DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= twoDigitWidth);
-  DALI_TEST_EQUALS(orderedHost.GetRequestedWidth(), orderedMarker.GetRequestedWidth(), TEST_LOCATION);
+  DALI_TEST_EQUALS(orderedMarker.GetMinimumWidth(), 66.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_CHECK(orderedMarker.GetMinimumWidth() >= twoDigitWidth);
+  DALI_TEST_EQUALS(orderedHost.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
   ArrangeMarkdownView(ordered, 320.0f);
   DALI_TEST_CHECK(orderedMarker.GetSize().width >= orderedMarker.GetNaturalSize().width);
   DALI_TEST_CHECK(orderedHost.GetSize().width >= orderedMarker.GetNaturalSize().width);
@@ -1640,7 +1668,40 @@ int UtcDaliMarkdownViewCustomListMarkerStyleP(void)
   DALI_TEST_CHECK(GetListItemMarkerHost(orderedItem) == orderedHost);
   DALI_TEST_CHECK(Label::DownCast(GetShapeMarker(orderedItem)) == orderedMarker);
   DALI_TEST_EQUALS(orderedMarker.GetText(), Dali::String("100."), TEST_LOCATION);
-  DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= orderedMarker.GetNaturalSize().width);
+  DALI_TEST_EQUALS(orderedMarker.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliMarkdownViewOrderedListMarkerFollowsUiScaleP(void)
+{
+  UiTestApplication     application(Components::UiConfig::New());
+  ScopedMarkdownUiScale scale(2.0f);
+  constexpr float       LINE_HEIGHT = 32.0f; // default text font size 20 x 1.6
+
+  MarkdownView view = MarkdownView::New();
+  view.SetMarkdown("1. item");
+  ArrangeMarkdownView(view, 1000.0f);
+  View  host   = GetListItemMarkerHost(GetListItemAtDepth(view, 1u));
+  Label marker = Label::DownCast(GetShapeMarker(GetListItemAtDepth(view, 1u)));
+  DALI_TEST_CHECK(host);
+  DALI_TEST_CHECK(marker);
+  const float firstHeight = host.GetSize().height;
+  DALI_TEST_CHECK(firstHeight + 0.01f >= LINE_HEIGHT * 2.0f);
+
+  // A new ordinal presents the marker again on the same host, after the label was laid out at 2x.
+  view.SetMarkdown("100. item");
+  ArrangeMarkdownView(view, 1000.0f);
+  DALI_TEST_CHECK(GetListItemMarkerHost(GetListItemAtDepth(view, 1u)) == host);
+  DALI_TEST_EQUALS(marker.GetText(), Dali::String("100."), TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().height, firstHeight, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(marker.GetSize().width, std::max(44.0f * 2.0f, marker.GetNaturalSize().width), 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().width, marker.GetSize().width, 0.01f, TEST_LOCATION);
+
+  // A layout-direction flip presents it again too.
+  view.SetLayoutDirection(LayoutDirection::RIGHT_TO_LEFT);
+  ArrangeMarkdownView(view, 1000.0f);
+  DALI_TEST_EQUALS(marker.GetText(), Dali::String(".100"), TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().height, firstHeight, 0.01f, TEST_LOCATION);
   END_TEST;
 }
 
@@ -2191,8 +2252,8 @@ int UtcDaliMarkdownViewUnorderedListMarkerLifecycleP(void)
   markerHost        = GetListItemMarkerHost(listItem);
   Label markerLabel = Label::DownCast(markerHost.GetChildViewAt(0u));
   DALI_TEST_CHECK(markerLabel);
-  DALI_TEST_EQUALS(markerHost.GetRequestedWidth(), 32.0f, TEST_LOCATION);
-  DALI_TEST_EQUALS(markerLabel.GetRequestedWidth(), 32.0f, TEST_LOCATION);
+  DALI_TEST_EQUALS(markerHost.GetRequestedWidth(), WRAP_CONTENT, TEST_LOCATION);
+  DALI_TEST_EQUALS(markerLabel.GetMinimumWidth(), 32.0f, TEST_LOCATION);
 
   view.SetMarkdown("1. [ ] todo\n2. [x] done");
   View taskList = view.GetChildViewAt(0u);
