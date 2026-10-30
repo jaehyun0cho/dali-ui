@@ -274,6 +274,13 @@ enum Type
 
 /**
  * @brief Shader for Visuals.
+ *
+ * A custom shader replaces the visual's built-in shader, including the way it follows the effective
+ * scale of the owner View. The uniform viewEffectiveScale holds that scale, and
+ * visualTransformUseEffectiveScale is 0.0 while a fitting mode has written the transform in pixels and
+ * 1.0 otherwise. A custom vertex shader must multiply an ABSOLUTE offset or size and the extra size by
+ * mix(1.0, viewEffectiveScale, visualTransformUseEffectiveScale), as the built-in shaders do, and natural
+ * decoration lengths such as a corner radius or a borderline width by viewEffectiveScale.
  */
 namespace Shader
 {
