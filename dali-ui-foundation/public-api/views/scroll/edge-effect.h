@@ -126,6 +126,9 @@ public:
   /**
    * @brief Called when a fling reaches the edge.
    *
+   * A keyboard edge bump also calls it, and so emits AbsorbSignal(), with a synthetic velocity
+   * that follows the scroll view's effective scale.
+   *
    * @param[in] velocity  Velocity at impact (px/ms).
    */
   void OnAbsorb(float velocity);
