@@ -303,6 +303,18 @@ private:
   LayoutRect OnArrange(const LayoutRect& bounds) override;
 
   // Helpers
+  /**
+   * @brief Returns how many rendered pixels one canvas unit covers: the effective scale.
+   *
+   * The canvases draw in the chart's natural units.
+   */
+  float GetCanvasScale() const;
+
+  /**
+   * @brief Returns the chart's size in canvas units.
+   */
+  Vector2 GetCanvasSize() const;
+
   void SyncLayerSizes();
   void UpdateScale();
   void RebuildBackground();

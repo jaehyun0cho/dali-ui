@@ -33,6 +33,7 @@
 #include <dali-ui-components/integration-api/chart/pie-series-impl.h>
 #include <dali-ui-components/public-api/chart/chart-view.h>
 #include <dali-ui-components/public-api/chart/pie-series.h>
+#include <dali-ui-foundation/extension-api/view.h>
 
 namespace DALI_NAMESPACE
 {
@@ -57,6 +58,8 @@ float ChartLayoutManager::EstimateTextWidth(const Dali::String& text, float poin
   if(!mMeasureLabel)
   {
     mMeasureLabel = Ui::Label::New();
+    // The layout works in natural units, so text is measured at scale 1.0.
+    Ui::Extension::View::SetUiScalePolicy(mMeasureLabel, Ui::Extension::UiScalePolicy::DISABLED);
   }
   mMeasureLabel.SetProperty(Ui::Label::Property::MULTI_LINE, true);
   mMeasureLabel.SetText(text);

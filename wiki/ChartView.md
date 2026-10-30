@@ -110,6 +110,8 @@ window.Add(chart);
 
 > 💡 **Tip**: `ChartView` is a standard `View` and participates in the dali-ui layout system. Place it inside an `AbsoluteLayout` when you need pixel-precise positioning.
 
+> **Units**: the chart is drawn in natural units — the same units as `SetRequestedWidth()` — so its paddings, line widths, marker radii, dashes, annotation sizes and `USER_SPACE` gradient points follow the window scale and UI scale together with the labels. Only the hit threshold is in screen pixels.
+
 <br/>
 
 ---
@@ -166,7 +168,7 @@ chart.AddSeries(LineSeries::New()
 ### Line Style
 
 ```cpp
-series.SetLineWidth(3.0f);          // Line stroke width in pixels
+series.SetLineWidth(3.0f);          // Line stroke width in natural units
 series.SetSmoothness(0.8f);         // 0.0 = straight segments, 1.0 = fully smooth Bezier
 ```
 
@@ -510,7 +512,7 @@ xAxis.SetTickMarksVisible(true); // Keep ticks while hiding their text.
 
 ```cpp
 yAxis.SetGridColor(Vector4(0.0f, 0.5f, 1.0f, 0.6f));
-yAxis.SetGridDash(4.0f, 4.0f);             // Dashed grid: 4px dash, 4px gap
+yAxis.SetGridDash(4.0f, 4.0f);             // Dashed grid: 4-unit dash, 4-unit gap
 yAxis.SetAxisLineColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f));
 yAxis.SetAxisLineWidth(2.0f);
 ```
@@ -821,7 +823,7 @@ chart.SetLegendToggleEnabled(false);   // Signal-only mode: LegendItemTappedSign
 ### Hit Threshold
 
 ```cpp
-chart.SetHitThreshold(30.0f);   // Distance in pixels within which a tap is considered a hit (default 30)
+chart.SetHitThreshold(30.0f);   // Distance in screen pixels within which a tap is a hit (default 30; not scaled)
 ```
 
 <br/>
@@ -1144,8 +1146,8 @@ target_compile_options(my-chart-app PRIVATE
 | `GRID_COLOR` | `(0.9, 0.9, 0.9, 1.0)` |
 | `AXIS_LABEL_SIZE` | `11.0` pt |
 | `TITLE_SIZE` | `16.0` pt |
-| `LINE_WIDTH` | `2.5` px |
-| `MARKER_RADIUS` | `4.0` px |
+| `LINE_WIDTH` | `2.5` units |
+| `MARKER_RADIUS` | `4.0` units |
 | `TOUCH_ENABLED` | `true` |
 | `HOVER_ENABLED` | `true` |
 | `ANIMATION_DURATION` | `0.0` ms (disabled) |
@@ -1159,6 +1161,8 @@ target_compile_options(my-chart-app PRIVATE
 | Zoom clamp enabled | `true` |
 | Auto-fit Y on pan | `false` |
 | Update throttle | `16.0` ms |
+
+Lengths are natural units, except the hit threshold (screen pixels).
 
 ### Gauge Defaults
 

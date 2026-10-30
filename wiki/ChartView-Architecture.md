@@ -211,8 +211,8 @@ not propagate that correctly for non-Layout parents, so their SIZE
 is reset to 0×0 (WRAP_CONTENT natural size = 0).
 
 Instead, OnArrange returns its final self bounds (which the framework
-applies to Self() from the returned LayoutRect) and calls Rebuild*()
-functions directly.  With PIVOT=TOP_LEFT (set by
+applies to Self() from the returned LayoutRect) and queues the Rebuild*()
+functions for an idle callback.  With PIVOT=TOP_LEFT (set by
 ViewImpl::OnInitialize), POSITION maps to the top-left corner
 without any pivot math.
 
@@ -233,13 +233,17 @@ LayoutRect ChartViewImpl::OnArrange(const LayoutRect& bounds)
   // from the returned bounds; this override does not set Self() directly.
   const Vector2 newSize(bounds.width, bounds.height);
 
-  if(newSize != mSize && newSize.width > 0.0f && newSize.height > 0.0f)
+  // A scale change can keep the arranged size and still change the canvas size.
+  if(newSize.width > 0.0f && newSize.height > 0.0f &&
+     (newSize != mSize || newSize / GetCanvasScale() != mLastLayout.totalSize))
   {
-    mSize = newSize;
-    mNeedsBackgroundUpdate = mNeedsDataUpdate = true;
+    mSize                  = newSize;
+    mNeedsBackgroundUpdate = true;
+    mNeedsDataUpdate       = true;
   }
-  if(mNeedsBackgroundUpdate) { RebuildBackground(); mNeedsBackgroundUpdate = false; }
-  if(mNeedsDataUpdate)       { RebuildData();       mNeedsDataUpdate       = false; }
+
+  // RebuildBackground() / RebuildData() run from an idle callback (FlushRedraw).
+  QueueRedraw();
 
   return bounds;
 }
@@ -369,15 +373,15 @@ ComputeLayout(totalSize, model, scale)
 
 `LayoutResult` is cached in `ChartViewImpl::mLastLayout` and reused by all three renderers and the `ChartHitTester`.
 
-Key constants:
+Key constants (natural units; the canvas view box maps them to rendered pixels):
 
 | Constant | Value | Purpose |
 |----------|-------|---------|
-| `PADDING` | 10 px | Outer chart padding |
-| `TICK_LENGTH` | 5 px | Tick mark length |
-| `TICK_LABEL_GAP` | 4 px | Gap between tick and label |
-| `LEGEND_SWATCH` | 12 px | Legend color swatch size |
-| `LEGEND_GAP` | 6 px | Gap between swatch and label text |
+| `PADDING` | 10 units | Outer chart padding |
+| `TICK_LENGTH` | 5 units | Tick mark length |
+| `TICK_LABEL_GAP` | 4 units | Gap between tick and label |
+| `LEGEND_SWATCH` | 12 units | Legend color swatch size |
+| `LEGEND_GAP` | 6 units | Gap between swatch and label text |
 
 ---
 
@@ -422,7 +426,7 @@ class ChartModel
 
 ## 8. ScaleEngine
 
-`ScaleEngine` maps between **data coordinates** and **canvas pixel coordinates**. It is updated by `ChartViewImpl::UpdateScale()` after every `ComputeAutoRange()` call (or after zoom/pan changes the viewport).
+`ScaleEngine` maps between **data coordinates** and **canvas coordinates** (the chart's natural units). It is updated by `ChartViewImpl::UpdateScale()` after every `ComputeAutoRange()` call (or after zoom/pan changes the viewport).
 
 ```cpp
 class ScaleEngine
@@ -453,7 +457,7 @@ When zoom/pan is active (`mViewportActive == true`), `UpdateScale()` uses the vi
 
 ## 9. HitTester
 
-`ChartHitTester` finds data points closest to a touch position. It operates in **actor-local coordinates**, which are identical to canvas pixel coordinates because all three `CanvasView` layers share the same origin and size as `Self()`.
+`ChartHitTester` finds data points closest to a touch position in canvas coordinates. The three `CanvasView` layers cover `Self()` with the chart's natural size as view box, so `ChartViewImpl` divides actor-local touch positions by the effective scale before hit testing, and divides the hit threshold, a screen distance, the same way.
 
 ```cpp
 class ChartHitTester
