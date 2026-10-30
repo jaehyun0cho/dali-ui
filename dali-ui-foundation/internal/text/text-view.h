@@ -82,10 +82,12 @@ public:
    * @param[in] fontClient The FontClient owned by the current text pipeline.
    * @param[in,out] result The final glyph and source-mapping result.
    * @param[in] layoutGeneration The generation of the completed layout pass.
+   * @param[in] defaultFontId The layout's default font for replacement-only ellipsis glyphs; 0 when unknown.
    */
   void ResolveFinalElision(TextAbstraction::FontClient& fontClient,
                            FinalElisionResult&          result,
-                           uint64_t                     layoutGeneration) const;
+                           uint64_t                     layoutGeneration,
+                           FontId                       defaultFontId = 0u) const;
 
   /**
    * @copydoc Dali::Ui::Text::ViewInterface::GetControlSize()
@@ -347,6 +349,7 @@ private:
    * @param[out] ellipsisFinalGlyphIndex Optional generated marker index, or the
    * invalid glyph index when no marker is generated.
    * @param[in] hasActiveReplacement Whether replacement elision planning applies.
+   * @param[in] defaultFontId The layout's default font for replacement-only ellipsis glyphs; 0 when unknown.
    * @return Number of glyphs in the resolved sequence.
    */
   Length GetGlyphsUncached(GlyphInfo*                   glyphs,
@@ -357,7 +360,8 @@ private:
                            Length                       numberOfGlyphs,
                            GlyphIndex*                  sourceGlyphIndices      = nullptr,
                            GlyphIndex*                  ellipsisFinalGlyphIndex = nullptr,
-                           bool                         hasActiveReplacement    = false) const;
+                           bool                         hasActiveReplacement    = false,
+                           FontId                       defaultFontId           = 0u) const;
 
   // Undefined
   View(const View& handle);

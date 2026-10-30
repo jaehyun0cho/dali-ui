@@ -336,7 +336,7 @@ void UpdateReplacementRenderState(Controller::Impl& impl, const Size& contentSiz
   }
   if(!authoritativeEndEllipsisResolved)
   {
-    impl.mView.ResolveFinalElision(impl.GetFontClient(), result.finalElision, result.layoutGeneration);
+    impl.mView.ResolveFinalElision(impl.GetFontClient(), result.finalElision, result.layoutGeneration, defaultFontId);
   }
   impl.mView.SetFinalElisionResult(&result.finalElision);
   ExtractReplacementPlacements(*result.processingModel,

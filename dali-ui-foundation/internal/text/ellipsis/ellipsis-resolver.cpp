@@ -333,7 +333,8 @@ bool ResolveEllipsisGlyph(const Model&                 model,
   if(!ResolveFontClientEllipsisMetrics(fontClient,
                                        fontId,
                                        !syntheticReplacementSource,
-                                       ellipsisGlyph) ||
+                                       ellipsisGlyph,
+                                       syntheticReplacementDefaultFontId) ||
      ellipsisGlyph.fontId == 0u)
   {
     return false;
