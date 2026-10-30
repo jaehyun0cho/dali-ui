@@ -19,13 +19,16 @@
 #include <dali-ui-components/internal/markdown/markdown-component.h>
 
 // EXTERNAL INCLUDES
+#include <dali-ui-foundation/extension-api/view.h>
 #include <dali-ui-foundation/public-api/layouts/stack-layout-params.h>
 #include <dali-ui-foundation/public-api/layouts/stack-layout.h>
 #include <dali-ui-foundation/public-api/text/text-enumerations.h>
 #include <dali-ui-foundation/public-api/views/image/image-view.h>
 #include <dali-ui-foundation/public-api/views/text-controls/label.h>
+#include <dali-ui-foundation/public-api/views/view-impl.h>
 #include <dali/public-api/signals/connection-tracker.h>
 #include <algorithm>
+#include <cfloat>
 #include <string>
 
 // INTERNAL INCLUDES
@@ -407,14 +410,19 @@ private:
     {
       mMarkerLabel.SetHorizontalTextAlignment(Text::Alignment::END);
       ApplyMarkerText(node);
-      const Vector3 markerNaturalSize = mMarkerLabel.GetNaturalSize();
-      const float   markerLabelWidth  = std::max(markerColumnWidth, markerNaturalSize.width);
-      mMarkerLabel.SetRequestedWidth(markerLabelWidth);
+      mMarkerLabel.SetRequestedWidth(WRAP_CONTENT);
       mMarkerLabel.SetMargin(Insets());
       mMarkerHost.Add(mMarkerLabel);
       mMarkerLabelAttached = true;
-      markerHostWidth      = markerLabelWidth;
-      markerHostHeight     = std::max(markerHostHeight, markerNaturalSize.height);
+      // Natural units: the label, measured in the host, reports pixels at its effective scale; divide by it.
+      // FLT_MAX is an unbounded budget: neither the item width nor the fixed host height the label FILLs
+      // bounds it (>= MAX_EXACT_MEASURE_SIZE demotes the EXACTLY height); a negative one clamps to the minimum.
+      const float        markerScale      = Ui::Extension::View::GetEffectiveLayoutScale(GetImpl(mMarkerLabel));
+      const MeasuredSize markerMeasured   = mMarkerLabel.Measure(FLT_MAX, FLT_MAX);
+      const float        markerLabelWidth = std::max(markerColumnWidth, markerMeasured.GetWidth() / markerScale);
+      mMarkerLabel.SetRequestedWidth(markerLabelWidth);
+      markerHostWidth  = markerLabelWidth;
+      markerHostHeight = std::max(markerHostHeight, markerMeasured.GetHeight() / markerScale);
     }
     else
     {

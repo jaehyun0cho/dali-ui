@@ -130,6 +130,30 @@ private:
   UiColorManager mManager;
 };
 
+// Sets the UI scale for one test and restores the previous one.
+class ScopedMarkdownUiScale
+{
+public:
+  explicit ScopedMarkdownUiScale(float scale)
+  : mManager(LayoutScaleManager::Get()),
+    mOriginalScale(mManager.GetUiScale())
+  {
+    mManager.SetUiScale(scale);
+  }
+
+  ~ScopedMarkdownUiScale()
+  {
+    mManager.SetUiScale(mOriginalScale);
+  }
+
+  ScopedMarkdownUiScale(const ScopedMarkdownUiScale&)            = delete;
+  ScopedMarkdownUiScale& operator=(const ScopedMarkdownUiScale&) = delete;
+
+private:
+  LayoutScaleManager mManager;
+  float              mOriginalScale;
+};
+
 const MarkdownRenderNode* FindFirstRole(const MarkdownRenderSnapshot& snapshot, MarkdownRenderRole role)
 {
   for(const auto& node : snapshot.nodes)
@@ -1661,6 +1685,81 @@ int UtcDaliMarkdownViewCustomListMarkerStyleP(void)
   DALI_TEST_CHECK(Label::DownCast(GetShapeMarker(orderedItem)) == orderedMarker);
   DALI_TEST_EQUALS(orderedMarker.GetText(), Dali::String("100."), TEST_LOCATION);
   DALI_TEST_CHECK(orderedMarker.GetRequestedWidth() >= orderedMarker.GetNaturalSize().width);
+  END_TEST;
+}
+
+int UtcDaliMarkdownViewOrderedListMarkerFollowsUiScaleP(void)
+{
+  UiTestApplication     application(Components::UiConfig::New());
+  ScopedMarkdownUiScale scale(2.0f);
+  constexpr float       LINE_HEIGHT = 32.0f; // default text font size 20 x 1.6
+
+  MarkdownView view = MarkdownView::New();
+  view.SetMarkdown("1. item");
+  ArrangeMarkdownView(view, 1000.0f);
+  View  host   = GetListItemMarkerHost(GetListItemAtDepth(view, 1u));
+  Label marker = Label::DownCast(GetShapeMarker(GetListItemAtDepth(view, 1u)));
+  DALI_TEST_CHECK(host);
+  DALI_TEST_CHECK(marker);
+  const float firstHeight = host.GetSize().height;
+  DALI_TEST_CHECK(firstHeight + 0.01f >= LINE_HEIGHT * 2.0f);
+
+  // A new ordinal presents the marker again on the same host, after the label was laid out at 2x.
+  view.SetMarkdown("100. item");
+  ArrangeMarkdownView(view, 1000.0f);
+  DALI_TEST_CHECK(GetListItemMarkerHost(GetListItemAtDepth(view, 1u)) == host);
+  DALI_TEST_EQUALS(marker.GetText(), Dali::String("100."), TEST_LOCATION);
+  // The requested sizes are natural units: the label's 2x pixels divided by the scale.
+  DALI_TEST_EQUALS(marker.GetRequestedWidth(), std::max(44.0f, marker.GetNaturalSize().width / 2.0f), 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetRequestedWidth(), marker.GetRequestedWidth(), TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetRequestedHeight(), firstHeight / 2.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().height, firstHeight, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(marker.GetSize().width, std::max(44.0f * 2.0f, marker.GetNaturalSize().width), 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().width, marker.GetSize().width, 0.01f, TEST_LOCATION);
+
+  // A layout-direction flip presents it again too.
+  view.SetLayoutDirection(LayoutDirection::RIGHT_TO_LEFT);
+  ArrangeMarkdownView(view, 1000.0f);
+  DALI_TEST_EQUALS(marker.GetText(), Dali::String(".100"), TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().height, firstHeight, 0.01f, TEST_LOCATION);
+  const float widthAtTwo = marker.GetSize().width;
+
+  // Back at 1.0 without presenting the marker again, the same requested sizes give half the pixels.
+  LayoutScaleManager::Get().SetUiScale(1.0f);
+  ArrangeMarkdownView(view, 1000.0f);
+  DALI_TEST_EQUALS(host.GetSize().height, firstHeight / 2.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(marker.GetSize().width, widthAtTwo / 2.0f, 0.01f, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliMarkdownViewOrderedListMarkerKeepsNaturalWidthP(void)
+{
+  UiTestApplication     application(Components::UiConfig::New());
+  ScopedMarkdownUiScale scale(2.0f);
+  constexpr float       COLUMN_WIDTH = 44.0f; // "100." at the default text font size: 4 x 20 x 0.55
+
+  MarkdownView view = MarkdownView::New();
+  view.SetMarkdown("1. item");
+  ArrangeMarkdownView(view, 1000.0f);
+  View  host   = GetListItemMarkerHost(GetListItemAtDepth(view, 1u));
+  Label marker = Label::DownCast(GetShapeMarker(GetListItemAtDepth(view, 1u)));
+  DALI_TEST_CHECK(host);
+  DALI_TEST_CHECK(marker);
+
+  // Make the marker text wider than the column estimate, as a font with wide digits does (the
+  // test font's glyphs are narrower than the estimate), and present it again at 2x.
+  marker.SetFontSize(100.0f);
+  view.SetMarkdown("100. item");
+  DALI_TEST_EQUALS(marker.GetText(), Dali::String("100."), TEST_LOCATION);
+  const float naturalWidth = marker.GetNaturalSize().width; // pixels at 2x
+  DALI_TEST_CHECK(naturalWidth > COLUMN_WIDTH * 2.0f);
+  DALI_TEST_EQUALS(marker.GetRequestedWidth(), naturalWidth / 2.0f, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetRequestedWidth(), naturalWidth / 2.0f, 0.01f, TEST_LOCATION);
+
+  // An item narrower than the marker does not shrink it (the view is 60 natural units wide).
+  ArrangeMarkdownView(view, 120.0f);
+  DALI_TEST_EQUALS(marker.GetSize().width, naturalWidth, 0.01f, TEST_LOCATION);
+  DALI_TEST_EQUALS(host.GetSize().width, naturalWidth, 0.01f, TEST_LOCATION);
   END_TEST;
 }
 
