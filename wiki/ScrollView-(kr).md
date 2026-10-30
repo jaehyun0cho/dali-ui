@@ -18,6 +18,7 @@
    - [스크롤 상태 조회](#46-스크롤-상태-조회)
    - [Focus 및 Key 스크롤](#47-focus-및-key-스크롤)
    - [Pan Scroll 제어](#48-pan-scroll-제어)
+   - [스케일과 단위](#49-스케일과-단위)
 5. [프로그래밍 방식 스크롤](#5-프로그래밍-방식-스크롤)
 6. [이벤트 (시그널)](#6-이벤트-시그널)
 7. [설정 방식](#7-설정-방식)
@@ -140,7 +141,7 @@ ScrollDirection dir = scrollView.GetScrollDirection();
 
 ### 4.1 스크롤 위치
 
-스크롤 위치는 콘텐츠가 원점에서 얼마나 이동했는지를 픽셀 단위로 나타냅니다. `(0, 0)`은 콘텐츠의 시작(좌상단)입니다.
+스크롤 위치는 콘텐츠가 원점에서 얼마나 이동했는지를 렌더링 픽셀 단위로 나타냅니다. 뷰의 유효 스케일이 이미 반영된 값입니다([4.9 스케일과 단위](#49-스케일과-단위) 참고). `(0, 0)`은 콘텐츠의 시작(좌상단)입니다.
 
 ```cpp
 // 현재 스크롤 위치 조회
@@ -388,6 +389,18 @@ edge-only auto-scroll 조정은
 
 ---
 
+### 4.9 스케일과 단위
+
+`ScrollView`는 레이아웃과 같은 방식으로 두 가지 단위를 사용합니다([Ui Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Ui-Scale-(Kr)) 참고).
+
+- **스크롤 위치는 렌더링 픽셀입니다.** `GetScrollPosition()`, `SetScrollPosition()`, `ScrollTo()`, `ScrollToX()`, `ScrollToY()`와 `DraggingSignal`의 delta에는 뷰의 유효 스케일(윈도우별 스케일 × 시스템 스케일)이 이미 반영되어 있습니다. 스케일이 바뀌어도 변환되지 않으므로, 스케일 변경 후에는 같은 위치에서 콘텐츠의 다른 부분이 보입니다. 디자인 거리를 스크롤 위치와 비교할 때는 거리에 유효 스케일을 곱하세요(6장의 예제 참고). 첫 레이아웃 전에는 요청 크기와 현재 스케일로 clamp하므로, 복원할 위치는 첫 레이아웃 패스가 끝난 뒤에 설정하세요.
+- **설정하는 길이는 자연 단위(natural unit)입니다.** 레이아웃 길이처럼 유효 스케일을 따릅니다: `ScrollView`의 padding(콘텐츠는 padding 위치에 놓입니다), `SetFocusScrollPeek()`, `SetKeyScrollStep()`, 마우스 휠 스텝(1 notch당 120), `BounceEdgeEffect`의 오버스크롤 한계와 키보드 경계 bump, `PageScrollView::SetPageSize()`. 스크롤바의 두께, offset, 최소 크기도 자연 단위입니다. getter는 설정된 값을 반환하며, 이 값에는 스케일이 곱해지지 않습니다.
+- **입력은 물리 단위로 유지됩니다.** 팬 임계값(5 px), 드래그(콘텐츠가 손가락을 1:1로 따라감), 플링 속도와 `MaxFlingDistance`는 스케일을 따르지 않습니다.
+
+`RecyclerView`도 같은 규칙을 따릅니다. `ScrollBy()`, `SetScrollOffset()`, `GetScrollOffset()`은 렌더링 픽셀이고, `SetCacheExtent()`, `SetKeyScrollStep()`, `SetFocusScrollPeek()`, `ItemsLayouter::SetItemExtent()` / `SetItemSpacing()`, `ItemDecoration::GetItemOffsets()`, group body margin은 뷰의 유효 스케일이 곱해지는 자연 단위입니다. 유효 스케일이 바뀐 뒤 다음 레이아웃 패스 전에 요청한 스크롤은 이전 레이아웃의 배치를 사용하며, 기본 제공 layouter는 스케일 변경 뒤의 레이아웃 패스에서 새 스케일로 아이템을 다시 배치합니다.
+
+---
+
 ## 5. 프로그래밍 방식 스크롤
 
 모든 스크롤 메서드는 선택적 `animation` 파라미터(기본값 `true`)를 받습니다. `false`로 설정하면 위치가 즉시 적용됩니다.
@@ -500,7 +513,7 @@ public:
 
     void OnDragging(ScrollView scrollView, float deltaX, float deltaY)
     {
-        // deltaX, deltaY: 이전 이벤트 이후 이동한 픽셀
+        // deltaX, deltaY: 이전 이벤트 이후 이동한 렌더링 픽셀
         // 패럴랙스 효과나 헤더 접기 애니메이션에 활용
     }
 
@@ -557,10 +570,11 @@ scrollView.DragFinishedSignal().Connect(&handler, &MyScrollHandler::OnDragFinish
 ```cpp
 void OnDragging(ScrollView scrollView, float deltaX, float deltaY)
 {
-    float scrollY = scrollView.GetScrollPosition().y;
+    float scrollY = scrollView.GetScrollPosition().y; // 렌더링 픽셀
 
-    // 100px 이상 스크롤 시 헤더를 점점 숨김
-    float headerOpacity = std::max(0.0f, 1.0f - scrollY / 100.0f);
+    // 100 디자인 단위에 걸쳐 헤더를 점점 숨김: 콘텐츠처럼 유효 스케일을 곱함
+    const float collapseDistance = 100.0f * Dali::Ui::Extension::View::GetEffectiveLayoutScale(Dali::Ui::GetImpl(scrollView));
+    float headerOpacity = std::max(0.0f, 1.0f - scrollY / collapseDistance);
     mHeader.SetOpacity(headerOpacity);
 }
 ```

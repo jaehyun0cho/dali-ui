@@ -290,7 +290,7 @@ public: // Accessors
    *
    * A flag selects one of the offset and size values. A value whose flag is set is a fraction of
    * the attached View's size, where 1.0f is the full size; a value whose flag is left unset is an
-   * absolute length in pixels.
+   * absolute length in natural units, multiplied by the effective scale of the attached View.
    *
    * @SINCE_3_0.0
    * @note ExtraWidth and ExtraHeight are always absolute and are unaffected by these flags.

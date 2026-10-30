@@ -4,8 +4,10 @@
 
 dali-ui provides a device-independent unit system to render consistent UI across displays
 with varying pixel densities (DPI).
-All units are converted to physical pixel values at runtime based on the settings defined
+All units are converted to pixel values at runtime based on the settings defined
 in [Configuration](https://github.sec.samsung.net/NUI/dali-ui/wiki/Configuration#configuration-options).
+These are natural units: the layout multiplies a length by the effective scale of the View that
+owns it (see [UI Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Ui-Scale)).
 
 <br/>
 
@@ -13,7 +15,7 @@ in [Configuration](https://github.sec.samsung.net/NUI/dali-ui/wiki/Configuration
 
 | Unit | Literal | Conversion | Description |
 |---|---|---|---|
-| `px` | none (plain `float`) | — | Physical pixels. Maps directly to device resolution |
+| `px` | none (plain `float`) | — | Natural units. Equal to device pixels at an effective scale of 1.0; the layout multiplies a length by the View's effective scale |
 | `spx` | `100_spx` | `value × ScalingFactor` | Reflects ScalingFactor only. Useful for values that scale with user preferences |
 | `dp` | `100_dp` | `value × (DPI / BaselineDPI)` | Density-independent pixels. Reflects screen density |
 | `sdp` | `100_sdp` | `value × (DPI / BaselineDPI) × ScalingFactor` | Reflects both screen density and ScalingFactor |
@@ -49,6 +51,21 @@ view.SetRequestedWidth(200_dp);
 view.SetRequestedHeight(100_spx);
 view.SetRequestedX(50_sdp);
 ```
+
+<br/>
+
+## Units and the Effective Scale
+
+A unit literal is a plain `float` computed once from `UiConfig`. The dynamic scale is applied later,
+by the layout: every length it consumes — requested size and position, margin, padding, spacing,
+`GridLength::Absolute()`, `AbsoluteLayoutParams` bounds and a `LayoutTransition`
+`LayoutBoundsLength::Pixel()` offset — is multiplied by the effective scale of the View that owns it.
+With the configuration above and an effective scale of `2.0`, `view.SetRequestedWidth(100_spx)` is
+`150` natural units and renders `300` pixels wide.
+
+APIs that take rendered geometry do not apply the effective scale, so the same literal renders smaller
+there by that factor: the `Dali::Ui::Extension::View` geometry setters, `ViewAnimationSpec` position and
+size entries, `LayoutAnimatorContext` bounds and `ScrollView` scroll positions.
 
 <br/>
 

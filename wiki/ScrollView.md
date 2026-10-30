@@ -20,6 +20,7 @@
    - [Scroll State Query](#46-scroll-state-query)
    - [Focus and Key Scrolling](#47-focus-and-key-scrolling)
    - [Pan Scroll Control](#48-pan-scroll-control)
+   - [Scale and Units](#49-scale-and-units)
 5. [Programmatic Scrolling](#5-programmatic-scrolling)
 6. [Events (Signals)](#6-events-signals)
 7. [Configuration Style](#7-configuration-style)
@@ -132,7 +133,7 @@ When `Vertical` or `Horizontal` is set and the gesture has a dominant component 
 
 ### 4.1 Scroll Position
 
-The scroll position represents how far the content has been scrolled from its origin, measured in pixels. `(0, 0)` is the top-left (start) of the content.
+The scroll position represents how far the content has been scrolled from its origin, measured in rendered pixels: the view's effective scale is already included (see [4.9 Scale and Units](#49-scale-and-units)). `(0, 0)` is the top-left (start) of the content.
 
 ```cpp
 // Get current scroll position
@@ -380,6 +381,18 @@ for edge-only auto-scroll coordination.
 
 ---
 
+### 4.9 Scale and Units
+
+`ScrollView` uses two kinds of units, the same way the layout does (see [Ui Scale](https://github.sec.samsung.net/NUI/dali-ui/wiki/Ui-Scale)):
+
+- **Scroll positions are rendered pixels.** `GetScrollPosition()`, `SetScrollPosition()`, `ScrollTo()`, `ScrollToX()`, `ScrollToY()` and the `DraggingSignal` deltas already include the view's effective scale (window scale × UI scale). They are not converted when the scale changes, so after a scale change the same position shows a different part of the content. Multiply a design distance by the effective scale before comparing it with a scroll position (see the example in section 6). Before the first layout the clamp uses the requested sizes and the current scale, so set a restored position after the first layout pass.
+- **Lengths you configure are natural units** and follow the effective scale like any layout length: the padding of the `ScrollView` (the content rests at the padding), `SetFocusScrollPeek()`, `SetKeyScrollStep()`, the mouse wheel step (120 per notch), the overscroll limits and the keyboard edge bump of `BounceEdgeEffect`, and `PageScrollView::SetPageSize()`. A scroll bar's thickness, offset and minimum size are natural units too. The getters return the configured value; it is not multiplied by the scale.
+- **Input stays physical.** The pan threshold (5 px), the drag (the content follows the finger 1:1), fling velocities and `MaxFlingDistance` do not follow the scale.
+
+`RecyclerView` follows the same rules: `ScrollBy()`, `SetScrollOffset()` and `GetScrollOffset()` are rendered pixels, while `SetCacheExtent()`, `SetKeyScrollStep()`, `SetFocusScrollPeek()`, `ItemsLayouter::SetItemExtent()` / `SetItemSpacing()`, `ItemDecoration::GetItemOffsets()` and the group body margins are natural units multiplied by the view's effective scale. Scroll requests made after an effective-scale change and before the next layout pass use the previous layout geometry; with the built-in layouters, the layout pass that follows the scale change lays the items out again at the new scale.
+
+---
+
 ## 5. Programmatic Scrolling
 
 All scroll methods accept an optional `animation` parameter (default `true`). When `false`, the position is applied immediately.
@@ -491,7 +504,7 @@ public:
 
     void OnDragging(ScrollView scrollView, float deltaX, float deltaY)
     {
-        // deltaX, deltaY: pixels moved since last event
+        // deltaX, deltaY: rendered pixels moved since last event
         // Use for parallax effects or header collapse animations
     }
 
@@ -548,10 +561,11 @@ User touches screen
 ```cpp
 void OnDragging(ScrollView scrollView, float deltaX, float deltaY)
 {
-    float scrollY = scrollView.GetScrollPosition().y;
+    float scrollY = scrollView.GetScrollPosition().y; // rendered pixels
 
-    // Collapse header when scrolled down more than 100px
-    float headerOpacity = std::max(0.0f, 1.0f - scrollY / 100.0f);
+    // Collapse the header over 100 design units: scale them like the content.
+    const float collapseDistance = 100.0f * Dali::Ui::Extension::View::GetEffectiveLayoutScale(Dali::Ui::GetImpl(scrollView));
+    float headerOpacity = std::max(0.0f, 1.0f - scrollY / collapseDistance);
     mHeader.SetOpacity(headerOpacity);
 }
 ```

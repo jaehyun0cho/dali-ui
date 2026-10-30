@@ -450,9 +450,9 @@ public: // Measure / Arrange API
    * that parent's own size is determined (explicit, or itself assigned).
    *
    * @SINCE_3_0.0
-   * @param[in] widthConstraint The width constraint for measurement
-   * @param[in] heightConstraint The height constraint for measurement
-   * @return The measured size
+   * @param[in] widthConstraint The width constraint for measurement, in visual (scale-applied) units
+   * @param[in] heightConstraint The height constraint for measurement, in visual (scale-applied) units
+   * @return The measured size, in visual (scale-applied) units
    */
   MeasuredSize Measure(float widthConstraint, float heightConstraint);
 

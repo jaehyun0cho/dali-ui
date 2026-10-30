@@ -560,7 +560,7 @@ enum class FlexAlign : uint8_t
 enum class GridLengthType : uint8_t
 {
   /**
-   * @brief Absolute pixel value
+   * @brief Absolute length in natural units (multiplied by the grid's effective scale)
    * @SINCE_3_0.0
    */
   ABSOLUTE = 0,
@@ -602,7 +602,7 @@ public:
    * @brief Creates an absolute grid length.
    *
    * @SINCE_3_0.0
-   * @param[in] pixels The pixel value
+   * @param[in] pixels The track length in natural units; the grid multiplies it by its effective scale
    * @return GridLength instance
    */
   static constexpr GridLength Absolute(float pixels)
