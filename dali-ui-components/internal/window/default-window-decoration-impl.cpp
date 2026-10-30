@@ -14,6 +14,7 @@
  */
 
 #include "default-window-decoration-impl.h"
+#include "window-frame-impl.h"
 
 #include <dali/devel-api/adaptor-framework/environment-variable.h>
 #include <dali/integration-api/debug.h>
@@ -407,7 +408,10 @@ Dali::Vector2 DefaultWindowDecorationImpl::GetMinimumFrameSize() const
   width += mOptions.IsMaximizeRestoreControlEnabled() ? CONTROL_WIDTH : 0.0f;
   width += mOptions.IsCloseControlEnabled() ? CONTROL_WIDTH : 0.0f;
 
-  return Dali::Vector2(width, barHeight + GetEffectiveTopHeight());
+  // The columns are natural units; the frame lays them out at its effective scale, and a
+  // frame size constraint is in window surface pixels.
+  const float scale = mWindowFrame ? GetImplementation(mWindowFrame).GetFrameScale() : 1.0f;
+  return Dali::Vector2(width, barHeight + GetEffectiveTopHeight()) * scale;
 }
 
 WindowFrameDecoration DefaultWindowDecorationImpl::GetDecoration() const

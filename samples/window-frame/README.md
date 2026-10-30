@@ -31,9 +31,10 @@ natural units multiplied by the effective scale.
 
 The minimum is set per installed frame by `ApplyFrameMinimumSize()`, because each
 frame has its own floor. The application's own content needs `200 x 130`; a
-`DefaultWindowDecoration` needs `276 x 55` for its control and handle columns, which it
+`DefaultWindowDecoration` needs `276 x 55` at an effective scale of 1.0 (in surface
+pixels, so `552 x 110` at 2.0) for its control and handle columns, which it
 reports through `GetMinimumFrameSize()`. The sample takes the larger of the two
-and reapplies it whenever the frame changes.
+and reapplies it whenever the frame or the window scale changes.
 Runtime Style changes preserve content size while the window is in its normal
 state.
 
@@ -287,7 +288,7 @@ with `GetType()` and `GetState()`.
 | `b` | Toggle decoration visibility |
 | `c` | Cycle decoration layout through `SetDecorationLayout()`, keeping the installed views |
 | `m` | `ToggleMaximize()` |
-| `1` / `2` | Window scale 1.0 / 2.0 (`Extension::LayoutScaleManager::SetWindowScale`) |
+| `1` / `2` | Window scale 1.0 / 2.0 (`Extension::LayoutScaleManager::SetWindowScale`), then `ApplyFrameMinimumSize()` again |
 | `Escape` / `Back` | Quit |
 
 `Window::FocusChangedSignal()` drives the active/inactive label in the footer.
