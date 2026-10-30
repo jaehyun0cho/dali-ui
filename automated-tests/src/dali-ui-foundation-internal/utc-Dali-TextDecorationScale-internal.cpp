@@ -1240,3 +1240,31 @@ int UtcDaliTextDecorationScaleCharacterSpacingP(void)
   label.Unparent();
   END_TEST;
 }
+
+int UtcDaliTextDecorationScaleReplacementDefaultFontP(void)
+{
+  UiTestApplication application;
+  auto              layoutLine = [](float scale)
+  {
+    auto controller = Text::Controller::New();
+    auto builder    = Text::StyledTextBuilder::New("X");
+    builder.SetSpan(Text::ImageSpan::New(Text::ImageAttributes("missing-default-font.png", Vector2(2.f, 2.f))), 0u, 1u);
+    controller->SetStyledText(builder.Build());
+    controller->SetTextElideEnabled(false);
+    if(controller->SetUiScale(scale)) controller->InvalidateFontData();
+    controller->Relayout(BOX);
+    auto& impl = Text::Controller::Impl::GetImplementation(*controller);
+    DALI_TEST_CHECK(impl.mFontDefaults == nullptr);
+    const auto& state = impl.GetReplacementRenderState();
+    DALI_TEST_CHECK(state.processingModel && !state.processingModel->mVisualModel->mLines.Empty());
+    const auto& line = state.processingModel->mVisualModel->mLines[0u];
+    return Vector2(line.ascender, line.descender);
+  };
+  const Vector2 unscaled = layoutLine(1.f);
+  const Vector2 scaled   = layoutLine(2.f);
+  DALI_TEST_CHECK(unscaled.x > 1.f);
+  // The image-only line takes the metrics of the default font at twice the point size.
+  DALI_TEST_EQUALS(scaled.x, 2.f * unscaled.x, 1.f, TEST_LOCATION);
+  DALI_TEST_EQUALS(scaled.y, 2.f * unscaled.y, 1.f, TEST_LOCATION);
+  END_TEST;
+}
