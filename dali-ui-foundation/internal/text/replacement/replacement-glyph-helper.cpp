@@ -271,9 +271,9 @@ void CopyProcessingCharacterStylesToVisual(const LogicalModel& logicalModel, Vis
   ConvertCharacterStyleRuns(logicalModel.mCharacterSpacingCharacterRuns,
                             visualModel,
                             visualModel.mCharacterSpacingRuns,
-                            [](const CharacterSpacingCharacterRun& source, CharacterSpacingGlyphRun& destination)
+                            [&visualModel](const CharacterSpacingCharacterRun& source, CharacterSpacingGlyphRun& destination)
   {
-    destination.value = source.value;
+    destination.value = ResolveDecorationDistance(source.value, visualModel.GetDecorationUiScale());
   });
 }
 

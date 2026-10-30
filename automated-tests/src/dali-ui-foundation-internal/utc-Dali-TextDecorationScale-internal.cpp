@@ -40,6 +40,7 @@
 #include <dali-ui-foundation/internal/text/decorator/text-decorator.h>
 #include <dali-ui-foundation/internal/text/rendering/styles/underline-helper-functions.h>
 #include <dali-ui-foundation/internal/text/rendering/text-typesetter.h>
+#include <dali-ui-foundation/internal/text/replacement/replacement-glyph-helper.h>
 #include <dali-ui-foundation/internal/text/replacement/replacement-processing-source.h>
 #include <dali-ui-foundation/internal/text/styled-text/styled-text-applier.h>
 
@@ -1174,5 +1175,68 @@ int UtcDaliTextDecorationScaleBlurRadiusP(void)
   DALI_TEST_EQUALS(target->mVisualModel->GetShadowBlurRadius(), 1.25f, TEST_LOCATION);
   DALI_TEST_EQUALS(target->GetShadowBlurRadius(), 2.5f, TEST_LOCATION);
   DALI_TEST_EQUALS(target->GetOutlineBlurRadius(), 1.f, TEST_LOCATION);
+  END_TEST;
+}
+
+int UtcDaliTextDecorationScaleCharacterSpacingP(void)
+{
+  UiTestApplication application;
+  auto              scaled = Text::Controller::New();
+  auto              oracle = Text::Controller::New();
+  for(auto controller : {scaled, oracle})
+  {
+    controller->SetText("ABCD");
+    controller->SetTextElideEnabled(false);
+  }
+  scaled->SetDefaultFontSize(24.f, Text::Controller::PIXEL_SIZE);
+  scaled->SetCharacterSpacing(5.f);
+  if(scaled->SetUiScale(2.f)) scaled->InvalidateFontData();
+  oracle->SetDefaultFontSize(48.f, Text::Controller::PIXEL_SIZE);
+  oracle->SetCharacterSpacing(10.f);
+  scaled->Relayout(BOX);
+  oracle->Relayout(BOX);
+  DALI_TEST_EQUALS(scaled->GetCharacterSpacing(), 5.f, TEST_LOCATION);
+  DALI_TEST_EQUALS(Model(scaled).GetCharacterSpacing(), 10.f, TEST_LOCATION);
+  DALI_TEST_EQUALS(scaled->GetView().GetCharacterSpacing(), 10.f, TEST_LOCATION);
+  const auto& positions = Model(scaled).mVisualModel->mGlyphPositions;
+  const auto& wanted    = Model(oracle).mVisualModel->mGlyphPositions;
+  DALI_TEST_EQUALS(positions.Count(), wanted.Count(), TEST_LOCATION);
+  for(unsigned glyph = 0; glyph < positions.Count(); ++glyph)
+  {
+    DALI_TEST_EQUALS(positions[glyph], wanted[glyph], EPSILON, TEST_LOCATION);
+  }
+  EqualPixels(Render(Model(scaled)), Render(Model(oracle)));
+
+  // Spacing runs follow the same UI scale when they are copied to glyph runs.
+  auto&                              impl = Text::Controller::Impl::GetImplementation(*scaled);
+  Text::CharacterSpacingCharacterRun run;
+  run.characterRun.characterIndex     = 0u;
+  run.characterRun.numberOfCharacters = 4u;
+  run.value                           = 3.f;
+  impl.mModel->mLogicalModel->mCharacterSpacingCharacterRuns.PushBack(run);
+  scaled->InvalidateFontData(); // The shaping update copies the logical runs to glyph runs.
+  scaled->Relayout(BOX);
+  DALI_TEST_EQUALS(impl.mModel->mVisualModel->mCharacterSpacingRuns.Count(), 1u, TEST_LOCATION);
+  DALI_TEST_EQUALS(impl.mModel->mVisualModel->mCharacterSpacingRuns[0].value, 6.f, TEST_LOCATION);
+  Text::CopyProcessingCharacterStylesToVisual(*impl.mModel->mLogicalModel, *impl.mModel->mVisualModel);
+  DALI_TEST_EQUALS(impl.mModel->mVisualModel->mCharacterSpacingRuns[0].value, 6.f, TEST_LOCATION);
+
+  // Async: the worker model resolves the authored spacing with the request's UI scale.
+  ScaleGuard guard;
+  auto       label = Label::New("ABCD");
+  label.SetAsyncRendering(false);
+  label.SetFontSize(24.f);
+  Impl(label).SetLetterSpacing(5.f);
+  application.GetScene().Add(label);
+  LayoutScaleManager::Get().SetUiScale(2.f);
+  application.SendNotification();
+  application.Render();
+  DALI_TEST_EQUALS(Model(ControllerFor(label)).GetCharacterSpacing(), 10.f, TEST_LOCATION);
+  auto parameters = Parameters(label);
+  DALI_TEST_EQUALS(parameters.characterSpacing, 5.f, TEST_LOCATION);
+  Text::AsyncTextLoader worker = Text::AsyncTextLoader::New();
+  worker.RenderText(parameters, false, Size::ZERO);
+  DALI_TEST_EQUALS(RenderModel(worker).GetCharacterSpacing(), 10.f, TEST_LOCATION);
+  label.Unparent();
   END_TEST;
 }

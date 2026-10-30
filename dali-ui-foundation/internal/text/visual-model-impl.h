@@ -673,6 +673,13 @@ public:
   const float GetCharacterSpacing() const;
 
   /**
+   * @brief Retrieves the character spacing multiplied by the UI scale.
+   *
+   * @return The effective spacing used by layout and rendering.
+   */
+  float GetEffectiveCharacterSpacing() const;
+
+  /**
    * @brief Retrieves the Glyphs to Characters Array.
    *
    * @return The GlyphsToCharacters.

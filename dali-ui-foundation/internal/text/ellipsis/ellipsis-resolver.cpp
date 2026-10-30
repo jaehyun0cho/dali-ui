@@ -253,7 +253,7 @@ std::vector<SourceCluster> CollectSourceClusters(const Model&                   
       }
       const float spacing           = GetGlyphCharacterSpacing(sourceGlyph,
                                                                visual.GetCharacterSpacingGlyphRuns(),
-                                                               visual.GetCharacterSpacing());
+                                                               visual.GetEffectiveCharacterSpacing());
       const float calculatedAdvance = GetCalculatedAdvance(logical.mText[sourceCharacter],
                                                            spacing,
                                                            visual.mGlyphs[sourceGlyph].advance);
@@ -347,8 +347,8 @@ bool ResolveEllipsisGlyph(const Model&                 model,
   const float spacing = styleGlyph < visual.mGlyphs.Count()
                           ? GetGlyphCharacterSpacing(styleGlyph,
                                                      visual.GetCharacterSpacingGlyphRuns(),
-                                                     visual.GetCharacterSpacing())
-                          : visual.GetCharacterSpacing();
+                                                     visual.GetEffectiveCharacterSpacing())
+                          : visual.GetEffectiveCharacterSpacing();
   ellipsisAdvance     = GetCalculatedAdvance(ELLIPSIS_CHARACTER, spacing, ellipsisGlyph.advance);
   return true;
 }

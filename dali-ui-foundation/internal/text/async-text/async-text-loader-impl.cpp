@@ -948,7 +948,7 @@ void AsyncTextLoader::Update(AsyncTextParameters& parameters)
       }
 
       CharacterSpacingGlyphRun characterSpacingGlyphRun;
-      characterSpacingGlyphRun.value                   = it->value;
+      characterSpacingGlyphRun.value                   = ResolveDecorationDistance(it->value, parameters.decorationUiScale);
       characterSpacingGlyphRun.glyphRun.glyphIndex     = charactersToGlyph[characterIndex];
       characterSpacingGlyphRun.glyphRun.numberOfGlyphs = glyphsPerCharacter[characterIndex];
 
