@@ -29,6 +29,8 @@
  * Keys:
  *   D   — cycle the effect: drop shadow -> gaussian blur -> none
  *   P   — toggle effect auto-padding (when off, the effect is clipped at the canvas edges)
+ *   N   — replace the canvas with a new CanvasView::New() (view box taken at its first layout)
+ *   q–t — UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0
  *   ESC — quit
  */
 
@@ -114,8 +116,20 @@ private:
 
     const PositionSize ws = window.GetPositionSize();
 
-    // The canvas is sized to the bubble bounds (tail included). Auto-padding makes room for the
-    // effect inside this buffer, so no manual margin is required here.
+    CreateCanvas(ws);
+
+    mRoot = AbsoluteLayout::New();
+    mRoot.SetRequestedWidth(MATCH_PARENT);
+    mRoot.SetRequestedHeight(MATCH_PARENT);
+    mRoot.Add(mCanvasView);
+    window.Add(mRoot);
+  }
+
+  // The canvas is sized to the bubble bounds (tail included). Auto-padding makes room for the
+  // effect inside this buffer, so no manual margin is required here. CanvasView::New() has a zero
+  // view box: the canvas takes its size at its first layout, in natural units, as the view box.
+  void CreateCanvas(const PositionSize& ws)
+  {
     const float canvasW = kBubbleWidth * kScale;
     const float canvasH = (kBubbleHeight + kTailDepth) * kScale;
 
@@ -130,12 +144,6 @@ private:
     mCanvasView.AddDrawable(bubble);
     mCanvasView.SetEffectAutoPaddingEnabled(mAutoPadding);
     ApplyEffect();
-
-    AbsoluteLayout root = AbsoluteLayout::New();
-    root.SetRequestedWidth(MATCH_PARENT);
-    root.SetRequestedHeight(MATCH_PARENT);
-    root.Add(mCanvasView);
-    window.Add(root);
   }
 
   void ApplyEffect()
@@ -181,11 +189,39 @@ private:
       mCanvasView.SetEffectAutoPaddingEnabled(mAutoPadding);
       mCanvasView.RequestRasterization();
     }
+    else if(event.GetKeyName() == "n" || event.GetKeyName() == "N")
+    {
+      // A new canvas whose view box is taken at its first layout, at the current UI scale.
+      mRoot.Remove(mCanvasView);
+      CreateCanvas(mApplication.GetWindow().GetPositionSize());
+      mRoot.Add(mCanvasView);
+    }
+    else if(event.GetKeyName() == "q")
+    {
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(event.GetKeyName() == "w")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(event.GetKeyName() == "e")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(event.GetKeyName() == "r")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(event.GetKeyName() == "t")
+    {
+      LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
   }
 
 private:
   Application&         mApplication;
   Dali::Ui::CanvasView mCanvasView;
+  AbsoluteLayout       mRoot;
   EffectMode           mEffectMode{EffectMode::DropShadow};
   bool                 mAutoPadding{true};
 };

@@ -285,6 +285,7 @@ with `GetType()` and `GetState()`.
 | `b` | Toggle decoration visibility |
 | `c` | Cycle decoration layout through `SetDecorationLayout()`, keeping the installed views |
 | `m` | `ToggleMaximize()` |
+| `1` / `2` | Window scale 1.0 / 2.0 (`LayoutScaleManager::SetWindowScale`) |
 | `Escape` / `Back` | Quit |
 
 `Window::FocusChangedSignal()` drives the active/inactive label in the footer.

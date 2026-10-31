@@ -29,6 +29,7 @@
  * Scene 9 — "Input Enable/Disable"    : TOUCH_ENABLED / HOVER_ENABLED property cycle
  *
  * Navigation: left/right cursor keys OR Prev/Next push-buttons.
+ * Scale: q/w/e/r/t set the UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0.
  */
 
 #include <chrono>
@@ -577,6 +578,26 @@ public:
         ResetScene();
         mCurrentScene = (mCurrentScene + 1) % NUM_SCENES;
         CreateScene(mCurrentScene);
+      }
+      else if(event.GetKeyName() == "q")
+      {
+        LayoutScaleManager::Get().SetUiScale(0.8f);
+      }
+      else if(event.GetKeyName() == "w")
+      {
+        LayoutScaleManager::Get().SetUiScale(1.0f);
+      }
+      else if(event.GetKeyName() == "e")
+      {
+        LayoutScaleManager::Get().SetUiScale(1.2f);
+      }
+      else if(event.GetKeyName() == "r")
+      {
+        LayoutScaleManager::Get().SetUiScale(1.5f);
+      }
+      else if(event.GetKeyName() == "t")
+      {
+        LayoutScaleManager::Get().SetUiScale(2.0f);
       }
     }
   }

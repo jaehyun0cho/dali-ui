@@ -768,6 +768,14 @@ private:
     {
       mWindowFrame.ToggleMaximize();
     }
+    else if(event.GetKeyName() == "1")
+    {
+      LayoutScaleManager::Get().SetWindowScale(mWindow, 1.0f);
+    }
+    else if(event.GetKeyName() == "2")
+    {
+      LayoutScaleManager::Get().SetWindowScale(mWindow, 2.0f);
+    }
   }
 
 private:
