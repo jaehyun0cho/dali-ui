@@ -29,6 +29,7 @@
  * Scene 9 — "Input Enable/Disable"    : TOUCH_ENABLED / HOVER_ENABLED property cycle
  *
  * Navigation: left/right cursor keys OR Prev/Next push-buttons.
+ * Scale: q/w/e/r/t set the UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0.
  */
 
 #include <chrono>
@@ -39,6 +40,7 @@
 
 #include <dali-ui-components/dali-ui-components.h>
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali/devel-api/adaptor-framework/application.h>
 #include <dali/integration-api/debug.h>
 
@@ -131,21 +133,19 @@ public:
   // -------------------------------------------------------------------------
   void Create(Application application)
   {
-    Window  window       = application.GetWindow();
-    auto    positionSize = window.GetPositionSize();
-    Vector2 windowSize   = Vector2(static_cast<float>(positionSize.width), static_cast<float>(positionSize.height));
+    Window window = application.GetWindow();
     window.SetBackgroundColor(Color::LIGHT_GRAY);
     window.KeyEventSignal().Connect(this, &ChartViewController::OnKeyEvent);
 
-    mWinW = windowSize.x;
-    mWinH = windowSize.y;
+    // Every view below is placed in natural units against a window edge or the
+    // window center, so the scene keeps its layout at any UI scale.
 
-    // --- Scene title label (top) ---
+    // --- Scene title label (top), the window width less 10 units each side ---
     mSceneLabel = Label::New();
+    mSceneLabel.SetRequestedWidth(MATCH_PARENT);
+    mSceneLabel.SetMargin(10.0f, 0.0f);
     mSceneLabel.SetLayoutParams(AbsoluteLayoutParams::New()
-                                  .SetX(10.0f)
                                   .SetY(4.0f)
-                                  .SetWidth(mWinW - 20.0f)
                                   .SetHeight(36.0f));
     mSceneLabel.SetFontSize(9.0f);
     mSceneLabel.SetTextColor(UiColor(0x000000));
@@ -154,10 +154,9 @@ public:
 
     // --- Debug label (above navigation buttons) ---
     mDebugLabel = Label::New();
+    mDebugLabel.SetRequestedWidth(MATCH_PARENT);
+    mDebugLabel.SetMargin(10.0f, 0.0f);
     mDebugLabel.SetLayoutParams(AbsoluteLayoutParams::New()
-                                  .SetX(10.0f)
-                                  .SetY(mWinH - 92.0f)
-                                  .SetWidth(mWinW - 20.0f)
                                   .SetHeight(36.0f));
     mDebugLabel.SetFontSize(7.0f);
     mDebugLabel.SetTextColor(UiColor(COLOR_DARK_SLATE_GRAY));
@@ -170,7 +169,7 @@ public:
     mPrevButton.SetRequestedHeight(50.0f);
     mPrevButton.SetLayoutParams(AbsoluteLayoutParams::New()
                                   .SetX(0.0f)
-                                  .SetY(mWinH - 50.0f)
+                                  .SetY(42.0f)
                                   .SetWidth(100.0f)
                                   .SetHeight(50.0f));
     mPrevButton.SetBackgroundColor(UiColor(0x424242, 0.85f));
@@ -191,10 +190,11 @@ public:
     mNextButton.SetRequestedWidth(100.0f);
     mNextButton.SetRequestedHeight(50.0f);
     mNextButton.SetLayoutParams(AbsoluteLayoutParams::New()
-                                  .SetX(mWinW - 100.0f)
-                                  .SetY(mWinH - 50.0f)
+                                  .SetX(1.0f)
+                                  .SetY(42.0f)
                                   .SetWidth(100.0f)
-                                  .SetHeight(50.0f));
+                                  .SetHeight(50.0f)
+                                  .SetFlags(AbsoluteLayoutFlags::X_PROPORTIONAL));
     mNextButton.SetBackgroundColor(UiColor(0x424242, 0.85f));
     mNextButton.AsInteractive().ClickedSignal().Connect(this, [this](View, InputEvent)
     { OnNextScene(); });
@@ -208,15 +208,32 @@ public:
     nextLabel.SetVerticalTextAlignment(Text::Alignment::CENTER);
     mNextButton.Add(nextLabel);
 
+    // --- Bottom bar: the debug label above the two buttons, on the bottom edge ---
+    AbsoluteLayout bottomBar = AbsoluteLayout::New();
+    bottomBar.SetRequestedWidth(MATCH_PARENT);
+    bottomBar.SetLayoutParams(AbsoluteLayoutParams::New()
+                                .SetY(1.0f)
+                                .SetHeight(92.0f)
+                                .SetFlags(AbsoluteLayoutFlags::Y_PROPORTIONAL));
+    bottomBar.Add(mDebugLabel);
+    bottomBar.Add(mPrevButton);
+    bottomBar.Add(mNextButton);
+
+    // --- Chart area: AddChartToRoot() centers the chart in it; the bottom padding
+    //     keeps the chart 20 units above the window center, clear of the bottom bar ---
+    mChartArea = AbsoluteLayout::New();
+    mChartArea.SetRequestedWidth(MATCH_PARENT);
+    mChartArea.SetRequestedHeight(MATCH_PARENT);
+    mChartArea.SetBottomPadding(40.0f);
+
     // Single root layout — ALL UI in one hierarchy so the dali-ui layout
     // system processes everything, including ChartView::OnArrange.
     mRootLayout = AbsoluteLayout::New();
     mRootLayout.SetRequestedWidth(MATCH_PARENT);
     mRootLayout.SetRequestedHeight(MATCH_PARENT);
+    mRootLayout.Add(mChartArea);
     mRootLayout.Add(mSceneLabel);
-    mRootLayout.Add(mDebugLabel);
-    mRootLayout.Add(mPrevButton);
-    mRootLayout.Add(mNextButton);
+    mRootLayout.Add(bottomBar);
     window.Add(mRootLayout);
 
     // Show first scene
@@ -326,7 +343,7 @@ public:
     // Remove and reset the chart
     if(mChart)
     {
-      mRootLayout.Remove(mChart);
+      mChartArea.Remove(mChart);
       mChart.Reset();
     }
 
@@ -507,12 +524,13 @@ public:
 
     auto t0 = std::chrono::high_resolution_clock::now();
     mChart.SetLayoutParams(AbsoluteLayoutParams::New()
-                             .SetX((mWinW - newSize.x) * 0.5f)
-                             .SetY((mWinH - newSize.y) * 0.5f - 20.0f)
+                             .SetX(0.5f)
+                             .SetY(0.5f)
                              .SetWidth(newSize.x)
-                             .SetHeight(newSize.y));
-    mRootLayout.Remove(mChart);
-    mRootLayout.Add(mChart);
+                             .SetHeight(newSize.y)
+                             .SetFlags(AbsoluteLayoutFlags::POSITION_PROPORTIONAL));
+    mChartArea.Remove(mChart);
+    mChartArea.Add(mChart);
     auto t1      = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
 
@@ -577,6 +595,26 @@ public:
         ResetScene();
         mCurrentScene = (mCurrentScene + 1) % NUM_SCENES;
         CreateScene(mCurrentScene);
+      }
+      else if(event.GetKeyName() == "q")
+      {
+        Ui::Extension::LayoutScaleManager::Get().SetUiScale(0.8f);
+      }
+      else if(event.GetKeyName() == "w")
+      {
+        Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.0f);
+      }
+      else if(event.GetKeyName() == "e")
+      {
+        Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.2f);
+      }
+      else if(event.GetKeyName() == "r")
+      {
+        Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.5f);
+      }
+      else if(event.GetKeyName() == "t")
+      {
+        Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
       }
     }
   }
@@ -1852,22 +1890,23 @@ public:
                             "Green=Q2 band | Yellow=target range | Red=250 line | Blue=July | Purple=Q4 rect");
   }
 
+  // Centered in the chart area: proportional position, natural size.
   void AddChartToRoot(float w = CHART_WIDTH, float h = CHART_HEIGHT)
   {
     mChart.SetLayoutParams(AbsoluteLayoutParams::New()
-                             .SetX((mWinW - w) * 0.5f)
-                             .SetY((mWinH - h) * 0.5f - 20.0f)
+                             .SetX(0.5f)
+                             .SetY(0.5f)
                              .SetWidth(w)
-                             .SetHeight(h));
-    mRootLayout.Add(mChart);
+                             .SetHeight(h)
+                             .SetFlags(AbsoluteLayoutFlags::POSITION_PROPORTIONAL));
+    mChartArea.Add(mChart);
   }
 
 private:
   Application&   mApplication;
   ChartView      mChart;
   AbsoluteLayout mRootLayout;
-  float          mWinW{0.0f};
-  float          mWinH{0.0f};
+  AbsoluteLayout mChartArea;
   Label          mSceneLabel;
   Label          mDebugLabel;
   AbsoluteLayout mPrevButton;
