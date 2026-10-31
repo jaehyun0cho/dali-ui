@@ -211,6 +211,8 @@ private:
     mInputEditor.SetRequestedWidth(MATCH_PARENT);
     mInputEditor.SetRequestedHeight(EDITOR_HEIGHT);
     mInputEditor.SetMaximumHeight(200);
+    // Narrower than the window, so at a larger UI scale GetLineCount() must clamp with the scaled width.
+    mInputEditor.SetMaximumWidth(200.0f);
     mInputEditor.SetBackgroundColor(UiColor(0xFFFFFF));
     mInputEditor.SetTextColor(UiColor(COLOR_DARK_TEXT));
     mInputEditor.SetPadding(Insets(12.0f, 12.0f, 12.0f, 12.0f));
@@ -984,6 +986,10 @@ private:
     else if(event.GetKeyName() == "t")
     {
       Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
+    else if(event.GetKeyName() == "9")
+    {
+      UpdateStatus(); // re-reads GetLineCount() after a scale change
     }
   }
 
