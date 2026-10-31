@@ -36,3 +36,6 @@ Output: `com.samsung.dali.visual-base-2.0.0-1.armv7l.rpm`
 ## Controls
 
 - **Escape** or **Back**: Quit the application.
+- **q** / **w** / **e** / **r** / **t** (gradient-visual, image-visual): UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0.
+- **4** (gradient-visual): a `USER_SPACE` background ramp over the first 200 units of the view.
+- **3** (image-visual): adds a `FIT_KEEP_ASPECT_RATIO` image with an extra width of 100.

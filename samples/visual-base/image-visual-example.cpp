@@ -356,6 +356,37 @@ private:
     {
       PopVisual();
     }
+    else if(event.GetKeyName() == "3")
+    {
+      // A fitted square image with an extra width of 100: FIT_KEEP_ASPECT_RATIO places it, and the
+      // extra width is a natural length that follows the view's effective scale.
+      ImageVisual visual = ImageVisual::New();
+      visual.SetResourceUrl(Dali::StringView(IMAGE_PATH[0].data(), static_cast<uint32_t>(IMAGE_PATH[0].size())));
+      visual.SetFittingMode(Ui::Image::FittingMode::FIT_KEEP_ASPECT_RATIO);
+      visual.SetExtraWidth(100.0f);
+      mView.AddVisual(visual, Visual::DepthLayer::BACKGROUND);
+      UpdateVisualCount();
+    }
+    else if(event.GetKeyName() == "q")
+    {
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(event.GetKeyName() == "w")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(event.GetKeyName() == "e")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(event.GetKeyName() == "r")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(event.GetKeyName() == "t")
+    {
+      LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
   }
 
 private:

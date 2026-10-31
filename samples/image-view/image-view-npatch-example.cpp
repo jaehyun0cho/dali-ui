@@ -30,6 +30,7 @@ using namespace Dali::Ui;
  * - Toggle SetNPatchBorderOnly() to render only the border regions (hollow center)
  * - Manual border override row: shows SetNPatchBorder(Insets) with explicit insets
  * - Press Escape or Back to quit
+ * - q/w/e/r/t: UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0
  */
 class ImageViewNPatchController : public ConnectionTracker
 {
@@ -213,6 +214,26 @@ private:
       if(IsKey(event, Dali::DALI_KEY_ESCAPE) || IsKey(event, Dali::DALI_KEY_BACK))
       {
         mApplication.Quit();
+      }
+      else if(event.GetKeyName() == "q")
+      {
+        LayoutScaleManager::Get().SetUiScale(0.8f);
+      }
+      else if(event.GetKeyName() == "w")
+      {
+        LayoutScaleManager::Get().SetUiScale(1.0f);
+      }
+      else if(event.GetKeyName() == "e")
+      {
+        LayoutScaleManager::Get().SetUiScale(1.2f);
+      }
+      else if(event.GetKeyName() == "r")
+      {
+        LayoutScaleManager::Get().SetUiScale(1.5f);
+      }
+      else if(event.GetKeyName() == "t")
+      {
+        LayoutScaleManager::Get().SetUiScale(2.0f);
       }
     }
   }

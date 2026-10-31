@@ -726,6 +726,14 @@ private:
       ChangeImageAndRefresh();
     else if(key == "r" || key == "R")
       RefreshAndDump();
+    else if(key == "q")
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    else if(key == "w")
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    else if(key == "e")
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    else if(key == "t")
+      LayoutScaleManager::Get().SetUiScale(2.0f);
   }
 
 private:
