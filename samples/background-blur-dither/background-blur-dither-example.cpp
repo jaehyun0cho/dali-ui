@@ -16,6 +16,7 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali/dali.h>
 #include <dali/devel-api/actors/actor-enumerations-devel.h>
 #include <dali/devel-api/adaptor-framework/application.h>
@@ -204,7 +205,7 @@ private:
   {
     PositionSize windowSize = mWindow.GetPositionSize();
 
-    mHelpLabel = Label::New("1 Blur  2 Speed  3/4 Radius -/+  5 BG  6 Animation  7/8 Noise -/+  Esc/Back Quit");
+    mHelpLabel = Label::New("1 Blur  2 Speed  3/4 Radius -/+  5 BG  6 Animation  7/8 Noise -/+  q-t Scale  Esc/Back Quit");
     mHelpLabel.SetLayoutMode(LayoutMode::STANDALONE);
     mHelpLabel.SetRequestedWidth(static_cast<float>(windowSize.width) - HELP_MARGIN * 2.0f);
     mHelpLabel.SetRequestedHeight(HELP_HEIGHT);
@@ -322,6 +323,26 @@ private:
       mDitherNoiseStrength = std::min(1.0f, mDitherNoiseStrength + DITHER_STEP);
       mBackgroundBlur.SetDitherNoiseStrength(mDitherNoiseStrength);
       UpdateStatusLabel();
+    }
+    else if(event.GetKeyName() == "q")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(event.GetKeyName() == "w")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(event.GetKeyName() == "e")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(event.GetKeyName() == "r")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(event.GetKeyName() == "t")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
     }
   }
 

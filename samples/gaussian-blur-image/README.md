@@ -37,7 +37,8 @@ The sample can also be configured at startup with
 - Resource actions change the URL and refresh the existing effect, or refresh
   immediately and request another FBO dump.
 
-Keyboard shortcuts mirror the buttons: `1`-`7`, `I`, `O`, `C`, Space, and `R`.
+Keyboard shortcuts mirror the buttons: `1`-`7`, `I`, `O`, `C`, Space, and `R`. `q`, `w`, `e` and `t`
+set the UI scale to 0.8, 1.0, 1.2 and 2.0 (`r` stays Refresh, so 1.5 has no key).
 
 ## Direct FBO read-back
 

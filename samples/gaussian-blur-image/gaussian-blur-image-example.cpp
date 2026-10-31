@@ -15,6 +15,7 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali/devel-api/adaptor-framework/application.h>
 #include <dali/devel-api/adaptor-framework/bitmap-saver.h>
 #include <dali/integration-api/debug.h>
@@ -726,6 +727,14 @@ private:
       ChangeImageAndRefresh();
     else if(key == "r" || key == "R")
       RefreshAndDump();
+    else if(key == "q")
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(0.8f);
+    else if(key == "w")
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.0f);
+    else if(key == "e")
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.2f);
+    else if(key == "t")
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
   }
 
 private:

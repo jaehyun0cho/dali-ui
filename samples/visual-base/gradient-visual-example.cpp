@@ -14,6 +14,7 @@
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali/devel-api/adaptor-framework/application.h>
 
 #include <random>
@@ -366,6 +367,35 @@ private:
     else if(event.GetKeyName() == "3")
     {
       ChangeVisual();
+    }
+    else if(event.GetKeyName() == "4")
+    {
+      // A USER_SPACE ramp over the first 200 units of the view: the points are natural units,
+      // so it covers the same part of the view at every UI scale.
+      Ui::Gradient::Linear gradient(Vector2(0.0f, 0.0f), Vector2(200.0f, 0.0f));
+      gradient.SetUnits(Ui::Gradient::Units::USER_SPACE);
+      gradient.SetStopNodes({Ui::Gradient::StopNode(0.0f, UiColor(0x2563EB)), Ui::Gradient::StopNode(1.0f, UiColor(0xF97316))});
+      mView.SetBackgroundGradient(gradient);
+    }
+    else if(event.GetKeyName() == "q")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(event.GetKeyName() == "w")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(event.GetKeyName() == "e")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(event.GetKeyName() == "r")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(event.GetKeyName() == "t")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
     }
   }
 
