@@ -29,10 +29,13 @@
  * Keys:
  *   D   — cycle the effect: drop shadow -> gaussian blur -> none
  *   P   — toggle effect auto-padding (when off, the effect is clipped at the canvas edges)
+ *   N   — replace the canvas with a new CanvasView::New() (view box taken at its first layout)
+ *   q–t — UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0
  *   ESC — quit
  */
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout-params.h>
 #include <dali-ui-foundation/public-api/layouts/absolute-layout.h>
 #include <dali-ui-foundation/public-api/layouts/layout-types.h>
@@ -112,30 +115,36 @@ private:
     window.SetBackgroundColor(Color::WHITE);
     window.KeyEventSignal().Connect(this, &TooltipShadowSample::OnKeyEvent);
 
-    const PositionSize ws = window.GetPositionSize();
+    CreateCanvas();
 
-    // The canvas is sized to the bubble bounds (tail included). Auto-padding makes room for the
-    // effect inside this buffer, so no manual margin is required here.
+    mRoot = AbsoluteLayout::New();
+    mRoot.SetRequestedWidth(MATCH_PARENT);
+    mRoot.SetRequestedHeight(MATCH_PARENT);
+    mRoot.Add(mCanvasView);
+    window.Add(mRoot);
+  }
+
+  // The canvas is sized to the bubble bounds (tail included). Auto-padding makes room for the
+  // effect inside this buffer, so no manual margin is required here. CanvasView::New() has a zero
+  // view box: the canvas takes its size at its first layout, in natural units, as the view box.
+  // A proportional position keeps it centered in the window at any UI scale.
+  void CreateCanvas()
+  {
     const float canvasW = kBubbleWidth * kScale;
     const float canvasH = (kBubbleHeight + kTailDepth) * kScale;
 
     mCanvasView = CanvasView::New();
     mCanvasView.SetLayoutParams(AbsoluteLayoutParams::New()
-                                  .SetX((ws.width - canvasW) * 0.5f)
-                                  .SetY((ws.height - canvasH) * 0.5f)
+                                  .SetX(0.5f)
+                                  .SetY(0.5f)
                                   .SetWidth(canvasW)
-                                  .SetHeight(canvasH));
+                                  .SetHeight(canvasH)
+                                  .SetFlags(AbsoluteLayoutFlags::POSITION_PROPORTIONAL));
 
     Dali::CanvasRenderer::Shape bubble = MakeBubble();
     mCanvasView.AddDrawable(bubble);
     mCanvasView.SetEffectAutoPaddingEnabled(mAutoPadding);
     ApplyEffect();
-
-    AbsoluteLayout root = AbsoluteLayout::New();
-    root.SetRequestedWidth(MATCH_PARENT);
-    root.SetRequestedHeight(MATCH_PARENT);
-    root.Add(mCanvasView);
-    window.Add(root);
   }
 
   void ApplyEffect()
@@ -181,11 +190,39 @@ private:
       mCanvasView.SetEffectAutoPaddingEnabled(mAutoPadding);
       mCanvasView.RequestRasterization();
     }
+    else if(event.GetKeyName() == "n" || event.GetKeyName() == "N")
+    {
+      // A new canvas whose view box is taken at its first layout, at the current UI scale.
+      mRoot.Remove(mCanvasView);
+      CreateCanvas();
+      mRoot.Add(mCanvasView);
+    }
+    else if(event.GetKeyName() == "q")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(event.GetKeyName() == "w")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(event.GetKeyName() == "e")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(event.GetKeyName() == "r")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(event.GetKeyName() == "t")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
   }
 
 private:
   Application&         mApplication;
   Dali::Ui::CanvasView mCanvasView;
+  AbsoluteLayout       mRoot;
   EffectMode           mEffectMode{EffectMode::DropShadow};
   bool                 mAutoPadding{true};
 };

@@ -17,6 +17,7 @@
 #include <dali-ui-components/public-api/window/window-frame.h>
 
 #include <dali-ui-foundation/dali-ui-foundation.h>
+#include <dali-ui-foundation/extension-api/layout-scale-manager.h>
 #include <dali/devel-api/adaptor-framework/application.h>
 
 #include <algorithm>
@@ -767,6 +768,14 @@ private:
     else if(event.GetKeyName() == "m" || event.GetKeyName() == "M")
     {
       mWindowFrame.ToggleMaximize();
+    }
+    else if(event.GetKeyName() == "1")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetWindowScale(mWindow, 1.0f);
+    }
+    else if(event.GetKeyName() == "2")
+    {
+      Ui::Extension::LayoutScaleManager::Get().SetWindowScale(mWindow, 2.0f);
     }
   }
 
