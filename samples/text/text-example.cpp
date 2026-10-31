@@ -14,6 +14,7 @@
  */
 #include <dali-ui-foundation/dali-ui-foundation.h>
 #include <dali/devel-api/adaptor-framework/application.h>
+#include <cstdio>
 
 using namespace Dali;
 using namespace Dali::Ui;
@@ -402,6 +403,30 @@ private:
     else if(event.GetKeyName() == "t")
     {
       LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
+    else if(event.GetKeyName() == "9")
+    {
+      // Compare with the lines mLabel2 shows.
+      std::printf("[text-example] mLabel2 GetLineCount() = %d\n", mLabel2.GetLineCount());
+    }
+    else if(event.GetKeyName() == "0")
+    {
+      // A USER_SPACE ramp over the first 200 units of mLabel: natural units, so it ends at the same
+      // letter at every UI scale.
+      Gradient::Linear gradient(Vector2(0.0f, 0.0f), Vector2(200.0f, 0.0f));
+      gradient.SetUnits(Gradient::Units::USER_SPACE);
+      gradient.SetStopNodes({Gradient::StopNode(0.0f, UiColor(0xDC2626)), Gradient::StopNode(1.0f, UiColor(0x2563EB))});
+      mLabel.SetTextGradient(gradient);
+    }
+    else if(event.GetKeyName() == "g")
+    {
+      // The same ramp as a GradientSpan over the whole text of mLabel.
+      Gradient::Linear gradient(Vector2(0.0f, 0.0f), Vector2(200.0f, 0.0f));
+      gradient.SetUnits(Gradient::Units::USER_SPACE);
+      gradient.SetStopNodes({Gradient::StopNode(0.0f, UiColor(0xDC2626)), Gradient::StopNode(1.0f, UiColor(0x2563EB))});
+      Text::StyledTextBuilder builder = Text::StyledTextBuilder::New("Hello world");
+      builder.SetSpan(Text::GradientSpan::New(gradient, Text::GradientSpan::BoundsMode::CONTENT_BOUND), 0u, 11u);
+      mLabel.SetStyledText(builder.Build());
     }
   }
 

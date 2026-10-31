@@ -123,6 +123,26 @@ private:
     {
       mBronzeColorLabel.SetTextBevel(Text::Bevel::None());
     }
+    else if(event.GetKeyName() == "q")
+    {
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(event.GetKeyName() == "w")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(event.GetKeyName() == "e")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(event.GetKeyName() == "r")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(event.GetKeyName() == "t")
+    {
+      LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
   }
 
 private:

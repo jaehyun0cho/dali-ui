@@ -174,5 +174,12 @@ com.samsung.dali.text-2.0.0-1.armv7l.rpm
 Common controls:
 
 - **Escape** or **Back**: Quit the application.
+- **q** / **w** / **e** / **r** / **t**: UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0 in text.example, text-marquee,
+  text-input-field, text-input-editor, text-gradient, text-typing-style, text-style, text-style-bevel and
+  text-image-span-simple. Press them before an input has focus: a focused input types the letter.
+- text.example: **9** prints `GetLineCount()` of the multi-line label; **0** sets a `USER_SPACE` text gradient
+  and **g** a `USER_SPACE` `GradientSpan` on the first label.
+- text-input-field: **9** sets a `USER_SPACE` gradient on the text and the placeholder.
+  text-input-editor: **9** refreshes the status line.
 
 Localization samples also provide additional key controls such as locale switching, domain switching, bypass mode, refresh, and manual text update. See each sample source file for details.
