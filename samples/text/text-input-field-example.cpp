@@ -834,6 +834,16 @@ private:
     {
       Ui::Extension::LayoutScaleManager::Get().SetUiScale(2.0f);
     }
+    else if(event.GetKeyName() == "9")
+    {
+      // A USER_SPACE ramp over the first 120 units of the text and of the placeholder: natural
+      // units, so it ends at the same letter at every UI scale.
+      Gradient::Linear gradient(Vector2(0.0f, 0.0f), Vector2(120.0f, 0.0f));
+      gradient.SetUnits(Gradient::Units::USER_SPACE);
+      gradient.SetStopNodes({Gradient::StopNode(0.0f, UiColor(0xDC2626)), Gradient::StopNode(1.0f, UiColor(0x2563EB))});
+      mInputField.SetTextGradient(gradient);
+      mInputField.SetPlaceholderTextGradient(gradient);
+    }
   }
 
   void PrintInputFieldInfo()
