@@ -21,10 +21,12 @@
  *   [0,   0] 600x90   Info panel:
  *                       "Page N / M"  |  "ScrollPos: X"
  *   [0,  90] 600x990  PageScrollView — horizontal, 5 pages each 600×990 px
+ *                     explicit page size 600x990 (SetPageSize, natural units)
  *
  * Keyboard:
  *   ← / →    previous / next page  (animated)
  *   1 – 5    jump to page 0 – 4    (instant)
+ *   q – t    UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0
  *   ESC      quit
  */
 
@@ -202,6 +204,8 @@ private:
     mPageScrollView.SetRequestedHeight(SCROLL_H);
     mPageScrollView.SetRequestedX(0.0f);
     mPageScrollView.SetRequestedY(SCROLL_Y);
+    // An explicit page size equal to the viewport, in natural units like the requested size.
+    mPageScrollView.SetPageSize(Vector2(PAGE_W, PAGE_H));
     mPageScrollView.SetContent(content);
 
     window.Add(mPageScrollView);
@@ -279,6 +283,26 @@ private:
     else if(key == "5")
     {
       mPageScrollView.ScrollToPage(4, false);
+    }
+    else if(key == "q")
+    {
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(key == "w")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(key == "e")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(key == "r")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(key == "t")
+    {
+      LayoutScaleManager::Get().SetUiScale(2.0f);
     }
     RefreshInfoPanel();
   }

@@ -33,10 +33,13 @@
  * Layout:
  *   [0,   0] 600x180  Info panel
  *   [0, 180] 600x900  ScrollView — 20 non-focusable items (ScrollView itself is focusable)
+ *                     top padding 40, bounce edge effects at both ends
  *
  * Keyboard:
  *   ↑ / ↓   key-scroll fires (scroll position changes)
  *   K       toggle KeyScrollEnabled
+ *   N       rebuild the ScrollView and ScrollToY(3000) before its first layout
+ *   q – t   UI scale 0.8 / 1.0 / 1.2 / 1.5 / 2.0
  *   ESC     quit
  */
 
@@ -168,6 +171,8 @@ private:
     StackLayout content = StackLayout::New(StackOrientation::VERTICAL);
     content.SetRequestedWidth(WINDOW_W);
     content.SetSpacing(ITEM_GAP);
+    // Explicit, so a ScrollTo made before the first layout can clamp against it: 2952.
+    content.SetRequestedHeight(ITEM_COUNT * ITEM_H + (ITEM_COUNT - 1) * ITEM_GAP);
 
     for(int i = 0; i < ITEM_COUNT; ++i)
     {
@@ -198,7 +203,11 @@ private:
     mScrollView.SetRequestedX(0.0f);
     mScrollView.SetRequestedY(SCROLL_Y);
     mScrollView.SetBackgroundColor(Vector4(0.9f, 0.9f, 0.9f, 1.0f));
+    mScrollView.SetTopPadding(40.0f);
     mScrollView.SetProperty(Actor::Property::FOCUSABLE, true); // opt-in for Self() key-scroll
+    // Bounce at both ends: a drag past an edge stretches the content, a key press at an edge bumps it.
+    mScrollView.SetStartEdgeEffect(BounceEdgeEffect::New(ScrollDirection::Vertical));
+    mScrollView.SetEndEdgeEffect(BounceEdgeEffect::New(ScrollDirection::Vertical));
     mScrollView.SetContent(content);
 
     window.Add(mScrollView);
@@ -270,6 +279,38 @@ private:
     {
       mScrollView.SetKeyScrollEnabled(!mScrollView.IsKeyScrollEnabled());
       RefreshInfo();
+    }
+    else if(key == "n" || key == "N")
+    {
+      // A new ScrollView, scrolled before its first layout: the clamp then compares the position
+      // with the requested sizes times the current scale.
+      mScrollView.Unparent();
+      Window window = mApplication.GetWindow();
+      BuildScrollView(window);
+      mScrollView.ScrollingSignal().Connect(this, &NoFocusKeyScrollTest::OnScrolling);
+      mScrollView.ScrollToY(3000.0f, false);
+      FocusManager::Get().SetCurrentFocusView(mScrollView);
+      RefreshInfo();
+    }
+    else if(key == "q")
+    {
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(key == "w")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(key == "e")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(key == "r")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(key == "t")
+    {
+      LayoutScaleManager::Get().SetUiScale(2.0f);
     }
   }
 

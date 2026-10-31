@@ -362,6 +362,7 @@ public:
     BuildHeader(window);
     mTextAdapter.SetStatsLabel(mStatsLabel);
     BuildRecyclerView(window);
+    window.KeyEventSignal().Connect(this, &RecyclerViewSampleController::OnKeyEvent);
 
     // Connect global focus change to adapter (for highlight) and to controller (for info label).
     FocusManager::Get().FocusChangedSignal().Connect(this, &RecyclerViewSampleController::OnFocusChanged);
@@ -530,6 +531,43 @@ private:
       mTextAdapter.SetRange(mRecyclerView.GetFirstVisiblePosition(),
                             mRecyclerView.GetLastVisiblePosition());
     return true;
+  }
+
+  // ---- Keys ------------------------------------------------------------------
+  // q/w/e/r/t set the UI scale (0.8/1.0/1.2/1.5/2.0). f focuses the list itself: Up/Down then
+  // step-scroll it by the key scroll step, and at an end bump its edge effect.
+  void OnKeyEvent(Window /*window*/, KeyEvent event)
+  {
+    if(event.GetState() != KeyEvent::DOWN)
+    {
+      return;
+    }
+
+    const Dali::String& key = event.GetKeyName();
+    if(key == "f")
+    {
+      FocusManager::Get().SetCurrentFocusView(mRecyclerView);
+    }
+    else if(key == "q")
+    {
+      LayoutScaleManager::Get().SetUiScale(0.8f);
+    }
+    else if(key == "w")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.0f);
+    }
+    else if(key == "e")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.2f);
+    }
+    else if(key == "r")
+    {
+      LayoutScaleManager::Get().SetUiScale(1.5f);
+    }
+    else if(key == "t")
+    {
+      LayoutScaleManager::Get().SetUiScale(2.0f);
+    }
   }
 
 private:
