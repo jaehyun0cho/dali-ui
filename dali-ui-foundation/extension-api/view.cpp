@@ -203,6 +203,11 @@ UiScalePolicy GetUiScalePolicy(Ui::View view)
   return Ui::Internal::ViewDataImpl::Get(Ui::GetImpl(view)).GetUiScalePolicy();
 }
 
+float GetEffectiveLayoutScale(const ViewImpl& viewImpl)
+{
+  return Ui::Internal::ViewDataImpl::GetEffectiveLayoutScaleOf(viewImpl);
+}
+
 } // namespace View
 } // namespace Extension
 } // namespace Ui
