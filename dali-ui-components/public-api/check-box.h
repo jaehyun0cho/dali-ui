@@ -74,16 +74,16 @@ public:
   SelectionAnimationMode GetSelectionAnimationMode() const;
 
   /**
-   * @brief Sets/gets the icon (glyph) width/height in logical pixels.
+   * @brief @UNIT_LOGICAL Sets/gets the icon (glyph) width/height in logical pixels.
    *
    * Runtime changes follow the same contract as CheckBoxStyle. Only finite, non-negative values are allowed;
    * a violation triggers an assertion. Zero means unset: the width follows the resolved icon height,
    * and the height follows the content height (square glyph). Getters return requested values, not actual arranged sizes.
    */
   void  SetIconWidth(float width);
-  float GetIconWidth() const;
-  void  SetIconHeight(float height);
-  float GetIconHeight() const;
+  float GetIconWidth() const;        ///< @UNIT_LOGICAL Returns the icon width.
+  void  SetIconHeight(float height); ///< @UNIT_LOGICAL Sets the icon height.
+  float GetIconHeight() const;       ///< @UNIT_LOGICAL Returns the icon height.
 
   /**
    * @brief Sets/gets the trailing label's text style — color, font size, font family, and
@@ -93,12 +93,12 @@ public:
   UiColor GetTextColor() const;
 
   /**
-   * @brief Sets the font size.
+   * @brief @UNIT_LOGICAL Sets the font size.
    * @pre The size must be finite and non-negative; a violation triggers an assertion.
    * @note Zero is also passed unchanged to the internal Label, without substituting the default preset size.
    */
   void  SetFontSize(float fontSize);
-  float GetFontSize() const;
+  float GetFontSize() const; ///< @UNIT_LOGICAL Returns the font size.
 
   void         SetFontFamily(const Dali::String& fontFamily);
   Dali::String GetFontFamily() const;

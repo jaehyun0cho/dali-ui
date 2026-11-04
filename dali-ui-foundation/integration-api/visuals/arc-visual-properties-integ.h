@@ -40,7 +40,7 @@ namespace Property
 enum
 {
   /**
-   * @brief The thickness of the arc.
+   * @brief @UNIT_PHYSICAL The thickness of the arc.
    * @details Name "thickness", type Property::FLOAT, animatable.
    * @note Mandatory.
    */

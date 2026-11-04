@@ -119,7 +119,7 @@ public:
   /**
    * @brief Sets an explicit font size override in pixels.
    *
-   * @param[in] size The font size in pixels
+   * @param[in] size @UNIT_LOGICAL The font size in pixels
    */
   void SetSize(float size);
 
@@ -129,7 +129,7 @@ public:
    * Use Has(Attribute::SIZE) to check whether this value is applied as an
    * override.
    *
-   * @return The stored font size value
+   * @return @UNIT_LOGICAL The stored font size value
    */
   float GetSize() const;
 

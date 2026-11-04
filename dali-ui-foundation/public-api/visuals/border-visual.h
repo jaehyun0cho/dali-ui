@@ -65,14 +65,14 @@ public: // Properties
   /**
    * @brief Gets the size of border of the BorderVisual.
    *
-   * @return The size of border of the BorderVisual
+   * @return @UNIT_LOGICAL The size of border of the BorderVisual
    */
   float GetBorderSize() const;
 
   /**
    * @brief Sets the size of border of the BorderVisual.
    *
-   * @param[in] borderSize The size of border to set
+   * @param[in] borderSize @UNIT_LOGICAL The size of border to set
    */
   void SetBorderSize(float borderSize);
 

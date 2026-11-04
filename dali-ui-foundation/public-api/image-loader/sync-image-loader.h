@@ -82,7 +82,7 @@ DALI_UI_API PixelData Load(const Dali::String& url);
  * @REMARK_INTERNET
  * @REMARK_STORAGE
  * @param[in] url The URL of the image file to load
- * @param[in] dimensions The width and height to fit the loaded image to
+ * @param[in] dimensions @UNIT_PHYSICAL The width and height to fit the loaded image to
  * @return A PixelData object containing the image, or an invalid object on failure
  */
 DALI_UI_API PixelData Load(const Dali::String& url, ImageDimensions dimensions);
@@ -94,7 +94,7 @@ DALI_UI_API PixelData Load(const Dali::String& url, ImageDimensions dimensions);
  * @REMARK_INTERNET
  * @REMARK_STORAGE
  * @param[in] url The URL of the image file to load
- * @param[in] dimensions The width and height to fit the loaded image to
+ * @param[in] dimensions @UNIT_PHYSICAL The width and height to fit the loaded image to
  * @param[in] samplingMode The filtering method used when sampling pixels from the input image while fitting it to desired size
  * @param[in] orientationCorrection Reorient the image to respect any orientation metadata in its header
  * @return A PixelData object containing the image, or an invalid object on failure

@@ -124,14 +124,16 @@ public:
    *
    * Higher values create a more pronounced bevel effect.
    *
-   * @param[in] intensity The bevel intensity.
+   * @param[in] intensity @UNIT_PHYSICAL The bevel intensity.
+   * The intensity is the displacement of the light and shadow, in physical pixels.
    */
   void SetIntensity(float intensity);
 
   /**
    * @brief Returns the bevel intensity.
    *
-   * @return The bevel intensity.
+   * @return @UNIT_PHYSICAL The bevel intensity.
+   * The intensity is the displacement of the light and shadow, in physical pixels.
    */
   float GetIntensity() const;
 

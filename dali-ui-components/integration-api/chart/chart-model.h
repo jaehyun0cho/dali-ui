@@ -61,10 +61,10 @@ struct StyleConfig
     Vector4 gridColor{0.9f, 0.9f, 0.9f, 1.0f};
     Vector4 axisColor{0.3f, 0.3f, 0.3f, 1.0f};
     Vector4 titleColor{0.1f, 0.1f, 0.1f, 1.0f};
-    float   padding{10.0f};
-    float   tooltipPadding{8.0f};
-    float   lineWidth{2.5f};
-    float   markerRadius{4.0f};
+    float   padding{10.0f};       ///< @UNIT_PHYSICAL The padding.
+    float   tooltipPadding{8.0f}; ///< @UNIT_PHYSICAL The tooltip padding.
+    float   lineWidth{2.5f};      ///< @UNIT_PHYSICAL The line width.
+    float   markerRadius{4.0f};   ///< @UNIT_PHYSICAL The marker radius.
   } render;
 
   struct GaugeConfig
@@ -83,15 +83,15 @@ struct StyleConfig
 
   struct LayoutStyle
   {
-    float axisLabelSize{11.0f};
-    float titleSize{16.0f};
+    float axisLabelSize{11.0f}; ///< @UNIT_LOGICAL The axis label size.
+    float titleSize{16.0f};     ///< @UNIT_LOGICAL The title size.
     int   legendPosition{1};
     int   titlePosition{0};
   } layout;
 
   struct Interaction
   {
-    float hitThreshold{30.0f};
+    float hitThreshold{30.0f}; ///< @UNIT_PHYSICAL The hit threshold.
     int   findingStrategy{0};
     int   zoomModeFlags{0};
     bool  touchEnabled{true};

@@ -69,7 +69,7 @@ enum class BlurMode : uint8_t
  * blur, including at progress 1.0.
  *
  * @param[in,out] reveal The configuration to modify. Apply it to a Label to take effect.
- * @param[in] radius The blur radius in [0.0, 64.0].
+ * @param[in] radius @UNIT_LOGICAL The blur radius in [0.0, 64.0].
  * @pre reveal must not be None() or a moved-from value.
  */
 DALI_UI_API void SetBlurRadius(Ui::Text::Reveal& reveal, float radius);
@@ -78,7 +78,7 @@ DALI_UI_API void SetBlurRadius(Ui::Text::Reveal& reveal, float radius);
  * @brief Gets the authored blur radius in logical pixels.
  *
  * @param[in] reveal The Reveal configuration.
- * @return The authored blur radius. The default is 0.0.
+ * @return @UNIT_LOGICAL The authored blur radius. The default is 0.0.
  * @pre reveal must not be None() or a moved-from value.
  */
 DALI_UI_API float GetBlurRadius(const Ui::Text::Reveal& reveal);

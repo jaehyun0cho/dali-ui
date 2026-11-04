@@ -50,6 +50,7 @@ public:
     return mLogY;
   }
 
+  /// @UNIT_PHYSICAL Sets the plot area.
   void SetPlotArea(const Rect<float>& area)
   {
     mPlotArea = area;
@@ -63,6 +64,7 @@ public:
     mYMax = yMax;
   }
 
+  /// @brief Converts a data x value to a canvas x position. @return @UNIT_PHYSICAL The canvas x position
   float ToCanvasX(float dataX) const
   {
     float range = Map(mXMax, mLogX) - Map(mXMin, mLogX);
@@ -73,6 +75,7 @@ public:
     return mPlotArea.x + (Map(dataX, mLogX) - Map(mXMin, mLogX)) / range * mPlotArea.width;
   }
 
+  /// @brief Converts a data y value to a canvas y position. @return @UNIT_PHYSICAL The canvas y position
   float ToCanvasY(float dataY) const
   {
     float range = Map(mYMax, mLogY) - Map(mYMin, mLogY);
@@ -88,6 +91,7 @@ public:
     return Vector2(ToCanvasX(dataX), ToCanvasY(dataY));
   }
 
+  /// @brief Converts a canvas x position to a data x value. @param[in] canvasX @UNIT_PHYSICAL The canvas x position
   float ToDataX(float canvasX) const
   {
     float range = Map(mXMax, mLogX) - Map(mXMin, mLogX);
@@ -98,6 +102,7 @@ public:
     return Unmap(Map(mXMin, mLogX) + (canvasX - mPlotArea.x) / mPlotArea.width * range, mLogX);
   }
 
+  /// @brief Converts a canvas y position to a data y value. @param[in] canvasY @UNIT_PHYSICAL The canvas y position
   float ToDataY(float canvasY) const
   {
     float range = Map(mYMax, mLogY) - Map(mYMin, mLogY);
@@ -176,6 +181,7 @@ public:
     return ticks;
   }
 
+  /// @UNIT_PHYSICAL Returns the plot area.
   const Rect<float>& GetPlotArea() const
   {
     return mPlotArea;

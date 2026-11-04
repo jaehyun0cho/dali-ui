@@ -70,13 +70,16 @@ public:
 
   /**
    * @brief Sets surface space reserved outside the frame for shadow.
-   * @param[in] outsets Non-negative outsets
+   *
+   * The shadow outsets are added to surface pixels when the frame and surface sizes are computed, and the frame view
+   * tree then multiplies the result by the effective layout scale.
+   * @param[in] outsets @UNIT_LOGICAL Non-negative outsets
    */
   void SetShadowOutsets(const Dali::Ui::Insets& outsets);
 
   /**
    * @brief Returns shadow outsets.
-   * @return Configured outsets
+   * @return @UNIT_LOGICAL Configured outsets
    */
   Dali::Ui::Insets GetShadowOutsets() const;
 
@@ -108,13 +111,13 @@ public:
 
   /**
    * @brief Sets the shadow image N-patch stretch borders.
-   * @param[in] border Start, end, top, and bottom pixel insets
+   * @param[in] border @UNIT_PHYSICAL Start, end, top, and bottom pixel insets
    */
   void SetShadowImageBorder(const Dali::Ui::Insets& border);
 
   /**
    * @brief Returns the shadow image N-patch stretch borders.
-   * @return Configured start, end, top, and bottom insets
+   * @return @UNIT_PHYSICAL Configured start, end, top, and bottom insets
    */
   Dali::Ui::Insets GetShadowImageBorder() const;
 
@@ -144,13 +147,15 @@ public:
 
   /**
    * @brief Sets frame and child clipping radii.
-   * @param[in] radius Per-corner radii
+   * @param[in] radius @UNIT_LOGICAL Per-corner radii.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    */
   void SetFrameCornerRadius(const Dali::Vector4& radius);
 
   /**
    * @brief Returns frame corner radii.
-   * @return Configured radii
+   * @return @UNIT_LOGICAL Configured radii.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    */
   Dali::Vector4 GetFrameCornerRadius() const;
 

@@ -117,14 +117,14 @@ public:
   /**
    * @brief Sets the line-through thickness.
    *
-   * @param[in] thickness The line-through thickness in pixels.
+   * @param[in] thickness @UNIT_LOGICAL The line-through thickness in pixels.
    */
   void SetThickness(float thickness);
 
   /**
    * @brief Returns the line-through thickness.
    *
-   * @return The line-through thickness in pixels.
+   * @return @UNIT_LOGICAL The line-through thickness in pixels.
    */
   float GetThickness() const;
 

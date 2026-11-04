@@ -47,6 +47,7 @@ public: /// ChartSeries overrides
   void SetColor(const Vector4& color) override;
 
 public:
+  /// @UNIT_PHYSICAL Returns the line width.
   float GetLineWidth() const
   {
     return mLineWidth;
@@ -57,6 +58,7 @@ public:
     return mShowMarkers;
   }
 
+  /// @UNIT_PHYSICAL Returns the marker radius.
   float GetMarkerRadius() const
   {
     return mMarkerRadius;
@@ -69,9 +71,9 @@ public:
     return mSmoothness;
   }
 
-  void SetLineWidth(float width);
+  void SetLineWidth(float width); ///< @UNIT_PHYSICAL Sets the line width.
   void SetMarkersVisible(bool visible);
-  void SetMarkerRadius(float radius);
+  void SetMarkerRadius(float radius); ///< @UNIT_PHYSICAL Sets the marker radius.
 
   void SetMarkerShape(Ui::LineSeries::MarkerShape shape);
 
@@ -90,8 +92,9 @@ public:
     return mMarkerBorderColor;
   }
 
-  void SetMarkerBorderWidth(float width);
+  void SetMarkerBorderWidth(float width); ///< @UNIT_PHYSICAL Sets the marker border width.
 
+  /// @UNIT_PHYSICAL Returns the marker border width.
   float GetMarkerBorderWidth() const
   {
     return mMarkerBorderWidth;
@@ -118,8 +121,9 @@ public:
     return mDataLabelColor;
   }
 
-  void SetDataLabelSize(float pointSize);
+  void SetDataLabelSize(float pointSize); ///< @UNIT_LOGICAL Sets the data label size.
 
+  /// @UNIT_LOGICAL Returns the data label size.
   float GetDataLabelSize() const
   {
     return mDataLabelSize;
@@ -148,15 +152,15 @@ public:
     UiColor  color;
     uint32_t first;
     uint32_t last;
-    float    dashLength;
-    float    gapLength;
+    float    dashLength; ///< @UNIT_PHYSICAL The dash length.
+    float    gapLength;  ///< @UNIT_PHYSICAL The gap length.
   };
 
   // Ordered appearance storage
   std::vector<Segment> mSegments;
   Ui::Gradient::Linear mStrokeGradient;
-  float                mDashLength{5.0f};
-  float                mGapLength{0.0f};
+  float                mDashLength{5.0f}; ///< @UNIT_PHYSICAL The dash length.
+  float                mGapLength{0.0f};  ///< @UNIT_PHYSICAL The gap length.
   bool                 mHasStrokeGradient{false};
 
 protected:

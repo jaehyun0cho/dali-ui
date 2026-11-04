@@ -72,9 +72,9 @@ public:
     PULLDECAY
   };
 
-  using PullSignalType     = Dali::Signal<void(float, float)>; ///< (deltaDistance, displacement)
+  using PullSignalType     = Dali::Signal<void(float, float)>; ///< @UNIT_PHYSICAL (deltaDistance, displacement)
   using ReleaseSignalType  = Dali::Signal<void()>;
-  using AbsorbSignalType   = Dali::Signal<void(float)>; ///< (velocity)
+  using AbsorbSignalType   = Dali::Signal<void(float)>; ///< @UNIT_PHYSICAL (velocity)
   using FinishedSignalType = Dali::Signal<void()>;
 
 public:
@@ -113,8 +113,8 @@ public:
   /**
    * @brief Called while the user drags past the edge.
    *
-   * @param[in] deltaDistance  Incremental drag distance (px) since last call.
-   * @param[in] displacement   Total displacement from the edge boundary (px).
+   * @param[in] deltaDistance  @UNIT_PHYSICAL Incremental drag distance (px) since last call.
+   * @param[in] displacement   @UNIT_PHYSICAL Total displacement from the edge boundary (px).
    */
   void OnPull(float deltaDistance, float displacement);
 
@@ -126,7 +126,7 @@ public:
   /**
    * @brief Called when a fling reaches the edge.
    *
-   * @param[in] velocity  Velocity at impact (px/ms).
+   * @param[in] velocity  @UNIT_PHYSICAL Velocity at impact (px/ms).
    */
   void OnAbsorb(float velocity);
 

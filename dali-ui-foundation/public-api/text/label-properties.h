@@ -66,7 +66,7 @@ struct LabelPropertyIndex
     FONT_FAMILY,
 
     /**
-     * @brief The size of font in pixels.
+     * @brief @UNIT_LOGICAL The size of font in pixels.
      * @details Name "fontSize", type Property::FLOAT.
      * @see Label::SetFontSize(), Label::GetFontSize().
      */
@@ -112,7 +112,8 @@ struct LabelPropertyIndex
     OVERFLOW_MODE,
 
     /**
-     * @brief The line height.
+     * @brief @UNIT_LOGICAL The line height.
+     * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
      * @details Name "lineHeight", type Property::FLOAT.
      * @see Label::SetLineHeight(), Label::GetLineHeight().
      */
@@ -156,7 +157,7 @@ struct LabelPropertyIndex
     MARQUEE_TRIGGER_POLICY,
 
     /**
-     * @brief Sets the marquee speed in pixels per second.
+     * @brief @UNIT_LOGICAL Sets the marquee speed in pixels per second.
      * @details Name "marqueeSpeed", type Property::INTEGER.
      * @see Label::SetMarqueeSpeed(), Label::GetMarqueeSpeed().
      */
@@ -177,7 +178,7 @@ struct LabelPropertyIndex
     MARQUEE_LOOP_DELAY,
 
     /**
-     * @brief Gap before marquee wraps.
+     * @brief @UNIT_LOGICAL Gap before marquee wraps.
      * @details Name "marqueeGap", type Property::INTEGER.
      * @see Label::SetMarqueeGap(), Label::GetMarqueeGap().
      */

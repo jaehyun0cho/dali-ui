@@ -120,7 +120,7 @@ public:
    * @brief Request the visual to render the given resource at the url.
    *
    * @param[in] url The URL to the resource to be rendered.
-   * @param[in] size The width and height to fit the loaded image to.
+   * @param[in] size @UNIT_PHYSICAL The width and height to fit the loaded image to.
    * @return The pointer pointing to the visual
    */
   Visual::Base CreateVisual(const std::string& url, ImageDimensions size);
@@ -129,7 +129,7 @@ public:
    * @brief Request the visual to render the given resource at the url with some options.
    *
    * @param[in] url The URL to the resource to be rendered.
-   * @param[in] size The width and height to fit the loaded image to.
+   * @param[in] size @UNIT_PHYSICAL The width and height to fit the loaded image to.
    * @param[in] creationOptions The creation option.
    * @return The pointer pointing to the visual
    */

@@ -75,16 +75,16 @@ public:
 
   /**
    * @brief Updates the size of the scroll bar based on the given scroll area and viewport size.
-   * @param[in] scrollWidth The width of the scrollable area.
-   * @param[in] scrollHeight The height of the scrollable area.
-   * @param[in] viewportWidth The width of the visible area.
-   * @param[in] viewportHeight The height of the visible area.
+   * @param[in] scrollWidth @UNIT_PHYSICAL The width of the scrollable area.
+   * @param[in] scrollHeight @UNIT_PHYSICAL The height of the scrollable area.
+   * @param[in] viewportWidth @UNIT_PHYSICAL The width of the visible area.
+   * @param[in] viewportHeight @UNIT_PHYSICAL The height of the visible area.
    */
   virtual void UpdateBarSize(float scrollWidth, float scrollHeight, float viewportWidth, float viewportHeight) = 0;
 
   /**
    * @brief Updates the scroll position of the scroll bar based on the given position.
-   * @param[in] position The new scroll position.
+   * @param[in] position @UNIT_PHYSICAL The new scroll position.
    */
   virtual void UpdateScrollPosition(const Vector2& position) = 0;
 

@@ -93,6 +93,9 @@ enum class WindowFrameSizePolicy
  * CommandInterceptor and every signal pass the originating WindowFrame as
  * their first argument. This allows one observer or policy object to serve
  * multiple frames.
+ *
+ * The frame view tree is laid out from these surface pixels multiplied by the effective layout scale, so the frame fits
+ * the window only at scale 1.0.
  */
 class DALI_UI_COMPONENTS_API WindowFrame : public Dali::BaseHandle
 {
@@ -365,7 +368,7 @@ public:
 
   /**
    * @brief Sets minimum frame size.
-   * @param[in] size Minimum size excluding shadow
+   * @param[in] size @UNIT_PHYSICAL Minimum size excluding shadow
    * @return true when applied, or false when it conflicts with the maximum
    * @note Native constraints are active only while WindowFrame is attached.
    */
@@ -373,7 +376,7 @@ public:
 
   /**
    * @brief Sets maximum frame size.
-   * @param[in] size Maximum size excluding shadow
+   * @param[in] size @UNIT_PHYSICAL Maximum size excluding shadow
    * @return true when applied, or false when it conflicts with the minimum
    */
   bool SetMaximumFrameSize(const Dali::Vector2& size);
@@ -390,14 +393,14 @@ public:
 
   /**
    * @brief Reads minimum frame size.
-   * @param[out] size Configured size
+   * @param[out] size @UNIT_PHYSICAL Configured size
    * @return true when configured
    */
   bool GetMinimumFrameSize(Dali::Vector2& size) const;
 
   /**
    * @brief Reads maximum frame size.
-   * @param[out] size Configured size
+   * @param[out] size @UNIT_PHYSICAL Configured size
    * @return true when configured
    */
   bool GetMaximumFrameSize(Dali::Vector2& size) const;
@@ -407,7 +410,7 @@ public:
    *
    * The target excludes shadow outsets. While attached, native resize is
    * deferred to the next event-loop tick and repeated requests are coalesced.
-   * @param[in] size Target frame size
+   * @param[in] size @UNIT_PHYSICAL Target frame size
    * @return true when accepted for resize, or false when no window is available
    *         or maximized geometry is compositor-owned
    */
@@ -420,7 +423,7 @@ public:
    * outsets. While attached, native resize is deferred to the next event-loop
    * tick to avoid re-entering window event processing. Repeated requests are
    * coalesced and a pending request is dropped by Detach().
-   * @param[in] size Target application content size
+   * @param[in] size @UNIT_PHYSICAL Target application content size
    * @return true when accepted for resize, or false when no window is available
    *         or maximized geometry is compositor-owned
    */
@@ -428,13 +431,13 @@ public:
 
   /**
    * @brief Returns current frame size excluding shadow outsets.
-   * @return Frame size
+   * @return @UNIT_PHYSICAL Frame size
    */
   Dali::Vector2 GetFrameSize() const;
 
   /**
    * @brief Returns current layout-managed content size.
-   * @return Content size
+   * @return @UNIT_PHYSICAL Content size
    */
   Dali::Vector2 GetContentSize() const;
 

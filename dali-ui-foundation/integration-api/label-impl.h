@@ -644,14 +644,14 @@ public:
    *
    * Positive values increase the spacing, while negative values reduce it.
    *
-   * @param[in] spacing The additional letter spacing in pixels.
+   * @param[in] spacing @UNIT_PHYSICAL The additional letter spacing in pixels.
    */
   void SetLetterSpacing(float spacing);
 
   /**
    * @brief Gets the additional spacing between letters in pixels.
    *
-   * @return The additional letter spacing in pixels.
+   * @return @UNIT_PHYSICAL The additional letter spacing in pixels.
    */
   float GetLetterSpacing() const;
 
@@ -713,6 +713,7 @@ public:
 
   /**
    * @see Dali::Ui::Label::GetLineCount(float)
+   * @param[in] width @UNIT_PHYSICAL The width used to calculate the line count.
    */
   int GetLineCount(float width);
 
@@ -766,32 +767,32 @@ public:
   /**
    * @brief Requests asynchronous text rendering with a fixed size.
    *
-   * @param[in] width The width used for rendering.
-   * @param[in] height The height used for rendering.
+   * @param[in] width @UNIT_PHYSICAL The width used for rendering.
+   * @param[in] height @UNIT_PHYSICAL The height used for rendering.
    */
   void RequestAsyncRenderWithFixedSize(float width, float height);
 
   /**
    * @brief Requests asynchronous text rendering with a fixed width.
    *
-   * @param[in] width The width used for rendering.
-   * @param[in] heightConstraint The maximum available height.
+   * @param[in] width @UNIT_PHYSICAL The width used for rendering.
+   * @param[in] heightConstraint @UNIT_PHYSICAL The maximum available height.
    */
   void RequestAsyncRenderWithFixedWidth(float width, float heightConstraint);
 
   /**
    * @brief Requests asynchronous text rendering with a fixed height.
    *
-   * @param[in] widthConstraint The maximum available width.
-   * @param[in] height The height used for rendering.
+   * @param[in] widthConstraint @UNIT_PHYSICAL The maximum available width.
+   * @param[in] height @UNIT_PHYSICAL The height used for rendering.
    */
   void RequestAsyncRenderWithFixedHeight(float widthConstraint, float height);
 
   /**
    * @brief Requests asynchronous text rendering within the given constraints.
    *
-   * @param[in] widthConstraint The maximum available width.
-   * @param[in] heightConstraint The maximum available height.
+   * @param[in] widthConstraint @UNIT_PHYSICAL The maximum available width.
+   * @param[in] heightConstraint @UNIT_PHYSICAL The maximum available height.
    */
   void RequestAsyncRenderWithConstraints(float widthConstraint, float heightConstraint);
 

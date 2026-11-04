@@ -62,8 +62,8 @@ public:
   void ClearDataSource();
 
   void  SetInnerAdapter(ItemAdapter inner);
-  float GetGapHeight() const;
-  void  SetGapHeight(float height);
+  float GetGapHeight() const;       ///< @UNIT_LOGICAL Returns the gap height.
+  void  SetGapHeight(float height); ///< @UNIT_LOGICAL Sets the gap height.
 
   Dali::Signal<void(ItemViewHolder&)>& CreateHeaderViewHolderSignal();
   Dali::Signal<void(ItemViewHolder&)>& BindHeaderViewHolderSignal();

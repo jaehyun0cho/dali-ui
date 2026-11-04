@@ -57,7 +57,7 @@ using ChartViewImplPtr = IntrusivePtr<ChartViewImpl>;
 class DALI_UI_COMPONENTS_API ChartViewImpl : public ViewImpl
 {
 public:
-  static Ui::ChartView New(Ui::ChartView::Type type, const Vector2& size);
+  static Ui::ChartView New(Ui::ChartView::Type type, const Vector2& size); ///< @UNIT_LOGICAL Creates a ChartView of the given type and initial size. It is also written unscaled to the actor size at once; the first layout pass replaces it with the scaled size.
 
   // =========================================================================
   // Public API implementation
@@ -111,11 +111,13 @@ public:
     return mModel.mStyle.visibility.legendToggleEnabled;
   }
 
+  /// @UNIT_PHYSICAL Sets the hit threshold.
   void SetHitThreshold(float pixels)
   {
     mModel.mStyle.interaction.hitThreshold = pixels;
   }
 
+  /// @UNIT_PHYSICAL Returns the hit threshold.
   float GetHitThreshold() const
   {
     return mModel.mStyle.interaction.hitThreshold;
@@ -294,7 +296,7 @@ public:
   static Property::Value GetProperty(BaseObject* object, Property::Index index);
 
 protected:
-  ChartViewImpl(Ui::ChartView::Type type, const Vector2& size);
+  ChartViewImpl(Ui::ChartView::Type type, const Vector2& size); ///< @UNIT_LOGICAL Creates the implementation of a ChartView of the given type and initial size. It is also written unscaled to the actor size at once; the first layout pass replaces it with the scaled size.
   ~ChartViewImpl() override;
 
 private:

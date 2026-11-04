@@ -137,14 +137,14 @@ public:
   /**
    * @brief Sets the track thickness.
    *
-   * @param[in] thickness The finite, positive track thickness
+   * @param[in] thickness @UNIT_LOGICAL The finite, positive track thickness
    */
   void SetTrackThickness(float thickness);
 
   /**
    * @brief Returns the track thickness.
    *
-   * @return The current track thickness
+   * @return @UNIT_LOGICAL The current track thickness
    */
   float GetTrackThickness() const;
 
@@ -237,7 +237,7 @@ public:
    * The origin is the ProgressBar's top-left. RTL and reversed state are reflected. The value
    * remains valid before first arrange, at zero size, while indeterminate and while off scene.
    *
-   * @return The trail end position in ProgressBar-local visual coordinates
+   * @return @UNIT_PHYSICAL The trail end position in ProgressBar-local visual coordinates
    */
   Vector2 GetTrailEndPosition() const;
 
@@ -255,7 +255,7 @@ public:
    * satisfy @p index < GetDividerCount(); an out-of-range index triggers a DALi assertion.
    *
    * @param[in] index The zero-based logical divider index
-   * @return The divider position in ProgressBar-local visual coordinates
+   * @return @UNIT_PHYSICAL The divider position in ProgressBar-local visual coordinates
    */
   Vector2 GetDividerPosition(uint32_t index) const;
 

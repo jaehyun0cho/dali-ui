@@ -73,7 +73,9 @@ enum
   SYNCHRONOUS_LOADING,
 
   /**
-   * @brief The desired image width.
+   * @brief @UNIT_PHYSICAL The desired image width.
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    * @details Name "desiredWidth", type Property::INTEGER.
    * @note Optional. If not specified, the actual image width is used.
    * @note For Normal Quad images only.
@@ -81,7 +83,9 @@ enum
   DESIRED_WIDTH,
 
   /**
-   * @brief The desired image height.
+   * @brief @UNIT_PHYSICAL The desired image height.
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    * @details Name "desiredHeight", type Property::INTEGER.
    * @note Optional. If not specified, the actual image height is used.
    * @note For Normal Quad images only.
@@ -197,7 +201,7 @@ enum
   // For n-patch images
 
   /**
-   * @brief The border of the image.
+   * @brief @UNIT_PHYSICAL The border of the image.
    * @details Name "border", type Property::INSETS, Property::RECTANGLE or Property::VECTOR4.
    *          The border of the image in the order: left, right, top, bottom, rounded to whole pixels.
    * @note Optional.

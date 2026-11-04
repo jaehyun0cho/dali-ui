@@ -139,14 +139,14 @@ public:
   /**
    * @brief Sets the underline thickness.
    *
-   * @param[in] thickness The underline thickness in pixels.
+   * @param[in] thickness @UNIT_LOGICAL The underline thickness in pixels.
    */
   void SetThickness(float thickness);
 
   /**
    * @brief Returns the underline thickness.
    *
-   * @return The underline thickness in pixels.
+   * @return @UNIT_LOGICAL The underline thickness in pixels.
    */
   float GetThickness() const;
 
@@ -169,14 +169,14 @@ public:
    *
    * This value is used only when the underline type is DASHED.
    *
-   * @param[in] length The length of each dash in pixels.
+   * @param[in] length @UNIT_LOGICAL The length of each dash in pixels.
    */
   void SetDashLength(float length);
 
   /**
    * @brief Returns the dash length for a dashed underline.
    *
-   * @return The dash length in pixels.
+   * @return @UNIT_LOGICAL The dash length in pixels.
    */
   float GetDashLength() const;
 
@@ -185,14 +185,14 @@ public:
    *
    * This value is used only when the underline type is DASHED.
    *
-   * @param[in] gap The gap between dashes in pixels.
+   * @param[in] gap @UNIT_LOGICAL The gap between dashes in pixels.
    */
   void SetDashGap(float gap);
 
   /**
    * @brief Returns the gap between dashes for a dashed underline.
    *
-   * @return The gap between dashes in pixels.
+   * @return @UNIT_LOGICAL The gap between dashes in pixels.
    */
   float GetDashGap() const;
 

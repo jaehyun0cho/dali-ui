@@ -70,9 +70,9 @@ public:
   void SetGroupAdapter(GroupAdapter adapter);
 
   // Horizontal inset applied to BODY_* items. Decorations should match these margins.
-  void  SetBodyHorizontalMargin(float left, float right);
-  float GetBodyMarginLeft() const;
-  float GetBodyMarginRight() const;
+  void  SetBodyHorizontalMargin(float left, float right); ///< @UNIT_PHYSICAL Sets the body horizontal margin.
+  float GetBodyMarginLeft() const;                        ///< @UNIT_PHYSICAL Returns the left body margin.
+  float GetBodyMarginRight() const;                       ///< @UNIT_PHYSICAL Returns the right body margin.
 
 public: // Not intended for application developers
   /// @cond internal

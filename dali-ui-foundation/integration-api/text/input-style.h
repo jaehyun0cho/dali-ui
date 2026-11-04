@@ -239,7 +239,7 @@ struct DALI_UI_API InputStyle
   FontWeightType weight;     ///< The font's weight.
   FontWidthType  width;      ///< The font's width.
   FontSlantType  slant;      ///< The font's slant.
-  float          size;       ///< The font's size.
+  float          size;       ///< @UNIT_LOGICAL The font's size. In points. This version applies the effective layout scale twice to typed or selected text, so it is drawn at the square of that scale.
 
   float lineSpacing; ///< The line's spacing.
 

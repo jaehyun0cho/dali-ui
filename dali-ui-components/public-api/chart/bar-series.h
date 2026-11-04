@@ -198,26 +198,26 @@ public:
    *
    * The default is 9.0.
    *
-   * @param[in] pointSize The point size of the data label text
+   * @param[in] pointSize @UNIT_LOGICAL The point size of the data label text
    */
   void SetDataLabelSize(float pointSize);
 
   /**
    * @brief Retrieves the point size of the data label text.
    *
-   * @return The point size of the data label text
+   * @return @UNIT_LOGICAL The point size of the data label text
    */
   float GetDataLabelSize() const;
 
   /**
    * @brief Sets a finite non-negative corner radius in pixels, clamped to half the bar dimensions.
-   * @param[in] radius The radius; zero preserves rectangular bars
+   * @param[in] radius @UNIT_PHYSICAL The radius; zero preserves rectangular bars
    */
   void SetCornerRadius(float radius);
 
   /**
    * @brief Returns the authored corner radius.
-   * @return The radius in pixels
+   * @return @UNIT_PHYSICAL The radius in pixels
    */
   float GetCornerRadius() const;
 
@@ -240,7 +240,7 @@ public:
 
   /**
    * @brief Sets the finite non-negative bar border width and color.
-   * @param[in] width The border width
+   * @param[in] width @UNIT_PHYSICAL The border width
    * @param[in] color The border color; theme identifiers are retained
    */
   void SetBorder(float width, const UiColor& color);
@@ -249,14 +249,14 @@ public:
    * @brief Sets finite non-negative border dash and gap lengths in pixels.
    *
    * Both lengths must be positive to draw a dashed border. Otherwise it is solid.
-   * @param[in] dash The dash length
-   * @param[in] gap The gap length
+   * @param[in] dash @UNIT_PHYSICAL The dash length
+   * @param[in] gap @UNIT_PHYSICAL The gap length
    */
   void SetBorderDash(float dash, float gap);
 
   /**
    * @brief Returns the border dash and gap lengths, initially zero.
-   * @return The dash and gap in pixels
+   * @return @UNIT_PHYSICAL The dash and gap in pixels
    */
   Vector2 GetBorderDash() const;
 
@@ -284,10 +284,10 @@ public:
    * Overrides stay at their indices after data replacement until cleared.
    * Indices beyond the current data can be configured for future points.
    * @param[in] pointIndex The zero-based data index
-   * @param[in] width The finite non-negative border width in pixels
+   * @param[in] width @UNIT_PHYSICAL The finite non-negative border width in pixels
    * @param[in] color The border color; theme identifiers are retained
-   * @param[in] dash The finite non-negative dash length in pixels
-   * @param[in] gap The finite non-negative gap length in pixels
+   * @param[in] dash @UNIT_PHYSICAL The finite non-negative dash length in pixels
+   * @param[in] gap @UNIT_PHYSICAL The finite non-negative gap length in pixels
    */
   void SetPointBorder(uint32_t pointIndex, float width, const UiColor& color, float dash = 0.0f, float gap = 0.0f);
 

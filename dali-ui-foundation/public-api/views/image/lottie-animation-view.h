@@ -497,35 +497,45 @@ public: // Size & Loading Behavior
    * the resource's natural size becomes available after loading completes.
    * The returned size may differ from the laid-out View size.
    *
-   * @return The natural size of the Lottie animation content
+   * @return @UNIT_LOGICAL The natural size of the Lottie animation content.
+   * With image loading at the view size enabled it is the View's physical size, which the layout multiplies by the
+   * effective layout scale again.
    */
   Vector3 GetNaturalSize() const;
 
   /**
    * @brief Sets the desired rasterization width as a hint for the renderer.
    *
-   * @param[in] width The desired width in pixels (0 to use natural size)
+   * @param[in] width @UNIT_PHYSICAL The desired width in pixels (0 to use natural size).
+   * It is the rasterization size of the animation; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   void SetDesiredWidth(int width);
 
   /**
    * @brief Gets the desired rasterization width hint.
    *
-   * @return The desired width in pixels, or 0 if not set
+   * @return @UNIT_PHYSICAL The desired width in pixels, or 0 if not set.
+   * It is the rasterization size of the animation; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   int GetDesiredWidth() const;
 
   /**
    * @brief Sets the desired rasterization height as a hint for the renderer.
    *
-   * @param[in] height The desired height in pixels (0 to use natural size)
+   * @param[in] height @UNIT_PHYSICAL The desired height in pixels (0 to use natural size).
+   * It is the rasterization size of the animation; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   void SetDesiredHeight(int height);
 
   /**
    * @brief Gets the desired rasterization height hint.
    *
-   * @return The desired height in pixels, or 0 if not set
+   * @return @UNIT_PHYSICAL The desired height in pixels, or 0 if not set.
+   * It is the rasterization size of the animation; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   int GetDesiredHeight() const;
 

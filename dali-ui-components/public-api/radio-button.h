@@ -129,12 +129,12 @@ public:
    * A non-positive or non-finite value is normalized to zero, which means that no explicit
    * icon width is requested.
    *
-   * @param[in] width The requested width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The requested width in logical pixels
    */
   void SetIconWidth(float width);
   /**
    * @brief Returns the requested icon width.
-   * @return The requested width, or zero when unset
+   * @return @UNIT_LOGICAL The requested width, or zero when unset
    */
   float GetIconWidth() const;
   /**
@@ -143,12 +143,12 @@ public:
    * A non-positive or non-finite value is normalized to zero, which means that no explicit
    * icon height is requested.
    *
-   * @param[in] height The requested height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The requested height in logical pixels
    */
   void SetIconHeight(float height);
   /**
    * @brief Returns the requested icon height.
-   * @return The requested height, or zero when unset
+   * @return @UNIT_LOGICAL The requested height, or zero when unset
    */
   float GetIconHeight() const;
 

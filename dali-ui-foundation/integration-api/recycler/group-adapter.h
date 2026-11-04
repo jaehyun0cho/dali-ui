@@ -99,8 +99,8 @@ public:
   void SetInnerAdapter(ItemAdapter inner);
 
   // Height of injected GAP rows between groups. Default: 16.
-  void  SetGapHeight(float height);
-  float GetGapHeight() const;
+  void  SetGapHeight(float height); ///< @UNIT_LOGICAL Sets the gap height.
+  float GetGapHeight() const;       ///< @UNIT_LOGICAL Returns the gap height.
 
   // Header view signals — connect these to supply header views.
   // CreateHeaderViewHolderSignal handler must set holder.view before returning.

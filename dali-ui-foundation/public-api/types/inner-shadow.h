@@ -49,8 +49,8 @@ public:
   /**
    * @brief Creates an inner shadow with custom values.
    *
-   * @param[in] insets How far the shadow reaches inward from each logical edge
-   * @param[in] blurRadius The blur radius in pixels
+   * @param[in] insets @UNIT_LOGICAL How far the shadow reaches inward from each logical edge
+   * @param[in] blurRadius @UNIT_LOGICAL The blur radius in pixels
    * @param[in] color The shadow color
    */
   explicit InnerShadow(const Insets& insets, float blurRadius = 0.0f, const UiColor& color = UiColor(0x000000, 0.5f));
@@ -108,7 +108,7 @@ public:
    *
    * Negative values are clamped to zero.
    *
-   * @param[in] blurRadius The blur radius in pixels
+   * @param[in] blurRadius @UNIT_LOGICAL The blur radius in pixels
    * @return This inner shadow
    */
   InnerShadow& SetBlurRadius(float blurRadius);
@@ -116,14 +116,14 @@ public:
   /**
    * @brief Gets the blur radius.
    *
-   * @return The blur radius in pixels
+   * @return @UNIT_LOGICAL The blur radius in pixels
    */
   float GetBlurRadius() const;
 
   /**
    * @brief Sets how far the shadow reaches inward from each logical edge.
    *
-   * @param[in] insets The start, end, top, and bottom insets in pixels
+   * @param[in] insets @UNIT_LOGICAL The start, end, top, and bottom insets in pixels
    * @return This inner shadow
    */
   InnerShadow& SetInsets(const Insets& insets);
@@ -131,7 +131,7 @@ public:
   /**
    * @brief Gets how far the shadow reaches inward from each logical edge.
    *
-   * @return The start, end, top, and bottom insets in pixels
+   * @return @UNIT_LOGICAL The start, end, top, and bottom insets in pixels
    */
   const Insets& GetInsets() const;
 

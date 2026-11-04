@@ -53,7 +53,7 @@ struct CanvasViewPropertyIndex
   enum
   {
     /**
-     * @brief The viewbox of the CanvasView (ThorVG logical canvas size).
+     * @brief The view box of the CanvasView (the ThorVG canvas coordinate size).
      * @details Name "viewBox", type Property::VECTOR2.
      * @note See also: CanvasView::SetViewBox(), CanvasView::GetViewBox().
      */

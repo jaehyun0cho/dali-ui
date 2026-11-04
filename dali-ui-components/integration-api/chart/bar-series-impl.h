@@ -97,11 +97,13 @@ public:
     mDataLabelColor = c;
   }
 
+  /// @UNIT_LOGICAL Returns the data label size.
   float GetDataLabelSize() const
   {
     return mDataLabelSize;
   }
 
+  /// @UNIT_LOGICAL Sets the data label size.
   void SetDataLabelSize(float s)
   {
     mDataLabelSize = s;
@@ -120,8 +122,8 @@ public:
   struct BorderAppearance
   {
     UiColor color;
-    Vector2 dash;
-    float   width;
+    Vector2 dash;  ///< @UNIT_PHYSICAL The dash and gap lengths.
+    float   width; ///< @UNIT_PHYSICAL The width.
   };
 
   BorderAppearance GetPointBorder(uint32_t index) const
@@ -135,9 +137,9 @@ public:
   UiColor                              mBorderColor{0.0f, 0.0f, 0.0f, 0.0f};
   UiColor                              mLowerFillColor;
   UiColor                              mUpperFillColor;
-  Vector2                              mBorderDash{Vector2::ZERO};
-  float                                mCornerRadius{0.0f};
-  float                                mBorderWidth{0.0f};
+  Vector2                              mBorderDash{Vector2::ZERO}; ///< @UNIT_PHYSICAL The border dash and gap lengths.
+  float                                mCornerRadius{0.0f};        ///< @UNIT_PHYSICAL The corner radius.
+  float                                mBorderWidth{0.0f};         ///< @UNIT_PHYSICAL The border width.
   float                                mFillThreshold{0.0f};
   bool                                 mHasFillThreshold{false};
 

@@ -91,7 +91,9 @@ enum
   SPREAD_METHOD,
 
   /**
-   * @brief The start position of a linear gradient.
+   * @brief @UNIT_LOGICAL The start position of a linear gradient.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    * @details Name "startPosition", type Property::VECTOR2.
    * Gradient is drawn in a rectangular area, depend on Units type.
    * For Units::OBJECT_BOUNDING_BOX case, TopLeft is (-0.5, -0.5) and BottomRight is (0.5, 0.5).
@@ -105,7 +107,9 @@ enum
   START_POSITION,
 
   /**
-   * @brief The end position of a linear gradient.
+   * @brief @UNIT_LOGICAL The end position of a linear gradient.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    * @details Name "endPosition", type Property::VECTOR2.
    * Gradient is drawn in a rectangular area, depend on Units type.
    * For Units::OBJECT_BOUNDING_BOX case, TopLeft is (-0.5, -0.5) and BottomRight is (0.5, 0.5).
@@ -119,7 +123,9 @@ enum
   END_POSITION,
 
   /**
-   * @brief The center point of a radial gradient.
+   * @brief @UNIT_LOGICAL The center point of a radial gradient.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    * @details Name "center", type Property::VECTOR2.
    * @note Mandatory for Radial and Conic.
    * @note Recommand to use GradientVisual::SetGradient() with a Gradient::Radial or Gradient::Conic value.
@@ -128,7 +134,9 @@ enum
   CENTER,
 
   /**
-   * @brief The size of the radius of a radial gradient.
+   * @brief @UNIT_LOGICAL The size of the radius of a radial gradient.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    * @details Name "radius", type Property::FLOAT.
    * @note Mandatory for Radial.
    * @note Recommand to use GradientVisual::SetGradient() with a Gradient::Radial value.

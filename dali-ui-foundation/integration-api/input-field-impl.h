@@ -697,14 +697,14 @@ public:
    *
    * Positive values increase the spacing, while negative values reduce it.
    *
-   * @param[in] spacing The additional letter spacing in pixels.
+   * @param[in] spacing @UNIT_PHYSICAL The additional letter spacing in pixels.
    */
   void SetLetterSpacing(float spacing);
 
   /**
    * @brief Gets the additional spacing between letters in pixels.
    *
-   * @return The additional letter spacing in pixels.
+   * @return @UNIT_PHYSICAL The additional letter spacing in pixels.
    */
   float GetLetterSpacing() const;
 

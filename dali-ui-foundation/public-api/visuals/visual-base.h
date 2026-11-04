@@ -206,56 +206,64 @@ public: // Accessors
   /**
    * @brief Gets the X offset of the VisualBase.
    *
-   * @return The X offset of the VisualBase
+   * @return @UNIT_LOGICAL The X offset of the VisualBase.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   float GetOffsetX() const;
 
   /**
    * @brief Sets the X offset of the VisualBase.
    *
-   * @param[in] x The X offset to set
+   * @param[in] x @UNIT_LOGICAL The X offset to set.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   void SetOffsetX(float x);
 
   /**
    * @brief Gets the Y offset of the VisualBase.
    *
-   * @return The Y offset of the VisualBase
+   * @return @UNIT_LOGICAL The Y offset of the VisualBase.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   float GetOffsetY() const;
 
   /**
    * @brief Sets the Y offset of the VisualBase.
    *
-   * @param[in] y The Y offset to set
+   * @param[in] y @UNIT_LOGICAL The Y offset to set.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   void SetOffsetY(float y);
 
   /**
    * @brief Gets the width of the VisualBase.
    *
-   * @return The width of the VisualBase
+   * @return @UNIT_LOGICAL The width of the VisualBase.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   float GetWidth() const;
 
   /**
    * @brief Sets the width of the VisualBase.
    *
-   * @param[in] width The width to set
+   * @param[in] width @UNIT_LOGICAL The width to set.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   void SetWidth(float width);
 
   /**
    * @brief Gets the height of the VisualBase.
    *
-   * @return The height of the VisualBase
+   * @return @UNIT_LOGICAL The height of the VisualBase.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   float GetHeight() const;
 
   /**
    * @brief Sets the height of the VisualBase.
    *
-   * @param[in] height The height to set
+   * @param[in] height @UNIT_LOGICAL The height to set.
+   * A value whose proportion flag is set is a fraction of the attached View's size instead.
    */
   void SetHeight(float height);
 
@@ -282,7 +290,9 @@ public: // Accessors
   /**
    * @brief Gets the extra width of the VisualBase.
    *
-   * @return The extra width of the VisualBase
+   * @return @UNIT_LOGICAL The extra width of the VisualBase.
+   * While a fitting mode places the visual (always for LottieAnimationVisual) it is added in physical pixels, without
+   * the effective layout scale.
    */
   float GetExtraWidth() const;
 
@@ -290,14 +300,18 @@ public: // Accessors
    * @brief Sets the extra width of the VisualBase.
    * This width is added to the final width absolutely, independent of the transform proportion flags.
    *
-   * @param[in] extraWidth The extra width to set
+   * @param[in] extraWidth @UNIT_LOGICAL The extra width to set.
+   * While a fitting mode places the visual (always for LottieAnimationVisual) it is added in physical pixels, without
+   * the effective layout scale.
    */
   void SetExtraWidth(float extraWidth);
 
   /**
    * @brief Gets the extra height of the VisualBase.
    *
-   * @return The extra height of the VisualBase
+   * @return @UNIT_LOGICAL The extra height of the VisualBase.
+   * While a fitting mode places the visual (always for LottieAnimationVisual) it is added in physical pixels, without
+   * the effective layout scale.
    */
   float GetExtraHeight() const;
 
@@ -305,7 +319,9 @@ public: // Accessors
    * @brief Sets the extra height of the VisualBase.
    * This height is added to the final height absolutely, independent of the transform proportion flags.
    *
-   * @param[in] extraHeight The extra height to set
+   * @param[in] extraHeight @UNIT_LOGICAL The extra height to set.
+   * While a fitting mode places the visual (always for LottieAnimationVisual) it is added in physical pixels, without
+   * the effective layout scale.
    */
   void SetExtraHeight(float extraHeight);
 
@@ -351,7 +367,9 @@ public: // Accessors
   /**
    * @brief Gets the corner radius of the VisualBase.
    *
-   * @return The corner radius as Vector4 (topLeft, topRight, bottomRight, bottomLeft)
+   * @return @UNIT_LOGICAL The corner radius as Vector4 (topLeft, topRight, bottomRight, bottomLeft).
+   * ImageVisual, AnimatedImageVisual and LottieAnimationVisual draw an ABSOLUTE radius in physical pixels, without the
+   * effective layout scale.
    */
   Vector4 GetCornerRadius() const;
 
@@ -361,7 +379,9 @@ public: // Accessors
    * LottieAnimationVisual. It has no effect on other visuals, including an ImageVisual that is
    * showing an n-patch image.
    *
-   * @param[in] radius The corner radius to apply to all corners
+   * @param[in] radius @UNIT_LOGICAL The corner radius to apply to all corners.
+   * ImageVisual, AnimatedImageVisual and LottieAnimationVisual draw an ABSOLUTE radius in physical pixels, without the
+   * effective layout scale.
    */
   void SetCornerRadius(float radius);
 
@@ -371,10 +391,13 @@ public: // Accessors
    * LottieAnimationVisual. It has no effect on other visuals, including an ImageVisual that is
    * showing an n-patch image.
    *
-   * @param[in] topLeft     The radius for the top-left corner
-   * @param[in] topRight    The radius for the top-right corner
-   * @param[in] bottomRight The radius for the bottom-right corner
-   * @param[in] bottomLeft  The radius for the bottom-left corner
+   * ImageVisual, AnimatedImageVisual and LottieAnimationVisual draw an ABSOLUTE radius in physical pixels, without the
+   * effective layout scale.
+   *
+   * @param[in] topLeft     @UNIT_LOGICAL The radius for the top-left corner
+   * @param[in] topRight    @UNIT_LOGICAL The radius for the top-right corner
+   * @param[in] bottomRight @UNIT_LOGICAL The radius for the bottom-right corner
+   * @param[in] bottomLeft  @UNIT_LOGICAL The radius for the bottom-left corner
    */
   void SetCornerRadius(float topLeft, float topRight, float bottomRight, float bottomLeft);
 
@@ -384,7 +407,9 @@ public: // Accessors
    * LottieAnimationVisual. It has no effect on other visuals, including an ImageVisual that is
    * showing an n-patch image.
    *
-   * @param[in] radius Corner radii as Vector4 (x=topLeft, y=topRight, z=bottomRight, w=bottomLeft)
+   * @param[in] radius @UNIT_LOGICAL Corner radii as Vector4 (x=topLeft, y=topRight, z=bottomRight, w=bottomLeft).
+   * ImageVisual, AnimatedImageVisual and LottieAnimationVisual draw an ABSOLUTE radius in physical pixels, without the
+   * effective layout scale.
    */
   void SetCornerRadius(const Vector4& radius);
 
@@ -467,7 +492,7 @@ public: // Accessors
   /**
    * @brief Gets the borderline width of the VisualBase.
    *
-   * @return The borderline width
+   * @return @UNIT_LOGICAL The borderline width
    */
   float GetBorderlineWidth() const;
 
@@ -477,7 +502,7 @@ public: // Accessors
    * LottieAnimationVisual. It has no effect on other visuals, including an ImageVisual that is
    * showing an n-patch image.
    *
-   * @param[in] width The borderline width to set
+   * @param[in] width @UNIT_LOGICAL The borderline width to set
    */
   void SetBorderlineWidth(float width);
 

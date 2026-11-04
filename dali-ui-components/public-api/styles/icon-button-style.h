@@ -110,13 +110,13 @@ public:
 
   /**
    * @brief Returns the requested width of the icon.
-   * @return The requested logical-pixel value or layout sentinel; WRAP_CONTENT when omitted.
+   * @return @UNIT_LOGICAL The requested logical-pixel value or layout sentinel; WRAP_CONTENT when omitted.
    */
   float GetIconWidth() const;
 
   /**
    * @brief Returns the requested height of the icon.
-   * @return The requested logical-pixel value or layout sentinel; WRAP_CONTENT when omitted.
+   * @return @UNIT_LOGICAL The requested logical-pixel value or layout sentinel; WRAP_CONTENT when omitted.
    */
   float GetIconHeight() const;
 
@@ -128,7 +128,7 @@ public:
 
   /**
    * @brief Returns the padding around the icon.
-   * @return The icon padding
+   * @return @UNIT_LOGICAL The icon padding
    */
   Insets GetPadding() const;
 
@@ -194,28 +194,28 @@ public:
 
   /**
    * @brief Sets the requested width of the icon.
-   * @param[in] width The requested width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The requested width in logical pixels
    * @return A reference to this builder
    */
   Builder& SetIconWidth(float width) &;
 
   /**
    * @brief Sets the requested width of the icon.
-   * @param[in] width The requested width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The requested width in logical pixels
    * @return This builder
    */
   Builder&& SetIconWidth(float width) &&;
 
   /**
    * @brief Sets the requested height of the icon.
-   * @param[in] height The requested height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The requested height in logical pixels
    * @return A reference to this builder
    */
   Builder& SetIconHeight(float height) &;
 
   /**
    * @brief Sets the requested height of the icon.
-   * @param[in] height The requested height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The requested height in logical pixels
    * @return This builder
    */
   Builder&& SetIconHeight(float height) &&;
@@ -236,14 +236,14 @@ public:
 
   /**
    * @brief Sets the padding around the icon.
-   * @param[in] padding The padding to apply
+   * @param[in] padding @UNIT_LOGICAL The padding to apply
    * @return A reference to this builder
    */
   Builder& SetPadding(const Insets& padding) &;
 
   /**
    * @brief Sets the padding around the icon.
-   * @param[in] padding The padding to apply
+   * @param[in] padding @UNIT_LOGICAL The padding to apply
    * @return This builder
    */
   Builder&& SetPadding(const Insets& padding) &&;

@@ -35,7 +35,7 @@ class CanvasViewImpl;
  * @brief CanvasView is a View for displaying vector primitives via ThorVG.
  *
  * Drawables (shapes, groups, pictures) are added with AddDrawable() and rendered
- * asynchronously by default.  The viewbox defines the logical coordinate space;
+ * asynchronously by default.  The view box defines the canvas coordinate space;
  * the view pixel size is controlled by the layout system.
  *
  * @code
@@ -81,7 +81,7 @@ public: // Creation & Destruction
   /**
    * @brief Creates an initialized CanvasView with the given viewbox.
    *
-   * @param[in] viewBox The logical width and height of the canvas coordinate space
+   * @param[in] viewBox The view box width and height, which define the canvas coordinate space
    * @return A handle to a newly allocated CanvasView
    */
   static CanvasView New(const Vector2& viewBox);
@@ -234,7 +234,7 @@ public: // Drawable management
 
 public: // Rasterization control
   /**
-   * @brief Sets the logical coordinate space (viewbox) of the canvas.
+   * @brief Sets the coordinate space (view box) of the canvas.
    *
    * @param[in] viewBox The new width and height of the viewbox
    */

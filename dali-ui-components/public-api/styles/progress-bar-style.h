@@ -97,14 +97,14 @@ public:
   /**
    * @brief Returns the padding around the track.
    *
-   * @return The configured padding
+   * @return @UNIT_LOGICAL The configured padding
    */
   Insets GetPadding() const;
 
   /**
    * @brief Returns the track thickness.
    *
-   * @return The configured track thickness
+   * @return @UNIT_LOGICAL The configured track thickness
    */
   float GetTrackThickness() const;
 
@@ -181,7 +181,7 @@ public:
    *
    * Every inset must be finite and non-negative.
    *
-   * @param[in] padding The padding to set
+   * @param[in] padding @UNIT_LOGICAL The padding to set
    * @return A reference to this builder
    */
   Builder& SetPadding(const Insets& padding) &;
@@ -191,7 +191,7 @@ public:
    *
    * Every inset must be finite and non-negative.
    *
-   * @param[in] padding The padding to set
+   * @param[in] padding @UNIT_LOGICAL The padding to set
    * @return An rvalue reference to this builder
    */
   Builder&& SetPadding(const Insets& padding) &&;
@@ -199,7 +199,7 @@ public:
   /**
    * @brief Sets the track thickness on an lvalue builder.
    *
-   * @param[in] thickness The finite, positive track thickness
+   * @param[in] thickness @UNIT_LOGICAL The finite, positive track thickness
    * @return A reference to this builder
    */
   Builder& SetTrackThickness(float thickness) &;
@@ -207,7 +207,7 @@ public:
   /**
    * @brief Sets the track thickness on an rvalue builder.
    *
-   * @param[in] thickness The finite, positive track thickness
+   * @param[in] thickness @UNIT_LOGICAL The finite, positive track thickness
    * @return An rvalue reference to this builder
    */
   Builder&& SetTrackThickness(float thickness) &&;

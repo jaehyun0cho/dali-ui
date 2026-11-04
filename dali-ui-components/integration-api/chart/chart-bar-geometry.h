@@ -34,17 +34,17 @@ namespace Integration
  */
 struct ChartBarGeometry
 {
-  Rect<float> bounds;
+  Rect<float> bounds; ///< @UNIT_PHYSICAL The bounds.
   Vector4     color;
   size_t      seriesIndex;
   size_t      pointIndex;
-  float       radius;
+  float       radius; ///< @UNIT_PHYSICAL The radius.
   float       dataX;
   float       dataY;
 
   /**
    * @brief Tests the visible rounded body rather than its enclosing rectangle.
-   * @param[in] point The canvas position in pixels
+   * @param[in] point @UNIT_PHYSICAL The canvas position in pixels
    * @return True when the point lies inside the rounded body
    */
   bool Contains(const Vector2& point) const

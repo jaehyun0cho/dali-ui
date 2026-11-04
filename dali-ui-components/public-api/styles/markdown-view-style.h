@@ -41,6 +41,8 @@ class MarkdownViewStyleImpl;
 
 /**
  * @brief Defines the style used by MarkdownView.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API MarkdownViewStyle : public UiStyle
 {
@@ -108,6 +110,8 @@ public: // Not intended for application developers
 
 /**
  * @brief Builds a MarkdownViewStyle.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API MarkdownViewStyle::Builder
 {

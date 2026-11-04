@@ -192,15 +192,15 @@ public: // Text Size Measurement
   /**
    * @brief Returns the natural size required to lay out the text.
    *
-   * @return The natural size, including padding.
+   * @return @UNIT_PHYSICAL The natural size, including padding.
    */
   Vector3 GetNaturalSize() const;
 
   /**
    * @brief Calculates the height required to lay out the text at the given width.
    *
-   * @param[in] width The total view width, including padding.
-   * @return The required height, including padding.
+   * @param[in] width @UNIT_PHYSICAL The total view width, including padding.
+   * @return @UNIT_PHYSICAL The required height, including padding.
    */
   float GetHeightForWidth(float width);
 
@@ -252,14 +252,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the font size of the text.
    *
-   * @param[in] fontSize The font size in pixels.
+   * @param[in] fontSize @UNIT_LOGICAL The font size in pixels.
    */
   void SetFontSize(float fontSize);
 
   /**
    * @brief Gets the font size of the text.
    *
-   * @return The font size currently set on the inputEditor, in pixels.
+   * @return @UNIT_LOGICAL The font size currently set on the inputEditor, in pixels.
    */
   float GetFontSize() const;
 
@@ -416,7 +416,8 @@ public: // Setters for chaining
    * @note The final line height is clamped to be no smaller than
    *       the natural line height derived from the font metrics.
    *
-   * @param[in] lineHeight The line height value.
+   * @param[in] lineHeight @UNIT_LOGICAL The line height value.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    */
   void SetLineHeight(float lineHeight);
 
@@ -429,7 +430,8 @@ public: // Setters for chaining
    * A value of -1.0f indicates that the natural line height
    * (based on font metrics) is used.
    *
-   * @return The line height value.
+   * @return @UNIT_LOGICAL The line height value.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    */
   float GetLineHeight() const;
 
@@ -523,14 +525,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the width of the text cursor.
    *
-   * @param[in] width The cursor width in pixels.
+   * @param[in] width @UNIT_LOGICAL The cursor width in pixels.
    */
   void SetCursorWidth(int width);
 
   /**
    * @brief Gets the width of the text cursor.
    *
-   * @return The cursor width in pixels.
+   * @return @UNIT_LOGICAL The cursor width in pixels.
    */
   int GetCursorWidth() const;
 
@@ -1081,7 +1083,9 @@ public: // Setters for chaining
    * If the selection is collapsed, the font size is applied to text inserted after
    * the current cursor position.
    *
-   * @param[in] fontSize The typing font size in pixels.
+   * @param[in] fontSize @UNIT_LOGICAL The typing font size in pixels.
+   * This version applies the effective layout scale twice to typed or selected text, so it is drawn at the square of
+   * that scale.
    * @return This input editor.
    */
   void SetTypingFontSize(float fontSize);
@@ -1089,7 +1093,9 @@ public: // Setters for chaining
   /**
    * @brief Gets the font size in pixels used for typing.
    *
-   * @return The typing font size in pixels.
+   * @return @UNIT_LOGICAL The typing font size in pixels.
+   * This version applies the effective layout scale twice to typed or selected text, so it is drawn at the square of
+   * that scale.
    */
   float GetTypingFontSize() const;
 
@@ -1258,7 +1264,7 @@ public: // Setters for chaining
   /**
    * @brief Gets the number of lines of text within the given width.
    *
-   * @param[in] width The width used to calculate the line count.
+   * @param[in] width @UNIT_PHYSICAL The width used to calculate the line count.
    * @return The number of lines.
    */
   int GetLineCount(float width);

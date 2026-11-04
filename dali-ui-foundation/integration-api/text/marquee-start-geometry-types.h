@@ -36,7 +36,7 @@ struct MarqueeStartAnchor
 {
   TextAbstraction::CharacterIndex characterIndex{0u};
   TextAbstraction::Length         glyphOccurrence{0u};
-  float                           staticControlX{0.0f}; ///< Logical pixels in the Label content box.
+  float                           staticControlX{0.0f}; ///< @UNIT_PHYSICAL Pixels in the Label content box, not multiplied by the render scale.
   bool                            valid{false};
 };
 
@@ -50,7 +50,7 @@ struct MarqueeStartAnchor
  */
 struct MarqueeFittingStartGeometry
 {
-  float staticTranslation{0.0f}; ///< Logical pixels in the Label content box.
+  float staticTranslation{0.0f}; ///< @UNIT_PHYSICAL Pixels in the Label content box, not multiplied by the render scale.
   bool  valid{false};
 };
 } // namespace DALI_NAMESPACE::Ui::Text

@@ -186,15 +186,15 @@ public: // Text Size Measurement
   /**
    * @brief Returns the natural size required to lay out the text.
    *
-   * @return The natural size, including padding.
+   * @return @UNIT_PHYSICAL The natural size, including padding.
    */
   Vector3 GetNaturalSize() const;
 
   /**
    * @brief Calculates the height required to lay out the text at the given width.
    *
-   * @param[in] width The total view width, including padding.
-   * @return The required height, including padding.
+   * @param[in] width @UNIT_PHYSICAL The total view width, including padding.
+   * @return @UNIT_PHYSICAL The required height, including padding.
    */
   float GetHeightForWidth(float width);
 
@@ -248,14 +248,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the font size of the text.
    *
-   * @param[in] fontSize The font size in pixels.
+   * @param[in] fontSize @UNIT_LOGICAL The font size in pixels.
    */
   void SetFontSize(float fontSize);
 
   /**
    * @brief Gets the font size of the text.
    *
-   * @return The font size currently set on the label, in pixels.
+   * @return @UNIT_LOGICAL The font size currently set on the label, in pixels.
    */
   float GetFontSize() const;
 
@@ -508,7 +508,8 @@ public: // Setters for chaining
    * @note The final line height is clamped to be no smaller than
    *       the natural line height derived from the font metrics.
    *
-   * @param[in] lineHeight The line height value.
+   * @param[in] lineHeight @UNIT_LOGICAL The line height value.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    */
   void SetLineHeight(float lineHeight);
 
@@ -521,7 +522,8 @@ public: // Setters for chaining
    * A value of -1.0f indicates that the natural line height
    * (based on font metrics) is used.
    *
-   * @return The line height value.
+   * @return @UNIT_LOGICAL The line height value.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    */
   float GetLineHeight() const;
 
@@ -624,14 +626,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the marquee speed.
    *
-   * @param[in] speed The marquee speed in pixels per second.
+   * @param[in] speed @UNIT_LOGICAL The marquee speed in pixels per second.
    */
   void SetMarqueeSpeed(int speed);
 
   /**
    * @brief Returns the marquee speed.
    *
-   * @return The marquee speed in pixels per second.
+   * @return @UNIT_LOGICAL The marquee speed in pixels per second.
    */
   int GetMarqueeSpeed() const;
 
@@ -668,14 +670,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the gap before marquee wraps.
    *
-   * @param[in] gap The gap in pixels.
+   * @param[in] gap @UNIT_LOGICAL The gap in pixels.
    */
   void SetMarqueeGap(int gap);
 
   /**
    * @brief Returns the gap before marquee wraps.
    *
-   * @return The gap in pixels.
+   * @return @UNIT_LOGICAL The gap in pixels.
    */
   int GetMarqueeGap() const;
 
@@ -1208,7 +1210,7 @@ public: // Setters for chaining
   /**
    * @brief Gets the number of lines of text within the given width.
    *
-   * @param[in] width The width used to calculate the line count.
+   * @param[in] width @UNIT_PHYSICAL The width used to calculate the line count.
    * @return The number of lines.
    */
   int GetLineCount(float width);
@@ -1309,7 +1311,7 @@ public: // Setters for chaining
    *
    * The given width must be the total label width including padding.
    *
-   * @param[in] width The total width used for the computation, including padding.
+   * @param[in] width @UNIT_PHYSICAL The total width used for the computation, including padding.
    *
    * @note The computed result is delivered through Label::AsyncHeightForWidthComputedSignal().
    */
@@ -1338,8 +1340,8 @@ public: // Signals
    * @endcode
    *
    * @param[in] view The view whose async text rendering has completed.
-   * @param[in] width The rendered text width, including padding.
-   * @param[in] height The rendered text height, including padding.
+   * @param[in] width @UNIT_PHYSICAL The rendered text width, including padding.
+   * @param[in] height @UNIT_PHYSICAL The rendered text height, including padding.
    *
    * @return The signal to connect to.
    */
@@ -1353,8 +1355,8 @@ public: // Signals
    * @endcode
    *
    * @param[in] view The view whose async natural size computation has completed.
-   * @param[in] width The computed natural width, including padding.
-   * @param[in] height The computed natural height, including padding.
+   * @param[in] width @UNIT_PHYSICAL The computed natural width, including padding.
+   * @param[in] height @UNIT_PHYSICAL The computed natural height, including padding.
    *
    * @return The signal to connect to.
    */
@@ -1368,8 +1370,8 @@ public: // Signals
    * @endcode
    *
    * @param[in] view The view whose async height-for-width computation has completed.
-   * @param[in] width The total width used for the computation, including padding.
-   * @param[in] height The computed height for the given width, including padding.
+   * @param[in] width @UNIT_PHYSICAL The total width used for the computation, including padding.
+   * @param[in] height @UNIT_PHYSICAL The computed height for the given width, including padding.
    *
    * @return The signal to connect to.
    */

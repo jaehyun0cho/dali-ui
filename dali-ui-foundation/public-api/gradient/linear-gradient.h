@@ -45,30 +45,42 @@ public:
   /**
    * @brief Creates a linear gradient value.
    *
-   * @param[in] startPosition The start position
-   * @param[in] endPosition The end position
+   * @param[in] startPosition @UNIT_LOGICAL The start position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
+   * @param[in] endPosition @UNIT_LOGICAL The end position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   Linear(const Vector2& startPosition, const Vector2& endPosition);
 
   /**
    * @brief Sets the linear gradient start and end positions.
    *
-   * @param[in] startPosition The start position
-   * @param[in] endPosition The end position
+   * @param[in] startPosition @UNIT_LOGICAL The start position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
+   * @param[in] endPosition @UNIT_LOGICAL The end position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   void SetStartAndEndPosition(const Vector2& startPosition, const Vector2& endPosition);
 
   /**
    * @brief Gets the start position.
    *
-   * @return The start position
+   * @return @UNIT_LOGICAL The start position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   Vector2 GetStartPosition() const;
 
   /**
    * @brief Gets the end position.
    *
-   * @return The end position
+   * @return @UNIT_LOGICAL The end position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   Vector2 GetEndPosition() const;
 

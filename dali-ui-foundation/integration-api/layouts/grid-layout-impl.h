@@ -67,11 +67,11 @@ public: // Row/Column Definition API
   void                     ClearRowDefinitions();
   void                     ClearColumnDefinitions();
 
-public: // Spacing API
-  void  SetRowSpacing(float spacing);
-  float GetRowSpacing() const;
-  void  SetColumnSpacing(float spacing);
-  float GetColumnSpacing() const;
+public:                                  // Spacing API
+  void  SetRowSpacing(float spacing);    ///< @UNIT_LOGICAL Sets the row spacing.
+  float GetRowSpacing() const;           ///< @UNIT_LOGICAL Returns the row spacing.
+  void  SetColumnSpacing(float spacing); ///< @UNIT_LOGICAL Sets the column spacing.
+  float GetColumnSpacing() const;        ///< @UNIT_LOGICAL Returns the column spacing.
 
 private:
   GridLayoutImpl(const GridLayoutImpl&)            = delete;

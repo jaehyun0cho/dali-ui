@@ -45,6 +45,8 @@ class TextButtonStyleImpl;
 
 /**
  * @brief Style values used to initialize TextButton appearance and layout.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API TextButtonStyle : public UiStyle
 {
@@ -126,6 +128,8 @@ public: // Not intended for application developers
  * Maximum sizes must be finite and non-negative or UNCONSTRAINED_MAX_SIZE (no upper bound).
  * Build() checks that each axis's minimum does not exceed its constrained maximum, so setters can be called in any order.
  * If Build() fails because of an invalid size relationship, the Builder is not consumed and can be corrected and built again.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API TextButtonStyle::Builder
 {

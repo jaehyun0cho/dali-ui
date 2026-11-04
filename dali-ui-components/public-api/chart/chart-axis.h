@@ -233,14 +233,14 @@ public:
    *
    * The default is 11.0.
    *
-   * @param[in] size The point size of the tick labels
+   * @param[in] size @UNIT_LOGICAL The point size of the tick labels
    */
   void SetLabelSize(float size);
 
   /**
    * @brief Retrieves the point size of the tick labels.
    *
-   * @return The point size of the tick labels
+   * @return @UNIT_LOGICAL The point size of the tick labels
    */
   float GetLabelSize() const;
 
@@ -282,14 +282,14 @@ public:
    *
    * The default is 2.0.
    *
-   * @param[in] width The width of the axis line, in pixels
+   * @param[in] width @UNIT_PHYSICAL The width of the axis line, in pixels
    */
   void SetAxisLineWidth(float width);
 
   /**
    * @brief Retrieves the width of the axis line, in pixels.
    *
-   * @return The width of the axis line, in pixels
+   * @return @UNIT_PHYSICAL The width of the axis line, in pixels
    */
   float GetAxisLineWidth() const;
 
@@ -299,16 +299,16 @@ public:
    * A gapLength of 0 draws a solid line. Defaults are dashLength 5.0,
    * gapLength 4.0.
    *
-   * @param[in] dashLength The length of each dash, in pixels
-   * @param[in] gapLength The length of each gap between dashes, in pixels
+   * @param[in] dashLength @UNIT_PHYSICAL The length of each dash, in pixels
+   * @param[in] gapLength @UNIT_PHYSICAL The length of each gap between dashes, in pixels
    */
   void SetGridDash(float dashLength, float gapLength);
 
   /**
    * @brief Retrieves the dash pattern of this axis' grid lines.
    *
-   * @param[out] dashLength The length of each dash, in pixels
-   * @param[out] gapLength The length of each gap between dashes, in pixels
+   * @param[out] dashLength @UNIT_PHYSICAL The length of each dash, in pixels
+   * @param[out] gapLength @UNIT_PHYSICAL The length of each gap between dashes, in pixels
    */
   void GetGridDash(float& dashLength, float& gapLength) const;
 

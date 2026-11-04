@@ -49,6 +49,21 @@ LayoutScaleManager (시스템 스케일 1.5) + 윈도우 스케일 2.0
 
 <br/>
 
+## 논리 값과 물리 값
+
+API 레퍼런스는 모든 길이 값에 두 태그 중 하나를 붙입니다.
+
+- **논리 값** (`@UNIT_LOGICAL`): 레이아웃이 값을 사용할 때마다 그 값이 속한 뷰의 유효 스케일(UI 스케일 × 윈도우별 스케일)을 곱하므로, 나중에 스케일이 바뀌어도 자동으로 반영됩니다. getter는 설정한 값을 그대로 반환합니다. 요청 크기와 위치, 패딩, 마진, 최소·최대 크기, 레이아웃 간격, `_dp`·`_sdp`·`_spx` 리터럴이 논리 값입니다.
+- **물리 값** (`@UNIT_PHYSICAL`): `Actor::Property::SIZE`, `POSITION`, 터치 좌표처럼 dali-core가 쓰는 단위의 픽셀이며 유효 스케일이 이미 적용된 값입니다. Measure/Arrange 값, `Extension::View`의 기하 세터, 스크롤 위치, 드래그 앤 드롭 좌표가 물리 값입니다. 프레임워크가 저장하는 물리 값(예: 스크롤 위치)은 스케일이 바뀌어도 숫자가 그대로입니다.
+
+```
+물리 값 = 논리 값 × Extension::View::GetEffectiveLayoutScale(view)
+```
+
+정의 전문과 예시는 Length Units 페이지(`docs/length-units.md`)에 있습니다.
+
+<br/>
+
 ## LayoutScaleManager
 
 `LayoutScaleManager`는 현재 시스템 스케일 값과 각 윈도우의 스케일을 보유하는 프로세스 전역 싱글턴입니다. `LayoutManager`가 아니며 직접 배치하지 않습니다. 보유한 값은 레이아웃 패스가 적용합니다.

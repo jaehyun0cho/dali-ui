@@ -47,6 +47,9 @@ enum class DefaultWindowDecorationTheme
  * Defaults provide a dark frame with thin top and side edges. The bottom bar
  * contains an expandable move region, built-in minimize,
  * maximize/restore, and close buttons, and a resize handle in each corner.
+ *
+ * The bar height, edge thickness and top area height are added to surface pixels when the frame and content sizes are
+ * computed, and the frame view tree then multiplies the result by the effective layout scale.
  */
 class DALI_UI_COMPONENTS_API DefaultWindowDecorationOptions
 {
@@ -72,25 +75,25 @@ public:
 
   /**
    * @brief Sets the height of the bottom bar.
-   * @param[in] height Bar height, defaults to 50
+   * @param[in] height @UNIT_LOGICAL Bar height, defaults to 50
    */
   void SetBarHeight(float height);
 
   /**
    * @brief Returns the height of the bottom bar.
-   * @return Bar height
+   * @return @UNIT_LOGICAL Bar height
    */
   float GetBarHeight() const;
 
   /**
    * @brief Sets the width of the left and right frame edges.
-   * @param[in] thickness Edge thickness, defaults to 5
+   * @param[in] thickness @UNIT_LOGICAL Edge thickness, defaults to 5
    */
   void SetEdgeThickness(float thickness);
 
   /**
    * @brief Returns the width of the left and right frame edges.
-   * @return Edge thickness
+   * @return @UNIT_LOGICAL Edge thickness
    */
   float GetEdgeThickness() const;
 
@@ -106,25 +109,25 @@ public:
    * A height of 0, the default, keeps the thin edge and leaves GetTopArea()
    * uninitialized. A height below the edge thickness is raised to it, since the
    * frame still needs its border.
-   * @param[in] height Top area height, defaults to 0
+   * @param[in] height @UNIT_LOGICAL Top area height, defaults to 0
    */
   void SetTopAreaHeight(float height);
 
   /**
    * @brief Returns the configured top area height.
-   * @return Top area height, or 0 when the top is a thin edge
+   * @return @UNIT_LOGICAL Top area height, or 0 when the top is a thin edge
    */
   float GetTopAreaHeight() const;
 
   /**
    * @brief Sets the frame corner radius used while the window is not maximized.
-   * @param[in] radius Corner radius, defaults to 12
+   * @param[in] radius @UNIT_LOGICAL Corner radius, defaults to 12
    */
   void SetCornerRadius(float radius);
 
   /**
    * @brief Returns the frame corner radius.
-   * @return Corner radius
+   * @return @UNIT_LOGICAL Corner radius
    */
   float GetCornerRadius() const;
 
@@ -366,7 +369,8 @@ public:
    *
    * The decoration does not apply this itself, because the window's size
    * constraints belong to the application.
-   * @return Smallest frame size that lays out without overlap, excluding shadow
+   * @return @UNIT_LOGICAL Smallest frame size that lays out without overlap, excluding shadow.
+   * It is computed from the decoration lengths without the scale, so it equals surface pixels only at scale 1.0.
    */
   Dali::Vector2 GetMinimumFrameSize() const;
 

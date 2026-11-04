@@ -271,7 +271,9 @@ public: // Size & Fitting Control
    * The returned size reflects the image Visual, including the desired size or
    * decoded texture size when applicable. It may differ from the laid-out View size.
    *
-   * @return The natural size of the image content
+   * @return @UNIT_LOGICAL The natural size of the image content.
+   * With image loading at the view size enabled it is the View's physical size, which the layout multiplies by the
+   * effective layout scale again.
    */
   Vector3 GetNaturalSize() const;
 
@@ -308,28 +310,36 @@ public: // Size & Fitting Control
   /**
    * @brief Sets the desired rasterization width as a hint for the image loader.
    *
-   * @param[in] width The desired width in pixels (0 to use natural size)
+   * @param[in] width @UNIT_PHYSICAL The desired width in pixels (0 to use natural size).
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   void SetDesiredWidth(int width);
 
   /**
    * @brief Gets the desired rasterization width hint.
    *
-   * @return The desired width in pixels, or 0 if not set
+   * @return @UNIT_PHYSICAL The desired width in pixels, or 0 if not set.
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   int GetDesiredWidth() const;
 
   /**
    * @brief Sets the desired rasterization height as a hint for the image loader.
    *
-   * @param[in] height The desired height in pixels (0 to use natural size)
+   * @param[in] height @UNIT_PHYSICAL The desired height in pixels (0 to use natural size).
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   void SetDesiredHeight(int height);
 
   /**
    * @brief Gets the desired rasterization height hint.
    *
-   * @return The desired height in pixels, or 0 if not set
+   * @return @UNIT_PHYSICAL The desired height in pixels, or 0 if not set.
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   int GetDesiredHeight() const;
 
@@ -527,7 +537,7 @@ public: // N-Patch Border
    * stretched to fill the view. Giving an ordinary image a non-zero border makes it behave
    * as an n-patch image.
    *
-   * @param[in] border The frame widths as start, end, top and bottom distances
+   * @param[in] border @UNIT_PHYSICAL The frame widths as start, end, top and bottom distances
    * @note The values are rounded to whole source pixels, since they select which columns
    *       and rows of the image stretch.
    * @see SetNPatchBorderOnly()
@@ -537,7 +547,7 @@ public: // N-Patch Border
   /**
    * @brief Gets the N-patch border.
    *
-   * @return The width of the fixed frame at each edge, in source image pixels
+   * @return @UNIT_PHYSICAL The width of the fixed frame at each edge, in source image pixels
    */
   Dali::Insets GetNPatchBorder() const;
 

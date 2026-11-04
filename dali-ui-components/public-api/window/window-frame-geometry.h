@@ -32,6 +32,9 @@ namespace DALI_NAMESPACE::Ui
  * Surface bounds use screen coordinates. Frame and content bounds use
  * surface-local coordinates, so application content never subtracts
  * decoration insets.
+ *
+ * The frame view tree is laid out from these surface pixels multiplied by the effective layout scale, so the frame fits
+ * the window only at scale 1.0.
  */
 class DALI_UI_COMPONENTS_API WindowFrameGeometry
 {
@@ -48,19 +51,19 @@ public:
 
   /**
    * @brief Returns window surface bounds in screen coordinates.
-   * @return Surface bounds
+   * @return @UNIT_PHYSICAL Surface bounds
    */
   Dali::Ui::LayoutRect GetSurfaceBounds() const;
 
   /**
    * @brief Returns visible frame bounds in surface-local coordinates.
-   * @return Frame bounds
+   * @return @UNIT_PHYSICAL Frame bounds
    */
   Dali::Ui::LayoutRect GetFrameBounds() const;
 
   /**
    * @brief Returns application content bounds in surface-local coordinates.
-   * @return Content bounds
+   * @return @UNIT_PHYSICAL Content bounds
    */
   Dali::Ui::LayoutRect GetContentBounds() const;
 
@@ -73,11 +76,20 @@ public:
    *
    * Use it to keep content that must stay readable, such as a header or a
    * primary action, clear of the decoration.
-   * @return Overlay decoration insets
+   *
+   * The overlay insets are the decoration insets clamped to the frame size in surface pixels, and the frame view tree
+   * then multiplies them by the effective layout scale.
+   * @return @UNIT_LOGICAL Overlay decoration insets
    */
   Dali::Ui::Insets GetDecorationOverlayInsets() const;
 
 public: // Not intended for application developers
+  /**
+   * @param[in] surfaceBounds @UNIT_PHYSICAL The surface bounds
+   * @param[in] frameBounds @UNIT_PHYSICAL The frame bounds
+   * @param[in] contentBounds @UNIT_PHYSICAL The content bounds
+   * @param[in] decorationOverlayInsets @UNIT_LOGICAL The overlay decoration insets
+   */
   DALI_INTERNAL WindowFrameGeometry(const Dali::Ui::LayoutRect& surfaceBounds,
                                     const Dali::Ui::LayoutRect& frameBounds,
                                     const Dali::Ui::LayoutRect& contentBounds,

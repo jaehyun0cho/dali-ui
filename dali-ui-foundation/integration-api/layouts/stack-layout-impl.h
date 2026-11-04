@@ -83,14 +83,14 @@ public: // API
   /**
    * @brief Sets the spacing between children.
    *
-   * @param[in] spacing The spacing to set
+   * @param[in] spacing @UNIT_LOGICAL The spacing to set
    */
   void SetSpacing(float spacing);
 
   /**
    * @brief Gets the spacing between children.
    *
-   * @return The current spacing
+   * @return @UNIT_LOGICAL The current spacing
    */
   float GetSpacing() const;
 

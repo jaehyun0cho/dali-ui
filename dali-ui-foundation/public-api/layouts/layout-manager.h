@@ -78,8 +78,8 @@ public:
    * only placement is affected), which is what the in-library managers do.
    *
    * @param[in] view The view to measure
-   * @param[in] widthConstraint The available width constraint
-   * @param[in] heightConstraint The available height constraint
+   * @param[in] widthConstraint @UNIT_PHYSICAL The available width constraint
+   * @param[in] heightConstraint @UNIT_PHYSICAL The available height constraint
    * @return The measured size
    */
   virtual MeasuredSize Measure(ViewImpl* view, float widthConstraint, float heightConstraint) = 0;
@@ -91,7 +91,7 @@ public:
    * according to the layout algorithm.
    *
    * @param[in] view The view whose children to arrange
-   * @param[in] bounds The available bounds for arranging children (owner-local content area)
+   * @param[in] bounds @UNIT_PHYSICAL The available bounds for arranging children (owner-local content area)
    */
   virtual void Arrange(ViewImpl* view, const LayoutRect& bounds) = 0;
 

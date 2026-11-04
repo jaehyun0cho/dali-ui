@@ -121,14 +121,14 @@ public:
    *
    * Clamped to a minimum of 1.0. The default is 6.0.
    *
-   * @param[in] radius The marker radius, in pixels
+   * @param[in] radius @UNIT_PHYSICAL The marker radius, in pixels
    */
   void SetMarkerRadius(float radius);
 
   /**
    * @brief Retrieves the radius of each marker, in pixels.
    *
-   * @return The marker radius, in pixels
+   * @return @UNIT_PHYSICAL The marker radius, in pixels
    */
   float GetMarkerRadius() const;
 

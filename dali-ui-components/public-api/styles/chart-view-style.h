@@ -146,13 +146,13 @@ public:
 
   /**
    * @brief Returns the Padding construction default.
-   * @return The authored value
+   * @return @UNIT_PHYSICAL The authored value
    */
   float GetPadding() const;
 
   /**
    * @brief Returns the TooltipPadding construction default.
-   * @return The authored value
+   * @return @UNIT_PHYSICAL The authored value
    */
   float GetTooltipPadding() const;
 
@@ -285,28 +285,28 @@ public:
 
   /**
    * @brief Sets the Padding construction default.
-   * @param[in] value The finite non-negative chart padding in pixels
+   * @param[in] value @UNIT_PHYSICAL The finite non-negative chart padding in pixels
    * @return This builder
    */
   Builder& SetPadding(float value) &;
 
   /**
    * @brief Sets the Padding construction default on a temporary builder.
-   * @param[in] value The authored value
+   * @param[in] value @UNIT_PHYSICAL The authored value
    * @return This builder
    */
   Builder&& SetPadding(float value) &&;
 
   /**
    * @brief Sets the TooltipPadding construction default.
-   * @param[in] value The finite non-negative tooltip padding in pixels
+   * @param[in] value @UNIT_PHYSICAL The finite non-negative tooltip padding in pixels
    * @return This builder
    */
   Builder& SetTooltipPadding(float value) &;
 
   /**
    * @brief Sets the TooltipPadding construction default on a temporary builder.
-   * @param[in] value The authored value
+   * @param[in] value @UNIT_PHYSICAL The authored value
    * @return This builder
    */
   Builder&& SetTooltipPadding(float value) &&;

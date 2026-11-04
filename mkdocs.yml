@@ -64,6 +64,9 @@ plugins:
             PREDEFINED: "DALI_NAMESPACE=Dali DALI_TIZEN_NAMESPACE=0 DALI_DOXYGEN"
             SEARCH_INCLUDES: "YES"
             SHOW_FILES: "NO"
+            # Length unit tags (docs/length-units.md). A YAML mapping cannot repeat a key,
+            # so both aliases are one ALIASES value.
+            ALIASES: '"UNIT_LOGICAL=<b>Logical:</b>" "UNIT_PHYSICAL=<b>Physical:</b>"'
 
 hooks:
   - scripts/hooks/search_exclude_files.py
@@ -82,6 +85,7 @@ nav:
   - Project: 'guides/project/index.html'
   - Guides:
       - 'Layout Structure': 'guides/layout-structure.md'
+      - 'Length Units': 'guides/length-units.md'
   - API Reference:
       - 'Class Index': 'daliUi/classes.md'
       - 'Class List': 'daliUi/annotated.md'

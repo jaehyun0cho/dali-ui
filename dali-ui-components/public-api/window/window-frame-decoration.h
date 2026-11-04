@@ -192,6 +192,9 @@ private:
  * Insets reserve space inside the visible frame for the top, bottom, left, and
  * right slots. Resize-handle sizes are independent because the corner handles
  * can overlap the bottom slot.
+ *
+ * The decoration insets and resize-handle sizes are added to surface pixels when the frame and content sizes are
+ * computed, and the frame view tree then multiplies the result by the effective layout scale.
  */
 class DALI_UI_COMPONENTS_API WindowFrameLayout
 {
@@ -208,37 +211,37 @@ public:
 
   /**
    * @brief Sets space reserved inside the frame for decoration slots.
-   * @param[in] insets Decoration insets
+   * @param[in] insets @UNIT_LOGICAL Decoration insets
    */
   void SetDecorationInsets(const Dali::Ui::Insets& insets);
 
   /**
    * @brief Returns decoration insets.
-   * @return Configured insets
+   * @return @UNIT_LOGICAL Configured insets
    */
   Dali::Ui::Insets GetDecorationInsets() const;
 
   /**
    * @brief Sets bottom-left resize-handle size.
-   * @param[in] size Handle size
+   * @param[in] size @UNIT_LOGICAL Handle size
    */
   void SetBottomLeftResizeHandleSize(const Dali::Vector2& size);
 
   /**
    * @brief Returns bottom-left resize-handle size.
-   * @return Configured size
+   * @return @UNIT_LOGICAL Configured size
    */
   Dali::Vector2 GetBottomLeftResizeHandleSize() const;
 
   /**
    * @brief Sets bottom-right resize-handle size.
-   * @param[in] size Handle size
+   * @param[in] size @UNIT_LOGICAL Handle size
    */
   void SetBottomRightResizeHandleSize(const Dali::Vector2& size);
 
   /**
    * @brief Returns bottom-right resize-handle size.
-   * @return Configured size
+   * @return @UNIT_LOGICAL Configured size
    */
   Dali::Vector2 GetBottomRightResizeHandleSize() const;
 

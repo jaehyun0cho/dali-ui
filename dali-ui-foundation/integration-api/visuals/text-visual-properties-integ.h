@@ -66,7 +66,7 @@ enum
   FONT_FAMILY,
 
   /**
-   * @brief The size of font in pixels.
+   * @brief @UNIT_LOGICAL The size of font in pixels.
    * @details Name "fontSize", type Property::FLOAT.
    * @see TextVisual::SetFontSize(), TextVisual::GetFontSize().
    */
@@ -136,7 +136,8 @@ enum
   OVERFLOW_MODE,
 
   /**
-   * @brief The line height.
+   * @brief @UNIT_LOGICAL The line height.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    * @details Name "lineHeight", type Property::FLOAT.
    * @see TextVisual::SetLineHeight(), TextVisual::GetLineHeight().
    */

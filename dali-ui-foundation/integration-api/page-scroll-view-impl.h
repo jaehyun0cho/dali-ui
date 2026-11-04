@@ -74,7 +74,7 @@ public: // From ViewImpl
 
 public: // Page API
   /**
-   * @brief Sets the explicit page size.
+   * @brief @UNIT_PHYSICAL Sets the explicit page size.
    *
    * Only the component on the active scroll axis is used.
    * Set to (0, 0) to derive the page size from the current viewport.
@@ -82,7 +82,7 @@ public: // Page API
   void SetPageSize(const Vector2& size);
 
   /**
-   * @brief Gets the explicitly configured page size ((0,0) means auto).
+   * @brief @UNIT_PHYSICAL Gets the explicitly configured page size ((0,0) means auto).
    */
   Vector2 GetPageSize() const;
 
@@ -157,7 +157,7 @@ public: // Page API
 
 protected:
   /**
-   * @brief Overrides ScrollViewImpl hook to snap fling/drag targets to page boundaries.
+   * @brief @UNIT_PHYSICAL Overrides ScrollViewImpl hook to snap fling/drag targets to page boundaries.
    *
    * @note ABI note: do NOT reorder or remove after first publication.
    */

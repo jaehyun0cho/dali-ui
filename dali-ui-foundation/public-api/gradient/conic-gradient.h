@@ -46,7 +46,9 @@ public:
   /**
    * @brief Creates a conic gradient value.
    *
-   * @param[in] center The center position
+   * @param[in] center @UNIT_LOGICAL The center position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    * @param[in] startAngle The start angle
    */
   Conic(const Vector2& center, Radian startAngle);
@@ -54,7 +56,9 @@ public:
   /**
    * @brief Sets the conic gradient center and start angle.
    *
-   * @param[in] center The center position
+   * @param[in] center @UNIT_LOGICAL The center position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    * @param[in] startAngle The start angle
    */
   void SetCenterAndStartAngle(const Vector2& center, Radian startAngle);
@@ -62,7 +66,9 @@ public:
   /**
    * @brief Gets the center position.
    *
-   * @return The center position
+   * @return @UNIT_LOGICAL The center position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   Vector2 GetCenter() const;
 

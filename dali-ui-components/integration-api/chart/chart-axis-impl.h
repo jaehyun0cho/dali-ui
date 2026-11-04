@@ -72,6 +72,7 @@ public:
     return mShowGridLines;
   }
 
+  /// @UNIT_LOGICAL Returns the label size.
   float GetLabelSize() const
   {
     return mLabelSize;
@@ -83,7 +84,7 @@ public:
   }
 
   void SetShowGridLines(bool show);
-  void SetLabelSize(float size);
+  void SetLabelSize(float size); ///< @UNIT_LOGICAL Sets the label size.
   void SetTitle(const Dali::String& title);
 
   void SetAxisLineColor(const Vector4& color);
@@ -93,15 +94,17 @@ public:
     return mAxisLineColor;
   }
 
-  void SetAxisLineWidth(float width);
+  void SetAxisLineWidth(float width); ///< @UNIT_PHYSICAL Sets the axis line width.
 
+  /// @UNIT_PHYSICAL Returns the axis line width.
   float GetAxisLineWidth() const
   {
     return mAxisLineWidth;
   }
 
-  void SetGridDash(float dashLength, float gapLength);
+  void SetGridDash(float dashLength, float gapLength); ///< @UNIT_PHYSICAL Sets the grid dash.
 
+  /// @UNIT_PHYSICAL Returns the grid dash.
   void GetGridDash(float& dashLength, float& gapLength) const
   {
     dashLength = mGridDashLength;
