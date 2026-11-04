@@ -58,8 +58,8 @@ public:
   virtual void RecycleAllViews() = 0;
 
   virtual uint32_t GetItemCount() const      = 0;
-  virtual float    GetViewportExtent() const = 0;
-  virtual float    GetCrossExtent() const    = 0;
+  virtual float    GetViewportExtent() const = 0; ///< @UNIT_PHYSICAL Returns the viewport extent.
+  virtual float    GetCrossExtent() const    = 0; ///< @UNIT_PHYSICAL Returns the cross extent.
   virtual float    GetCacheBefore() const    = 0;
   virtual float    GetCacheAfter() const     = 0;
 
@@ -67,7 +67,7 @@ public:
   // item at @a position. Called by the layouter in LayoutChunk after
   // GetViewForPosition() has populated the holder. start/end mean physical
   // left/right and are not swapped for a right-to-left layout direction.
-  virtual Insets GetDecorationOffsets(uint32_t position) const = 0;
+  virtual Insets GetDecorationOffsets(uint32_t position) const = 0; ///< @UNIT_PHYSICAL Returns the decoration offsets.
 };
 
 } // namespace Integration

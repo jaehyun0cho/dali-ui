@@ -42,7 +42,7 @@ struct HitResult
   Dali::String seriesName;
   Dali::String xLabel; ///< X-axis label string, or stringified dataX if none
   Vector4      seriesColor;
-  Vector2      canvasPos; ///< Canvas pixel position of the matched data point
+  Vector2      canvasPos; ///< @UNIT_PHYSICAL Canvas pixel position of the matched data point
   float        dataX{0.0f};
   float        dataY{0.0f};
   int          seriesIndex{-1};
@@ -59,15 +59,15 @@ struct HitResult
 class ChartHitTester
 {
 public:
-  static constexpr float DEFAULT_THRESHOLD = 30.0f;
+  static constexpr float DEFAULT_THRESHOLD = 30.0f; ///< @UNIT_PHYSICAL The default threshold.
 
   /**
    * @brief Find the nearest data point within threshold pixels.
    *
-   * @param[in] touchPos  ChartView actor-local coordinates
+   * @param[in] touchPos  @UNIT_PHYSICAL ChartView actor-local coordinates
    * @param[in] model     Chart model (series list, axes)
    * @param[in] scale     Scale engine with current plotArea and data range
-   * @param[in] threshold Maximum hit distance in pixels
+   * @param[in] threshold @UNIT_PHYSICAL Maximum hit distance in pixels
    */
   HitResult FindNearest(const Vector2&     touchPos,
                         const ChartModel&  model,
@@ -75,17 +75,17 @@ public:
                         float              threshold = DEFAULT_THRESHOLD) const;
 
   /**
-   * @brief Return true if touchPos is inside the current plotArea.
+   * @brief @UNIT_PHYSICAL Return true if touchPos is inside the current plotArea.
    */
   bool IsInsidePlotArea(const Vector2& touchPos, const ScaleEngine& scale) const;
 
   /**
    * @brief Find one HitResult per visible series at the X position nearest to touchPos.
    *
-   * @param[in] touchPos   ChartView actor-local coordinates
+   * @param[in] touchPos   @UNIT_PHYSICAL ChartView actor-local coordinates
    * @param[in] model      Chart model
    * @param[in] scale      Scale engine
-   * @param[in] threshold  Maximum X-pixel distance to accept a hit
+   * @param[in] threshold  @UNIT_PHYSICAL Maximum X-pixel distance to accept a hit
    * @param[in] nearestY   When true, among same-X candidates keep only the one nearest in Y
    */
   std::vector<HitResult> FindBySameX(const Vector2&     touchPos,

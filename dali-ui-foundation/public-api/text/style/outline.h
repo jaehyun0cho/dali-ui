@@ -118,42 +118,42 @@ public:
   /**
    * @brief Sets the outline offset.
    *
-   * @param[in] offset The outline offset in pixels.
+   * @param[in] offset @UNIT_LOGICAL The outline offset in pixels.
    */
   void SetOffset(const Vector2& offset);
 
   /**
    * @brief Returns the outline offset.
    *
-   * @return The outline offset in pixels.
+   * @return @UNIT_LOGICAL The outline offset in pixels.
    */
   const Vector2& GetOffset() const;
 
   /**
    * @brief Sets the outline width.
    *
-   * @param[in] width The outline width in pixels.
+   * @param[in] width @UNIT_LOGICAL The outline width in pixels.
    */
   void SetWidth(float width);
 
   /**
    * @brief Returns the outline width.
    *
-   * @return The outline width in pixels.
+   * @return @UNIT_LOGICAL The outline width in pixels.
    */
   float GetWidth() const;
 
   /**
    * @brief Sets the outline blur radius.
    *
-   * @param[in] blurRadius The outline blur radius in pixels.
+   * @param[in] blurRadius @UNIT_PHYSICAL The outline blur radius in pixels.
    */
   void SetBlurRadius(float blurRadius);
 
   /**
    * @brief Returns the outline blur radius.
    *
-   * @return The outline blur radius in pixels.
+   * @return @UNIT_PHYSICAL The outline blur radius in pixels.
    */
   float GetBlurRadius() const;
 

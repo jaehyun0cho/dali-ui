@@ -78,7 +78,9 @@ enum Type
   TYPE = READ_ONLY_PROPERTY_START_INDEX, ///< The type of the visual. Name "visualType", type Ui::VisualType.
 
   /**
-   * @brief The radius for the rounded corners of the visual.
+   * @brief @UNIT_LOGICAL The radius for the rounded corners of the visual.
+   * ImageVisual, AnimatedImageVisual and LottieAnimationVisual draw an ABSOLUTE radius in physical pixels, without the
+   * effective layout scale.
    * @details Name "cornerRadius", type Property::FLOAT or Property::VECTOR4, animatable
    * @note By default, it is Vector::ZERO.
    * @note Only Property::Vector4 can be animated.
@@ -105,7 +107,7 @@ enum Type
   CORNER_RADIUS_POLICY = OPACITY + 3,
 
   /**
-   * @brief The width for the borderline of the visual.
+   * @brief @UNIT_LOGICAL The width for the borderline of the visual.
    * @details Name "borderlineWidth", type Property::FLOAT, animatable
    * @note Optional. Default value is 0.0f.
    */
@@ -176,8 +178,8 @@ namespace Property
 enum Type
 {
   /**
-   * @brief Offset of the visual, which can be either relative (percentage [0.0f to 1.0f] of the parent) or absolute (in
-   * world units).
+   * @brief @UNIT_LOGICAL Offset of the visual, which can be either relative (percentage [0.0f to 1.0f] of the parent) or absolute
+   * (a length).
    * @details Name "offset", type Property::VECTOR2, animatable.
    *
    * @see OFFSET_POLICY
@@ -185,8 +187,8 @@ enum Type
   OFFSET,
 
   /**
-   * @brief Size of the visual, which can be either relative (percentage [0.0f to 1.0f] of the parent) or absolute (in
-   * world units).
+   * @brief @UNIT_LOGICAL Size of the visual, which can be either relative (percentage [0.0f to 1.0f] of the parent) or absolute
+   * (a length).
    * @details Name "size", type Property::VECTOR2, animatable.
    * @see SIZE_POLICY
    */
@@ -255,7 +257,9 @@ enum Type
   SIZE_POLICY,
 
   /**
-   * @brief Extra size value that will be added to the computed visual size.
+   * @brief @UNIT_LOGICAL Extra size value that will be added to the computed visual size.
+   * While a fitting mode places the visual (always for LottieAnimationVisual) it is added in physical pixels, without
+   * the effective layout scale.
    * @details Name "extraSize", type Vector2.
    *
    * @note It is an absolute value.

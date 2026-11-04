@@ -85,7 +85,7 @@ public:
   /**
    * @brief Sets normal frame size used for the first restore after an initial
    *        full-size launch.
-   * @param[in] size Restore frame size
+   * @param[in] size @UNIT_PHYSICAL Restore frame size
    */
   void SetInitialRestoreFrameSize(const Dali::Vector2& size);
 
@@ -98,7 +98,7 @@ public:
    * @brief Reads the configured initial restore frame size.
    *
    * The output is not modified when no size is configured.
-   * @param[out] size Configured restore size
+   * @param[out] size @UNIT_PHYSICAL Configured restore size
    * @return true when configured
    */
   bool GetInitialRestoreFrameSize(Dali::Vector2& size) const;

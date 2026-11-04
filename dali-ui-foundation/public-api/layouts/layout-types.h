@@ -73,14 +73,14 @@ constexpr float WRAP_CONTENT = -1.0f;
 constexpr float MATCH_PARENT = -2.0f;
 
 /**
- * @brief Constant representing no minimum size constraint.
+ * @brief @UNIT_LOGICAL Constant representing no minimum size constraint.
  *
  * Use this with minimum width or height APIs to remove the lower size bound.
  */
 constexpr float UNCONSTRAINED_MIN_SIZE = 0.0f;
 
 /**
- * @brief Constant representing no maximum size constraint.
+ * @brief @UNIT_LOGICAL Constant representing no maximum size constraint.
  *
  * Use this with maximum width or height APIs to remove the upper size bound.
  */
@@ -115,6 +115,8 @@ enum class LayoutMode : uint8_t
  * This class stores the measured width and height of a view.
  * The two public fields are a fixed ABI representation. Additional measurement
  * metadata belongs in a separate type rather than new fields in this class.
+ *
+ * @UNIT_PHYSICAL Applies to every length in this class.
  */
 class DALI_UI_API MeasuredSize
 {
@@ -313,7 +315,7 @@ public:
 // ============================================================================
 
 /**
- * @brief Move-only callback for custom layout measurement.
+ * @brief @UNIT_PHYSICAL Move-only callback for custom layout measurement.
  *
  * @code
  * view.SetMeasureCallback(MeasureCallback::New(this, &MyClass::OnMeasure));
@@ -326,7 +328,7 @@ public:
 using MeasureCallback = Callback<MeasuredSize(View, float, float)>;
 
 /**
- * @brief Move-only callback for custom layout arrangement.
+ * @brief @UNIT_PHYSICAL Move-only callback for custom layout arrangement.
  *
  * @code
  * view.SetArrangeCallback(ArrangeCallback::New(this, &MyClass::OnArrange));
@@ -533,7 +535,7 @@ public:
   /**
    * @brief Creates an absolute grid length.
    *
-   * @param[in] pixels The pixel value
+   * @param[in] pixels @UNIT_LOGICAL The pixel value
    * @return GridLength instance
    */
   static constexpr GridLength Absolute(float pixels)

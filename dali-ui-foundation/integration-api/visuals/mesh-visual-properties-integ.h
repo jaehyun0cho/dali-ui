@@ -94,7 +94,7 @@ enum
   USE_SOFT_NORMALS,
 
   /**
-   * @brief The position, in stage space, of the point light that applies lighting to the model.
+   * @brief @UNIT_PHYSICAL The position, in stage space, of the point light that applies lighting to the model.
    * @details Name "lightPosition", type Property::VECTOR3.
    * This is based off the stage's dimensions, so using the width and height of the stage halved will correspond to the
    * center, and using all zeroes will place the light at the top left corner.

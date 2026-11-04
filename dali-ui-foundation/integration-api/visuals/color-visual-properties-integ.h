@@ -52,7 +52,7 @@ enum
    * @brief Enumeration for the instance of properties belonging to the ColorVisual.
    */
   /**
-   * @brief The blur radius of the visual.
+   * @brief @UNIT_LOGICAL The blur radius of the visual.
    * @details Name "blurRadius", type Property::FLOAT, animatable.
    *          If the value is 0, the edge is sharp. Otherwise, the larger the value, the more the edge is blurred.
    * @note Optional.

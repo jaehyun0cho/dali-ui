@@ -110,46 +110,46 @@ public: // Property & enumeration declarations
     enum
     {
       /**
-       * @brief The outer space around the View.
+       * @brief @UNIT_LOGICAL The outer space around the View.
        * @details Name "margin", type Property::VECTOR4, ordered as start, end, top, bottom.
        * @note Margin property is to be supported by Layout algorithms and containers in future.
        */
       MARGIN = PROPERTY_START_INDEX,
 
       /**
-       * @brief The inner space of the View.
+       * @brief @UNIT_LOGICAL The inner space of the View.
        * @details Name "padding", type Property::VECTOR4, ordered as start, end, top, bottom.
        */
       PADDING,
 
       /**
-       * @brief The width requested by the View for measurement.
+       * @brief @UNIT_LOGICAL The width requested by the View for measurement.
        * @details Name "requestedWidth", type Property::FLOAT.
        * @note WRAP_CONTENT (-1.0f) and MATCH_PARENT (-2.0f) are valid special values.
        */
       REQUESTED_WIDTH,
 
       /**
-       * @brief The height requested by the View for measurement.
+       * @brief @UNIT_LOGICAL The height requested by the View for measurement.
        * @details Name "requestedHeight", type Property::FLOAT.
        * @note WRAP_CONTENT (-1.0f) and MATCH_PARENT (-2.0f) are valid special values.
        */
       REQUESTED_HEIGHT,
 
       /**
-       * @brief The minimum width of the View, applied when it is measured and when it is laid out (see SetMinimumWidth()).
+       * @brief @UNIT_LOGICAL The minimum width of the View, applied when it is measured and when it is laid out (see SetMinimumWidth()).
        * @details Name "minimumWidth", type Property::FLOAT.
        */
       MINIMUM_WIDTH,
 
       /**
-       * @brief The minimum height of the View, applied when it is measured and when it is laid out (see SetMinimumHeight()).
+       * @brief @UNIT_LOGICAL The minimum height of the View, applied when it is measured and when it is laid out (see SetMinimumHeight()).
        * @details Name "minimumHeight", type Property::FLOAT.
        */
       MINIMUM_HEIGHT,
 
       /**
-       * @brief The maximum width of the View, applied when it is measured and when it is laid out (see SetMaximumWidth()).
+       * @brief @UNIT_LOGICAL The maximum width of the View, applied when it is measured and when it is laid out (see SetMaximumWidth()).
        * @details Name "maximumWidth", type Property::FLOAT.
        * @note max-wins: if the minimum exceeds the maximum, the MAXIMUM wins
        * (measurement floors to the minimum then ceils to the maximum).
@@ -158,7 +158,7 @@ public: // Property & enumeration declarations
       MAXIMUM_WIDTH,
 
       /**
-       * @brief The maximum height of the View, applied when it is measured and when it is laid out (see SetMaximumHeight()).
+       * @brief @UNIT_LOGICAL The maximum height of the View, applied when it is measured and when it is laid out (see SetMaximumHeight()).
        * @details Name "maximumHeight", type Property::FLOAT.
        */
       MAXIMUM_HEIGHT,
@@ -232,7 +232,9 @@ public: // Property & enumeration declarations
       DISPATCH_KEY_EVENTS,
 
       /**
-       * @brief The radius for the rounded corners of the View.
+       * @brief @UNIT_LOGICAL The radius for the rounded corners of the View.
+       * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length. An image visual does not multiply
+       * an ABSOLUTE radius by the scale.
        * @details Name "viewCornerRadius", type Property::VECTOR4 or Property::FLOAT
        * @note By default, it is Vector::ZERO.
        * @note Applies to specific visuals inside the View.
@@ -261,7 +263,7 @@ public: // Property & enumeration declarations
       CORNER_SQUARENESS,
 
       /**
-       * @brief The width for the borderline of the View. It will update borderline visual
+       * @brief @UNIT_LOGICAL The width for the borderline of the View. It will update borderline visual
        * @details Name "viewBorderlineWidth", type Property::FLOAT.
        * @note It will not create UniformMap internally. So this property don't be used at Render phase.
        */
@@ -402,8 +404,8 @@ public: // Measure / Arrange API
    * constraint is its size -- and under any other parent a MATCH_PARENT axis is assigned when
    * that parent's own size is determined (explicit, or itself assigned).
    *
-   * @param[in] widthConstraint The width constraint for measurement
-   * @param[in] heightConstraint The height constraint for measurement
+   * @param[in] widthConstraint @UNIT_PHYSICAL The width constraint for measurement
+   * @param[in] heightConstraint @UNIT_PHYSICAL The height constraint for measurement
    * @return The measured size
    */
   MeasuredSize Measure(float widthConstraint, float heightConstraint);
@@ -449,8 +451,8 @@ public: // Measure / Arrange API
    * the start edge of @p bounds; the arrange implementation receives the clamped bounds, and
    * its returned rect is applied as is.
    *
-   * @param[in] bounds The bounds to arrange the view in
-   * @return The final arranged bounds (parent-local, pre-RTL logical)
+   * @param[in] bounds @UNIT_PHYSICAL The bounds to arrange the view in
+   * @return @UNIT_PHYSICAL The final arranged bounds (parent-local, before RTL mirroring)
    */
   LayoutRect Arrange(const LayoutRect& bounds);
 
@@ -779,7 +781,9 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * (e.g. for scrolling or animation that should not feed back into
    * layout), use Dali::Ui::Extension::View::SetPositionX(view, x).
    *
-   * @param[in] x The requested X position
+   * @param[in] x @UNIT_LOGICAL The requested X position.
+   * In a plain View container it is multiplied by the container's effective layout scale, not this View's own; a
+   * STANDALONE View uses its own.
    */
   void SetRequestedX(float x);
 
@@ -790,14 +794,18 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * SetRequestedX. To read the current rendered X position
    * (Actor::Property::POSITION_X) instead, use GetPositionX().
    *
-   * @return The requested X position
+   * @return @UNIT_LOGICAL The requested X position.
+   * In a plain View container it is multiplied by the container's effective layout scale, not this View's own; a
+   * STANDALONE View uses its own.
    */
   float GetRequestedX() const;
 
   /**
    * @brief Sets the Y position requested by the user.
    *
-   * @param[in] y The requested Y position
+   * @param[in] y @UNIT_LOGICAL The requested Y position.
+   * In a plain View container it is multiplied by the container's effective layout scale, not this View's own; a
+   * STANDALONE View uses its own.
    * @see SetRequestedX
    */
   void SetRequestedY(float y);
@@ -805,7 +813,9 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
   /**
    * @brief Returns the user-requested Y position.
    *
-   * @return The requested Y position
+   * @return @UNIT_LOGICAL The requested Y position.
+   * In a plain View container it is multiplied by the container's effective layout scale, not this View's own; a
+   * STANDALONE View uses its own.
    * @see GetRequestedX
    */
   float GetRequestedY() const;
@@ -824,14 +834,16 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * directly (e.g. for scrolling or animation that must not feed back into
    * layout), use Dali::Ui::Extension::View::SetSizeWidth(view, width).
    *
-   * @param[in] width The requested width
+   * @param[in] width @UNIT_LOGICAL The requested width.
+   * A View without a parent and without children also writes the value unscaled to its actor size at once; the next
+   * layout pass replaces it with the scaled size.
    */
   void SetRequestedWidth(float width);
 
   /**
    * @brief Gets the requested width.
    *
-   * @return The requested width
+   * @return @UNIT_LOGICAL The requested width
    */
   float GetRequestedWidth() const;
 
@@ -842,14 +854,16 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * WRAP_CONTENT (-1): sizes to content (default).
    * MATCH_PARENT (-2): fills the parent container.
    *
-   * @param[in] height The requested height
+   * @param[in] height @UNIT_LOGICAL The requested height.
+   * A View without a parent and without children also writes the value unscaled to its actor size at once; the next
+   * layout pass replaces it with the scaled size.
    */
   void SetRequestedHeight(float height);
 
   /**
    * @brief Gets the requested height.
    *
-   * @return The requested height
+   * @return @UNIT_LOGICAL The requested height
    */
   float GetRequestedHeight() const;
 
@@ -862,14 +876,14 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * RIGHT_TO_LEFT) and extends past the slot; the parent's placement of the View's siblings
    * is unaffected.
    *
-   * @param[in] width The minimum width
+   * @param[in] width @UNIT_LOGICAL The minimum width
    */
   void SetMinimumWidth(float width);
 
   /**
    * @brief Gets the minimum width.
    *
-   * @return The minimum width
+   * @return @UNIT_LOGICAL The minimum width
    */
   float GetMinimumWidth() const;
 
@@ -881,14 +895,14 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * slot and extends past the slot; the parent's placement of the View's siblings is
    * unaffected.
    *
-   * @param[in] height The minimum height
+   * @param[in] height @UNIT_LOGICAL The minimum height
    */
   void SetMinimumHeight(float height);
 
   /**
    * @brief Gets the minimum height.
    *
-   * @return The minimum height
+   * @return @UNIT_LOGICAL The minimum height
    */
   float GetMinimumHeight() const;
 
@@ -901,7 +915,7 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * its right edge when the parent's layout direction is RIGHT_TO_LEFT) and the rest of the
    * slot stays empty; the parent's placement of the View's siblings is unaffected.
    *
-   * @param[in] width The maximum width
+   * @param[in] width @UNIT_LOGICAL The maximum width
    * @note max-wins: when the minimum width exceeds the maximum width, the
    * MAXIMUM wins. Constraints are applied by flooring to the minimum first and
    * then ceiling to the maximum, so the final clamp to the maximum prevails.
@@ -911,7 +925,7 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
   /**
    * @brief Gets the maximum width.
    *
-   * @return The maximum width
+   * @return @UNIT_LOGICAL The maximum width
    */
   float GetMaximumWidth() const;
 
@@ -923,7 +937,7 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
    * View is laid out at the maximum height from the top edge of that slot and the rest of the
    * slot stays empty; the parent's placement of the View's siblings is unaffected.
    *
-   * @param[in] height The maximum height
+   * @param[in] height @UNIT_LOGICAL The maximum height
    * @note max-wins: when the minimum height exceeds the maximum height, the
    * MAXIMUM wins. Constraints are applied by flooring to the minimum first and
    * then ceiling to the maximum, so the final clamp to the maximum prevails.
@@ -933,125 +947,125 @@ public: // View configuration (scale, size, layout, focus, appearance) & hierarc
   /**
    * @brief Gets the maximum height.
    *
-   * @return The maximum height
+   * @return @UNIT_LOGICAL The maximum height
    */
   float GetMaximumHeight() const;
 
   /**
    * @brief Sets the view margin.
    *
-   * @param[in] margin The margin to set
+   * @param[in] margin @UNIT_LOGICAL The margin to set
    */
   void SetMargin(const Insets& margin);
 
   /**
    * @brief Sets the view margin for each edge.
    *
-   * @param[in] start The start margin
-   * @param[in] end The end margin
-   * @param[in] top The top margin
-   * @param[in] bottom The bottom margin
+   * @param[in] start @UNIT_LOGICAL The start margin
+   * @param[in] end @UNIT_LOGICAL The end margin
+   * @param[in] top @UNIT_LOGICAL The top margin
+   * @param[in] bottom @UNIT_LOGICAL The bottom margin
    */
   void SetMargin(float start, float end, float top, float bottom);
 
   /**
    * @brief Sets the horizontal and vertical view margin.
    *
-   * @param[in] horizontal The start and end margin
-   * @param[in] vertical The top and bottom margin
+   * @param[in] horizontal @UNIT_LOGICAL The start and end margin
+   * @param[in] vertical @UNIT_LOGICAL The top and bottom margin
    */
   void SetMargin(float horizontal, float vertical);
 
   /**
    * @brief Sets the same view margin for all edges.
    *
-   * @param[in] uniform The margin for all edges
+   * @param[in] uniform @UNIT_LOGICAL The margin for all edges
    */
   void SetMargin(float uniform);
 
   /**
-   * @brief Sets the start view margin.
+   * @brief @UNIT_LOGICAL Sets the start view margin.
    */
   void SetStartMargin(float margin);
 
   /**
-   * @brief Sets the end view margin.
+   * @brief @UNIT_LOGICAL Sets the end view margin.
    */
   void SetEndMargin(float margin);
 
   /**
-   * @brief Sets the top view margin.
+   * @brief @UNIT_LOGICAL Sets the top view margin.
    */
   void SetTopMargin(float margin);
 
   /**
-   * @brief Sets the bottom view margin.
+   * @brief @UNIT_LOGICAL Sets the bottom view margin.
    */
   void SetBottomMargin(float margin);
 
   /**
    * @brief Gets the view margin.
    *
-   * @return The view margin
+   * @return @UNIT_LOGICAL The view margin
    */
   Insets GetMargin() const;
 
   /**
    * @brief Sets the view padding.
    *
-   * @param[in] padding The padding to set
+   * @param[in] padding @UNIT_LOGICAL The padding to set
    */
   void SetPadding(const Insets& padding);
 
   /**
    * @brief Sets the view padding for each edge.
    *
-   * @param[in] start The start padding
-   * @param[in] end The end padding
-   * @param[in] top The top padding
-   * @param[in] bottom The bottom padding
+   * @param[in] start @UNIT_LOGICAL The start padding
+   * @param[in] end @UNIT_LOGICAL The end padding
+   * @param[in] top @UNIT_LOGICAL The top padding
+   * @param[in] bottom @UNIT_LOGICAL The bottom padding
    */
   void SetPadding(float start, float end, float top, float bottom);
 
   /**
    * @brief Sets the horizontal and vertical view padding.
    *
-   * @param[in] horizontal The start and end padding
-   * @param[in] vertical The top and bottom padding
+   * @param[in] horizontal @UNIT_LOGICAL The start and end padding
+   * @param[in] vertical @UNIT_LOGICAL The top and bottom padding
    */
   void SetPadding(float horizontal, float vertical);
 
   /**
    * @brief Sets the same view padding for all edges.
    *
-   * @param[in] uniform The padding for all edges
+   * @param[in] uniform @UNIT_LOGICAL The padding for all edges
    */
   void SetPadding(float uniform);
 
   /**
-   * @brief Sets the start view padding.
+   * @brief @UNIT_LOGICAL Sets the start view padding.
    */
   void SetStartPadding(float padding);
 
   /**
-   * @brief Sets the end view padding.
+   * @brief @UNIT_LOGICAL Sets the end view padding.
    */
   void SetEndPadding(float padding);
 
   /**
-   * @brief Sets the top view padding.
+   * @brief @UNIT_LOGICAL Sets the top view padding.
    */
   void SetTopPadding(float padding);
 
   /**
-   * @brief Sets the bottom view padding.
+   * @brief @UNIT_LOGICAL Sets the bottom view padding.
    */
   void SetBottomPadding(float padding);
 
   /**
    * @brief Gets the view padding.
    *
-   * @return The view padding
+   * @return @UNIT_LOGICAL The view padding
    */
   Insets GetPadding() const;
 
@@ -1321,24 +1335,31 @@ public: // View configuration & hierarchy (continued: focus, appearance, traits,
   /**
    * @brief Gets the corner radius of the view.
    *
-   * @return The corner radius as Vector4 (topLeft, topRight, bottomRight, bottomLeft)
+   * @return @UNIT_LOGICAL The corner radius as Vector4 (topLeft, topRight, bottomRight, bottomLeft).
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length. An image visual does not multiply an
+   * ABSOLUTE radius by the scale.
    */
   Vector4 GetCornerRadius() const;
 
   /**
    * @brief Sets a uniform corner radius for all four corners.
    *
-   * @param[in] radius The corner radius to apply to all corners
+   * @param[in] radius @UNIT_LOGICAL The corner radius to apply to all corners.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length. An image visual does not multiply an
+   * ABSOLUTE radius by the scale.
    */
   void SetCornerRadius(float radius);
 
   /**
    * @brief Sets individual corner radii for all four corners.
    *
-   * @param[in] topLeft     The radius for the top-left corner
-   * @param[in] topRight    The radius for the top-right corner
-   * @param[in] bottomRight The radius for the bottom-right corner
-   * @param[in] bottomLeft  The radius for the bottom-left corner
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length. An image visual does not multiply an
+   * ABSOLUTE radius by the scale.
+   *
+   * @param[in] topLeft     @UNIT_LOGICAL The radius for the top-left corner
+   * @param[in] topRight    @UNIT_LOGICAL The radius for the top-right corner
+   * @param[in] bottomRight @UNIT_LOGICAL The radius for the bottom-right corner
+   * @param[in] bottomLeft  @UNIT_LOGICAL The radius for the bottom-left corner
    */
   void SetCornerRadius(float topLeft, float topRight, float bottomRight, float bottomLeft);
 
@@ -1346,7 +1367,9 @@ public: // View configuration & hierarchy (continued: focus, appearance, traits,
   /**
    * @brief Sets corner radii from a Vector4.
    *
-   * @param[in] radius Corner radii as Vector4 (x=topLeft, y=topRight, z=bottomRight, w=bottomLeft)
+   * @param[in] radius @UNIT_LOGICAL Corner radii as Vector4 (x=topLeft, y=topRight, z=bottomRight, w=bottomLeft).
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length. An image visual does not multiply an
+   * ABSOLUTE radius by the scale.
    */
   void SetCornerRadius(const Vector4& radius);
 
@@ -1413,7 +1436,7 @@ public: // View configuration & hierarchy (continued: focus, appearance, traits,
   /**
    * @brief Gets the borderline width of the view.
    *
-   * @return The borderline width
+   * @return @UNIT_LOGICAL The borderline width
    */
   float GetBorderlineWidth() const;
 
@@ -1421,7 +1444,8 @@ public: // View configuration & hierarchy (continued: focus, appearance, traits,
   /**
    * @brief Sets the borderline width of the view.
    *
-   * @param[in] width The borderline width to set
+   * @param[in] width @UNIT_LOGICAL The borderline width to set.
+   * With a RELATIVE corner radius the corner is widened by the width without the scale.
    */
   void SetBorderlineWidth(float width);
 
@@ -2614,7 +2638,7 @@ public: // Signals
    */
   StateChangedSignalType& StateChangedSignal();
 
-  using LayoutFinishedSignalType = Signal<void(View, LayoutRect)>;
+  using LayoutFinishedSignalType = Signal<void(View, LayoutRect)>; ///< @UNIT_PHYSICAL The layout finished signal type.
   /**
    * @brief Emitted after a layout pass that arranged this View completes.
    *

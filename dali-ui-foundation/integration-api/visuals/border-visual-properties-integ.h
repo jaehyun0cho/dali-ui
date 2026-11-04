@@ -52,7 +52,7 @@ enum
    * @brief Enumeration for the instance of properties belonging to the BorderVisual.
    */
   /**
-   * @brief The width of the border (in pixels).
+   * @brief @UNIT_LOGICAL The width of the border (in pixels).
    * @details Name "borderSize", type Property::FLOAT.
    * @note Mandatory.
    */

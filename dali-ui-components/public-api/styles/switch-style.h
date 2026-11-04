@@ -42,6 +42,8 @@ class SwitchStyleImpl;
  * Besides layout and color values, the style owns the drag threshold and
  * press/focus overlay effect. Selection transition timing and easing are
  * intrinsic Switch behavior rather than style values.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API SwitchStyle : public UiStyle
 {
@@ -82,6 +84,8 @@ public: // Not intended for application developers
 
 /**
  * @brief Mutable builder used to create SwitchStyle handles.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API SwitchStyle::Builder
 {

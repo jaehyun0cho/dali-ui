@@ -61,7 +61,7 @@ DALI_UI_API uint32_t LoadAnimatedImage(AsyncImageLoader           asyncImageLoad
  * @REMARK_STORAGE
  * @param[in] asyncImageLoader The ayncImageLoader
  * @param[in] url The URL of the image file to load
- * @param[in] dimensions The width and height to fit the loaded image to
+ * @param[in] dimensions @UNIT_PHYSICAL The width and height to fit the loaded image to
  * @param[in] samplingMode The filtering method used when sampling pixels from the input image while fitting it to
  * desired size
  * @param[in] orientationCorrection Reorient the image to respect any orientation metadata in its header

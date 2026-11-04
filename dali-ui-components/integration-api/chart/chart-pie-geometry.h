@@ -37,14 +37,14 @@ struct ChartPieSliceGeometry
 {
   HitResult hit;
   Vector2   center;
-  float     innerRadius;
-  float     outerRadius;
+  float     innerRadius; ///< @UNIT_PHYSICAL The inner radius.
+  float     outerRadius; ///< @UNIT_PHYSICAL The outer radius.
   float     startAngle;
   float     sweepAngle;
 
   /**
    * @brief Tests the rendered sector, excluding the donut hole and slice gaps.
-   * @param[in] position The canvas position in pixels
+   * @param[in] position @UNIT_PHYSICAL The canvas position in pixels
    * @return True when the position is inside this sector
    */
   bool Contains(const Vector2& position) const
@@ -68,7 +68,7 @@ struct ChartPieSliceGeometry
 /**
  * @brief Builds shared rendering and selection geometry from finite positive slices.
  * @param[in] model The chart data and appearance
- * @param[in] plotArea The canvas area in pixels
+ * @param[in] plotArea @UNIT_PHYSICAL The canvas area in pixels
  * @return The visible pie or donut sectors
  */
 inline std::vector<ChartPieSliceGeometry> BuildChartPieSlices(const ChartModel& model, const Rect<float>& plotArea)

@@ -116,8 +116,8 @@ public:
     Dali::String text;
     Vector4      color;
     Vector3      pivot{Pivot::BOTTOM_CENTER};
-    Vector2      position;
-    float        size;
+    Vector2      position; ///< @UNIT_PHYSICAL The position.
+    float        size;     ///< @UNIT_PHYSICAL The size.
   };
 
   /**
@@ -181,12 +181,12 @@ public:
   void RenderCrosshair(Ui::CanvasView&    canvas,
                        const Vector2&     hitPos,
                        const ScaleEngine& scale,
-                       const StyleConfig& style);
+                       const StyleConfig& style); ///< @UNIT_PHYSICAL Draws the crosshair through the hit position.
 
   void RenderHighlight(Ui::CanvasView& canvas,
                        const Vector2&  hitPos,
                        const Vector4&  color,
-                       float           radius);
+                       float           radius); ///< @UNIT_PHYSICAL Draws a highlight circle of the given radius at the hit position.
 
   void Clear(Ui::CanvasView& canvas);
 };

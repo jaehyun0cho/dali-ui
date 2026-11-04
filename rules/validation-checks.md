@@ -111,3 +111,33 @@ rg -n '#include <dali-ui-foundation/(integration-api|internal)/' dali-ui-compone
 
 Hits should usually be treated as violations unless there is an explicit design
 decision.
+
+## Length Unit Tags
+
+Every documented pixel length in the five API directories carries exactly one `@UNIT_LOGICAL` or `@UNIT_PHYSICAL`
+tag (see [Length Units](length-units.md)).
+
+Check the whole API surface:
+
+```sh
+python3 scripts/check-length-unit-tags.py --all
+```
+
+Check only the lines a change touched:
+
+```sh
+python3 scripts/check-length-unit-tags.py --diff origin/devel
+```
+
+The script reports a missing tag, more than one tag, a tag that is not the first token, an unknown `@UNIT_` word, a
+tag that differs from the class tag, a Set/Get pair with different tags and, with `--all`, a stale allowlist entry.
+It finds candidates by C++ type and name, so a hit can be a false positive: add it to the allowlist in the script
+with a reason instead of adding a tag. For the same reason it can miss a length whose type or name it does not
+recognize, so zero violations does not prove that every length is tagged; review new length APIs by hand as well.
+
+After changing the script, run its self-test, which checks that `--diff` applies class tags of unchanged headers and
+reports a deleted tag:
+
+```sh
+python3 scripts/check-length-unit-tags.py --self-test
+```

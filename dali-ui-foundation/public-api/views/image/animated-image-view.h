@@ -416,35 +416,45 @@ public: // Size & Loading Behavior
    * The returned size reflects the animated image Visual, including the desired
    * size or decoded image size when applicable. It may differ from the laid-out View size.
    *
-   * @return The natural size of the animated image content
+   * @return @UNIT_LOGICAL The natural size of the animated image content.
+   * With image loading at the view size enabled it is the View's physical size, which the layout multiplies by the
+   * effective layout scale again.
    */
   Vector3 GetNaturalSize() const;
 
   /**
    * @brief Sets the desired image width used as a hint for the image loader.
    *
-   * @param[in] width The desired width in pixels (0 to use natural size)
+   * @param[in] width @UNIT_PHYSICAL The desired width in pixels (0 to use natural size).
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   void SetDesiredWidth(int width);
 
   /**
    * @brief Gets the desired image width hint.
    *
-   * @return The desired width in pixels, or 0 if not set
+   * @return @UNIT_PHYSICAL The desired width in pixels, or 0 if not set.
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   int GetDesiredWidth() const;
 
   /**
    * @brief Sets the desired image height used as a hint for the image loader.
    *
-   * @param[in] height The desired height in pixels (0 to use natural size)
+   * @param[in] height @UNIT_PHYSICAL The desired height in pixels (0 to use natural size).
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   void SetDesiredHeight(int height);
 
   /**
    * @brief Gets the desired image height hint.
    *
-   * @return The desired height in pixels, or 0 if not set
+   * @return @UNIT_PHYSICAL The desired height in pixels, or 0 if not set.
+   * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
+   * effective layout scale.
    */
   int GetDesiredHeight() const;
 

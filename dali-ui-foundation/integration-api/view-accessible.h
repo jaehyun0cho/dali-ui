@@ -54,7 +54,7 @@ using AccessibilityStates = uint32_t; // LCOV_EXCL_LINE
 class DALI_UI_API ViewAccessible : public Dali::Accessibility::ActorAccessible, public Dali::Accessibility::Action
 {
 protected:
-  Vector2                       mLastPosition{0.0f, 0.0f};
+  Vector2                       mLastPosition{0.0f, 0.0f}; ///< @UNIT_PHYSICAL The last position.
   Dali::WeakHandle<Dali::Actor> mCurrentHighlightActor;
 
   void ScrollToSelf();
@@ -221,8 +221,8 @@ public:
    *
    * This function sets a custom highlight overlay at the specified position and size.
    *
-   * @param position A Vector2 representing the position of the overlay
-   * @param size A Vector2 representing the size of the overlay
+   * @param position @UNIT_PHYSICAL A Vector2 representing the position of the overlay
+   * @param size @UNIT_PHYSICAL A Vector2 representing the size of the overlay
    */
   void SetCustomHighlightOverlay(Vector2 position, Vector2 size);
 
@@ -256,13 +256,13 @@ public:
 
   /**
    * @brief Sets last object position
-   * @param[in] position Last object position
+   * @param[in] position @UNIT_PHYSICAL Last object position
    */
   void SetLastPosition(Vector2 position);
 
   /**
    * @brief Gets last object position
-   * @return The Last object position
+   * @return @UNIT_PHYSICAL The Last object position
    */
   Vector2 GetLastPosition() const;
 

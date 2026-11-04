@@ -135,25 +135,29 @@ public:
    * @brief Sets the transform and the control size
    *
    * @param[in] transform A property map describing the transform
-   * @param[in] controlSize The size of the parent control for visuals that need to scale internally.
+   * @param[in] controlSize @UNIT_PHYSICAL The size of the parent control for visuals that need to scale internally.
    */
   void SetTransformAndSize(const Dali::Property::Map& transform, Size controlSize, float effectiveScale);
 
   /**
    * @brief Returns the height for a given width.
    *
-   * @param[in] width Width to use.
+   * @param[in] width @UNIT_PHYSICAL Width to use.
+   * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    *
-   * @return The height based on the width.
+   * @return @UNIT_PHYSICAL The height based on the width.
+   * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    */
   float GetHeightForWidth(float width);
 
   /**
    * @brief Returns the width for a given height.
    *
-   * @param[in] height Height to use.
+   * @param[in] height @UNIT_PHYSICAL Height to use.
+   * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    *
-   * @return The width based on the height.
+   * @return @UNIT_PHYSICAL The width based on the height.
+   * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    */
   float GetWidthForHeight(float height);
 
@@ -166,7 +170,8 @@ public:
    * @note A visual may not actually have a natural size until it has
    * been placed on stage and acquired all it's resources.
    *
-   * @param[out] naturalSize The visual's natural size
+   * @param[out] naturalSize @UNIT_LOGICAL The visual's natural size.
+   * A TextVisual reports it in physical pixels at the scale it last received.
    */
   void GetNaturalSize(Vector2& naturalSize);
 

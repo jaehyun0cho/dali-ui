@@ -132,14 +132,14 @@ public: // API
   /**
    * @brief Sets the spacing between children in the stack.
    *
-   * @param[in] spacing The spacing to set (in pixels)
+   * @param[in] spacing @UNIT_LOGICAL The spacing to set (in pixels)
    */
   void SetSpacing(float spacing);
 
   /**
    * @brief Gets the spacing between children in the stack.
    *
-   * @return The current spacing
+   * @return @UNIT_LOGICAL The current spacing
    */
   float GetSpacing() const;
 

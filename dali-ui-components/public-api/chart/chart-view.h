@@ -259,11 +259,11 @@ public:
       ANIMATION_DURATION = ChartViewPropertyIndex::ANIMATION_DURATION,
       Y_AXIS_AUTO_RANGE  = ChartViewPropertyIndex::Y_AXIS_AUTO_RANGE,
       LEGEND_POSITION    = ChartViewPropertyIndex::LEGEND_POSITION,
-      AXIS_LABEL_SIZE    = ChartViewPropertyIndex::AXIS_LABEL_SIZE,
-      TITLE_SIZE         = ChartViewPropertyIndex::TITLE_SIZE,
-      LINE_WIDTH         = ChartViewPropertyIndex::LINE_WIDTH,
+      AXIS_LABEL_SIZE    = ChartViewPropertyIndex::AXIS_LABEL_SIZE, ///< @UNIT_LOGICAL The axis label size.
+      TITLE_SIZE         = ChartViewPropertyIndex::TITLE_SIZE,      ///< @UNIT_LOGICAL The title size.
+      LINE_WIDTH         = ChartViewPropertyIndex::LINE_WIDTH,      ///< @UNIT_PHYSICAL The line width.
       SHOW_MARKERS       = ChartViewPropertyIndex::SHOW_MARKERS,
-      MARKER_RADIUS      = ChartViewPropertyIndex::MARKER_RADIUS,
+      MARKER_RADIUS      = ChartViewPropertyIndex::MARKER_RADIUS, ///< @UNIT_PHYSICAL The marker radius.
       HOVER_ENABLED      = ChartViewPropertyIndex::HOVER_ENABLED,
       TOUCH_ENABLED      = ChartViewPropertyIndex::TOUCH_ENABLED,
     };
@@ -283,7 +283,8 @@ public:
    * @brief Creates a new ChartView.
    *
    * @param[in] type The kind of chart to draw
-   * @param[in] size The initial size of the chart, in pixels
+   * @param[in] size @UNIT_LOGICAL The initial size of the chart, in pixels.
+   * It is also written unscaled to the actor size at once; the first layout pass replaces it with the scaled size.
    * @return A handle to the new ChartView
    */
   static ChartView New(Type type, const Vector2& size);
@@ -291,7 +292,8 @@ public:
   /**
    * @brief Creates a chart with immutable construction defaults.
    * @param[in] type The chart type
-   * @param[in] size The initial pixel size
+   * @param[in] size @UNIT_LOGICAL The initial pixel size.
+   * It is also written unscaled to the actor size at once; the first layout pass replaces it with the scaled size.
    * @param[in] style The initialized style
    * @return The chart
    */
@@ -528,14 +530,14 @@ public:
    *
    * The default is 30.0.
    *
-   * @param[in] pixels The maximum hit distance, in pixels
+   * @param[in] pixels @UNIT_PHYSICAL The maximum hit distance, in pixels
    */
   void SetHitThreshold(float pixels);
 
   /**
    * @brief Retrieves the maximum distance from a touch/hover position to a data point still counted as a hit.
    *
-   * @return The maximum hit distance, in pixels
+   * @return @UNIT_PHYSICAL The maximum hit distance, in pixels
    */
   float GetHitThreshold() const;
 

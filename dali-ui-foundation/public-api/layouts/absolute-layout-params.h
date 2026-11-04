@@ -91,7 +91,8 @@ public:
   /**
    * @brief Sets the absolute position and size of the child within the layout.
    *
-   * @param[in] bounds The layout bounds (x, y, width, height)
+   * @param[in] bounds @UNIT_LOGICAL The layout bounds (x, y, width, height).
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    * @return Reference to this for chaining
    * @note RTL mirror: under a RIGHT_TO_LEFT effective layout direction the X
    * supplied here is mirrored about the parent width after arrange
@@ -103,14 +104,16 @@ public:
   /**
    * @brief Gets the absolute position and size of the child within the layout.
    *
-   * @return The layout bounds
+   * @return @UNIT_LOGICAL The layout bounds.
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    */
   LayoutRect GetBounds() const;
 
   /**
    * @brief Sets the X position of the child within the layout.
    *
-   * @param[in] x The X position
+   * @param[in] x @UNIT_LOGICAL The X position.
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    * @return Reference to this for chaining
    */
   AbsoluteLayoutParams& SetX(float x);
@@ -118,14 +121,16 @@ public:
   /**
    * @brief Gets the X position of the child within the layout.
    *
-   * @return The X position
+   * @return @UNIT_LOGICAL The X position.
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    */
   float GetX() const;
 
   /**
    * @brief Sets the Y position of the child within the layout.
    *
-   * @param[in] y The Y position
+   * @param[in] y @UNIT_LOGICAL The Y position.
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    * @return Reference to this for chaining
    */
   AbsoluteLayoutParams& SetY(float y);
@@ -133,14 +138,16 @@ public:
   /**
    * @brief Gets the Y position of the child within the layout.
    *
-   * @return The Y position
+   * @return @UNIT_LOGICAL The Y position.
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    */
   float GetY() const;
 
   /**
    * @brief Sets the width of the child within the layout.
    *
-   * @param[in] width The width (-1 means use View's own size)
+   * @param[in] width @UNIT_LOGICAL The width (-1 means use View's own size).
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    * @return Reference to this for chaining
    */
   AbsoluteLayoutParams& SetWidth(float width);
@@ -148,14 +155,15 @@ public:
   /**
    * @brief Gets the width of the child within the layout.
    *
-   * @return The width
+   * @return @UNIT_LOGICAL The width. A proportional value (the flag set) is a fraction of the parent, not a length.
    */
   float GetWidth() const;
 
   /**
    * @brief Sets the height of the child within the layout.
    *
-   * @param[in] height The height (-1 means use View's own size)
+   * @param[in] height @UNIT_LOGICAL The height (-1 means use View's own size).
+   * A proportional value (the flag set) is a fraction of the parent, not a length.
    * @return Reference to this for chaining
    */
   AbsoluteLayoutParams& SetHeight(float height);
@@ -163,7 +171,7 @@ public:
   /**
    * @brief Gets the height of the child within the layout.
    *
-   * @return The height
+   * @return @UNIT_LOGICAL The height. A proportional value (the flag set) is a fraction of the parent, not a length.
    */
   float GetHeight() const;
 

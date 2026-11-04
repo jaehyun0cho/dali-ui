@@ -72,9 +72,9 @@ public:
   enum class Attribute : uint32_t
   {
     SOURCE,         ///< The image resource identifier.
-    RESERVED_SIZE,  ///< The reserved image box size in logical pixels.
+    RESERVED_SIZE,  ///< @UNIT_LOGICAL The reserved image box size in logical pixels. It also follows the font size scale of the control, like the font size.
     ALIGNMENT,      ///< The vertical alignment relative to the surrounding text metrics.
-    VERTICAL_OFFSET ///< The vertical offset applied after alignment, in logical pixels.
+    VERTICAL_OFFSET ///< @UNIT_LOGICAL The vertical offset applied after alignment, in logical pixels. It also follows the font size scale of the control, like the font size.
   };
 
   /**
@@ -90,7 +90,8 @@ public:
    * values are stored without validation.
    *
    * @param[in] source The image resource identifier
-   * @param[in] reservedSize The width and height of the reserved image box in logical pixels
+   * @param[in] reservedSize @UNIT_LOGICAL The width and height of the reserved image box in logical pixels.
+   * It also follows the font size scale of the control, like the font size.
    */
   ImageAttributes(const Dali::String& source, const Vector2& reservedSize);
 
@@ -168,7 +169,8 @@ public:
    * A text control applies its effective text scale during layout without
    * changing this authored value.
    *
-   * @param[in] size The width and height of the reserved image box in logical pixels
+   * @param[in] size @UNIT_LOGICAL The width and height of the reserved image box in logical pixels.
+   * It also follows the font size scale of the control, like the font size.
    */
   void SetReservedSize(const Vector2& size);
 
@@ -178,7 +180,8 @@ public:
    * A default-constructed object returns Vector2::ZERO. Use Has(RESERVED_SIZE)
    * to determine whether the size is explicitly set.
    *
-   * @return The width and height of the reserved image box in logical pixels
+   * @return @UNIT_LOGICAL The width and height of the reserved image box in logical pixels.
+   * It also follows the font size scale of the control, like the font size.
    */
   Vector2 GetReservedSize() const;
 
@@ -209,7 +212,8 @@ public:
    * negative values move it upward in control-local coordinates. A non-finite
    * offset makes an ImageSpan replacement invalid.
    *
-   * @param[in] offset The vertical offset in logical pixels
+   * @param[in] offset @UNIT_LOGICAL The vertical offset in logical pixels.
+   * It also follows the font size scale of the control, like the font size.
    */
   void SetVerticalOffset(float offset);
 
@@ -219,7 +223,8 @@ public:
    * A default-constructed object returns 0.0f. Use Has(VERTICAL_OFFSET) to
    * distinguish that default from an explicitly set zero value.
    *
-   * @return The vertical offset in logical pixels
+   * @return @UNIT_LOGICAL The vertical offset in logical pixels.
+   * It also follows the font size scale of the control, like the font size.
    */
   float GetVerticalOffset() const;
 

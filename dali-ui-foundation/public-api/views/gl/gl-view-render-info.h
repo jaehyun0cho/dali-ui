@@ -111,7 +111,7 @@ public:
    * This is the size the layout gave the view, without the scale or rotation applied to
    * it. Vertices expressed in this space are placed on screen by GetMvpMatrix().
    *
-   * @return The size of the view
+   * @return @UNIT_PHYSICAL The size of the view
    *
    * @note For GlView::BackendMode::OFFSCREEN_RENDERING this is also the size of the
    *       buffer being drawn into, and therefore the viewport the application has to

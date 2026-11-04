@@ -45,30 +45,42 @@ public:
   /**
    * @brief Creates a radial gradient value.
    *
-   * @param[in] center The center position
-   * @param[in] radius The radius
+   * @param[in] center @UNIT_LOGICAL The center position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
+   * @param[in] radius @UNIT_LOGICAL The radius.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   Radial(const Vector2& center, float radius);
 
   /**
    * @brief Sets the radial gradient center and radius.
    *
-   * @param[in] center The center position
-   * @param[in] radius The radius
+   * @param[in] center @UNIT_LOGICAL The center position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
+   * @param[in] radius @UNIT_LOGICAL The radius.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   void SetCenterAndRadius(const Vector2& center, float radius);
 
   /**
    * @brief Gets the center position.
    *
-   * @return The center position
+   * @return @UNIT_LOGICAL The center position.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   Vector2 GetCenter() const;
 
   /**
    * @brief Gets the radius.
    *
-   * @return The radius
+   * @return @UNIT_LOGICAL The radius.
+   * Only with Units::USER_SPACE (a normalized coordinate otherwise); a ChartView series gradient uses it as canvas
+   * pixels without the effective layout scale.
    */
   float GetRadius() const;
 

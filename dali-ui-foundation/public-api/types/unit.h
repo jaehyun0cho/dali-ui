@@ -38,7 +38,7 @@ namespace Ui
  *          Use lazy initialization or compute values at first access instead.
  *
  * @param v The value in spx (e.g. 35_spx)
- * @return The calculated physical pixels as a float.
+ * @return @UNIT_LOGICAL The converted value as a float.
  */
 DALI_UI_API float operator"" _spx(unsigned long long int v);
 
@@ -54,7 +54,7 @@ DALI_UI_API float operator"" _spx(unsigned long long int v);
  *          Use lazy initialization or compute values at first access instead.
  *
  * @param v The value in spx (e.g. 35.0_spx)
- * @return The calculated physical pixels as a float.
+ * @return @UNIT_LOGICAL The converted value as a float.
  */
 DALI_UI_API float operator"" _spx(long double v);
 
@@ -70,7 +70,7 @@ DALI_UI_API float operator"" _spx(long double v);
  *          Use lazy initialization or compute values at first access instead.
  *
  * @param v The value in dp (e.g. 35_dp)
- * @return The calculated physical pixels as a float.
+ * @return @UNIT_LOGICAL The converted value as a float.
  */
 DALI_UI_API float operator"" _dp(unsigned long long int v);
 
@@ -86,7 +86,7 @@ DALI_UI_API float operator"" _dp(unsigned long long int v);
  *          Use lazy initialization or compute values at first access instead.
  *
  * @param v The value in dp (e.g. 35.0_dp)
- * @return The calculated physical pixels as a float.
+ * @return @UNIT_LOGICAL The converted value as a float.
  */
 DALI_UI_API float operator"" _dp(long double v);
 
@@ -103,7 +103,7 @@ DALI_UI_API float operator"" _dp(long double v);
  *          Use lazy initialization or compute values at first access instead.
  *
  * @param v The value in sdp (e.g. 35_sdp)
- * @return The calculated physical pixels as a float.
+ * @return @UNIT_LOGICAL The converted value as a float.
  */
 DALI_UI_API float operator"" _sdp(unsigned long long int v);
 
@@ -120,7 +120,7 @@ DALI_UI_API float operator"" _sdp(unsigned long long int v);
  *          Use lazy initialization or compute values at first access instead.
  *
  * @param v The value in sdp (e.g. 35.0_sdp)
- * @return The calculated physical pixels as a float.
+ * @return @UNIT_LOGICAL The converted value as a float.
  */
 DALI_UI_API float operator"" _sdp(long double v);
 

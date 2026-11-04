@@ -118,28 +118,28 @@ public:
   /**
    * @brief Sets the shadow offset.
    *
-   * @param[in] offset The shadow offset in pixels.
+   * @param[in] offset @UNIT_LOGICAL The shadow offset in pixels.
    */
   void SetOffset(const Vector2& offset);
 
   /**
    * @brief Returns the shadow offset.
    *
-   * @return The shadow offset in pixels.
+   * @return @UNIT_LOGICAL The shadow offset in pixels.
    */
   const Vector2& GetOffset() const;
 
   /**
    * @brief Sets the shadow blur radius.
    *
-   * @param[in] blurRadius The shadow blur radius in pixels.
+   * @param[in] blurRadius @UNIT_PHYSICAL The shadow blur radius in pixels.
    */
   void SetBlurRadius(float blurRadius);
 
   /**
    * @brief Returns the shadow blur radius.
    *
-   * @return The shadow blur radius in pixels.
+   * @return @UNIT_PHYSICAL The shadow blur radius in pixels.
    */
   float GetBlurRadius() const;
 

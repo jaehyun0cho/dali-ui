@@ -74,7 +74,7 @@ public:
    *
    * @param[in] maskView The View used as the mask source.
    * @param[in] maskMode Defines pixel data type (alpha, luminance) used as the mask source.
-   * @param[in] maskPosition The offset of the mask source against the owner View, in pixels.
+   * @param[in] maskPosition The offset of the mask source against the owner View, as a fraction of the owner View's size (1.0f is its full width or height).
    * @param[in] maskScale The scale of the mask source. Vector2(1.f, 1.f) leaves it at its own size.
    *
    * @return A handle to a newly allocated Dali resource

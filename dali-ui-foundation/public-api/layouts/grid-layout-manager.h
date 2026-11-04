@@ -41,17 +41,17 @@ class DALI_UI_API GridLayoutManager : public LayoutManager
 {
 public:
   GridLayoutManager(const Dali::Vector<GridLength>& rows, const Dali::Vector<GridLength>& columns, float rowSpacing,
-                    float columnSpacing);
+                    float columnSpacing); ///< @UNIT_LOGICAL Creates the manager with the row and column definitions and spacings.
   ~GridLayoutManager() override;
 
   void                            SetRowDefinitions(const Dali::Vector<GridLength>& rows);
   const Dali::Vector<GridLength>& GetRowDefinitions() const;
   void                            SetColumnDefinitions(const Dali::Vector<GridLength>& columns);
   const Dali::Vector<GridLength>& GetColumnDefinitions() const;
-  void                            SetRowSpacing(float spacing);
-  float                           GetRowSpacing() const;
-  void                            SetColumnSpacing(float spacing);
-  float                           GetColumnSpacing() const;
+  void                            SetRowSpacing(float spacing);    ///< @UNIT_LOGICAL Sets the row spacing.
+  float                           GetRowSpacing() const;           ///< @UNIT_LOGICAL Returns the row spacing.
+  void                            SetColumnSpacing(float spacing); ///< @UNIT_LOGICAL Sets the column spacing.
+  float                           GetColumnSpacing() const;        ///< @UNIT_LOGICAL Returns the column spacing.
 
   MeasuredSize Measure(ViewImpl* view, float widthConstraint, float heightConstraint) override;
   void         Arrange(ViewImpl* view, const LayoutRect& bounds) override;

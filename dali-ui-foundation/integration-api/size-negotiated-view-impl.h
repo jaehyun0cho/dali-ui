@@ -61,6 +61,8 @@ protected:
 
   /**
    * @copydoc Dali::SizeNegotiatedActor::OnRelayout()
+   *
+   * The default relayout subtracts the padding and margin without the effective layout scale.
    */
   void OnRelayout(const Vector2& size, RelayoutContainer& container) override;
 

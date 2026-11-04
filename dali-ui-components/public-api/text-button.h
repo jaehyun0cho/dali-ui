@@ -70,12 +70,12 @@ public:
   UiColor GetTextColor() const;
 
   /**
-   * @brief Sets the font size.
+   * @brief @UNIT_LOGICAL Sets the font size.
    * @pre The size must be finite and non-negative; a violation triggers an assertion.
    * @note Zero is also passed unchanged to the internal Label, without substituting the default preset size.
    */
   void  SetFontSize(float fontSize);
-  float GetFontSize() const;
+  float GetFontSize() const; ///< @UNIT_LOGICAL Returns the font size.
 
   void         SetFontFamily(const Dali::String& fontFamily);
   Dali::String GetFontFamily() const;

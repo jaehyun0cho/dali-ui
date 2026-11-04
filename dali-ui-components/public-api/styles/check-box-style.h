@@ -41,6 +41,8 @@ class CheckBoxStyleImpl;
 
 /**
  * @brief Style values used to initialize CheckBox appearance and layout.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API CheckBoxStyle : public UiStyle
 {
@@ -99,6 +101,8 @@ public: // Not intended for application developers
  * A zero minimum size means no lower bound; zero padding/gap means no padding/spacing.
  * A zero icon size remains unset: the width follows the resolved height, and the height follows the content height.
  * A zero font size is passed unchanged to the internal Label, without substituting the default preset size.
+ *
+ * @UNIT_LOGICAL Applies to every length in this class.
  */
 class DALI_UI_COMPONENTS_API CheckBoxStyle::Builder
 {

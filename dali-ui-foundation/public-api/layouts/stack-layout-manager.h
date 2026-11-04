@@ -40,7 +40,7 @@ public:
    * @brief Creates a new StackLayoutManager.
    *
    * @param[in] orientation Stack orientation (vertical or horizontal)
-   * @param[in] spacing Spacing between children
+   * @param[in] spacing @UNIT_LOGICAL Spacing between children
    */
   StackLayoutManager(StackOrientation orientation, float spacing);
 
@@ -51,8 +51,8 @@ public:
 
   void             SetOrientation(StackOrientation orientation);
   StackOrientation GetOrientation() const;
-  void             SetSpacing(float spacing);
-  float            GetSpacing() const;
+  void             SetSpacing(float spacing); ///< @UNIT_LOGICAL Sets the spacing.
+  float            GetSpacing() const;        ///< @UNIT_LOGICAL Returns the spacing.
 
   MeasuredSize Measure(ViewImpl* view, float widthConstraint, float heightConstraint) override;
   void         Arrange(ViewImpl* view, const LayoutRect& bounds) override;

@@ -140,13 +140,13 @@ public:
 
   /**
    * @brief Sets the positive finite marker or image size in pixels.
-   * @param[in] size The positive pixel dimensions
+   * @param[in] size @UNIT_PHYSICAL The positive pixel dimensions
    */
   void SetSize(const Vector2& size);
 
   /**
    * @brief Sets a pixel offset relative to the anchor.
-   * @param[in] offset The finite pixel offset
+   * @param[in] offset @UNIT_PHYSICAL The finite pixel offset
    */
   void SetOffset(const Vector2& offset);
 
@@ -164,13 +164,13 @@ public:
 
   /**
    * @brief Sets the maximum text width; zero retains automatic chart-relative sizing.
-   * @param[in] width A finite non-negative width in pixels
+   * @param[in] width @UNIT_PHYSICAL A finite non-negative width in pixels
    */
   void SetTextMaximumWidth(float width);
 
   /**
    * @brief Returns the authored text width limit.
-   * @return The maximum width, or zero for automatic sizing
+   * @return @UNIT_PHYSICAL The maximum width, or zero for automatic sizing
    */
   float GetTextMaximumWidth() const;
 

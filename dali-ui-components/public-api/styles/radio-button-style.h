@@ -142,35 +142,35 @@ public:
 
   /**
    * @brief Returns the minimum width in logical pixels.
-   * @return The minimum width
+   * @return @UNIT_LOGICAL The minimum width
    * @pre This style handle must be initialized.
    */
   float GetMinimumWidth() const;
 
   /**
    * @brief Returns the minimum height in logical pixels.
-   * @return The minimum height
+   * @return @UNIT_LOGICAL The minimum height
    * @pre This style handle must be initialized.
    */
   float GetMinimumHeight() const;
 
   /**
    * @brief Returns the padding around the icon.
-   * @return The content padding in logical pixels
+   * @return @UNIT_LOGICAL The content padding in logical pixels
    * @pre This style handle must be initialized.
    */
   Insets GetPadding() const;
 
   /**
    * @brief Returns the requested icon width.
-   * @return The width in logical pixels, or zero when unset
+   * @return @UNIT_LOGICAL The width in logical pixels, or zero when unset
    * @pre This style handle must be initialized.
    */
   float GetIconWidth() const;
 
   /**
    * @brief Returns the requested icon height.
-   * @return The height in logical pixels, or zero when unset
+   * @return @UNIT_LOGICAL The height in logical pixels, or zero when unset
    * @pre This style handle must be initialized.
    */
   float GetIconHeight() const;
@@ -258,42 +258,42 @@ public:
 
   /**
    * @brief Sets the minimum width.
-   * @param[in] width The minimum width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The minimum width in logical pixels
    * @return A reference to this builder
    */
   Builder& SetMinimumWidth(float width) &;
 
   /**
    * @brief Sets the minimum width on a temporary builder.
-   * @param[in] width The minimum width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The minimum width in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetMinimumWidth(float width) &&;
 
   /**
    * @brief Sets the minimum height.
-   * @param[in] height The minimum height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The minimum height in logical pixels
    * @return A reference to this builder
    */
   Builder& SetMinimumHeight(float height) &;
 
   /**
    * @brief Sets the minimum height on a temporary builder.
-   * @param[in] height The minimum height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The minimum height in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetMinimumHeight(float height) &&;
 
   /**
    * @brief Sets the padding around the icon.
-   * @param[in] padding The content padding in logical pixels
+   * @param[in] padding @UNIT_LOGICAL The content padding in logical pixels
    * @return A reference to this builder
    */
   Builder& SetPadding(const Insets& padding) &;
 
   /**
    * @brief Sets the padding around the icon on a temporary builder.
-   * @param[in] padding The content padding in logical pixels
+   * @param[in] padding @UNIT_LOGICAL The content padding in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetPadding(const Insets& padding) &&;
@@ -304,7 +304,7 @@ public:
    * A non-positive or non-finite value is normalized to zero, which unsets the explicit
    * width. An unset width follows the effective icon height.
    *
-   * @param[in] width The requested width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The requested width in logical pixels
    * @return A reference to this builder
    */
   Builder& SetIconWidth(float width) &;
@@ -315,7 +315,7 @@ public:
    * A non-positive or non-finite value is normalized to zero, which unsets the explicit
    * width. An unset width follows the effective icon height.
    *
-   * @param[in] width The requested width in logical pixels
+   * @param[in] width @UNIT_LOGICAL The requested width in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetIconWidth(float width) &&;
@@ -327,7 +327,7 @@ public:
    * height. An unset height follows a definite content height, or the minimum height when
    * wrapping content.
    *
-   * @param[in] height The requested height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The requested height in logical pixels
    * @return A reference to this builder
    */
   Builder& SetIconHeight(float height) &;
@@ -339,7 +339,7 @@ public:
    * height. An unset height follows a definite content height, or the minimum height when
    * wrapping content.
    *
-   * @param[in] height The requested height in logical pixels
+   * @param[in] height @UNIT_LOGICAL The requested height in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetIconHeight(float height) &&;

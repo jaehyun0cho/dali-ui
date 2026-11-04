@@ -358,14 +358,14 @@ public:
    * @brief Sets the default font size.
    *
    * @pre Must not be frozen.
-   * @param[in] fontSize The default font size
+   * @param[in] fontSize @UNIT_LOGICAL The default font size
    */
   void SetDefaultFontSize(float fontSize);
 
   /**
    * @brief Retrieves the default font size.
    *
-   * @return The default font size
+   * @return @UNIT_LOGICAL The default font size
    */
   float GetDefaultFontSize() const;
 
@@ -458,14 +458,14 @@ public:
    * @brief Sets the marquee speed in pixels per second.
    *
    * @pre Must not be frozen.
-   * @param[in] speed The marquee speed in pixels per second
+   * @param[in] speed @UNIT_LOGICAL The marquee speed in pixels per second
    */
   void SetMarqueeSpeed(int speed);
 
   /**
    * @brief Retrieves the marquee speed.
    *
-   * @return The marquee speed in pixels per second
+   * @return @UNIT_LOGICAL The marquee speed in pixels per second
    */
   int GetMarqueeSpeed() const;
 
@@ -503,14 +503,14 @@ public:
    * @brief Sets the gap before marquee wraps.
    *
    * @pre Must not be frozen.
-   * @param[in] gap The gap in pixels
+   * @param[in] gap @UNIT_LOGICAL The gap in pixels
    */
   void SetMarqueeGap(float gap);
 
   /**
    * @brief Retrieves the gap before marquee wraps.
    *
-   * @return The gap in pixels
+   * @return @UNIT_LOGICAL The gap in pixels
    */
   float GetMarqueeGap() const;
 

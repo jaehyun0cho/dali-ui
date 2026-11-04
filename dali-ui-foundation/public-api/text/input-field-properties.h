@@ -67,7 +67,7 @@ struct InputFieldPropertyIndex
     FONT_FAMILY,
 
     /**
-     * @brief The size of font in pixels.
+     * @brief @UNIT_LOGICAL The size of font in pixels.
      * @details Name "fontSize", type Property::FLOAT.
      * @see InputField::SetFontSize(), InputField::GetFontSize().
      */
@@ -126,7 +126,7 @@ struct InputFieldPropertyIndex
     SHOW_PLACEHOLDER_ON_FOCUS,
 
     /**
-     * @brief The width of the text cursor in pixels.
+     * @brief @UNIT_LOGICAL The width of the text cursor in pixels.
      * @details Name "cursorWidth", type Property::INTEGER.
      * @see InputField::SetCursorWidth(), InputField::GetCursorWidth().
      */
@@ -366,7 +366,9 @@ struct InputFieldPropertyIndex
     TYPING_FONT_FAMILY,
 
     /**
-     * @brief The font size in pixels used for typing.
+     * @brief @UNIT_LOGICAL The font size in pixels used for typing.
+     * This version applies the effective layout scale twice to typed or selected text, so it is drawn at the square of
+     * that scale.
      * @details Name "typingFontSize", type Property::FLOAT.
      * @see InputField::SetTypingFontSize(), InputField::GetTypingFontSize().
      */

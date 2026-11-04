@@ -99,7 +99,7 @@ public:
    * @brief Returns the maximum Toast height used to constrain wrapped content.
    *
    * Toast does not impose a separate fixed line-count limit.
-   * @return The non-negative maximum height in logical pixels
+   * @return @UNIT_LOGICAL The non-negative maximum height in logical pixels
    */
   float GetMaximumHeight() const;
 
@@ -111,19 +111,19 @@ public:
 
   /**
    * @brief Returns the spacing between the optional icon and message text.
-   * @return The non-negative spacing in logical pixels
+   * @return @UNIT_LOGICAL The non-negative spacing in logical pixels
    */
   float GetItemSpacing() const;
 
   /**
    * @brief Returns the Toast corner radii.
-   * @return The non-negative radius of each corner
+   * @return @UNIT_LOGICAL The non-negative radius of each corner
    */
   Vector4 GetCornerRadius() const;
 
   /**
    * @brief Returns the padding around the Toast content.
-   * @return The non-negative content padding
+   * @return @UNIT_LOGICAL The non-negative content padding
    */
   Insets GetPadding() const;
 
@@ -141,7 +141,7 @@ public:
 
   /**
    * @brief Returns the message font size.
-   * @return The non-negative font size in logical pixels
+   * @return @UNIT_LOGICAL The non-negative font size in logical pixels
    */
   float GetFontSize() const;
 
@@ -153,19 +153,19 @@ public:
 
   /**
    * @brief Returns the optional icon width.
-   * @return The non-negative width in logical pixels
+   * @return @UNIT_LOGICAL The non-negative width in logical pixels
    */
   float GetIconWidth() const;
 
   /**
    * @brief Returns the optional icon height.
-   * @return The non-negative height in logical pixels
+   * @return @UNIT_LOGICAL The non-negative height in logical pixels
    */
   float GetIconHeight() const;
 
   /**
    * @brief Returns the optional icon corner radii.
-   * @return The non-negative radius of each corner
+   * @return @UNIT_PHYSICAL The non-negative radius of each corner
    */
   Vector4 GetIconCornerRadius() const;
 
@@ -183,7 +183,7 @@ public:
 
   /**
    * @brief Returns the Toast borderline width.
-   * @return The non-negative width in logical pixels
+   * @return @UNIT_LOGICAL The non-negative width in logical pixels
    */
   float GetBorderlineWidth() const;
 
@@ -265,7 +265,7 @@ public:
    * @brief Sets the maximum Toast height used to constrain wrapped content.
    *
    * Toast does not impose a separate fixed line-count limit.
-   * @param[in] value The finite, non-negative height in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative height in logical pixels
    * @return A reference to this builder
    */
   Builder& SetMaximumHeight(float value) &;
@@ -274,7 +274,7 @@ public:
    * @brief Sets the maximum Toast height used to constrain wrapped content.
    *
    * Toast does not impose a separate fixed line-count limit.
-   * @param[in] value The finite, non-negative height in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative height in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetMaximumHeight(float value) &&;
@@ -295,42 +295,42 @@ public:
 
   /**
    * @brief Sets the spacing between the optional icon and message text.
-   * @param[in] value The finite, non-negative spacing in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative spacing in logical pixels
    * @return A reference to this builder
    */
   Builder& SetItemSpacing(float value) &;
 
   /**
    * @brief Sets the spacing between the optional icon and message text.
-   * @param[in] value The finite, non-negative spacing in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative spacing in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetItemSpacing(float value) &&;
 
   /**
    * @brief Sets the radius of each Toast corner.
-   * @param[in] radius The finite, non-negative corner radii
+   * @param[in] radius @UNIT_LOGICAL The finite, non-negative corner radii
    * @return A reference to this builder
    */
   Builder& SetCornerRadius(const Vector4& radius) &;
 
   /**
    * @brief Sets the radius of each Toast corner.
-   * @param[in] radius The finite, non-negative corner radii
+   * @param[in] radius @UNIT_LOGICAL The finite, non-negative corner radii
    * @return An rvalue reference to this builder
    */
   Builder&& SetCornerRadius(const Vector4& radius) &&;
 
   /**
    * @brief Sets the padding around the Toast content.
-   * @param[in] padding The finite, non-negative content padding
+   * @param[in] padding @UNIT_LOGICAL The finite, non-negative content padding
    * @return A reference to this builder
    */
   Builder& SetPadding(const Insets& padding) &;
 
   /**
    * @brief Sets the padding around the Toast content.
-   * @param[in] padding The finite, non-negative content padding
+   * @param[in] padding @UNIT_LOGICAL The finite, non-negative content padding
    * @return An rvalue reference to this builder
    */
   Builder&& SetPadding(const Insets& padding) &&;
@@ -365,14 +365,14 @@ public:
 
   /**
    * @brief Sets the message font size.
-   * @param[in] value The finite, non-negative size in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative size in logical pixels
    * @return A reference to this builder
    */
   Builder& SetFontSize(float value) &;
 
   /**
    * @brief Sets the message font size.
-   * @param[in] value The finite, non-negative size in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative size in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetFontSize(float value) &&;
@@ -393,42 +393,42 @@ public:
 
   /**
    * @brief Sets the optional icon width.
-   * @param[in] value The finite, non-negative width in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative width in logical pixels
    * @return A reference to this builder
    */
   Builder& SetIconWidth(float value) &;
 
   /**
    * @brief Sets the optional icon width.
-   * @param[in] value The finite, non-negative width in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative width in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetIconWidth(float value) &&;
 
   /**
    * @brief Sets the optional icon height.
-   * @param[in] value The finite, non-negative height in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative height in logical pixels
    * @return A reference to this builder
    */
   Builder& SetIconHeight(float value) &;
 
   /**
    * @brief Sets the optional icon height.
-   * @param[in] value The finite, non-negative height in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative height in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetIconHeight(float value) &&;
 
   /**
    * @brief Sets the optional icon corner radii.
-   * @param[in] radius The finite, non-negative corner radii
+   * @param[in] radius @UNIT_PHYSICAL The finite, non-negative corner radii
    * @return A reference to this builder
    */
   Builder& SetIconCornerRadius(const Vector4& radius) &;
 
   /**
    * @brief Sets the optional icon corner radii.
-   * @param[in] radius The finite, non-negative corner radii
+   * @param[in] radius @UNIT_PHYSICAL The finite, non-negative corner radii
    * @return An rvalue reference to this builder
    */
   Builder&& SetIconCornerRadius(const Vector4& radius) &&;
@@ -463,14 +463,14 @@ public:
 
   /**
    * @brief Sets the Toast borderline width.
-   * @param[in] value The finite, non-negative width in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative width in logical pixels
    * @return A reference to this builder
    */
   Builder& SetBorderlineWidth(float value) &;
 
   /**
    * @brief Sets the Toast borderline width.
-   * @param[in] value The finite, non-negative width in logical pixels
+   * @param[in] value @UNIT_LOGICAL The finite, non-negative width in logical pixels
    * @return An rvalue reference to this builder
    */
   Builder&& SetBorderlineWidth(float value) &&;

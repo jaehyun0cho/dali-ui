@@ -66,7 +66,7 @@ public: // Properties
   /**
    * @brief Gets the blur radius of the ColorVisual.
    *
-   * @return The blur radius in pixels
+   * @return @UNIT_LOGICAL The blur radius in pixels
    */
   float GetBlurRadius() const;
 
@@ -77,7 +77,7 @@ public: // Properties
    * blurred. The area drawn grows by the blur radius, so a blurred visual reaches beyond
    * the View it belongs to.
    *
-   * @param[in] blurRadius The blur radius in pixels
+   * @param[in] blurRadius @UNIT_LOGICAL The blur radius in pixels
    * @note If the corner squareness is not zero, the blurred width may differ from this value.
    * @see SetCutoutPolicy()
    */

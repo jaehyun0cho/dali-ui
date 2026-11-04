@@ -49,10 +49,10 @@ public:
   /**
    * @brief Creates a shadow with custom values.
    *
-   * @param[in] blurRadius The blur radius in pixels
-   * @param[in] offset The shadow offset in pixels
+   * @param[in] blurRadius @UNIT_LOGICAL The blur radius in pixels
+   * @param[in] offset @UNIT_LOGICAL The shadow offset in pixels
    * @param[in] color The shadow color
-   * @param[in] extents Extra size to add to the shadow visual in pixels
+   * @param[in] extents @UNIT_LOGICAL Extra size to add to the shadow visual in pixels
    * @param[in] cutoutPolicy How the View bounds area is cut out from the shadow
    */
   explicit Shadow(float blurRadius, const Vector2& offset = Vector2::ZERO, const UiColor& color = UiColor(0x000000, 0.5f), const Vector2& extents = Vector2::ZERO, CutoutPolicy cutoutPolicy = CutoutPolicy::NONE);
@@ -60,7 +60,7 @@ public:
   /**
    * @brief Creates a shadow with custom blur radius and color.
    *
-   * @param[in] blurRadius The blur radius in pixels
+   * @param[in] blurRadius @UNIT_LOGICAL The blur radius in pixels
    * @param[in] color The shadow color
    */
   Shadow(float blurRadius, const UiColor& color);
@@ -117,7 +117,7 @@ public:
    *
    * Negative values are clamped to zero.
    *
-   * @param[in] blurRadius The blur radius in pixels
+   * @param[in] blurRadius @UNIT_LOGICAL The blur radius in pixels
    * @return This shadow
    */
   Shadow& SetBlurRadius(float blurRadius);
@@ -125,7 +125,7 @@ public:
   /**
    * @brief Gets the blur radius.
    *
-   * @return The blur radius in pixels
+   * @return @UNIT_LOGICAL The blur radius in pixels
    */
   float GetBlurRadius() const;
 
@@ -150,7 +150,7 @@ public:
   /**
    * @brief Sets the shadow offset.
    *
-   * @param[in] offset The offset in pixels
+   * @param[in] offset @UNIT_LOGICAL The offset in pixels
    * @return This shadow
    */
   Shadow& SetOffset(const Vector2& offset);
@@ -158,14 +158,14 @@ public:
   /**
    * @brief Gets the shadow offset.
    *
-   * @return The offset in pixels
+   * @return @UNIT_LOGICAL The offset in pixels
    */
   const Vector2& GetOffset() const;
 
   /**
    * @brief Sets the extra shadow size.
    *
-   * @param[in] extents Extra size in pixels
+   * @param[in] extents @UNIT_LOGICAL Extra size in pixels
    * @return This shadow
    */
   Shadow& SetExtents(const Vector2& extents);
@@ -173,7 +173,7 @@ public:
   /**
    * @brief Gets the extra shadow size.
    *
-   * @return Extra size in pixels
+   * @return @UNIT_LOGICAL Extra size in pixels
    */
   const Vector2& GetExtents() const;
 

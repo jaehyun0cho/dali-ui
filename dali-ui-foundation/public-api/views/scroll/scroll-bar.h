@@ -131,10 +131,10 @@ public: // ScrollBarInterface implementation
 public: // Properties
   /**
    * @brief Gets or sets the thickness of the scroll bar.
-   * @return The thickness of the scroll bar.
+   * @return @UNIT_LOGICAL The thickness of the scroll bar.
    */
   float GetBarThickness() const;
-  void  SetBarThickness(float thickness);
+  void  SetBarThickness(float thickness); ///< @UNIT_LOGICAL Sets the bar thickness.
 
   /**
    * @brief Gets or sets the color of the scroll bar.
@@ -145,42 +145,44 @@ public: // Properties
 
   /**
    * @brief Gets or sets the minimum size of the scroll bar.
-   * @return The minimum size of the scroll bar.
+   * @return @UNIT_LOGICAL The minimum size of the scroll bar.
+   * When the minimum is not set, the fallback is one twentieth of the rendered bar size, which the layout multiplies by
+   * the scale again.
    */
   float GetBarMinSize() const;
-  void  SetBarMinSize(float minSize);
+  void  SetBarMinSize(float minSize); ///< @UNIT_LOGICAL Sets the bar min size. When the minimum is not set, the fallback is one twentieth of the rendered bar size, which the layout multiplies by the scale again.
 
   /**
    * @brief Gets or sets the current scroll position of the target view.
-   * @return The current scroll position.
+   * @return @UNIT_PHYSICAL The current scroll position.
    */
   Vector2 GetScrollPosition() const;
-  void    SetScrollPosition(const Vector2& position);
+  void    SetScrollPosition(const Vector2& position); ///< @UNIT_PHYSICAL Sets the scroll position.
 
   /**
    * @brief Gets or sets the offset of bars from the edges.
    * This creates a small gap between the bar and the scroll bar container edges.
    * Padding can be set using View::SetPadding() which is inherited by ScrollBar.
-   * @return The bar offset.
+   * @return @UNIT_LOGICAL The bar offset.
    */
   float GetBarOffset() const;
-  void  SetBarOffset(float offset);
+  void  SetBarOffset(float offset); ///< @UNIT_LOGICAL Sets the bar offset.
 
   /**
    * @brief Gets the corner radius of the scroll bar.
-   * @return The corner radius for each corner (topLeft, topRight, bottomRight, bottomLeft).
+   * @return @UNIT_LOGICAL The corner radius for each corner (topLeft, topRight, bottomRight, bottomLeft).
    */
   Vector4 GetBarCornerRadius() const;
 
   /**
    * @brief Sets the corner radius of the scroll bar (same for all corners).
-   * @param[in] radius The corner radius to apply to all corners.
+   * @param[in] radius @UNIT_LOGICAL The corner radius to apply to all corners.
    */
   void SetBarCornerRadius(float radius);
 
   /**
    * @brief Sets the corner radius of the scroll bar for each corner individually.
-   * @param[in] radius The corner radius (topLeft, topRight, bottomRight, bottomLeft).
+   * @param[in] radius @UNIT_LOGICAL The corner radius (topLeft, topRight, bottomRight, bottomLeft).
    */
   void SetBarCornerRadius(const Vector4& radius);
 

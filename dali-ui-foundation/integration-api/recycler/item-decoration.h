@@ -92,7 +92,7 @@ public:
    * Equivalent to Android's RecyclerView.ItemDecoration.getItemOffsets().
    *
    * @param holder  The item being laid out (position, rowType, groupIndex populated).
-   * @return Offsets in pixels to reserve around the item.
+   * @return @UNIT_PHYSICAL Offsets in pixels to reserve around the item.
    */
   virtual Insets GetItemOffsets(const ItemViewHolder& holder) const
   {
@@ -130,7 +130,7 @@ public:
    * @brief Called for every active item after each layout or incremental scroll pass.
    *
    * @param holder  Active item (bounds are current as of this call).
-   * @param bounds  Slot bounds in scroller-local content coordinates.
+   * @param bounds  @UNIT_PHYSICAL Slot bounds in scroller-local content coordinates.
    *                The slot is the full space reserved for the item including decoration
    *                offsets (GetItemOffsets). For a VERTICAL list: x=0, width=full cross
    *                extent, y=slot start (before top offset), height=total slot height.

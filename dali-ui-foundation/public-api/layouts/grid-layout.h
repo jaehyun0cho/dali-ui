@@ -166,28 +166,28 @@ public: // Spacing API
   /**
    * @brief Sets the row spacing.
    *
-   * @param[in] spacing The spacing between rows
+   * @param[in] spacing @UNIT_LOGICAL The spacing between rows
    */
   void SetRowSpacing(float spacing);
 
   /**
    * @brief Gets the row spacing.
    *
-   * @return The row spacing
+   * @return @UNIT_LOGICAL The row spacing
    */
   float GetRowSpacing() const;
 
   /**
    * @brief Sets the column spacing.
    *
-   * @param[in] spacing The spacing between columns
+   * @param[in] spacing @UNIT_LOGICAL The spacing between columns
    */
   void SetColumnSpacing(float spacing);
 
   /**
    * @brief Gets the column spacing.
    *
-   * @return The column spacing
+   * @return @UNIT_LOGICAL The column spacing
    */
   float GetColumnSpacing() const;
 

@@ -328,21 +328,21 @@ public: // Getters
   /**
    * @brief Gets the scroll position.
    *
-   * @return The current scroll position
+   * @return @UNIT_PHYSICAL The current scroll position
    */
   Dali::Vector2 GetScrollPosition() const;
 
   /**
    * @brief Gets the scroll size.
    *
-   * @return The scroll size
+   * @return @UNIT_PHYSICAL The scroll size
    */
   Dali::Vector2 GetScrollSize() const;
 
   /**
    * @brief Gets the content size.
    *
-   * @return The content size
+   * @return @UNIT_PHYSICAL The content size
    */
   Dali::Vector2 GetContentSize() const;
 
@@ -492,16 +492,16 @@ public: // Actions
   /**
    * @brief Scrolls by the specified delta.
    *
-   * @param[in] deltaX The horizontal scroll delta
-   * @param[in] deltaY The vertical scroll delta
+   * @param[in] deltaX @UNIT_PHYSICAL The horizontal scroll delta
+   * @param[in] deltaY @UNIT_PHYSICAL The vertical scroll delta
    */
   void ScrollBy(int32_t deltaX, int32_t deltaY);
 
   /**
    * @brief Scrolls by edge delta.
    *
-   * @param[in] deltaX The horizontal scroll delta
-   * @param[in] deltaY The vertical scroll delta
+   * @param[in] deltaX @UNIT_PHYSICAL The horizontal scroll delta
+   * @param[in] deltaY @UNIT_PHYSICAL The vertical scroll delta
    * @return True on success
    */
   bool ScrollEdgeBy(int32_t deltaX, int32_t deltaY);
@@ -548,7 +548,7 @@ public: // Actions
    * @brief Sets the scale factor at a point.
    *
    * @param[in] scaleFactor The scale factor
-   * @param[in] point The point to scale around
+   * @param[in] point @UNIT_PHYSICAL The point to scale around
    */
   void SetScaleFactor(float scaleFactor, Dali::Vector2 point);
 
@@ -557,8 +557,8 @@ public: // Actions
    *
    * @param[in] yDirection True for Y direction
    * @param[in] step The wheel step
-   * @param[in] x The X coordinate
-   * @param[in] y The Y coordinate
+   * @param[in] x @UNIT_PHYSICAL The X coordinate
+   * @param[in] y @UNIT_PHYSICAL The Y coordinate
    */
   void FeedMouseWheel(bool yDirection, int step, int x, int y);
 
@@ -803,7 +803,7 @@ public: // Additional APIs
    * an immediate GetScrollPosition() call is not guaranteed to return the
    * requested value.
    *
-   * @param[in] position The horizontal and vertical scroll offsets
+   * @param[in] position @UNIT_PHYSICAL The horizontal and vertical scroll offsets
    */
   void SetScrollPosition(const Dali::Vector2& position);
 

@@ -108,12 +108,12 @@ public: // ScrollBarInterface implementation
   void SetHorizontalScrollBarVisibility(ScrollBarVisibility visibility);
 
   /**
-   * @brief Updates the size of the scroll bar.
+   * @brief @UNIT_PHYSICAL Updates the size of the scroll bar.
    */
   void UpdateBarSize(float scrollWidth, float scrollHeight, float viewportWidth, float viewportHeight);
 
   /**
-   * @brief Updates the scroll position.
+   * @brief @UNIT_PHYSICAL Updates the scroll position.
    */
   void UpdateScrollPosition(const Vector2& position);
 
@@ -124,12 +124,12 @@ public: // ScrollBarInterface implementation
 
 public: // Properties
   /**
-   * @brief Gets the bar thickness.
+   * @brief @UNIT_LOGICAL Gets the bar thickness.
    */
   float GetBarThickness() const;
 
   /**
-   * @brief Sets the bar thickness.
+   * @brief @UNIT_LOGICAL Sets the bar thickness.
    */
   void SetBarThickness(float thickness);
 
@@ -144,47 +144,51 @@ public: // Properties
   void SetBarColor(const Vector4& color);
 
   /**
-   * @brief Gets the bar minimum size.
+   * @brief @UNIT_LOGICAL Gets the bar minimum size.
+   * When the minimum is not set, the fallback is one twentieth of the rendered bar size, which the layout multiplies by
+   * the scale again.
    */
   float GetBarMinSize() const;
 
   /**
-   * @brief Sets the bar minimum size.
+   * @brief @UNIT_LOGICAL Sets the bar minimum size.
+   * When the minimum is not set, the fallback is one twentieth of the rendered bar size, which the layout multiplies by
+   * the scale again.
    */
   void SetBarMinSize(float minSize);
 
   /**
-   * @brief Gets the scroll position.
+   * @brief @UNIT_PHYSICAL Gets the scroll position.
    */
   Vector2 GetScrollPosition() const;
 
   /**
-   * @brief Sets the scroll position.
+   * @brief @UNIT_PHYSICAL Sets the scroll position.
    */
   void SetScrollPosition(const Vector2& position);
 
   /**
-   * @brief Gets the bar offset.
+   * @brief @UNIT_LOGICAL Gets the bar offset.
    */
   float GetBarOffset() const;
 
   /**
-   * @brief Sets the bar offset.
+   * @brief @UNIT_LOGICAL Sets the bar offset.
    */
   void SetBarOffset(float offset);
 
   /**
-   * @brief Gets the bar corner radius.
+   * @brief @UNIT_LOGICAL Gets the bar corner radius.
    */
   Vector4 GetBarCornerRadius() const;
 
   /**
-   * @brief Sets the bar corner radius (same for all corners).
+   * @brief @UNIT_LOGICAL Sets the bar corner radius (same for all corners).
    */
   void SetBarCornerRadius(float radius);
 
   /**
-   * @brief Sets the bar corner radius for each corner.
+   * @brief @UNIT_LOGICAL Sets the bar corner radius for each corner.
    */
   void SetBarCornerRadius(const Vector4& radius);
 
@@ -220,7 +224,7 @@ protected:
   void PlayFadeOut();
 
   /**
-   * @brief Updates the position.
+   * @brief @UNIT_PHYSICAL Updates the position.
    */
   void UpdatePosition(const Vector2& position);
 
@@ -255,12 +259,12 @@ protected:
   void UpdateHBarSize(float ratio);
 
   /**
-   * @brief Sets vertical bar bounds with change detection.
+   * @brief @UNIT_LOGICAL Sets vertical bar bounds with change detection.
    */
   void SetVBarBounds(float x, float y, float width, float height);
 
   /**
-   * @brief Sets horizontal bar bounds with change detection.
+   * @brief @UNIT_LOGICAL Sets horizontal bar bounds with change detection.
    */
   void SetHBarBounds(float x, float y, float width, float height);
 

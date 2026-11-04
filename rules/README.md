@@ -71,6 +71,7 @@ Searches, scripts, or manual checks that can detect likely violations.
 - [Locale-Safe Numeric Formatting and Parsing](locale-safe-numeric-formatting.md)
 - [Component Boundaries](component-boundaries.md)
 - [Docs and Wiki](docs-and-wiki.md)
+- [Length Units](length-units.md)
 - [Validation Checks](validation-checks.md)
 
 ## Maintenance Notes

@@ -89,9 +89,9 @@ public:
     /**
      * @brief Creates a fit range with given parameters.
      *
-     * @param[in] minimumFontSize The minimum font size in pixels.
-     * @param[in] maximumFontSize The maximum font size in pixels.
-     * @param[in] fontSizeStep The font size step in pixels.
+     * @param[in] minimumFontSize @UNIT_LOGICAL The minimum font size in pixels.
+     * @param[in] maximumFontSize @UNIT_LOGICAL The maximum font size in pixels.
+     * @param[in] fontSizeStep @UNIT_LOGICAL The font size step in pixels.
      */
     Range(float minimumFontSize, float maximumFontSize, float fontSizeStep);
 
@@ -132,28 +132,28 @@ public:
     /**
      * @brief Sets the minimum font size.
      *
-     * @param[in] size The minimum font size in pixels.
+     * @param[in] size @UNIT_LOGICAL The minimum font size in pixels.
      */
     void SetMinimumFontSize(float size);
 
     /**
      * @brief Returns the minimum font size.
      *
-     * @return The minimum font size in pixels.
+     * @return @UNIT_LOGICAL The minimum font size in pixels.
      */
     float GetMinimumFontSize() const;
 
     /**
      * @brief Sets the maximum font size.
      *
-     * @param[in] size The maximum font size in pixels.
+     * @param[in] size @UNIT_LOGICAL The maximum font size in pixels.
      */
     void SetMaximumFontSize(float size);
 
     /**
      * @brief Returns the maximum font size.
      *
-     * @return The maximum font size in pixels.
+     * @return @UNIT_LOGICAL The maximum font size in pixels.
      */
     float GetMaximumFontSize() const;
 
@@ -163,14 +163,14 @@ public:
      * The text fit algorithm decreases the font size by this step when
      * searching for the largest fitting size.
      *
-     * @param[in] step The font size step in pixels.
+     * @param[in] step @UNIT_LOGICAL The font size step in pixels.
      */
     void SetFontSizeStep(float step);
 
     /**
      * @brief Returns the font size step.
      *
-     * @return The font size step in pixels.
+     * @return @UNIT_LOGICAL The font size step in pixels.
      */
     float GetFontSizeStep() const;
 
@@ -205,8 +205,8 @@ public:
     /**
      * @brief Creates a fit candidate with given parameters.
      *
-     * @param[in] fontSize The font size in pixels.
-     * @param[in] lineHeight The line height in pixels.
+     * @param[in] fontSize @UNIT_LOGICAL The font size in pixels.
+     * @param[in] lineHeight @UNIT_LOGICAL The line height in pixels.
      */
     Candidate(float fontSize, float lineHeight);
 
@@ -247,28 +247,28 @@ public:
     /**
      * @brief Sets the font size.
      *
-     * @param[in] size The font size in pixels.
+     * @param[in] size @UNIT_LOGICAL The font size in pixels.
      */
     void SetFontSize(float size);
 
     /**
      * @brief Returns the font size.
      *
-     * @return The font size in pixels.
+     * @return @UNIT_LOGICAL The font size in pixels.
      */
     float GetFontSize() const;
 
     /**
      * @brief Sets the line height.
      *
-     * @param[in] height The line height in pixels.
+     * @param[in] height @UNIT_LOGICAL The line height in pixels.
      */
     void SetLineHeight(float height);
 
     /**
      * @brief Returns the line height.
      *
-     * @return The line height in pixels.
+     * @return @UNIT_LOGICAL The line height in pixels.
      */
     float GetLineHeight() const;
 

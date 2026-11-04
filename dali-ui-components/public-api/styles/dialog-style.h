@@ -56,29 +56,29 @@ public:
   /// @brief Returns a mutable builder independent of the original style.
   Builder Configure() const;
 
-  /// @brief Default requested width: non-negative or WRAP_CONTENT/MATCH_PARENT.
+  /// @brief @UNIT_LOGICAL Default requested width: non-negative or WRAP_CONTENT/MATCH_PARENT.
   float GetRequestedWidth() const;
-  /// @brief Default requested height: non-negative or WRAP_CONTENT/MATCH_PARENT.
+  /// @brief @UNIT_LOGICAL Default requested height: non-negative or WRAP_CONTENT/MATCH_PARENT.
   float GetRequestedHeight() const;
   /// @brief Background color. Preserves UiColor tokens unchanged.
   UiColor GetBackgroundColor() const;
-  /// @brief Overall padding. Each component must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Overall padding. Each component must be finite and non-negative.
   Insets GetPadding() const;
-  /// @brief Spacing between sections. Must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Spacing between sections. Must be finite and non-negative.
   float GetSpacing() const;
-  /// @brief Corner radius. Each component must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Corner radius. Each component must be finite and non-negative.
   Vector4 GetCornerRadius() const;
   /// @brief Absolute or relative interpretation of the corner radius.
   CornerRadiusPolicy GetCornerRadiusPolicy() const;
   /// @brief Shadow list, stored by value.
   ShadowStack GetShadow() const;
-  /// @brief Borderline width. Must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Borderline width. Must be finite and non-negative.
   float GetBorderlineWidth() const;
   /// @brief Borderline offset. Must be finite; negative values are allowed.
   float GetBorderlineOffset() const;
   /// @brief Borderline color.
   UiColor GetBorderlineColor() const;
-  /// @brief Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied.
+  /// @brief @UNIT_PHYSICAL Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied.
   float GetBackgroundBlurRadius() const;
 
 public: // Not intended for application developers
@@ -98,11 +98,11 @@ public:
   Builder& operator=(const Builder&) = delete;
   ~Builder();
 
-  /// @brief Default requested width: non-negative or WRAP_CONTENT/MATCH_PARENT. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Default requested width: non-negative or WRAP_CONTENT/MATCH_PARENT. Invalid values trigger an assertion.
   Builder& SetRequestedWidth(float value) &;
   /// @copydoc SetRequestedWidth
   Builder&& SetRequestedWidth(float value) &&;
-  /// @brief Default requested height: non-negative or WRAP_CONTENT/MATCH_PARENT. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Default requested height: non-negative or WRAP_CONTENT/MATCH_PARENT. Invalid values trigger an assertion.
   Builder& SetRequestedHeight(float value) &;
   /// @copydoc SetRequestedHeight
   Builder&& SetRequestedHeight(float value) &&;
@@ -110,15 +110,15 @@ public:
   Builder& SetBackgroundColor(const UiColor& value) &;
   /// @copydoc SetBackgroundColor
   Builder&& SetBackgroundColor(const UiColor& value) &&;
-  /// @brief Overall padding. Each component must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Overall padding. Each component must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetPadding(const Insets& value) &;
   /// @copydoc SetPadding
   Builder&& SetPadding(const Insets& value) &&;
-  /// @brief Spacing between sections. Must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Spacing between sections. Must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetSpacing(float value) &;
   /// @copydoc SetSpacing
   Builder&& SetSpacing(float value) &&;
-  /// @brief Corner radius. Each component must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Corner radius. Each component must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetCornerRadius(const Vector4& value) &;
   /// @copydoc SetCornerRadius
   Builder&& SetCornerRadius(const Vector4& value) &&;
@@ -130,7 +130,7 @@ public:
   Builder& SetShadow(const ShadowStack& value) &;
   /// @copydoc SetShadow
   Builder&& SetShadow(const ShadowStack& value) &&;
-  /// @brief Borderline width. Must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Borderline width. Must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetBorderlineWidth(float value) &;
   /// @copydoc SetBorderlineWidth
   Builder&& SetBorderlineWidth(float value) &&;
@@ -142,7 +142,7 @@ public:
   Builder& SetBorderlineColor(const UiColor& value) &;
   /// @copydoc SetBorderlineColor
   Builder&& SetBorderlineColor(const UiColor& value) &&;
-  /// @brief Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied. Invalid values trigger an assertion.
+  /// @brief @UNIT_PHYSICAL Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied. Invalid values trigger an assertion.
   Builder& SetBackgroundBlurRadius(float value) &;
   /// @copydoc SetBackgroundBlurRadius
   Builder&& SetBackgroundBlurRadius(float value) &&;

@@ -51,6 +51,21 @@ When `LayoutScaleManager::SetUiScale()` is called, every registered layout root 
 
 <br/>
 
+## Logical and Physical Values
+
+The API reference marks every length with one of two tags.
+
+- **Logical** (`@UNIT_LOGICAL`): the layout multiplies the value by the effective scale of the view it belongs to every time it is used, so a later scale change applies automatically. Getters return it as set. Requested sizes and positions, padding, margin, minimum and maximum sizes, layout spacing and the `_dp`, `_sdp` and `_spx` literals are logical.
+- **Physical** (`@UNIT_PHYSICAL`): pixels in the units dali-core uses, such as `Actor::Property::SIZE`, `POSITION` and touch coordinates, with the effective scale already applied. Measure and arrange values, `Extension::View` geometry setters, scroll positions and drag-and-drop coordinates are physical. A physical value the framework stores, such as a scroll position, keeps its number when the scale changes.
+
+```
+physical = logical × Extension::View::GetEffectiveLayoutScale(view)
+```
+
+The full definitions and examples are on the Length Units page (`docs/length-units.md`).
+
+<br/>
+
 ## LayoutScaleManager
 
 `LayoutScaleManager` is a process-wide singleton that holds the current system scale value and the scale of each window. It is not a `LayoutManager` and lays nothing out itself; the layout pass applies what it holds.

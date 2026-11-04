@@ -55,23 +55,23 @@ public:
   DialogStyle GetDialogStyle() const;
   /// @brief Title text color.
   UiColor GetTitleTextColor() const;
-  /// @brief Title font size. Must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Title font size. Must be finite and non-negative.
   float GetTitleFontSize() const;
   /// @brief Title font family. An empty string preserves the default Label font.
   Dali::String GetTitleFontFamily() const;
   /// @brief Message text color.
   UiColor GetMessageTextColor() const;
-  /// @brief Message font size. Must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Message font size. Must be finite and non-negative.
   float GetMessageFontSize() const;
   /// @brief Message font family. An empty string preserves the default Label font.
   Dali::String GetMessageFontFamily() const;
   /// @brief Explicit action appearance. An empty handle uses the Alert fallback and configured TextButton geometry.
   TextButtonStyle GetActionButtonStyle() const;
-  /// @brief Generated action row height: WRAP_CONTENT (default), or a finite non-negative fixed height.
+  /// @brief @UNIT_LOGICAL Generated action row height: WRAP_CONTENT (default), or a finite non-negative fixed height.
   float GetActionRowHeight() const;
-  /// @brief Padding for the internally generated action row, not a user-supplied Footer.
+  /// @brief @UNIT_LOGICAL Padding for the internally generated action row, not a user-supplied Footer.
   Insets GetActionRowPadding() const;
-  /// @brief Spacing between actions. Must be finite and non-negative.
+  /// @brief @UNIT_LOGICAL Spacing between actions. Must be finite and non-negative.
   float GetActionButtonSpacing() const;
 
 public: // Not intended for application developers
@@ -99,7 +99,7 @@ public:
   Builder& SetTitleTextColor(const UiColor& value) &;
   /// @copydoc SetTitleTextColor
   Builder&& SetTitleTextColor(const UiColor& value) &&;
-  /// @brief Title font size. Must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Title font size. Must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetTitleFontSize(float value) &;
   /// @copydoc SetTitleFontSize
   Builder&& SetTitleFontSize(float value) &&;
@@ -111,7 +111,7 @@ public:
   Builder& SetMessageTextColor(const UiColor& value) &;
   /// @copydoc SetMessageTextColor
   Builder&& SetMessageTextColor(const UiColor& value) &&;
-  /// @brief Message font size. Must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Message font size. Must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetMessageFontSize(float value) &;
   /// @copydoc SetMessageFontSize
   Builder&& SetMessageFontSize(float value) &&;
@@ -123,15 +123,15 @@ public:
   Builder& SetActionButtonStyle(TextButtonStyle value) &;
   /// @copydoc SetActionButtonStyle
   Builder&& SetActionButtonStyle(TextButtonStyle value) &&;
-  /// @brief Generated action row height: WRAP_CONTENT, or a finite non-negative fixed height. Invalid values assert.
+  /// @brief @UNIT_LOGICAL Generated action row height: WRAP_CONTENT, or a finite non-negative fixed height. Invalid values assert.
   Builder& SetActionRowHeight(float value) &;
   /// @copydoc SetActionRowHeight
   Builder&& SetActionRowHeight(float value) &&;
-  /// @brief Padding for the generated action row only. All sides must be finite and non-negative; invalid values assert.
+  /// @brief @UNIT_LOGICAL Padding for the generated action row only. All sides must be finite and non-negative; invalid values assert.
   Builder& SetActionRowPadding(const Insets& value) &;
   /// @copydoc SetActionRowPadding
   Builder&& SetActionRowPadding(const Insets& value) &&;
-  /// @brief Spacing between actions. Must be finite and non-negative. Invalid values trigger an assertion.
+  /// @brief @UNIT_LOGICAL Spacing between actions. Must be finite and non-negative. Invalid values trigger an assertion.
   Builder& SetActionButtonSpacing(float value) &;
   /// @copydoc SetActionButtonSpacing
   Builder&& SetActionButtonSpacing(float value) &&;

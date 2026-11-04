@@ -94,14 +94,14 @@ public: // Properties
   /**
    * @brief Gets the font size in pixels.
    *
-   * @return The font size in pixels
+   * @return @UNIT_LOGICAL The font size in pixels
    */
   float GetFontSize() const;
 
   /**
    * @brief Sets the size of font in pixels.
    *
-   * @param[in] fontSize The size of font in pixels
+   * @param[in] fontSize @UNIT_LOGICAL The size of font in pixels
    */
   void SetFontSize(float fontSize);
 
@@ -220,14 +220,16 @@ public: // Properties
   /**
    * @brief Gets the line height.
    *
-   * @return The line height
+   * @return @UNIT_LOGICAL The line height.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    */
   float GetLineHeight() const;
 
   /**
    * @brief Sets the line height.
    *
-   * @param[in] lineHeight The line height to set
+   * @param[in] lineHeight @UNIT_LOGICAL The line height to set.
+   * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
    */
   void SetLineHeight(float lineHeight);
 

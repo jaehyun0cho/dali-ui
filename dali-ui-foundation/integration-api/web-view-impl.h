@@ -83,9 +83,9 @@ public: // Properties (required by DALI_PROPERTY_REGISTRATION)
     {
       URL = PROPERTY_START_INDEX, ///< The URL of the currently loaded page
       USER_AGENT,                 ///< The user agent string
-      SCROLL_POSITION,            ///< The current scroll position
-      SCROLL_SIZE,                ///< The total scrollable size
-      CONTENT_SIZE,               ///< The total size of the page content
+      SCROLL_POSITION,            ///< @UNIT_PHYSICAL The current scroll position
+      SCROLL_SIZE,                ///< @UNIT_PHYSICAL The total scrollable size
+      CONTENT_SIZE,               ///< @UNIT_PHYSICAL The total size of the page content
       TITLE,                      ///< The title of the current web page
       VIDEO_HOLE_ENABLED,         ///< Whether video hole rendering is enabled
       MOUSE_EVENTS_ENABLED,       ///< Whether mouse events are forwarded

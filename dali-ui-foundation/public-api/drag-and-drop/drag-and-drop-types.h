@@ -372,7 +372,7 @@ public:
   DragActivationConfiguration();
 
   /**
-   * @brief Creates a gesture activation configuration.
+   * @brief @UNIT_PHYSICAL Creates a gesture activation configuration.
    */
   DragActivationConfiguration(DragActivationMode mode, float movementThreshold = 0.0f);
 
@@ -407,7 +407,7 @@ public:
   DragActivationMode GetMode() const;
 
   /**
-   * @brief Returns the additional screen-space movement threshold in pixels.
+   * @brief @UNIT_PHYSICAL Returns the additional screen-space movement threshold in pixels.
    */
   float GetMovementThreshold() const;
 
@@ -471,22 +471,22 @@ public:
   Device::Class::Type GetDeviceClass() const;
 
   /**
-   * @brief Returns the activation origin in screen coordinates.
+   * @brief @UNIT_PHYSICAL Returns the activation origin in screen coordinates.
    */
   const Vector2& GetInitialScreenPosition() const;
 
   /**
-   * @brief Returns the current pointer position in screen coordinates.
+   * @brief @UNIT_PHYSICAL Returns the current pointer position in screen coordinates.
    */
   const Vector2& GetScreenPosition() const;
 
   /**
-   * @brief Returns the current pointer position in source coordinates.
+   * @brief @UNIT_PHYSICAL Returns the current pointer position in source coordinates.
    */
   const Vector2& GetSourceLocalPosition() const;
 
   /**
-   * @brief Returns the current position minus the activation origin.
+   * @brief @UNIT_PHYSICAL Returns the current position minus the activation origin.
    */
   const Vector2& GetScreenDisplacement() const;
 
@@ -580,27 +580,27 @@ public:
   DragSessionOrigin GetSessionOrigin() const;
 
   /**
-   * @brief Returns the current pointer position in screen coordinates.
+   * @brief @UNIT_PHYSICAL Returns the current pointer position in screen coordinates.
    */
   const Vector2& GetScreenPosition() const;
 
   /**
-   * @brief Returns the drag-start pointer offset in source coordinates.
+   * @brief @UNIT_PHYSICAL Returns the drag-start pointer offset in source coordinates.
    */
   const Vector2& GetSourceGrabPosition() const;
 
   /**
-   * @brief Returns the pointer position in source-parent coordinates.
+   * @brief @UNIT_PHYSICAL Returns the pointer position in source-parent coordinates.
    */
   const Vector2& GetSourceParentPosition() const;
 
   /**
-   * @brief Returns the pointer position in target or candidate coordinates.
+   * @brief @UNIT_PHYSICAL Returns the pointer position in target or candidate coordinates.
    */
   const Vector2& GetTargetLocalPosition() const;
 
   /**
-   * @brief Returns the pointer position in preview-parent coordinates.
+   * @brief @UNIT_PHYSICAL Returns the pointer position in preview-parent coordinates.
    *
    * The position is relative to the top-left corner of the configured drag preview
    * container, or of the source View's parent when no container is configured, in
@@ -640,7 +640,7 @@ public:
    * without one -- there is nothing to convert for, and the value equals the x of
    * GetPreviewLocalPosition().
    *
-   * @return The pointer X position to pass to View::SetRequestedX() of the drag
+   * @return @UNIT_LOGICAL The pointer X position to pass to View::SetRequestedX() of the drag
    *         preview
    */
   float GetPreviewRequestedX() const;
@@ -653,7 +653,7 @@ public:
    * passthrough while the session has no preview. A top margin on the preview
    * offsets the grab point by the margin times the preview's effective scale.
    *
-   * @return The pointer Y position to pass to View::SetRequestedY() of the drag
+   * @return @UNIT_LOGICAL The pointer Y position to pass to View::SetRequestedY() of the drag
    *         preview
    */
   float GetPreviewRequestedY() const;
@@ -675,7 +675,7 @@ public:
    * of the session, the DragPreviewFactory event included. Unlike the source's own
    * requested width it is never WRAP_CONTENT or MATCH_PARENT.
    *
-   * @return The source's drag-start width in requested units, or zero for an empty
+   * @return @UNIT_LOGICAL The source's drag-start width in requested units, or zero for an empty
    *         snapshot or a source that has not been rendered yet
    */
   float GetPreviewRequestedWidth() const;
@@ -689,7 +689,7 @@ public:
    * View::SetRequestedHeight() of a preview that copies the source. It is captured
    * once when the drag starts and is never WRAP_CONTENT or MATCH_PARENT.
    *
-   * @return The source's drag-start height in requested units, or zero for an empty
+   * @return @UNIT_LOGICAL The source's drag-start height in requested units, or zero for an empty
    *         snapshot or a source that has not been rendered yet
    */
   float GetPreviewRequestedHeight() const;
@@ -773,7 +773,7 @@ public:
   DragAutoScrollConfiguration();
 
   /**
-   * @brief Creates an auto-scroll configuration for a viewport.
+   * @brief @UNIT_PHYSICAL Creates an auto-scroll configuration for a viewport.
    */
   DragAutoScrollConfiguration(Dali::Ui::View viewport,
                               Vector2        edgeThreshold            = Vector2(48.0f, 48.0f),
@@ -811,12 +811,12 @@ public:
   Dali::Ui::View GetViewport() const;
 
   /**
-   * @brief Returns the horizontal and vertical edge-zone widths.
+   * @brief @UNIT_PHYSICAL Returns the horizontal and vertical edge-zone widths.
    */
   const Vector2& GetEdgeThreshold() const;
 
   /**
-   * @brief Returns the maximum horizontal and vertical scroll speed.
+   * @brief @UNIT_PHYSICAL Returns the maximum horizontal and vertical scroll speed.
    */
   const Vector2& GetMaxSpeed() const;
 
@@ -882,7 +882,7 @@ public:
   const Vector2& GetEdgeIntensity() const;
 
   /**
-   * @brief Returns the suggested content delta for this tick.
+   * @brief @UNIT_PHYSICAL Returns the suggested content delta for this tick.
    */
   const Vector2& GetSuggestedDelta() const;
 

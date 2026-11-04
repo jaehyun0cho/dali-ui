@@ -56,7 +56,7 @@ public:
 
   /// @brief Built-in scrim color. Not applied to a custom scrim.
   UiColor GetScrimColor() const;
-  /// @brief Built-in scrim blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied.
+  /// @brief @UNIT_PHYSICAL Built-in scrim blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied.
   float GetScrimBlurRadius() const;
 
 public: // Not intended for application developers
@@ -80,7 +80,7 @@ public:
   Builder& SetScrimColor(const UiColor& value) &;
   /// @copydoc SetScrimColor
   Builder&& SetScrimColor(const UiColor& value) &&;
-  /// @brief Built-in scrim blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied. Invalid values trigger an assertion.
+  /// @brief @UNIT_PHYSICAL Built-in scrim blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied. Invalid values trigger an assertion.
   Builder& SetScrimBlurRadius(float value) &;
   /// @copydoc SetScrimBlurRadius
   Builder&& SetScrimBlurRadius(float value) &&;

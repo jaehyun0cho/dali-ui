@@ -64,7 +64,7 @@ struct InputEditorPropertyIndex
     FONT_FAMILY,
 
     /**
-     * @brief The size of font in pixels.
+     * @brief @UNIT_LOGICAL The size of font in pixels.
      * @details Name "fontSize", type Property::FLOAT.
      * @see InputEditor::SetFontSize(), InputEditor::GetFontSize().
      */
@@ -110,7 +110,8 @@ struct InputEditorPropertyIndex
     OVERFLOW_MODE,
 
     /**
-     * @brief The line height.
+     * @brief @UNIT_LOGICAL The line height.
+     * In LineHeightMode::RELATIVE the value is a multiplier of the font size instead.
      * @details Name "lineHeight", type Property::FLOAT.
      * @see InputEditor::SetLineHeight(), InputEditor::GetLineHeight().
      */
@@ -146,7 +147,7 @@ struct InputEditorPropertyIndex
     SHOW_PLACEHOLDER_ON_FOCUS,
 
     /**
-     * @brief The width of the text cursor in pixels.
+     * @brief @UNIT_LOGICAL The width of the text cursor in pixels.
      * @details Name "cursorWidth", type Property::INTEGER.
      * @see InputEditor::SetCursorWidth(), InputEditor::GetCursorWidth().
      */
@@ -371,7 +372,9 @@ struct InputEditorPropertyIndex
     TYPING_FONT_FAMILY,
 
     /**
-     * @brief The font size in pixels used for typing.
+     * @brief @UNIT_LOGICAL The font size in pixels used for typing.
+     * This version applies the effective layout scale twice to typed or selected text, so it is drawn at the square of
+     * that scale.
      * @details Name "typingFontSize", type Property::FLOAT.
      * @see InputEditor::SetTypingFontSize(), InputEditor::GetTypingFontSize().
      */

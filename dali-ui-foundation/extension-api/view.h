@@ -324,7 +324,7 @@ DALI_UI_API bool NotifyAccessibilityShowingChanged(Ui::View view, bool showing);
  * directly.
  *
  * @param[in] view The view to modify
- * @param[in] x The rendered X position
+ * @param[in] x @UNIT_PHYSICAL The rendered X position
  * @warning Writes the Actor render property POSITION_X directly and bypasses the
  * layout request; for a layout-managed child the next Arrange pass overwrites it.
  * Use View::SetRequestedX/Y and View::SetRequestedWidth/Height for
@@ -336,7 +336,7 @@ DALI_UI_API void SetPositionX(Ui::View view, float x);
  * @brief Sets the rendered Y position of the view.
  *
  * @param[in] view The view to modify
- * @param[in] y The rendered Y position
+ * @param[in] y @UNIT_PHYSICAL The rendered Y position
  * @warning Writes the Actor render property POSITION_Y directly and bypasses
  * layout.
  * @see SetPositionX
@@ -347,7 +347,7 @@ DALI_UI_API void SetPositionY(Ui::View view, float y);
  * @brief Sets the rendered Z position of the view.
  *
  * @param[in] view The view to modify
- * @param[in] z The rendered Z position
+ * @param[in] z @UNIT_PHYSICAL The rendered Z position
  * @warning Writes the Actor render property POSITION_Z directly and bypasses
  * layout.
  * @see SetPositionX
@@ -358,7 +358,7 @@ DALI_UI_API void SetPositionZ(Ui::View view, float z);
  * @brief Sets the rendered width of the view.
  *
  * @param[in] view The view to modify
- * @param[in] width The rendered width
+ * @param[in] width @UNIT_PHYSICAL The rendered width
  * @warning Writes the Actor render property SIZE_WIDTH directly and bypasses
  * layout.
  * @see SetPositionX
@@ -369,7 +369,7 @@ DALI_UI_API void SetSizeWidth(Ui::View view, float width);
  * @brief Sets the rendered height of the view.
  *
  * @param[in] view The view to modify
- * @param[in] height The rendered height
+ * @param[in] height @UNIT_PHYSICAL The rendered height
  * @warning Writes the Actor render property SIZE_HEIGHT directly and bypasses
  * layout.
  * @see SetPositionX
@@ -380,7 +380,7 @@ DALI_UI_API void SetSizeHeight(Ui::View view, float height);
  * @brief Sets the rendered depth of the view.
  *
  * @param[in] view The view to modify
- * @param[in] depth The rendered depth
+ * @param[in] depth @UNIT_PHYSICAL The rendered depth
  * @warning Writes the Actor render property SIZE_DEPTH directly and bypasses
  * layout.
  * @see SetSizeWidth

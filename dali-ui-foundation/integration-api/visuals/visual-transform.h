@@ -55,6 +55,9 @@ struct Transform
   /**
    * Convert the control size and the transform attributes into the actual
    * size of the visual.
+   * @param[in] controlSize @UNIT_PHYSICAL The size of the View
+   * @param[in] viewEffectiveScale The effective layout scale of the View
+   * @return @UNIT_PHYSICAL The size of the visual
    */
   Vector2 GetVisualSize(const Vector2& controlSize, float viewEffectiveScale);
 

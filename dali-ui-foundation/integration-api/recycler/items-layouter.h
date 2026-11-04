@@ -70,20 +70,20 @@ public:
 
   bool  CanScrollVertically() const;
   bool  CanScrollHorizontally() const;
-  float ComputeScrollOffset() const;
-  float ComputeScrollExtent() const;
-  float ComputeScrollRange() const;
+  float ComputeScrollOffset() const; ///< @UNIT_PHYSICAL Computes the scroll offset.
+  float ComputeScrollExtent() const; ///< @UNIT_PHYSICAL Computes the scroll extent.
+  float ComputeScrollRange() const;  ///< @UNIT_PHYSICAL Computes the scroll range.
 
   uint32_t   GetFirstVisiblePosition() const;
   uint32_t   GetLastVisiblePosition() const;
-  LayoutRect GetItemBounds(uint32_t position, float crossExtent) const;
+  LayoutRect GetItemBounds(uint32_t position, float crossExtent) const; ///< @UNIT_PHYSICAL Returns the item bounds.
 
   Orientation GetOrientation() const;
   void        SetOrientation(Orientation orientation);
-  void        SetItemExtent(float extent);
-  float       GetItemExtent() const;
-  void        SetItemSpacing(float spacing);
-  float       GetItemSpacing() const;
+  void        SetItemExtent(float extent);   ///< @UNIT_PHYSICAL Sets the item extent.
+  float       GetItemExtent() const;         ///< @UNIT_PHYSICAL Returns the item extent.
+  void        SetItemSpacing(float spacing); ///< @UNIT_PHYSICAL Sets the item spacing.
+  float       GetItemSpacing() const;        ///< @UNIT_PHYSICAL Returns the item spacing.
 
 public: // Not intended for application developers
   /// @cond internal

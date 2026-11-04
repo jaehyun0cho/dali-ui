@@ -111,7 +111,7 @@ public:
 
   /**
    * @brief Sets the icon's requested width.
-   * @param[in] width The size in logical pixels. Zero is an explicit size;
+   * @param[in] width @UNIT_LOGICAL The size in logical pixels. Zero is an explicit size;
    * WRAP_CONTENT prefers the natural size (or 56 if unavailable), while MATCH_PARENT uses the parent constraint.
    * A positive size on one axis with WRAP_CONTENT on the other preserves the image's aspect ratio.
    * @pre The size must be finite and non-negative or WRAP_CONTENT/MATCH_PARENT; a violation triggers an assertion.
@@ -120,13 +120,13 @@ public:
 
   /**
    * @brief Returns the requested width of the icon.
-   * @return The requested logical-pixel value or layout sentinel, not the actual measured width.
+   * @return @UNIT_LOGICAL The requested logical-pixel value or layout sentinel, not the actual measured width.
    */
   float GetIconWidth() const;
 
   /**
    * @brief Sets the icon's requested height.
-   * @param[in] height The size in logical pixels. Zero is an explicit size;
+   * @param[in] height @UNIT_LOGICAL The size in logical pixels. Zero is an explicit size;
    * WRAP_CONTENT prefers the natural size (or 56 if unavailable), while MATCH_PARENT uses the parent constraint.
    * @pre The size must be finite and non-negative or WRAP_CONTENT/MATCH_PARENT; a violation triggers an assertion.
    */
@@ -134,7 +134,7 @@ public:
 
   /**
    * @brief Returns the requested height of the icon.
-   * @return The requested logical-pixel value or layout sentinel, not the actual measured height.
+   * @return @UNIT_LOGICAL The requested logical-pixel value or layout sentinel, not the actual measured height.
    */
   float GetIconHeight() const;
 
@@ -152,7 +152,7 @@ public:
 
   /**
    * @brief Sets the corner radii of the icon.
-   * @param[in] radius The corner radii in top-left, top-right, bottom-right,
+   * @param[in] radius @UNIT_PHYSICAL The corner radii in top-left, top-right, bottom-right,
    * and bottom-left order
    * @pre Each component must be finite and non-negative; a violation triggers an assertion. Zero means no rounding.
    */
@@ -160,7 +160,7 @@ public:
 
   /**
    * @brief Returns the corner radii of the icon.
-   * @return The icon corner radii
+   * @return @UNIT_PHYSICAL The icon corner radii
    */
   Vector4 GetIconCornerRadius() const;
 

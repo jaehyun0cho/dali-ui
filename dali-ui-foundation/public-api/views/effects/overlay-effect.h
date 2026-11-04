@@ -129,7 +129,7 @@ public:
    * The padding affects only the overlay visual. It does not change the target
    * View's measured size, layout bounds, hit area, or recoil target.
    *
-   * @return The overlay padding
+   * @return @UNIT_LOGICAL The overlay padding
    */
   Insets GetOverlayPadding() const;
 
@@ -140,7 +140,8 @@ public:
    * fallback radius value. Use IsUsingTargetCornerRadius() to check whether
    * the target View corner radius is used at runtime.
    *
-   * @return The configured corner radius
+   * @return @UNIT_LOGICAL The configured corner radius.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    */
   Vector4 GetCornerRadius() const;
 
@@ -230,7 +231,7 @@ public:
    * All values must be finite and non-negative. The default is zero on every
    * side. Start and end follow the target View's effective layout direction.
    *
-   * @param[in] padding The overlay padding
+   * @param[in] padding @UNIT_LOGICAL The overlay padding
    * @return Reference to this builder
    */
   Builder& SetOverlayPadding(const Insets& padding) &;
@@ -238,7 +239,7 @@ public:
   /**
    * @brief Sets the overlay padding on a temporary builder.
    *
-   * @param[in] padding The overlay padding
+   * @param[in] padding @UNIT_LOGICAL The overlay padding
    * @return Rvalue reference to this builder
    */
   Builder&& SetOverlayPadding(const Insets& padding) &&;
@@ -246,7 +247,8 @@ public:
   /**
    * @brief Sets a uniform explicit corner radius.
    *
-   * @param[in] radius The radius for all corners
+   * @param[in] radius @UNIT_LOGICAL The radius for all corners.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    * @return Reference to this builder
    */
   Builder& SetCornerRadius(float radius) &;
@@ -254,7 +256,8 @@ public:
   /**
    * @brief Sets a uniform explicit corner radius on a temporary builder.
    *
-   * @param[in] radius The radius for all corners
+   * @param[in] radius @UNIT_LOGICAL The radius for all corners.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    * @return Rvalue reference to this builder
    */
   Builder&& SetCornerRadius(float radius) &&;
@@ -262,10 +265,12 @@ public:
   /**
    * @brief Sets explicit corner radii.
    *
-   * @param[in] topLeft The top-left radius
-   * @param[in] topRight The top-right radius
-   * @param[in] bottomRight The bottom-right radius
-   * @param[in] bottomLeft The bottom-left radius
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
+   *
+   * @param[in] topLeft @UNIT_LOGICAL The top-left radius
+   * @param[in] topRight @UNIT_LOGICAL The top-right radius
+   * @param[in] bottomRight @UNIT_LOGICAL The bottom-right radius
+   * @param[in] bottomLeft @UNIT_LOGICAL The bottom-left radius
    * @return Reference to this builder
    */
   Builder& SetCornerRadius(float topLeft, float topRight, float bottomRight, float bottomLeft) &;
@@ -273,10 +278,12 @@ public:
   /**
    * @brief Sets explicit corner radii on a temporary builder.
    *
-   * @param[in] topLeft The top-left radius
-   * @param[in] topRight The top-right radius
-   * @param[in] bottomRight The bottom-right radius
-   * @param[in] bottomLeft The bottom-left radius
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
+   *
+   * @param[in] topLeft @UNIT_LOGICAL The top-left radius
+   * @param[in] topRight @UNIT_LOGICAL The top-right radius
+   * @param[in] bottomRight @UNIT_LOGICAL The bottom-right radius
+   * @param[in] bottomLeft @UNIT_LOGICAL The bottom-left radius
    * @return Rvalue reference to this builder
    */
   Builder&& SetCornerRadius(float topLeft, float topRight, float bottomRight, float bottomLeft) &&;
@@ -284,7 +291,8 @@ public:
   /**
    * @brief Sets explicit corner radii.
    *
-   * @param[in] radius The corner radii
+   * @param[in] radius @UNIT_LOGICAL The corner radii.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    * @return Reference to this builder
    */
   Builder& SetCornerRadius(const Vector4& radius) &;
@@ -292,7 +300,8 @@ public:
   /**
    * @brief Sets explicit corner radii on a temporary builder.
    *
-   * @param[in] radius The corner radii
+   * @param[in] radius @UNIT_LOGICAL The corner radii.
+   * With CornerRadiusPolicy::RELATIVE it is a fraction of the size, not a length.
    * @return Rvalue reference to this builder
    */
   Builder&& SetCornerRadius(const Vector4& radius) &&;
