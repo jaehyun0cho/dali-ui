@@ -16,12 +16,15 @@
 #
 """Check the length unit tags of the dali-ui API documentation.
 
-Every documented pixel length in the API headers carries exactly one @UNIT_LOGICAL or
-@UNIT_PHYSICAL tag, written as the first token of the description it qualifies. See
-rules/length-units.md and docs/length-units.md.
+Every documented pixel length in the API headers, outside the generated *.autogen.h headers,
+must carry exactly one @UNIT_LOGICAL or @UNIT_PHYSICAL tag, written as the first token of the
+description it qualifies. See rules/length-units.md and docs/length-units.md.
 
 The script finds candidates by C++ type and name, so a hit can be a false positive: add it to
 ALLOWLIST below with a reason instead of adding a tag.
+
+With --all the script also checks that each file of DEFINITION_FILES contains the two tag
+definitions of DEFINITIONS word for word, in a header each right after its tag token.
 
 Usage:
   python3 scripts/check-length-unit-tags.py --all
@@ -597,6 +600,24 @@ ALLOWLIST = [
 
 VALID_TAGS = ("LOGICAL", "PHYSICAL")
 TAG_RE = re.compile(r"[@\\]UNIT_(\w+)")
+
+# The definitions of the two tags. Each file of DEFINITION_FILES repeats them word for word, a header with each
+# definition right after its tag token, and --all reports a file that does not; line breaks, indentation and the
+# leading * or // of comment lines do not count.
+DEFINITIONS = {
+    "LOGICAL": (
+        "Logical value. The layout multiplies it by the effective layout scale of the view it belongs to, the UI scale "
+        "times the window scale, every time it is used, so a later scale change applies automatically. Getters return "
+        "it as set. It equals physical pixels only at scale 1.0. The _dp, _sdp and _spx literals produce logical "
+        "values."
+    ),
+    "PHYSICAL": (
+        "Physical value. Pixels in the units dali-core uses, such as Actor::Property::SIZE, POSITION and touch "
+        "coordinates, with the effective layout scale already applied. A physical value the framework stores, such as "
+        "a scroll position, keeps its number when the scale changes, so it can then point at different content."
+    ),
+}
+DEFINITION_FILES = ("dali-ui-foundation/public-api/types/unit.h", "docs/length-units.md", "rules/length-units.md")
 
 # Types that are a length whatever their name.
 ALWAYS_LENGTH_TYPES = {"LayoutRect", "MeasuredSize", "Insets", "Extents", "Padding", "PositionSize"}
@@ -1350,6 +1371,26 @@ def resolve(header, item, qualified_tags, simple_tags):
     item.tag = tag
 
 
+def check_definitions(root):
+    """Return a violation for each definition of DEFINITIONS that a file of DEFINITION_FILES lacks.
+
+    A header must put each definition right after its tag token.
+    """
+    violations = []
+    for path in DEFINITION_FILES:
+        try:
+            text = (root / path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            raise CheckError(f"{path}: cannot read: {error}")
+        words = " ".join(re.sub(r"(?m)^[ \t]*(?:\*|//+)", "", text).split())
+        for tag, definition in DEFINITIONS.items():
+            expected = f"@UNIT_{tag} {definition}" if path.endswith(".h") else definition
+            if expected not in words:
+                violations.append((path, 0, "DEFINITION", f"@UNIT_{tag}",
+                                   "the definition is missing or differs from DEFINITIONS in the script", set()))
+    return violations
+
+
 def check(root, paths, changed=None):
     """Return the sorted violations [(path, line, kind, key, message)]."""
     headers = []
@@ -1400,6 +1441,7 @@ def check(root, paths, changed=None):
         for path, key, _ in ALLOWLIST:
             if (path, key) not in used:
                 violations.append((path, 0, "STALE_ALLOWLIST", key, "the allowlist entry matches nothing", set()))
+        violations.extend(check_definitions(root))
     else:
         violations = [violation for violation in violations if violation[0] in changed
                       and (changed[violation[0]] is True or violation[5] & changed[violation[0]])]
@@ -1520,7 +1562,7 @@ def run_quietly(argv):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Check the @UNIT_LOGICAL and @UNIT_PHYSICAL tags of the API headers.")
     mode = parser.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--all", action="store_true", help="check every API header and the allowlist")
+    mode.add_argument("--all", action="store_true", help="check all API headers, the allowlist and the tag definitions")
     mode.add_argument("--diff", metavar="REV", help="check only the items whose lines changed since REV")
     mode.add_argument("--self-test", action="store_true", help="check that --diff handles class tags and deletions")
     parser.add_argument("--root", help="repository root (default: the top level of the current git checkout)")

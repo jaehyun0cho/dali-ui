@@ -1,6 +1,6 @@
 # Length Units
 
-Every length in the dali-ui API documentation carries one of two tags. The tag says whether the framework still
+The dali-ui API documentation marks a length with one of two tags. The tag says whether the framework still
 multiplies the value by the effective layout scale or whether the scale is already in it.
 
 ## Definitions
@@ -13,6 +13,9 @@ multiplies the value by the effective layout scale or whether the scale is alrea
   Actor::Property::SIZE, POSITION and touch coordinates, with the effective layout scale already applied. A physical
   value the framework stores, such as a scroll position, keeps its number when the scale changes, so it can then
   point at different content.
+
+Both definitions are also in a comment near the top of `dali-ui-foundation/public-api/types/unit.h`, which is
+installed with the other headers.
 
 The effective layout scale of a view is `Extension::View::GetEffectiveLayoutScale()`:
 
@@ -32,7 +35,9 @@ physical = logical x Extension::View::GetEffectiveLayoutScale(view)
 - WRAP_CONTENT and MATCH_PARENT are sentinels, not lengths. A proportional AbsoluteLayout value and a RELATIVE corner
   radius are fractions of a size; the API text says when that applies.
 - When a value follows another factor (for example the scale of the parent instead of its own), its documentation
-  says so in one sentence after the tag.
+  says so after the tag.
+- A length that no tag covers does not say whether it is logical or physical, for example in the generated `*.autogen.h`
+  headers.
 
 ## Typical logical values
 

@@ -16,6 +16,8 @@
  *
  */
 
+// The length unit tags @UNIT_LOGICAL and @UNIT_PHYSICAL are defined in dali-ui-foundation/public-api/types/unit.h.
+
 // EXTERNAL INCLUDES
 // INTERNAL INCLUDES
 #include <dali-ui-components/public-api/chart/bar-series.h>

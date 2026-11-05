@@ -24,6 +24,10 @@ later. A tag on each length keeps people and tools from passing one where the ot
   with the effective layout scale already applied. A physical value the framework stores, such as a scroll position,
   keeps its number when the scale changes, so it can then point at different content.
 
+The same two definitions are in `docs/length-units.md`, in a comment near the top of the installed header
+`dali-ui-foundation/public-api/types/unit.h` and in `DEFINITIONS` of `scripts/check-length-unit-tags.py`. Change all
+four together, and check the paraphrases in `wiki/Ui-Scale.md` and `wiki/Ui-Scale-(Kr).md`.
+
 The tag follows what the code does, not what it should do: a configured length that the code uses without the scale
 is physical until the code changes.
 
@@ -78,8 +82,9 @@ void SetKeyScrollStep(float step);
 - False positives of the checker, and lengths deliberately left untagged for now, live in its allowlist with one
   reason each. An undocumented property index that only mirrors another index of the same name is allowlisted; the
   documented index carries the unit.
-- Private members, `@cond` blocks, `Internal` namespaces and `*.autogen.h` headers are not part of the API
-  documentation and are not checked.
+- Private members, `@cond` blocks and `Internal` namespaces are not checked.
+- Generated `*.autogen.h` headers are part of the API documentation but are not checked: their generator does not
+  write tags yet, so their lengths are untagged.
 
 ### Validation
 
@@ -88,4 +93,5 @@ python3 scripts/check-length-unit-tags.py --all
 python3 scripts/check-length-unit-tags.py --diff origin/devel
 ```
 
-The definitions and examples are in `docs/length-units.md`.
+The definitions and examples are in `docs/length-units.md`. `--all` also reports a file whose copy of the two
+definitions differs from `DEFINITIONS` in the script or, in `unit.h`, does not follow its tag.

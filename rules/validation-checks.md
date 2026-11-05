@@ -114,8 +114,8 @@ decision.
 
 ## Length Unit Tags
 
-Every documented pixel length in the five API directories carries exactly one `@UNIT_LOGICAL` or `@UNIT_PHYSICAL`
-tag (see [Length Units](length-units.md)).
+Every documented pixel length in the five API directories, outside the generated `*.autogen.h` headers, must carry
+exactly one `@UNIT_LOGICAL` or `@UNIT_PHYSICAL` tag (see [Length Units](length-units.md)).
 
 Check the whole API surface:
 
@@ -130,7 +130,8 @@ python3 scripts/check-length-unit-tags.py --diff origin/devel
 ```
 
 The script reports a missing tag, more than one tag, a tag that is not the first token, an unknown `@UNIT_` word, a
-tag that differs from the class tag, a Set/Get pair with different tags and, with `--all`, a stale allowlist entry.
+tag that differs from the class tag, a Set/Get pair with different tags and, with `--all`, a stale allowlist entry and
+a copy of the tag definitions that differs from `DEFINITIONS` in the script or, in a header, does not follow its tag.
 It finds candidates by C++ type and name, so a hit can be a false positive: add it to the allowlist in the script
 with a reason instead of adding a tag. For the same reason it can miss a length whose type or name it does not
 recognize, so zero violations does not prove that every length is tagged; review new length APIs by hand as well.
