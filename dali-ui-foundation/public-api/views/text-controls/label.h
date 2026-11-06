@@ -186,15 +186,15 @@ public: // Text Size Measurement
   /**
    * @brief Returns the natural size required to lay out the text.
    *
-   * @return @UNIT_PHYSICAL The natural size, including padding.
+   * @return @UNIT_PIXEL The natural size, including padding.
    */
   Vector3 GetNaturalSize() const;
 
   /**
    * @brief Calculates the height required to lay out the text at the given width.
    *
-   * @param[in] width @UNIT_PHYSICAL The total view width, including padding.
-   * @return @UNIT_PHYSICAL The required height, including padding.
+   * @param[in] width @UNIT_PIXEL The total view width, including padding.
+   * @return @UNIT_PIXEL The required height, including padding.
    */
   float GetHeightForWidth(float width);
 
@@ -1221,7 +1221,7 @@ public: // Setters for chaining
   /**
    * @brief Gets the number of lines of text within the given width.
    *
-   * @param[in] width @UNIT_PHYSICAL The width used to calculate the line count.
+   * @param[in] width @UNIT_PIXEL The width used to calculate the line count.
    * @return The number of lines.
    */
   int GetLineCount(float width);
@@ -1322,7 +1322,7 @@ public: // Setters for chaining
    *
    * The given width must be the total label width including padding.
    *
-   * @param[in] width @UNIT_PHYSICAL The total width used for the computation, including padding.
+   * @param[in] width @UNIT_PIXEL The total width used for the computation, including padding.
    *
    * @note The computed result is delivered through Label::AsyncHeightForWidthComputedSignal().
    */
@@ -1351,8 +1351,8 @@ public: // Signals
    * @endcode
    *
    * @param[in] view The view whose async text rendering has completed.
-   * @param[in] width @UNIT_PHYSICAL The rendered text width, including padding.
-   * @param[in] height @UNIT_PHYSICAL The rendered text height, including padding.
+   * @param[in] width @UNIT_PIXEL The rendered text width, including padding.
+   * @param[in] height @UNIT_PIXEL The rendered text height, including padding.
    *
    * @return The signal to connect to.
    */
@@ -1366,8 +1366,8 @@ public: // Signals
    * @endcode
    *
    * @param[in] view The view whose async natural size computation has completed.
-   * @param[in] width @UNIT_PHYSICAL The computed natural width, including padding.
-   * @param[in] height @UNIT_PHYSICAL The computed natural height, including padding.
+   * @param[in] width @UNIT_PIXEL The computed natural width, including padding.
+   * @param[in] height @UNIT_PIXEL The computed natural height, including padding.
    *
    * @return The signal to connect to.
    */
@@ -1381,8 +1381,8 @@ public: // Signals
    * @endcode
    *
    * @param[in] view The view whose async height-for-width computation has completed.
-   * @param[in] width @UNIT_PHYSICAL The total width used for the computation, including padding.
-   * @param[in] height @UNIT_PHYSICAL The computed height for the given width, including padding.
+   * @param[in] width @UNIT_PIXEL The total width used for the computation, including padding.
+   * @param[in] height @UNIT_PIXEL The computed height for the given width, including padding.
    *
    * @return The signal to connect to.
    */

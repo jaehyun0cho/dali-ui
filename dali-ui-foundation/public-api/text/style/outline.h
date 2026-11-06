@@ -146,14 +146,14 @@ public:
   /**
    * @brief Sets the outline blur radius.
    *
-   * @param[in] blurRadius @UNIT_PHYSICAL The outline blur radius in pixels.
+   * @param[in] blurRadius @UNIT_PIXEL The outline blur radius in pixels.
    */
   void SetBlurRadius(float blurRadius);
 
   /**
    * @brief Returns the outline blur radius.
    *
-   * @return @UNIT_PHYSICAL The outline blur radius in pixels.
+   * @return @UNIT_PIXEL The outline blur radius in pixels.
    */
   float GetBlurRadius() const;
 

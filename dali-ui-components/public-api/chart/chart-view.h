@@ -261,9 +261,9 @@ public:
       LEGEND_POSITION    = ChartViewPropertyIndex::LEGEND_POSITION,
       AXIS_LABEL_SIZE    = ChartViewPropertyIndex::AXIS_LABEL_SIZE, ///< @UNIT_LOGICAL The axis label size.
       TITLE_SIZE         = ChartViewPropertyIndex::TITLE_SIZE,      ///< @UNIT_LOGICAL The title size.
-      LINE_WIDTH         = ChartViewPropertyIndex::LINE_WIDTH,      ///< @UNIT_PHYSICAL The line width.
+      LINE_WIDTH         = ChartViewPropertyIndex::LINE_WIDTH,      ///< @UNIT_PIXEL The line width.
       SHOW_MARKERS       = ChartViewPropertyIndex::SHOW_MARKERS,
-      MARKER_RADIUS      = ChartViewPropertyIndex::MARKER_RADIUS, ///< @UNIT_PHYSICAL The marker radius.
+      MARKER_RADIUS      = ChartViewPropertyIndex::MARKER_RADIUS, ///< @UNIT_PIXEL The marker radius.
       HOVER_ENABLED      = ChartViewPropertyIndex::HOVER_ENABLED,
       TOUCH_ENABLED      = ChartViewPropertyIndex::TOUCH_ENABLED,
     };
@@ -530,14 +530,14 @@ public:
    *
    * The default is 30.0.
    *
-   * @param[in] pixels @UNIT_PHYSICAL The maximum hit distance, in pixels
+   * @param[in] pixels @UNIT_PIXEL The maximum hit distance, in pixels
    */
   void SetHitThreshold(float pixels);
 
   /**
    * @brief Retrieves the maximum distance from a touch/hover position to a data point still counted as a hit.
    *
-   * @return @UNIT_PHYSICAL The maximum hit distance, in pixels
+   * @return @UNIT_PIXEL The maximum hit distance, in pixels
    */
   float GetHitThreshold() const;
 

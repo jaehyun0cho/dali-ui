@@ -1,6 +1,6 @@
 # Length Unit Rules
 
-These rules keep logical and physical lengths apart in the dali-ui API documentation.
+These rules keep logical and pixel lengths apart in the dali-ui API documentation.
 
 ## Rule: Tag Every Documented Length With Its Unit
 
@@ -13,15 +13,15 @@ These rules keep logical and physical lengths apart in the dali-ui API documenta
 
 ### Intent
 
-dali-core is physical everywhere: Actor size and position, touch coordinates and every parameter, return value and
+dali-core is in pixels everywhere: Actor size and position, touch coordinates and every parameter, return value and
 property. dali-ui mixes those values with logical values that the layout multiplies by the effective layout scale
 later. A tag on each length keeps people and tools from passing one where the other is expected.
 
 - Logical value. The layout multiplies it by the effective layout scale of the view it belongs to, the UI scale times
   the window scale, every time it is used, so a later scale change applies automatically. Getters return it as set.
-  It equals physical pixels only at scale 1.0. The _dp, _sdp and _spx literals produce logical values.
-- Physical value. Pixels in the units dali-core uses, such as Actor::Property::SIZE, POSITION and touch coordinates,
-  with the effective layout scale already applied. A physical value the framework stores, such as a scroll position,
+  It equals pixels only at scale 1.0. The _dp, _sdp and _spx literals produce logical values.
+- Pixel value. Pixels in the units dali-core uses, such as Actor::Property::SIZE, POSITION and touch coordinates,
+  with the effective layout scale already applied. A pixel value the framework stores, such as a scroll position,
   keeps its number when the scale changes, so it can then point at different content.
 
 The same two definitions are in `docs/length-units.md`, in a comment near the top of the installed header
@@ -29,7 +29,7 @@ The same two definitions are in `docs/length-units.md`, in a comment near the to
 four together, and check the paraphrases in `wiki/Ui-Scale.md` and `wiki/Ui-Scale-(Kr).md`.
 
 The tag follows what the code does, not what it should do: a configured length that the code uses without the scale
-is physical until the code changes.
+is in pixels until the code changes.
 
 ### Preferred
 
@@ -42,11 +42,11 @@ void SetRequestedWidth(float width);
 
 /**
  * @brief Gets the scroll position.
- * @return @UNIT_PHYSICAL The current scroll position
+ * @return @UNIT_PIXEL The current scroll position
  */
 Vector2 GetScrollPosition() const;
 
-float x; ///< @UNIT_PHYSICAL X position
+float x; ///< @UNIT_PIXEL X position
 
 /// @brief @UNIT_LOGICAL Title font size. Must be finite and non-negative.
 float GetTitleFontSize() const;
@@ -67,7 +67,7 @@ float GetTitleFontSize() const;
 void SetKeyScrollStep(float step);
 
 // Two tags, or a tag that contradicts the text:
-/// @param[in] width @UNIT_LOGICAL @UNIT_PHYSICAL The width in rendered pixels
+/// @param[in] width @UNIT_LOGICAL @UNIT_PIXEL The width in rendered pixels
 ```
 
 - A tag on a unitless value: ratios, weights, alignment, opacity, normalized anchors, angles, durations, counts,

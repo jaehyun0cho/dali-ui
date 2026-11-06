@@ -127,14 +127,14 @@ public:
    *
    * The default is 2.5.
    *
-   * @param[in] width @UNIT_PHYSICAL The width of the line, in pixels
+   * @param[in] width @UNIT_PIXEL The width of the line, in pixels
    */
   void SetLineWidth(float width);
 
   /**
    * @brief Retrieves the width of the line, in pixels.
    *
-   * @return @UNIT_PHYSICAL The width of the line, in pixels
+   * @return @UNIT_PIXEL The width of the line, in pixels
    */
   float GetLineWidth() const;
 
@@ -194,14 +194,14 @@ public:
    *
    * The default is 4.0.
    *
-   * @param[in] radius @UNIT_PHYSICAL The marker radius, in pixels
+   * @param[in] radius @UNIT_PIXEL The marker radius, in pixels
    */
   void SetMarkerRadius(float radius);
 
   /**
    * @brief Retrieves the radius of each marker, in pixels.
    *
-   * @return @UNIT_PHYSICAL The marker radius, in pixels
+   * @return @UNIT_PIXEL The marker radius, in pixels
    */
   float GetMarkerRadius() const;
 
@@ -260,14 +260,14 @@ public:
    *
    * The default is 0.0.
    *
-   * @param[in] width @UNIT_PHYSICAL The marker border width, in pixels
+   * @param[in] width @UNIT_PIXEL The marker border width, in pixels
    */
   void SetMarkerBorderWidth(float width);
 
   /**
    * @brief Retrieves the border width of each marker, in pixels.
    *
-   * @return @UNIT_PHYSICAL The marker border width, in pixels
+   * @return @UNIT_PIXEL The marker border width, in pixels
    */
   float GetMarkerBorderWidth() const;
 
@@ -422,8 +422,8 @@ public:
 
   /**
    * @brief Sets the dash pattern; a zero gap produces a solid stroke.
-   * @param[in] dashLength @UNIT_PHYSICAL Finite positive dash length in pixels
-   * @param[in] gapLength @UNIT_PHYSICAL Finite non-negative gap length in pixels
+   * @param[in] dashLength @UNIT_PIXEL Finite positive dash length in pixels
+   * @param[in] gapLength @UNIT_PIXEL Finite non-negative gap length in pixels
    */
   void SetLineDash(float dashLength, float gapLength);
 
@@ -434,8 +434,8 @@ public:
    * @param[in] firstPoint The first point index
    * @param[in] lastPoint The final point index
    * @param[in] color The stroke color; theme identifiers are retained
-   * @param[in] dashLength @UNIT_PHYSICAL The dash length in pixels
-   * @param[in] gapLength @UNIT_PHYSICAL The gap length, or zero for solid
+   * @param[in] dashLength @UNIT_PIXEL The dash length in pixels
+   * @param[in] gapLength @UNIT_PIXEL The gap length, or zero for solid
    */
   void SetSegmentStyle(uint32_t firstPoint, uint32_t lastPoint, const UiColor& color, float dashLength = 5.0f, float gapLength = 0.0f);
 

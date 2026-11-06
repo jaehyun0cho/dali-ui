@@ -132,14 +132,14 @@ public:
   /**
    * @brief Sets the shadow blur radius.
    *
-   * @param[in] blurRadius @UNIT_PHYSICAL The shadow blur radius in pixels.
+   * @param[in] blurRadius @UNIT_PIXEL The shadow blur radius in pixels.
    */
   void SetBlurRadius(float blurRadius);
 
   /**
    * @brief Returns the shadow blur radius.
    *
-   * @return @UNIT_PHYSICAL The shadow blur radius in pixels.
+   * @return @UNIT_PIXEL The shadow blur radius in pixels.
    */
   float GetBlurRadius() const;
 

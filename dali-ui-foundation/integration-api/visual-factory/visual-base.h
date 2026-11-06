@@ -135,17 +135,17 @@ public:
    * @brief Sets the transform and the control size
    *
    * @param[in] transform A property map describing the transform
-   * @param[in] controlSize @UNIT_PHYSICAL The size of the parent control for visuals that need to scale internally.
+   * @param[in] controlSize @UNIT_PIXEL The size of the parent control for visuals that need to scale internally.
    */
   void SetTransformAndSize(const Dali::Property::Map& transform, Size controlSize, float effectiveScale);
 
   /**
    * @brief Returns the height for a given width.
    *
-   * @param[in] width @UNIT_PHYSICAL Width to use.
+   * @param[in] width @UNIT_PIXEL Width to use.
    * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    *
-   * @return @UNIT_PHYSICAL The height based on the width.
+   * @return @UNIT_PIXEL The height based on the width.
    * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    */
   float GetHeightForWidth(float width);
@@ -153,10 +153,10 @@ public:
   /**
    * @brief Returns the width for a given height.
    *
-   * @param[in] height @UNIT_PHYSICAL Height to use.
+   * @param[in] height @UNIT_PIXEL Height to use.
    * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    *
-   * @return @UNIT_PHYSICAL The width based on the height.
+   * @return @UNIT_PIXEL The width based on the height.
    * For a visual other than TextVisual this is an aspect-ratio conversion that keeps the unit of the argument.
    */
   float GetWidthForHeight(float height);

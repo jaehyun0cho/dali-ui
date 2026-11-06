@@ -114,7 +114,7 @@ struct LottieAnimationViewPropertyIndex
     ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * @brief @UNIT_PHYSICAL The desired decoding width hint in pixels. 0 means no constraint.
+     * @brief @UNIT_PIXEL The desired decoding width hint in pixels. 0 means no constraint.
      * It is the rasterization size of the animation; as the natural size of a WRAP_CONTENT View it is multiplied by the
      * effective layout scale.
      * @details Name "desiredWidth", type Property::INTEGER.
@@ -123,7 +123,7 @@ struct LottieAnimationViewPropertyIndex
     DESIRED_WIDTH,
 
     /**
-     * @brief @UNIT_PHYSICAL The desired decoding height hint in pixels. 0 means no constraint.
+     * @brief @UNIT_PIXEL The desired decoding height hint in pixels. 0 means no constraint.
      * It is the rasterization size of the animation; as the natural size of a WRAP_CONTENT View it is multiplied by the
      * effective layout scale.
      * @details Name "desiredHeight", type Property::INTEGER.

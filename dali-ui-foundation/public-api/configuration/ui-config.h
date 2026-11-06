@@ -430,7 +430,7 @@ public: // Properties
    * See SetLongPressGestureMinimumHoldingTime() for how these gesture options are applied.
    *
    * @pre The config must not be frozen.
-   * @param[in] distance @UNIT_PHYSICAL The distance in pixels
+   * @param[in] distance @UNIT_PIXEL The distance in pixels
    * @note If not set, Dali::Integration::DEFAULT_TAP_GESTURE_MAXIMUM_MOTION_DISTANCE is used.
    *       A negative value is ignored, an error is logged, and the previous value is kept.
    */
@@ -442,7 +442,7 @@ public: // Properties
    * Before the application is created this returns the requested value, or the DALi
    * default if nothing has been set. Afterwards it returns the value in effect.
    *
-   * @return @UNIT_PHYSICAL The distance in pixels
+   * @return @UNIT_PIXEL The distance in pixels
    */
   float GetTapGestureMaximumMotionDistance() const;
 
@@ -453,7 +453,7 @@ public: // Properties
    * See SetLongPressGestureMinimumHoldingTime() for how gesture options are applied.
    *
    * @pre The config must not be frozen.
-   * @param[in] distance @UNIT_PHYSICAL The distance in pixels
+   * @param[in] distance @UNIT_PIXEL The distance in pixels
    * @note If not set, Dali::Integration::DEFAULT_PAN_GESTURE_MINIMUM_DISTANCE is used.
    *       A negative value is ignored, an error is logged, and the previous value is kept.
    */
@@ -465,7 +465,7 @@ public: // Properties
    * Before the application is created this returns the requested value, or the DALi
    * default if nothing has been set. Afterwards it returns the value in effect.
    *
-   * @return @UNIT_PHYSICAL The distance in pixels
+   * @return @UNIT_PIXEL The distance in pixels
    */
   int GetPanGestureMinimumDistance() const;
 
@@ -501,7 +501,7 @@ public: // Properties
    * See SetLongPressGestureMinimumHoldingTime() for how gesture options are applied.
    *
    * @pre The config must not be frozen.
-   * @param[in] distance @UNIT_PHYSICAL The distance in pixels
+   * @param[in] distance @UNIT_PIXEL The distance in pixels
    * @note If not set, DALi calculates the distance automatically from the scene DPI.
    *       A negative value is ignored, an error is logged, and the previous value is kept.
    */
@@ -513,7 +513,7 @@ public: // Properties
    * A negative return value means that DALi calculates the distance automatically
    * from the scene DPI.
    *
-   * @return @UNIT_PHYSICAL The distance in pixels, or a negative value when automatic calculation is used
+   * @return @UNIT_PIXEL The distance in pixels, or a negative value when automatic calculation is used
    */
   float GetPinchGestureMinimumDistance() const;
 

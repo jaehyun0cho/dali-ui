@@ -143,7 +143,7 @@ struct ImageViewPropertyIndex
     ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * @brief @UNIT_PHYSICAL The desired image width hint for the image loader, in pixels.
+     * @brief @UNIT_PIXEL The desired image width hint for the image loader, in pixels.
      * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
      * effective layout scale.
      * @details Name "desiredWidth", type Property::INTEGER.
@@ -152,7 +152,7 @@ struct ImageViewPropertyIndex
     DESIRED_WIDTH,
 
     /**
-     * @brief @UNIT_PHYSICAL The desired image height hint for the image loader, in pixels.
+     * @brief @UNIT_PIXEL The desired image height hint for the image loader, in pixels.
      * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
      * effective layout scale.
      * @details Name "desiredHeight", type Property::INTEGER.
@@ -207,7 +207,7 @@ struct ImageViewPropertyIndex
     ///////////////////////////////////////////////////////////////////////////////
 
     /**
-     * @brief @UNIT_PHYSICAL The widths of the fixed n-patch frame as (left, right, top, bottom).
+     * @brief @UNIT_PIXEL The widths of the fixed n-patch frame as (left, right, top, bottom).
      * @details Name "nPatchBorder", type Property::VECTOR4.
      * @note See also: ImageView::SetNPatchBorder(), ImageView::GetNPatchBorder().
      */

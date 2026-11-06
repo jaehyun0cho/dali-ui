@@ -91,12 +91,12 @@ public: // API
   View GetContent() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the scroll position.
+   * @brief @UNIT_PIXEL Gets the scroll position.
    */
   Vector2 GetScrollPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the scroll position.
+   * @brief @UNIT_PIXEL Sets the scroll position.
    */
   void SetScrollPosition(const Vector2& position);
 
@@ -106,22 +106,22 @@ public: // API
   bool IsScrolling() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the scrollable width.
+   * @brief @UNIT_PIXEL Gets the scrollable width.
    */
   float GetScrollableWidth() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the scrollable width.
+   * @brief @UNIT_PIXEL Sets the scrollable width.
    */
   void SetScrollableWidth(float width);
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the scrollable height.
+   * @brief @UNIT_PIXEL Gets the scrollable height.
    */
   float GetScrollableHeight() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the scrollable height.
+   * @brief @UNIT_PIXEL Sets the scrollable height.
    */
   void SetScrollableHeight(float height);
 
@@ -161,12 +161,12 @@ public: // API
   bool IsPanScrollEnabled() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the maximum fling distance.
+   * @brief @UNIT_PIXEL Gets the maximum fling distance.
    */
   float GetMaxFlingDistance() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the maximum fling distance.
+   * @brief @UNIT_PIXEL Sets the maximum fling distance.
    */
   void SetMaxFlingDistance(float distance);
 
@@ -221,7 +221,7 @@ public: // API
   void SetOverScrollMode(OverScrollMode mode);
 
   /**
-   * @brief @UNIT_PHYSICAL Scrolls to the specified position.
+   * @brief @UNIT_PIXEL Scrolls to the specified position.
    */
   void ScrollTo(const Vector2& position, bool animation);
 
@@ -231,12 +231,12 @@ public: // API
   void ScrollTo(View child, bool animation, ScrollToPosition scrollToPosition);
 
   /**
-   * @brief @UNIT_PHYSICAL Scrolls to the specified X position.
+   * @brief @UNIT_PIXEL Scrolls to the specified X position.
    */
   void ScrollToX(float position, bool animation);
 
   /**
-   * @brief @UNIT_PHYSICAL Scrolls to the specified Y position.
+   * @brief @UNIT_PIXEL Scrolls to the specified Y position.
    */
   void ScrollToY(float position, bool animation);
 
@@ -261,12 +261,12 @@ public: // API
   ScrollToPosition GetFocusScrollToPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the peek distance applied when auto-scrolling to a focused child.
+   * @brief @UNIT_PIXEL Sets the peek distance applied when auto-scrolling to a focused child.
    */
   void SetFocusScrollPeek(float peek);
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the peek distance applied when auto-scrolling to a focused child.
+   * @brief @UNIT_PIXEL Gets the peek distance applied when auto-scrolling to a focused child.
    */
   float GetFocusScrollPeek() const;
 
@@ -285,7 +285,7 @@ public: // API
   bool IsKeyScrollEnabled() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the step distance (px) used for key-based step scrolling.
+   * @brief @UNIT_PIXEL Sets the step distance (px) used for key-based step scrolling.
    *
    * Acts as both the proximity threshold (focus jumps if next item is within this
    * distance) and the scroll step size (scrolled by this amount when no nearby
@@ -294,7 +294,7 @@ public: // API
   void SetKeyScrollStep(float step);
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the step distance used for key-based step scrolling.
+   * @brief @UNIT_PIXEL Gets the step distance used for key-based step scrolling.
    */
   float GetKeyScrollStep() const;
 
@@ -346,14 +346,14 @@ public: // API
   // Viewport query
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the current viewport width (pixels).
+   * @brief @UNIT_PIXEL Returns the current viewport width (pixels).
    *
    * Reflects the last layout pass; zero before first layout.
    */
   float GetViewportWidth() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the current viewport height (pixels).
+   * @brief @UNIT_PIXEL Returns the current viewport height (pixels).
    *
    * Reflects the last layout pass; zero before first layout.
    */
@@ -393,37 +393,37 @@ public: // API
 
 protected:
   /**
-   * @brief @UNIT_PHYSICAL Converts velocity to movement distance.
+   * @brief @UNIT_PIXEL Converts velocity to movement distance.
    */
   Vector2 VelocityToMovement(const Vector2& velocity) const;
 
   /**
-   * @brief @UNIT_PHYSICAL Adjusts movement based on scroll direction.
+   * @brief @UNIT_PIXEL Adjusts movement based on scroll direction.
    */
   Vector2 AdjustMovement(const Vector2& movement) const;
 
   /**
-   * @brief @UNIT_PHYSICAL Adjusts delta to stay within bounds.
+   * @brief @UNIT_PIXEL Adjusts delta to stay within bounds.
    */
   Vector2 AdjustDelta(const Vector2& movement, const Vector2& currentPosition);
 
   /**
-   * @brief @UNIT_PHYSICAL Adjusts scroll position to valid range.
+   * @brief @UNIT_PIXEL Adjusts scroll position to valid range.
    */
   Vector2 AdjustScrollPosition(const Vector2& position) const;
 
   /**
-   * @brief @UNIT_PHYSICAL Gets scroll position for a child view.
+   * @brief @UNIT_PIXEL Gets scroll position for a child view.
    */
   Vector2 GetScrollPositionForChild(View child, Vector2 current) const;
 
   /**
-   * @brief @UNIT_PHYSICAL Converts content position to scroll position.
+   * @brief @UNIT_PIXEL Converts content position to scroll position.
    */
   Vector2 ContentPositionToScrollPosition(const Vector2& content) const;
 
   /**
-   * @brief @UNIT_PHYSICAL Converts scroll position to delta.
+   * @brief @UNIT_PIXEL Converts scroll position to delta.
    */
   Vector2 DeltaFromScrollPosition(const Vector2& scrollPosition) const;
 
@@ -437,7 +437,7 @@ protected:
   void CancelScrollAnimation();
 
   /**
-   * @brief @UNIT_PHYSICAL Scrolls to @p position over @p durationSec seconds.
+   * @brief @UNIT_PIXEL Scrolls to @p position over @p durationSec seconds.
    *
    * Uses an EASE_OUT_SINE curve.  If durationSec <= 0 the content is snapped
    * immediately with no animation.
@@ -445,7 +445,7 @@ protected:
   void ScrollToWithDuration(const Vector2& position, float durationSec);
 
   /**
-   * @brief @UNIT_PHYSICAL Called inside OnDragFinished just before the scroll/fling animation starts.
+   * @brief @UNIT_PIXEL Called inside OnDragFinished just before the scroll/fling animation starts.
    *
    * @p targetPosition is the computed fling destination (or the current scroll
    * position when there is no fling).  @p durationSec is the computed fling

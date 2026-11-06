@@ -70,20 +70,20 @@ public:
 
   bool  CanScrollVertically() const;
   bool  CanScrollHorizontally() const;
-  float ComputeScrollOffset() const; ///< @UNIT_PHYSICAL Computes the scroll offset.
-  float ComputeScrollExtent() const; ///< @UNIT_PHYSICAL Computes the scroll extent.
-  float ComputeScrollRange() const;  ///< @UNIT_PHYSICAL Computes the scroll range.
+  float ComputeScrollOffset() const; ///< @UNIT_PIXEL Computes the scroll offset.
+  float ComputeScrollExtent() const; ///< @UNIT_PIXEL Computes the scroll extent.
+  float ComputeScrollRange() const;  ///< @UNIT_PIXEL Computes the scroll range.
 
   uint32_t   GetFirstVisiblePosition() const;
   uint32_t   GetLastVisiblePosition() const;
-  LayoutRect GetItemBounds(uint32_t position, float crossExtent) const; ///< @UNIT_PHYSICAL Returns the item bounds.
+  LayoutRect GetItemBounds(uint32_t position, float crossExtent) const; ///< @UNIT_PIXEL Returns the item bounds.
 
   Orientation GetOrientation() const;
   void        SetOrientation(Orientation orientation);
-  void        SetItemExtent(float extent);   ///< @UNIT_PHYSICAL Sets the item extent.
-  float       GetItemExtent() const;         ///< @UNIT_PHYSICAL Returns the item extent.
-  void        SetItemSpacing(float spacing); ///< @UNIT_PHYSICAL Sets the item spacing.
-  float       GetItemSpacing() const;        ///< @UNIT_PHYSICAL Returns the item spacing.
+  void        SetItemExtent(float extent);   ///< @UNIT_PIXEL Sets the item extent.
+  float       GetItemExtent() const;         ///< @UNIT_PIXEL Returns the item extent.
+  void        SetItemSpacing(float spacing); ///< @UNIT_PIXEL Sets the item spacing.
+  float       GetItemSpacing() const;        ///< @UNIT_PIXEL Returns the item spacing.
 
 public: // Not intended for application developers
   /// @cond internal

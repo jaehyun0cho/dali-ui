@@ -282,14 +282,14 @@ public:
    *
    * The default is 2.0.
    *
-   * @param[in] width @UNIT_PHYSICAL The width of the axis line, in pixels
+   * @param[in] width @UNIT_PIXEL The width of the axis line, in pixels
    */
   void SetAxisLineWidth(float width);
 
   /**
    * @brief Retrieves the width of the axis line, in pixels.
    *
-   * @return @UNIT_PHYSICAL The width of the axis line, in pixels
+   * @return @UNIT_PIXEL The width of the axis line, in pixels
    */
   float GetAxisLineWidth() const;
 
@@ -299,16 +299,16 @@ public:
    * A gapLength of 0 draws a solid line. Defaults are dashLength 5.0,
    * gapLength 4.0.
    *
-   * @param[in] dashLength @UNIT_PHYSICAL The length of each dash, in pixels
-   * @param[in] gapLength @UNIT_PHYSICAL The length of each gap between dashes, in pixels
+   * @param[in] dashLength @UNIT_PIXEL The length of each dash, in pixels
+   * @param[in] gapLength @UNIT_PIXEL The length of each gap between dashes, in pixels
    */
   void SetGridDash(float dashLength, float gapLength);
 
   /**
    * @brief Retrieves the dash pattern of this axis' grid lines.
    *
-   * @param[out] dashLength @UNIT_PHYSICAL The length of each dash, in pixels
-   * @param[out] gapLength @UNIT_PHYSICAL The length of each gap between dashes, in pixels
+   * @param[out] dashLength @UNIT_PIXEL The length of each dash, in pixels
+   * @param[out] gapLength @UNIT_PIXEL The length of each gap between dashes, in pixels
    */
   void GetGridDash(float& dashLength, float& gapLength) const;
 

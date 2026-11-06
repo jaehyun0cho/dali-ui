@@ -65,13 +65,13 @@ public:
   void          SetItemsLayouter(ItemsLayouter layouter);
   ItemsLayouter GetItemsLayouter() const;
 
-  void SetCacheExtent(float before, float after);         ///< @UNIT_PHYSICAL Sets the cache extent.
-  void GetCacheExtent(float& before, float& after) const; ///< @UNIT_PHYSICAL Returns the cache extent.
+  void SetCacheExtent(float before, float after);         ///< @UNIT_PIXEL Sets the cache extent.
+  void GetCacheExtent(float& before, float& after) const; ///< @UNIT_PIXEL Returns the cache extent.
 
   void  ScrollToPosition(uint32_t position, bool animation);
-  void  ScrollBy(float distance, bool animation); ///< @UNIT_PHYSICAL Scrolls by the given distance.
-  void  SetScrollOffset(float offset);            ///< @UNIT_PHYSICAL Sets the scroll offset.
-  float GetScrollOffset() const;                  ///< @UNIT_PHYSICAL Returns the scroll offset.
+  void  ScrollBy(float distance, bool animation); ///< @UNIT_PIXEL Scrolls by the given distance.
+  void  SetScrollOffset(float offset);            ///< @UNIT_PIXEL Sets the scroll offset.
+  float GetScrollOffset() const;                  ///< @UNIT_PIXEL Returns the scroll offset.
 
   uint32_t GetFirstVisiblePosition() const;
   uint32_t GetLastVisiblePosition() const;
@@ -100,13 +100,13 @@ public:
 
   void  SetKeyScrollEnabled(bool enable);
   bool  IsKeyScrollEnabled() const;
-  void  SetKeyScrollStep(float step); ///< @UNIT_PHYSICAL Sets the key scroll step.
-  float GetKeyScrollStep() const;     ///< @UNIT_PHYSICAL Returns the key scroll step.
+  void  SetKeyScrollStep(float step); ///< @UNIT_PIXEL Sets the key scroll step.
+  float GetKeyScrollStep() const;     ///< @UNIT_PIXEL Returns the key scroll step.
 
   void  SetScrollOnFocus(bool enable);
   bool  GetScrollOnFocus() const;
-  void  SetFocusScrollPeek(float peek); ///< @UNIT_PHYSICAL Sets the focus scroll peek.
-  float GetFocusScrollPeek() const;     ///< @UNIT_PHYSICAL Returns the focus scroll peek.
+  void  SetFocusScrollPeek(float peek); ///< @UNIT_PIXEL Sets the focus scroll peek.
+  float GetFocusScrollPeek() const;     ///< @UNIT_PIXEL Returns the focus scroll peek.
 
   void AddItemDecoration(ItemDecoration& decoration);
   void RemoveItemDecoration(ItemDecoration& decoration);

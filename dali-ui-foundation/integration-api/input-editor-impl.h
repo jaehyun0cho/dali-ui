@@ -707,14 +707,14 @@ public:
    *
    * Positive values increase the spacing, while negative values reduce it.
    *
-   * @param[in] spacing @UNIT_PHYSICAL The additional letter spacing in pixels.
+   * @param[in] spacing @UNIT_PIXEL The additional letter spacing in pixels.
    */
   void SetLetterSpacing(float spacing);
 
   /**
    * @brief Gets the additional spacing between letters in pixels.
    *
-   * @return @UNIT_PHYSICAL The additional letter spacing in pixels.
+   * @return @UNIT_PIXEL The additional letter spacing in pixels.
    */
   float GetLetterSpacing() const;
 
@@ -726,7 +726,7 @@ public:
 
   /**
    * @see Dali::Ui::InputEditor::GetLineCount(float)
-   * @param[in] width @UNIT_PHYSICAL The width used to calculate the line count.
+   * @param[in] width @UNIT_PIXEL The width used to calculate the line count.
    */
   int GetLineCount(float width);
 

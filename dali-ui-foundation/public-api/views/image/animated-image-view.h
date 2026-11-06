@@ -425,7 +425,7 @@ public: // Size & Loading Behavior
   /**
    * @brief Sets the desired image width used as a hint for the image loader.
    *
-   * @param[in] width @UNIT_PHYSICAL The desired width in pixels (0 to use natural size).
+   * @param[in] width @UNIT_PIXEL The desired width in pixels (0 to use natural size).
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -434,7 +434,7 @@ public: // Size & Loading Behavior
   /**
    * @brief Gets the desired image width hint.
    *
-   * @return @UNIT_PHYSICAL The desired width in pixels, or 0 if not set.
+   * @return @UNIT_PIXEL The desired width in pixels, or 0 if not set.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -443,7 +443,7 @@ public: // Size & Loading Behavior
   /**
    * @brief Sets the desired image height used as a hint for the image loader.
    *
-   * @param[in] height @UNIT_PHYSICAL The desired height in pixels (0 to use natural size).
+   * @param[in] height @UNIT_PIXEL The desired height in pixels (0 to use natural size).
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -452,7 +452,7 @@ public: // Size & Loading Behavior
   /**
    * @brief Gets the desired image height hint.
    *
-   * @return @UNIT_PHYSICAL The desired height in pixels, or 0 if not set.
+   * @return @UNIT_PIXEL The desired height in pixels, or 0 if not set.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */

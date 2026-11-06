@@ -397,7 +397,7 @@ public:
    * A value of zero applies no additional movement requirement. The underlying
    * DALi recognizers can still apply their platform gesture conditions.
    *
-   * @param[in] threshold @UNIT_PHYSICAL Non-negative distance in screen pixels.
+   * @param[in] threshold @UNIT_PIXEL Non-negative distance in screen pixels.
    * @pre No drag activation may be pending and no drag may be active or finishing.
    */
   void SetDragStartThreshold(float threshold);
@@ -405,7 +405,7 @@ public:
   /**
    * @brief Returns the additional movement required to activate a drag.
    *
-   * @return @UNIT_PHYSICAL The non-negative threshold in screen pixels.
+   * @return @UNIT_PIXEL The non-negative threshold in screen pixels.
    */
   float GetDragStartThreshold() const;
 
@@ -729,7 +729,7 @@ public:
    * @brief Returns the current position of the dragged object.
    *
    * This is the dropped position when an object is dropped.
-   * @return @UNIT_PHYSICAL The current screen position.
+   * @return @UNIT_PIXEL The current screen position.
    */
   const Vector2& GetCurrentScreenPosition() const;
 

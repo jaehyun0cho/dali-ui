@@ -44,7 +44,7 @@ public:
   {
     Dali::String text;
     UiColor      color{0.0f, 0.0f, 0.0f, 1.0f};
-    Vector2      position; ///< @UNIT_PHYSICAL The position.
+    Vector2      position; ///< @UNIT_PIXEL The position.
     float        angle{0.0f};
   };
 
@@ -52,7 +52,7 @@ public:
   {
     Dali::String name;
     Vector2      iconCenter;
-    Vector2      textPos; ///< @UNIT_PHYSICAL The text position.
+    Vector2      textPos; ///< @UNIT_PIXEL The text position.
   };
 
   struct LayoutResult
@@ -62,11 +62,11 @@ public:
     std::vector<LegendItem> legendItems;
     std::vector<float>      xTicks; ///< Data coordinates, independent of label visibility and overlap culling.
     std::vector<float>      yTicks;
-    Rect<float>             plotArea;      ///< @UNIT_PHYSICAL The plot area.
-    Vector2                 totalSize;     ///< @UNIT_PHYSICAL The total size.
-    Vector2                 titlePos;      ///< @UNIT_PHYSICAL The title position.
-    Vector2                 xAxisTitlePos; ///< @UNIT_PHYSICAL The x axis title position.
-    Vector2                 yAxisTitlePos; ///< @UNIT_PHYSICAL The y axis title position.
+    Rect<float>             plotArea;      ///< @UNIT_PIXEL The plot area.
+    Vector2                 totalSize;     ///< @UNIT_PIXEL The total size.
+    Vector2                 titlePos;      ///< @UNIT_PIXEL The title position.
+    Vector2                 xAxisTitlePos; ///< @UNIT_PIXEL The x axis title position.
+    Vector2                 yAxisTitlePos; ///< @UNIT_PIXEL The y axis title position.
     int                     xTickCount{0};
     bool                    hasTitle{false};
     bool                    hasXAxisTitle{false};
@@ -74,15 +74,15 @@ public:
     bool                    hasLegend{false};
   };
 
-  static constexpr float PADDING        = 10.0f; ///< @UNIT_PHYSICAL The padding.
-  static constexpr float TICK_LENGTH    = 5.0f;  ///< @UNIT_PHYSICAL The tick length.
-  static constexpr float TICK_LABEL_GAP = 4.0f;  ///< @UNIT_PHYSICAL The tick label gap.
+  static constexpr float PADDING        = 10.0f; ///< @UNIT_PIXEL The padding.
+  static constexpr float TICK_LENGTH    = 5.0f;  ///< @UNIT_PIXEL The tick length.
+  static constexpr float TICK_LABEL_GAP = 4.0f;  ///< @UNIT_PIXEL The tick label gap.
   static constexpr float LEGEND_SWATCH  = 12.0f;
-  static constexpr float LEGEND_GAP     = 6.0f; ///< @UNIT_PHYSICAL The legend gap.
+  static constexpr float LEGEND_GAP     = 6.0f; ///< @UNIT_PIXEL The legend gap.
 
   LayoutResult ComputeLayout(const Vector2&    totalSize,
                              const ChartModel& model,
-                             ScaleEngine&      scale); ///< @UNIT_PHYSICAL Computes the layout.
+                             ScaleEngine&      scale); ///< @UNIT_PIXEL Computes the layout.
 
 private:
   float                                          EstimateTextWidth(const Dali::String& text, float pointSize);

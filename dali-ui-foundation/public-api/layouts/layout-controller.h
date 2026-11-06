@@ -139,8 +139,8 @@ public:
    *
    * This invalidates all layout roots and triggers a layout pass.
    *
-   * @param[in] width @UNIT_PHYSICAL The new window width
-   * @param[in] height @UNIT_PHYSICAL The new window height
+   * @param[in] width @UNIT_PIXEL The new window width
+   * @param[in] height @UNIT_PIXEL The new window height
    */
   void OnWindowResize(int32_t width, int32_t height);
 

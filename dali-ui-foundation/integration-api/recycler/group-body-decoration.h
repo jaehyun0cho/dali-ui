@@ -63,7 +63,7 @@ public:
   // This value is returned from GetItemOffsets() and applied by the layouter.
   // Do NOT combine with GroupLinearItemsLayouter::SetBodyHorizontalMargin() on the
   // same RecyclerView — the two margins would be additive.
-  void SetBodyHorizontalMargin(float left, float right); ///< @UNIT_PHYSICAL Sets the body horizontal margin.
+  void SetBodyHorizontalMargin(float left, float right); ///< @UNIT_PIXEL Sets the body horizontal margin.
   void SetBodyCornerRadius(float radius);                ///< @UNIT_LOGICAL Sets the body corner radius.
 
   /**
@@ -74,7 +74,7 @@ public:
    * Top and bottom are always zero. Non-body items receive zero offsets.
    *
    * @param[in] holder The item whose row type determines whether margins apply.
-   * @return @UNIT_PHYSICAL Insets in pixels reserved around the item.
+   * @return @UNIT_PIXEL Insets in pixels reserved around the item.
    */
   Insets GetItemOffsets(const ItemViewHolder& holder) const override;
 

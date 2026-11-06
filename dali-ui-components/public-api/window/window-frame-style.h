@@ -111,13 +111,13 @@ public:
 
   /**
    * @brief Sets the shadow image N-patch stretch borders.
-   * @param[in] border @UNIT_PHYSICAL Start, end, top, and bottom pixel insets
+   * @param[in] border @UNIT_PIXEL Start, end, top, and bottom pixel insets
    */
   void SetShadowImageBorder(const Dali::Ui::Insets& border);
 
   /**
    * @brief Returns the shadow image N-patch stretch borders.
-   * @return @UNIT_PHYSICAL Configured start, end, top, and bottom insets
+   * @return @UNIT_PIXEL Configured start, end, top, and bottom insets
    */
   Dali::Ui::Insets GetShadowImageBorder() const;
 

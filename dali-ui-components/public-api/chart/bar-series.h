@@ -211,13 +211,13 @@ public:
 
   /**
    * @brief Sets a finite non-negative corner radius in pixels, clamped to half the bar dimensions.
-   * @param[in] radius @UNIT_PHYSICAL The radius; zero preserves rectangular bars
+   * @param[in] radius @UNIT_PIXEL The radius; zero preserves rectangular bars
    */
   void SetCornerRadius(float radius);
 
   /**
    * @brief Returns the authored corner radius.
-   * @return @UNIT_PHYSICAL The radius in pixels
+   * @return @UNIT_PIXEL The radius in pixels
    */
   float GetCornerRadius() const;
 
@@ -240,7 +240,7 @@ public:
 
   /**
    * @brief Sets the finite non-negative bar border width and color.
-   * @param[in] width @UNIT_PHYSICAL The border width
+   * @param[in] width @UNIT_PIXEL The border width
    * @param[in] color The border color; theme identifiers are retained
    */
   void SetBorder(float width, const UiColor& color);
@@ -249,14 +249,14 @@ public:
    * @brief Sets finite non-negative border dash and gap lengths in pixels.
    *
    * Both lengths must be positive to draw a dashed border. Otherwise it is solid.
-   * @param[in] dash @UNIT_PHYSICAL The dash length
-   * @param[in] gap @UNIT_PHYSICAL The gap length
+   * @param[in] dash @UNIT_PIXEL The dash length
+   * @param[in] gap @UNIT_PIXEL The gap length
    */
   void SetBorderDash(float dash, float gap);
 
   /**
    * @brief Returns the border dash and gap lengths, initially zero.
-   * @return @UNIT_PHYSICAL The dash and gap in pixels
+   * @return @UNIT_PIXEL The dash and gap in pixels
    */
   Vector2 GetBorderDash() const;
 
@@ -284,10 +284,10 @@ public:
    * Overrides stay at their indices after data replacement until cleared.
    * Indices beyond the current data can be configured for future points.
    * @param[in] pointIndex The zero-based data index
-   * @param[in] width @UNIT_PHYSICAL The finite non-negative border width in pixels
+   * @param[in] width @UNIT_PIXEL The finite non-negative border width in pixels
    * @param[in] color The border color; theme identifiers are retained
-   * @param[in] dash @UNIT_PHYSICAL The finite non-negative dash length in pixels
-   * @param[in] gap @UNIT_PHYSICAL The finite non-negative gap length in pixels
+   * @param[in] dash @UNIT_PIXEL The finite non-negative dash length in pixels
+   * @param[in] gap @UNIT_PIXEL The finite non-negative gap length in pixels
    */
   void SetPointBorder(uint32_t pointIndex, float width, const UiColor& color, float dash = 0.0f, float gap = 0.0f);
 

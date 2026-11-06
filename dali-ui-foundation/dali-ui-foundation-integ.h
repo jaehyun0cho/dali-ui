@@ -17,7 +17,7 @@
  *
  */
 
-// The length unit tags @UNIT_LOGICAL and @UNIT_PHYSICAL are defined in dali-ui-foundation/public-api/types/unit.h.
+// The length unit tags @UNIT_LOGICAL and @UNIT_PIXEL are defined in dali-ui-foundation/public-api/types/unit.h.
 
 #include <dali-ui-foundation/dali-ui-foundation-extension.h>
 #include <dali-ui-foundation/integration-api/reserved-trait-id.h>

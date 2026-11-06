@@ -65,7 +65,7 @@ public:
 
   /**
    * @brief Creates an initialized BackgroundBlurEffect.
-   * @param[in] blurRadius @UNIT_PHYSICAL The radius of Gaussian kernel.
+   * @param[in] blurRadius @UNIT_PIXEL The radius of Gaussian kernel.
    * @return A handle to a newly allocated Dali resource
    * @note Due to the downscale factor and kernel optimizations, the actual applied blur changes only in fixed
    * increments.
@@ -103,7 +103,7 @@ public:
 
   /**
    * @brief Set blur radius value.
-   * @param[in] blurRadius @UNIT_PHYSICAL The radius of Gaussian kernel.
+   * @param[in] blurRadius @UNIT_PIXEL The radius of Gaussian kernel.
    * @note Due to the downscale factor and kernel optimizations, the actual applied blur changes only in fixed
    * increments.
    * @note The increment size is (2 / downscaleFactor). For example, with downscaleFactor = 0.25, the effective blur
@@ -113,7 +113,7 @@ public:
 
   /**
    * @brief Retrieves blur radius value.
-   * @return @UNIT_PHYSICAL The blur radius.
+   * @return @UNIT_PIXEL The blur radius.
    */
   uint32_t GetBlurRadius() const;
 

@@ -116,7 +116,7 @@ enum class LayoutMode : uint8_t
  * The two public fields are a fixed ABI representation. Additional measurement
  * metadata belongs in a separate type rather than new fields in this class.
  *
- * @UNIT_PHYSICAL Applies to every length in this class.
+ * @UNIT_PIXEL Applies to every length in this class.
  */
 class DALI_UI_API MeasuredSize
 {
@@ -315,7 +315,7 @@ public:
 // ============================================================================
 
 /**
- * @brief @UNIT_PHYSICAL Move-only callback for custom layout measurement.
+ * @brief @UNIT_PIXEL Move-only callback for custom layout measurement.
  *
  * @code
  * view.SetMeasureCallback(MeasureCallback::New(this, &MyClass::OnMeasure));
@@ -328,7 +328,7 @@ public:
 using MeasureCallback = Callback<MeasuredSize(View, float, float)>;
 
 /**
- * @brief @UNIT_PHYSICAL Move-only callback for custom layout arrangement.
+ * @brief @UNIT_PIXEL Move-only callback for custom layout arrangement.
  *
  * @code
  * view.SetArrangeCallback(ArrangeCallback::New(this, &MyClass::OnArrange));

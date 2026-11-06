@@ -98,13 +98,13 @@ public:
     return strokeColor;
   }
 
-  /// @UNIT_PHYSICAL Sets the stroke width.
+  /// @UNIT_PIXEL Sets the stroke width.
   void SetStrokeWidth(float w)
   {
     strokeWidth = w;
   }
 
-  /// @UNIT_PHYSICAL Returns the stroke width.
+  /// @UNIT_PIXEL Returns the stroke width.
   float GetStrokeWidth() const
   {
     return strokeWidth;
@@ -117,8 +117,8 @@ public:
   float          xMax{std::numeric_limits<float>::quiet_NaN()};
   float          yMin{std::numeric_limits<float>::quiet_NaN()};
   float          yMax{std::numeric_limits<float>::quiet_NaN()};
-  float          strokeWidth{0.0f};  ///< @UNIT_PHYSICAL The stroke width.
-  float          cornerRadius{0.0f}; ///< @UNIT_PHYSICAL The corner radius.
+  float          strokeWidth{0.0f};  ///< @UNIT_PIXEL The stroke width.
+  float          cornerRadius{0.0f}; ///< @UNIT_PIXEL The corner radius.
   bool           patternEnabled{false};
   Signal<void()> mChanged;
 };

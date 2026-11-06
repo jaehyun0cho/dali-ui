@@ -152,7 +152,7 @@ public:
 
   /**
    * @brief Sets the corner radii of the icon.
-   * @param[in] radius @UNIT_PHYSICAL The corner radii in top-left, top-right, bottom-right,
+   * @param[in] radius @UNIT_PIXEL The corner radii in top-left, top-right, bottom-right,
    * and bottom-left order
    * @pre Each component must be finite and non-negative; a violation triggers an assertion. Zero means no rounding.
    */
@@ -160,7 +160,7 @@ public:
 
   /**
    * @brief Returns the corner radii of the icon.
-   * @return @UNIT_PHYSICAL The icon corner radii
+   * @return @UNIT_PIXEL The icon corner radii
    */
   Vector4 GetIconCornerRadius() const;
 

@@ -237,7 +237,7 @@ public:
    * The origin is the ProgressBar's top-left. RTL and reversed state are reflected. The value
    * remains valid before first arrange, at zero size, while indeterminate and while off scene.
    *
-   * @return @UNIT_PHYSICAL The trail end position in ProgressBar-local visual coordinates
+   * @return @UNIT_PIXEL The trail end position in ProgressBar-local visual coordinates
    */
   Vector2 GetTrailEndPosition() const;
 
@@ -255,7 +255,7 @@ public:
    * satisfy @p index < GetDividerCount(); an out-of-range index triggers a DALi assertion.
    *
    * @param[in] index The zero-based logical divider index
-   * @return @UNIT_PHYSICAL The divider position in ProgressBar-local visual coordinates
+   * @return @UNIT_PIXEL The divider position in ProgressBar-local visual coordinates
    */
   Vector2 GetDividerPosition(uint32_t index) const;
 

@@ -71,7 +71,7 @@ public:
   /**
    * @brief Called when the text fit point size has changed asynchronously.
    *
-   * @param[in] pointSize @UNIT_PHYSICAL The fitted point size.
+   * @param[in] pointSize @UNIT_PIXEL The fitted point size.
    * It is a font point size, not pixels, with the text UI scale and the font size scale already applied.
    */
   virtual void AsyncTextFitChanged(float pointSize) = 0;

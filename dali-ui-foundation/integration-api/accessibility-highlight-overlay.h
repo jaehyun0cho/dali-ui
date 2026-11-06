@@ -43,8 +43,8 @@ public:
    *
    * This function sets a custom highlight overlay at the specified position and size.
    *
-   * @param position @UNIT_PHYSICAL A Vector2 representing the position of the overlay
-   * @param size @UNIT_PHYSICAL A Vector2 representing the size of the overlay
+   * @param position @UNIT_PIXEL A Vector2 representing the position of the overlay
+   * @param size @UNIT_PIXEL A Vector2 representing the size of the overlay
    */
   void SetCustomHighlight(Vector2 position, Vector2 size);
 

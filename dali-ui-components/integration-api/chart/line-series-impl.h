@@ -47,7 +47,7 @@ public: /// ChartSeries overrides
   void SetColor(const Vector4& color) override;
 
 public:
-  /// @UNIT_PHYSICAL Returns the line width.
+  /// @UNIT_PIXEL Returns the line width.
   float GetLineWidth() const
   {
     return mLineWidth;
@@ -58,7 +58,7 @@ public:
     return mShowMarkers;
   }
 
-  /// @UNIT_PHYSICAL Returns the marker radius.
+  /// @UNIT_PIXEL Returns the marker radius.
   float GetMarkerRadius() const
   {
     return mMarkerRadius;
@@ -71,9 +71,9 @@ public:
     return mSmoothness;
   }
 
-  void SetLineWidth(float width); ///< @UNIT_PHYSICAL Sets the line width.
+  void SetLineWidth(float width); ///< @UNIT_PIXEL Sets the line width.
   void SetMarkersVisible(bool visible);
-  void SetMarkerRadius(float radius); ///< @UNIT_PHYSICAL Sets the marker radius.
+  void SetMarkerRadius(float radius); ///< @UNIT_PIXEL Sets the marker radius.
 
   void SetMarkerShape(Ui::LineSeries::MarkerShape shape);
 
@@ -92,9 +92,9 @@ public:
     return mMarkerBorderColor;
   }
 
-  void SetMarkerBorderWidth(float width); ///< @UNIT_PHYSICAL Sets the marker border width.
+  void SetMarkerBorderWidth(float width); ///< @UNIT_PIXEL Sets the marker border width.
 
-  /// @UNIT_PHYSICAL Returns the marker border width.
+  /// @UNIT_PIXEL Returns the marker border width.
   float GetMarkerBorderWidth() const
   {
     return mMarkerBorderWidth;
@@ -152,15 +152,15 @@ public:
     UiColor  color;
     uint32_t first;
     uint32_t last;
-    float    dashLength; ///< @UNIT_PHYSICAL The dash length.
-    float    gapLength;  ///< @UNIT_PHYSICAL The gap length.
+    float    dashLength; ///< @UNIT_PIXEL The dash length.
+    float    gapLength;  ///< @UNIT_PIXEL The gap length.
   };
 
   // Ordered appearance storage
   std::vector<Segment> mSegments;
   Ui::Gradient::Linear mStrokeGradient;
-  float                mDashLength{5.0f}; ///< @UNIT_PHYSICAL The dash length.
-  float                mGapLength{0.0f};  ///< @UNIT_PHYSICAL The gap length.
+  float                mDashLength{5.0f}; ///< @UNIT_PIXEL The dash length.
+  float                mGapLength{0.0f};  ///< @UNIT_PIXEL The gap length.
   bool                 mHasStrokeGradient{false};
 
 protected:

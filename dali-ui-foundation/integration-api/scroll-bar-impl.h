@@ -108,12 +108,12 @@ public: // ScrollBarInterface implementation
   void SetHorizontalScrollBarVisibility(ScrollBarVisibility visibility);
 
   /**
-   * @brief @UNIT_PHYSICAL Updates the size of the scroll bar.
+   * @brief @UNIT_PIXEL Updates the size of the scroll bar.
    */
   void UpdateBarSize(float scrollWidth, float scrollHeight, float viewportWidth, float viewportHeight);
 
   /**
-   * @brief @UNIT_PHYSICAL Updates the scroll position.
+   * @brief @UNIT_PIXEL Updates the scroll position.
    */
   void UpdateScrollPosition(const Vector2& position);
 
@@ -158,12 +158,12 @@ public: // Properties
   void SetBarMinSize(float minSize);
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the scroll position.
+   * @brief @UNIT_PIXEL Gets the scroll position.
    */
   Vector2 GetScrollPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Sets the scroll position.
+   * @brief @UNIT_PIXEL Sets the scroll position.
    */
   void SetScrollPosition(const Vector2& position);
 
@@ -224,7 +224,7 @@ protected:
   void PlayFadeOut();
 
   /**
-   * @brief @UNIT_PHYSICAL Updates the position.
+   * @brief @UNIT_PIXEL Updates the position.
    */
   void UpdatePosition(const Vector2& position);
 

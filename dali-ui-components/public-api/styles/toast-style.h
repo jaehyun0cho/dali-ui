@@ -165,7 +165,7 @@ public:
 
   /**
    * @brief Returns the optional icon corner radii.
-   * @return @UNIT_PHYSICAL The non-negative radius of each corner
+   * @return @UNIT_PIXEL The non-negative radius of each corner
    */
   Vector4 GetIconCornerRadius() const;
 
@@ -421,14 +421,14 @@ public:
 
   /**
    * @brief Sets the optional icon corner radii.
-   * @param[in] radius @UNIT_PHYSICAL The finite, non-negative corner radii
+   * @param[in] radius @UNIT_PIXEL The finite, non-negative corner radii
    * @return A reference to this builder
    */
   Builder& SetIconCornerRadius(const Vector4& radius) &;
 
   /**
    * @brief Sets the optional icon corner radii.
-   * @param[in] radius @UNIT_PHYSICAL The finite, non-negative corner radii
+   * @param[in] radius @UNIT_PIXEL The finite, non-negative corner radii
    * @return An rvalue reference to this builder
    */
   Builder&& SetIconCornerRadius(const Vector4& radius) &&;

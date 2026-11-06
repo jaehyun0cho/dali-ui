@@ -139,7 +139,7 @@ public: // Properties
   /**
    * @brief Gets the desired width of the AnimatedImageVisual.
    *
-   * @return @UNIT_PHYSICAL The desired width of the AnimatedImageVisual.
+   * @return @UNIT_PIXEL The desired width of the AnimatedImageVisual.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -152,7 +152,7 @@ public: // Properties
    * source costs. Both a width and a height must be set for either to take effect; the
    * default, 0, loads the image at its own size.
    *
-   * @param[in] desiredWidth @UNIT_PHYSICAL The desired width to set.
+   * @param[in] desiredWidth @UNIT_PIXEL The desired width to set.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    * @note Ignored while SetImageLoadWithViewSizeEnabled() is enabled, which loads at the View's
@@ -165,7 +165,7 @@ public: // Properties
   /**
    * @brief Gets the desired height of the AnimatedImageVisual.
    *
-   * @return @UNIT_PHYSICAL The desired height of the AnimatedImageVisual.
+   * @return @UNIT_PIXEL The desired height of the AnimatedImageVisual.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -178,7 +178,7 @@ public: // Properties
    * source costs. Both a width and a height must be set for either to take effect; the
    * default, 0, loads the image at its own size.
    *
-   * @param[in] desiredHeight @UNIT_PHYSICAL The desired height to set.
+   * @param[in] desiredHeight @UNIT_PIXEL The desired height to set.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    * @note Ignored while SetImageLoadWithViewSizeEnabled() is enabled, which loads at the View's

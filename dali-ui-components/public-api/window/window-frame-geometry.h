@@ -51,19 +51,19 @@ public:
 
   /**
    * @brief Returns window surface bounds in screen coordinates.
-   * @return @UNIT_PHYSICAL Surface bounds
+   * @return @UNIT_PIXEL Surface bounds
    */
   Dali::Ui::LayoutRect GetSurfaceBounds() const;
 
   /**
    * @brief Returns visible frame bounds in surface-local coordinates.
-   * @return @UNIT_PHYSICAL Frame bounds
+   * @return @UNIT_PIXEL Frame bounds
    */
   Dali::Ui::LayoutRect GetFrameBounds() const;
 
   /**
    * @brief Returns application content bounds in surface-local coordinates.
-   * @return @UNIT_PHYSICAL Content bounds
+   * @return @UNIT_PIXEL Content bounds
    */
   Dali::Ui::LayoutRect GetContentBounds() const;
 
@@ -85,9 +85,9 @@ public:
 
 public: // Not intended for application developers
   /**
-   * @param[in] surfaceBounds @UNIT_PHYSICAL The surface bounds
-   * @param[in] frameBounds @UNIT_PHYSICAL The frame bounds
-   * @param[in] contentBounds @UNIT_PHYSICAL The content bounds
+   * @param[in] surfaceBounds @UNIT_PIXEL The surface bounds
+   * @param[in] frameBounds @UNIT_PIXEL The frame bounds
+   * @param[in] contentBounds @UNIT_PIXEL The content bounds
    * @param[in] decorationOverlayInsets @UNIT_LOGICAL The overlay decoration insets
    */
   DALI_INTERNAL WindowFrameGeometry(const Dali::Ui::LayoutRect& surfaceBounds,

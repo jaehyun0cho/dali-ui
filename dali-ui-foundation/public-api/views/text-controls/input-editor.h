@@ -192,15 +192,15 @@ public: // Text Size Measurement
   /**
    * @brief Returns the natural size required to lay out the text.
    *
-   * @return @UNIT_PHYSICAL The natural size, including padding.
+   * @return @UNIT_PIXEL The natural size, including padding.
    */
   Vector3 GetNaturalSize() const;
 
   /**
    * @brief Calculates the height required to lay out the text at the given width.
    *
-   * @param[in] width @UNIT_PHYSICAL The total view width, including padding.
-   * @return @UNIT_PHYSICAL The required height, including padding.
+   * @param[in] width @UNIT_PIXEL The total view width, including padding.
+   * @return @UNIT_PIXEL The required height, including padding.
    */
   float GetHeightForWidth(float width);
 
@@ -1264,7 +1264,7 @@ public: // Setters for chaining
   /**
    * @brief Gets the number of lines of text within the given width.
    *
-   * @param[in] width @UNIT_PHYSICAL The width used to calculate the line count.
+   * @param[in] width @UNIT_PIXEL The width used to calculate the line count.
    * @return The number of lines.
    */
   int GetLineCount(float width);

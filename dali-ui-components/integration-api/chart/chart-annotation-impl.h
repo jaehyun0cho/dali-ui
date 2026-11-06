@@ -54,11 +54,11 @@ public:
   Ui::ChartSeries           mSeries;
   Signal<void()>            mChanged;
   Vector2                   mPosition{0.0f, 0.0f};
-  Vector2                   mOffset{0.0f, 0.0f}; ///< @UNIT_PHYSICAL The offset.
-  Vector2                   mSize{12.0f, 12.0f}; ///< @UNIT_PHYSICAL The size.
+  Vector2                   mOffset{0.0f, 0.0f}; ///< @UNIT_PIXEL The offset.
+  Vector2                   mSize{12.0f, 12.0f}; ///< @UNIT_PIXEL The size.
   Ui::ChartAnnotation::Type mType;
   uint32_t                  mPointIndex{0u};
-  float                     mTextMaximumWidth{0.0f}; ///< @UNIT_PHYSICAL The text maximum width.
+  float                     mTextMaximumWidth{0.0f}; ///< @UNIT_PIXEL The text maximum width.
   Text::OverflowMode        mTextOverflowMode{Text::OverflowMode::CLIP};
 };
 } // namespace Integration

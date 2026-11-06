@@ -190,26 +190,26 @@ public:
    *
    * A width of 0 (the default) draws no border.
    *
-   * @param[in] width @UNIT_PHYSICAL The stroke width, in pixels
+   * @param[in] width @UNIT_PIXEL The stroke width, in pixels
    */
   void SetStrokeWidth(float width);
 
   /**
    * @brief Retrieves the width of the section's border, in pixels.
    *
-   * @return @UNIT_PHYSICAL The stroke width, in pixels
+   * @return @UNIT_PIXEL The stroke width, in pixels
    */
   float GetStrokeWidth() const;
 
   /**
    * @brief Sets a finite non-negative corner radius for area sections.
-   * @param[in] radius @UNIT_PHYSICAL The radius in pixels
+   * @param[in] radius @UNIT_PIXEL The radius in pixels
    */
   void SetCornerRadius(float radius);
 
   /**
    * @brief Returns the area corner radius.
-   * @return @UNIT_PHYSICAL The radius
+   * @return @UNIT_PIXEL The radius
    */
   float GetCornerRadius() const;
 

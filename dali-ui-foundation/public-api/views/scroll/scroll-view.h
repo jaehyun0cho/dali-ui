@@ -143,14 +143,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the scroll position.
    *
-   * @param[in] position @UNIT_PHYSICAL The scroll position to set
+   * @param[in] position @UNIT_PIXEL The scroll position to set
    */
   void SetScrollPosition(const Vector2& position);
 
   /**
    * @brief Gets the current scroll position.
    *
-   * @return @UNIT_PHYSICAL The current scroll position
+   * @return @UNIT_PIXEL The current scroll position
    */
   Vector2 GetScrollPosition() const;
 
@@ -193,14 +193,14 @@ public: // Setters for chaining
   /**
    * @brief Sets the maximum distance by fling action.
    *
-   * @param[in] distance @UNIT_PHYSICAL The maximum fling distance
+   * @param[in] distance @UNIT_PIXEL The maximum fling distance
    */
   void SetMaxFlingDistance(float distance);
 
   /**
    * @brief Gets the maximum distance by fling action.
    *
-   * @return @UNIT_PHYSICAL The maximum fling distance
+   * @return @UNIT_PIXEL The maximum fling distance
    */
   float GetMaxFlingDistance() const;
 
@@ -317,14 +317,14 @@ public: // Focus Scroll
    * The final position is still clamped to the valid scroll range, so peek is silently
    * reduced near the content boundaries.
    *
-   * @param[in] peek @UNIT_PHYSICAL Extra scroll distance in pixels (default: 0.0f, disabled)
+   * @param[in] peek @UNIT_PIXEL Extra scroll distance in pixels (default: 0.0f, disabled)
    */
   void SetFocusScrollPeek(float peek);
 
   /**
    * @brief Gets the peek distance applied when auto-scrolling to a focused child.
    *
-   * @return @UNIT_PHYSICAL The peek distance in pixels
+   * @return @UNIT_PIXEL The peek distance in pixels
    */
   float GetFocusScrollPeek() const;
 
@@ -360,14 +360,14 @@ public: // Key Scroll
    * - Next focusable is beyond @p step px, or none → scroll by @p step px.
    * PAGE_UP / PAGE_DOWN always scrolls by the full viewport size regardless of this value.
    *
-   * @param[in] step @UNIT_PHYSICAL Step distance in pixels (default: 200.0f)
+   * @param[in] step @UNIT_PIXEL Step distance in pixels (default: 200.0f)
    */
   void SetKeyScrollStep(float step);
 
   /**
    * @brief Gets the step distance used for key-based step scrolling.
    *
-   * @return @UNIT_PHYSICAL The step distance in pixels
+   * @return @UNIT_PIXEL The step distance in pixels
    */
   float GetKeyScrollStep() const;
 
@@ -446,7 +446,7 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls the content to the specified position.
    *
-   * @param[in] position @UNIT_PHYSICAL The position to scroll to
+   * @param[in] position @UNIT_PIXEL The position to scroll to
    * @param[in] animation Whether to animate the scroll
    */
   void ScrollTo(const Vector2& position, bool animation = true);
@@ -463,7 +463,7 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls to the specified X position (for horizontal scrolling).
    *
-   * @param[in] position @UNIT_PHYSICAL The X position
+   * @param[in] position @UNIT_PIXEL The X position
    * @param[in] animation Whether to animate the scroll
    */
   void ScrollToX(float position, bool animation = true);
@@ -471,7 +471,7 @@ public: // Non-Chainable Methods
   /**
    * @brief Scrolls to the specified Y position (for vertical scrolling).
    *
-   * @param[in] position @UNIT_PHYSICAL The Y position
+   * @param[in] position @UNIT_PIXEL The Y position
    * @param[in] animation Whether to animate the scroll
    */
   void ScrollToY(float position, bool animation = true);
@@ -504,7 +504,7 @@ public:
   using DragFinishedSignalType = Signal<void(ScrollView)>;
 
   /**
-   * @brief @UNIT_PHYSICAL Dragging signal type.
+   * @brief @UNIT_PIXEL Dragging signal type.
    */
   using DraggingSignalType = Signal<void(ScrollView, float, float)>; // scrollView, deltaX, deltaY
 

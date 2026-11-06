@@ -234,10 +234,10 @@ enum class LayoutBoundsUnit : uint8_t
  */
 struct DALI_UI_API LayoutBoundsLength
 {
-  float            value{0.0f}; ///< @UNIT_PHYSICAL The length value. With LayoutBoundsUnit::PIXEL the value is used as is, without the effective layout scale. With SELF_FRACTION or PARENT_FRACTION it is a fraction, not a length.
+  float            value{0.0f}; ///< @UNIT_PIXEL The length value. With LayoutBoundsUnit::PIXEL the value is used as is, without the effective layout scale. With SELF_FRACTION or PARENT_FRACTION it is a fraction, not a length.
   LayoutBoundsUnit unit{LayoutBoundsUnit::PIXEL};
 
-  /// @UNIT_PHYSICAL Creates a length in pixels.
+  /// @UNIT_PIXEL Creates a length in pixels.
   static constexpr LayoutBoundsLength Pixel(float v)
   {
     return {v, LayoutBoundsUnit::PIXEL};
@@ -584,10 +584,10 @@ struct DALI_UI_API LayoutAnimatorContext
    */
   float GetRawProgress() const;
 
-  /** @brief @UNIT_PHYSICAL Returns the entry bounds in visual coordinates, mirrored for RTL parents. */
+  /** @brief @UNIT_PIXEL Returns the entry bounds in visual coordinates, mirrored for RTL parents. */
   LayoutRect GetFromBounds() const;
 
-  /** @brief @UNIT_PHYSICAL Returns the target bounds in visual coordinates, mirrored for RTL parents. */
+  /** @brief @UNIT_PIXEL Returns the target bounds in visual coordinates, mirrored for RTL parents. */
   LayoutRect GetToBounds() const;
 
 private:

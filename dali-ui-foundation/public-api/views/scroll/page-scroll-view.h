@@ -118,12 +118,12 @@ public: // Page API
    *
    * Set to (0, 0) (the default) to use the viewport size as the page size.
    *
-   * @param[in] size @UNIT_PHYSICAL Page size in pixels.
+   * @param[in] size @UNIT_PIXEL Page size in pixels.
    */
   void SetPageSize(const Vector2& size);
 
   /**
-   * @brief @UNIT_PHYSICAL Gets the explicitly set page size.
+   * @brief @UNIT_PIXEL Gets the explicitly set page size.
    *
    * Returns (0, 0) if no explicit page size has been set (viewport-size mode).
    */

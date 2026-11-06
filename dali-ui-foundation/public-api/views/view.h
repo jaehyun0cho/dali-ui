@@ -404,8 +404,8 @@ public: // Measure / Arrange API
    * constraint is its size -- and under any other parent a MATCH_PARENT axis is assigned when
    * that parent's own size is determined (explicit, or itself assigned).
    *
-   * @param[in] widthConstraint @UNIT_PHYSICAL The width constraint for measurement
-   * @param[in] heightConstraint @UNIT_PHYSICAL The height constraint for measurement
+   * @param[in] widthConstraint @UNIT_PIXEL The width constraint for measurement
+   * @param[in] heightConstraint @UNIT_PIXEL The height constraint for measurement
    * @return The measured size
    */
   MeasuredSize Measure(float widthConstraint, float heightConstraint);
@@ -451,8 +451,8 @@ public: // Measure / Arrange API
    * the start edge of @p bounds; the arrange implementation receives the clamped bounds, and
    * its returned rect is applied as is.
    *
-   * @param[in] bounds @UNIT_PHYSICAL The bounds to arrange the view in
-   * @return @UNIT_PHYSICAL The final arranged bounds (parent-local, before RTL mirroring)
+   * @param[in] bounds @UNIT_PIXEL The bounds to arrange the view in
+   * @return @UNIT_PIXEL The final arranged bounds (parent-local, before RTL mirroring)
    */
   LayoutRect Arrange(const LayoutRect& bounds);
 
@@ -2638,7 +2638,7 @@ public: // Signals
    */
   StateChangedSignalType& StateChangedSignal();
 
-  using LayoutFinishedSignalType = Signal<void(View, LayoutRect)>; ///< @UNIT_PHYSICAL The layout finished signal type.
+  using LayoutFinishedSignalType = Signal<void(View, LayoutRect)>; ///< @UNIT_PIXEL The layout finished signal type.
   /**
    * @brief Emitted after a layout pass that arranged this View completes.
    *

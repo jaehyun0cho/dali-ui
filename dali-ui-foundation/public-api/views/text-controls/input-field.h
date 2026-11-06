@@ -191,7 +191,7 @@ public: // Text Size Measurement
   /**
    * @brief Returns the natural size required to lay out the text.
    *
-   * @return @UNIT_PHYSICAL The natural size, including padding.
+   * @return @UNIT_PIXEL The natural size, including padding.
    */
   Vector3 GetNaturalSize() const;
 

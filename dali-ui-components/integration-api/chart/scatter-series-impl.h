@@ -48,12 +48,12 @@ public: /// ChartSeries overrides
   }
 
 public:
-  /// @UNIT_PHYSICAL Returns the marker radius.
+  /// @UNIT_PIXEL Returns the marker radius.
   float GetMarkerRadius() const
   {
     return mMarkerRadius;
   }
-  /// @UNIT_PHYSICAL Sets the marker radius.
+  /// @UNIT_PIXEL Sets the marker radius.
   void SetMarkerRadius(float r)
   {
     mMarkerRadius = std::max(1.0f, r);

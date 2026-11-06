@@ -46,8 +46,8 @@ namespace ImageUrlUtils
  * returned each time.
  * @param[in] frameBuffer the frame buffer to converted to Url
  * @param[in] pixelFormat the pixel format for this frame buffer
- * @param[in] width @UNIT_PHYSICAL the width for this frame buffer
- * @param[in] height @UNIT_PHYSICAL the height for this frame buffer
+ * @param[in] width @UNIT_PIXEL the width for this frame buffer
+ * @param[in] height @UNIT_PIXEL the height for this frame buffer
  * @return the ImageUrl representing this frame buffer
  */
 DALI_UI_API Dali::Ui::ImageUrl GenerateUrl(Dali::FrameBuffer frameBuffer, Pixel::Format pixelFormat,

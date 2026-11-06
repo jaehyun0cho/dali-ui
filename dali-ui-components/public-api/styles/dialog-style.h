@@ -78,7 +78,7 @@ public:
   float GetBorderlineOffset() const;
   /// @brief Borderline color.
   UiColor GetBorderlineColor() const;
-  /// @brief @UNIT_PHYSICAL Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied.
+  /// @brief @UNIT_PIXEL Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied.
   float GetBackgroundBlurRadius() const;
 
 public: // Not intended for application developers
@@ -142,7 +142,7 @@ public:
   Builder& SetBorderlineColor(const UiColor& value) &;
   /// @copydoc SetBorderlineColor
   Builder&& SetBorderlineColor(const UiColor& value) &&;
-  /// @brief @UNIT_PHYSICAL Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied. Invalid values trigger an assertion.
+  /// @brief @UNIT_PIXEL Background blur radius. Must be finite and within [0, 4096]; zero disables blur. The fractional part is discarded when applied. Invalid values trigger an assertion.
   Builder& SetBackgroundBlurRadius(float value) &;
   /// @copydoc SetBackgroundBlurRadius
   Builder&& SetBackgroundBlurRadius(float value) &&;

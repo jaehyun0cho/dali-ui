@@ -310,7 +310,7 @@ public: // Size & Fitting Control
   /**
    * @brief Sets the desired rasterization width as a hint for the image loader.
    *
-   * @param[in] width @UNIT_PHYSICAL The desired width in pixels (0 to use natural size).
+   * @param[in] width @UNIT_PIXEL The desired width in pixels (0 to use natural size).
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -319,7 +319,7 @@ public: // Size & Fitting Control
   /**
    * @brief Gets the desired rasterization width hint.
    *
-   * @return @UNIT_PHYSICAL The desired width in pixels, or 0 if not set.
+   * @return @UNIT_PIXEL The desired width in pixels, or 0 if not set.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -328,7 +328,7 @@ public: // Size & Fitting Control
   /**
    * @brief Sets the desired rasterization height as a hint for the image loader.
    *
-   * @param[in] height @UNIT_PHYSICAL The desired height in pixels (0 to use natural size).
+   * @param[in] height @UNIT_PIXEL The desired height in pixels (0 to use natural size).
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -337,7 +337,7 @@ public: // Size & Fitting Control
   /**
    * @brief Gets the desired rasterization height hint.
    *
-   * @return @UNIT_PHYSICAL The desired height in pixels, or 0 if not set.
+   * @return @UNIT_PIXEL The desired height in pixels, or 0 if not set.
    * It is a pixel count of the loaded image; as the natural size of a WRAP_CONTENT View it is multiplied by the
    * effective layout scale.
    */
@@ -537,7 +537,7 @@ public: // N-Patch Border
    * stretched to fill the view. Giving an ordinary image a non-zero border makes it behave
    * as an n-patch image.
    *
-   * @param[in] border @UNIT_PHYSICAL The frame widths as start, end, top and bottom distances
+   * @param[in] border @UNIT_PIXEL The frame widths as start, end, top and bottom distances
    * @note The values are rounded to whole source pixels, since they select which columns
    *       and rows of the image stretch.
    * @see SetNPatchBorderOnly()
@@ -547,7 +547,7 @@ public: // N-Patch Border
   /**
    * @brief Gets the N-patch border.
    *
-   * @return @UNIT_PHYSICAL The width of the fixed frame at each edge, in source image pixels
+   * @return @UNIT_PIXEL The width of the fixed frame at each edge, in source image pixels
    */
   Dali::Insets GetNPatchBorder() const;
 

@@ -66,7 +66,7 @@ plugins:
             SHOW_FILES: "NO"
             # Length unit tags (docs/length-units.md). A YAML mapping cannot repeat a key,
             # so both aliases are one ALIASES value.
-            ALIASES: '"UNIT_LOGICAL=<b>Logical:</b>" "UNIT_PHYSICAL=<b>Physical:</b>"'
+            ALIASES: '"UNIT_LOGICAL=<b>Logical:</b>" "UNIT_PIXEL=<b>Pixels:</b>"'
 
 hooks:
   - scripts/hooks/search_exclude_files.py

@@ -17,7 +17,7 @@
 """Check the length unit tags of the dali-ui API documentation.
 
 Every documented pixel length in the API headers, outside the generated *.autogen.h headers,
-must carry exactly one @UNIT_LOGICAL or @UNIT_PHYSICAL tag, written as the first token of the
+must carry exactly one @UNIT_LOGICAL or @UNIT_PIXEL tag, written as the first token of the
 description it qualifies. See rules/length-units.md and docs/length-units.md.
 
 The script finds candidates by C++ type and name, so a hit can be a false positive: add it to
@@ -598,7 +598,7 @@ ALLOWLIST = [
 ]
 # fmt: on
 
-VALID_TAGS = ("LOGICAL", "PHYSICAL")
+VALID_TAGS = ("LOGICAL", "PIXEL")
 TAG_RE = re.compile(r"[@\\]UNIT_(\w+)")
 
 # The definitions of the two tags. Each file of DEFINITION_FILES repeats them word for word, a header with each
@@ -608,12 +608,12 @@ DEFINITIONS = {
     "LOGICAL": (
         "Logical value. The layout multiplies it by the effective layout scale of the view it belongs to, the UI scale "
         "times the window scale, every time it is used, so a later scale change applies automatically. Getters return "
-        "it as set. It equals physical pixels only at scale 1.0. The _dp, _sdp and _spx literals produce logical "
+        "it as set. It equals pixels only at scale 1.0. The _dp, _sdp and _spx literals produce logical "
         "values."
     ),
-    "PHYSICAL": (
-        "Physical value. Pixels in the units dali-core uses, such as Actor::Property::SIZE, POSITION and touch "
-        "coordinates, with the effective layout scale already applied. A physical value the framework stores, such as "
+    "PIXEL": (
+        "Pixel value. Pixels in the units dali-core uses, such as Actor::Property::SIZE, POSITION and touch "
+        "coordinates, with the effective layout scale already applied. A pixel value the framework stores, such as "
         "a scroll position, keeps its number when the scale changes, so it can then point at different content."
     ),
 }
@@ -661,7 +661,7 @@ SECTION_RE = re.compile(r"(?:(?<=\s)|^)[@\\](\w+)")
 INHERITED_DOC_RE = re.compile(r"[@\\](copydoc|copybrief|copydetails)\b")
 COND_RE = re.compile(r"[@\\](cond|endcond)\b")
 MESSAGES = {
-    "MISSING": "no @UNIT_LOGICAL or @UNIT_PHYSICAL tag",
+    "MISSING": "no @UNIT_LOGICAL or @UNIT_PIXEL tag",
     "MULTIPLE": "more than one tag",
     "MISPLACED": "the tag is not the first token",
 }
@@ -1515,7 +1515,7 @@ public:
 /**
  * @brief The result of a measure.
  *
- * @UNIT_PHYSICAL Applies to every length in this class.
+ * @UNIT_PIXEL Applies to every length in this class.
  */
 class MeasuredSize { public: float width; float height; };
 }}
@@ -1560,7 +1560,7 @@ def run_quietly(argv):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Check the @UNIT_LOGICAL and @UNIT_PHYSICAL tags of the API headers.")
+    parser = argparse.ArgumentParser(description="Check the @UNIT_LOGICAL and @UNIT_PIXEL tags of the API headers.")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--all", action="store_true", help="check all API headers, the allowlist and the tag definitions")
     mode.add_argument("--diff", metavar="REV", help="check only the items whose lines changed since REV")

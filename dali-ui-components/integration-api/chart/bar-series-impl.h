@@ -122,8 +122,8 @@ public:
   struct BorderAppearance
   {
     UiColor color;
-    Vector2 dash;  ///< @UNIT_PHYSICAL The dash and gap lengths.
-    float   width; ///< @UNIT_PHYSICAL The width.
+    Vector2 dash;  ///< @UNIT_PIXEL The dash and gap lengths.
+    float   width; ///< @UNIT_PIXEL The width.
   };
 
   BorderAppearance GetPointBorder(uint32_t index) const
@@ -137,9 +137,9 @@ public:
   UiColor                              mBorderColor{0.0f, 0.0f, 0.0f, 0.0f};
   UiColor                              mLowerFillColor;
   UiColor                              mUpperFillColor;
-  Vector2                              mBorderDash{Vector2::ZERO}; ///< @UNIT_PHYSICAL The border dash and gap lengths.
-  float                                mCornerRadius{0.0f};        ///< @UNIT_PHYSICAL The corner radius.
-  float                                mBorderWidth{0.0f};         ///< @UNIT_PHYSICAL The border width.
+  Vector2                              mBorderDash{Vector2::ZERO}; ///< @UNIT_PIXEL The border dash and gap lengths.
+  float                                mCornerRadius{0.0f};        ///< @UNIT_PIXEL The corner radius.
+  float                                mBorderWidth{0.0f};         ///< @UNIT_PIXEL The border width.
   float                                mFillThreshold{0.0f};
   bool                                 mHasFillThreshold{false};
 

@@ -111,13 +111,13 @@ public:
     return mModel.mStyle.visibility.legendToggleEnabled;
   }
 
-  /// @UNIT_PHYSICAL Sets the hit threshold.
+  /// @UNIT_PIXEL Sets the hit threshold.
   void SetHitThreshold(float pixels)
   {
     mModel.mStyle.interaction.hitThreshold = pixels;
   }
 
-  /// @UNIT_PHYSICAL Returns the hit threshold.
+  /// @UNIT_PIXEL Returns the hit threshold.
   float GetHitThreshold() const
   {
     return mModel.mStyle.interaction.hitThreshold;

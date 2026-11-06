@@ -78,31 +78,31 @@ public:
 
   // Incremental scroll along the layout axis. Returns actually consumed
   // distance (may be less than |dy|/|dx| when hitting an edge).
-  virtual float ScrollVerticallyBy(float dy, Recycler& recycler)   = 0; ///< @UNIT_PHYSICAL Scrolls by dy along the vertical layout axis and returns the distance consumed.
-  virtual float ScrollHorizontallyBy(float dx, Recycler& recycler) = 0; ///< @UNIT_PHYSICAL Scrolls by dx along the horizontal layout axis and returns the distance consumed.
+  virtual float ScrollVerticallyBy(float dy, Recycler& recycler)   = 0; ///< @UNIT_PIXEL Scrolls by dy along the vertical layout axis and returns the distance consumed.
+  virtual float ScrollHorizontallyBy(float dx, Recycler& recycler) = 0; ///< @UNIT_PIXEL Scrolls by dx along the horizontal layout axis and returns the distance consumed.
 
   virtual bool CanScrollVertically() const   = 0;
   virtual bool CanScrollHorizontally() const = 0;
 
   // Scroll metrics consumed by RecyclerView to drive the scroll bar.
-  virtual float ComputeScrollOffset() const = 0; ///< @UNIT_PHYSICAL Current scroll position
-  virtual float ComputeScrollExtent() const = 0; ///< @UNIT_PHYSICAL Viewport size
-  virtual float ComputeScrollRange() const  = 0; ///< @UNIT_PHYSICAL Estimated total content size
+  virtual float ComputeScrollOffset() const = 0; ///< @UNIT_PIXEL Current scroll position
+  virtual float ComputeScrollExtent() const = 0; ///< @UNIT_PIXEL Viewport size
+  virtual float ComputeScrollRange() const  = 0; ///< @UNIT_PIXEL Estimated total content size
 
   // First and last item positions currently in the layout (including cache).
   virtual uint32_t GetFirstVisiblePosition() const = 0;
   virtual uint32_t GetLastVisiblePosition() const  = 0;
 
   // Item bounds in content-space coordinates (used by ScrollToPosition).
-  virtual LayoutRect GetItemBounds(uint32_t position, float crossExtent) const = 0; ///< @UNIT_PHYSICAL Returns the item bounds.
+  virtual LayoutRect GetItemBounds(uint32_t position, float crossExtent) const = 0; ///< @UNIT_PIXEL Returns the item bounds.
 
   // Orientation and item sizing configuration.
   virtual Orientation GetOrientation() const        = 0;
   virtual void        SetOrientation(Orientation)   = 0;
-  virtual void        SetItemExtent(float extent)   = 0; ///< @UNIT_PHYSICAL Sets the item extent.
-  virtual float       GetItemExtent() const         = 0; ///< @UNIT_PHYSICAL Returns the item extent.
-  virtual void        SetItemSpacing(float spacing) = 0; ///< @UNIT_PHYSICAL Sets the item spacing.
-  virtual float       GetItemSpacing() const        = 0; ///< @UNIT_PHYSICAL Returns the item spacing.
+  virtual void        SetItemExtent(float extent)   = 0; ///< @UNIT_PIXEL Sets the item extent.
+  virtual float       GetItemExtent() const         = 0; ///< @UNIT_PIXEL Returns the item extent.
+  virtual void        SetItemSpacing(float spacing) = 0; ///< @UNIT_PIXEL Sets the item spacing.
+  virtual float       GetItemSpacing() const        = 0; ///< @UNIT_PIXEL Returns the item spacing.
 
   // Called when the adapter is replaced or cleared; discard cached state.
   virtual void OnAdapterChanged() = 0;

@@ -332,7 +332,7 @@ public: // Non-virtual API (safe to reorder / extend)
    * pre/post bounds for the CHANGE slot. Returns a zero rect if the view
    * has never been arranged.
    *
-   * @return @UNIT_PHYSICAL The most recent arranged bounds
+   * @return @UNIT_PIXEL The most recent arranged bounds
    */
   LayoutRect GetArrangedBounds() const;
 
@@ -939,14 +939,14 @@ protected:
    * measured size, whatever this method returns. This method runs at that clamped
    * constraint, so the content is measured for the size the view will be laid out at.
    *
-   * @param[in] widthConstraint  @UNIT_PHYSICAL Available visual (scale-applied) width, or WRAP_CONTENT / MATCH_PARENT.
-   * @param[in] heightConstraint @UNIT_PHYSICAL Available visual (scale-applied) height, or WRAP_CONTENT / MATCH_PARENT.
+   * @param[in] widthConstraint  @UNIT_PIXEL Available visual (scale-applied) width, or WRAP_CONTENT / MATCH_PARENT.
+   * @param[in] heightConstraint @UNIT_PIXEL Available visual (scale-applied) height, or WRAP_CONTENT / MATCH_PARENT.
    * @return Measured visual (scale-applied) size.
    */
   virtual MeasuredSize OnMeasure(float widthConstraint, float heightConstraint);
 
   /**
-   * @brief @UNIT_PHYSICAL Called during arrange pass. Override to implement custom arrangement.
+   * @brief @UNIT_PIXEL Called during arrange pass. Override to implement custom arrangement.
    *
    * Return the view's final self bounds (parent-local, before RTL mirroring). The
    * framework validates the returned rect and applies its x/y/width/height to

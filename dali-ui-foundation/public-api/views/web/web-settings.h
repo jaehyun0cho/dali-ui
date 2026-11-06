@@ -109,14 +109,14 @@ public:
   /**
    * @brief Gets the default web page font size in pixels.
    *
-   * @return @UNIT_PHYSICAL The default font size, or 0 when the engine is unavailable
+   * @return @UNIT_PIXEL The default font size, or 0 when the engine is unavailable
    */
   uint32_t GetDefaultFontSize() const;
 
   /**
    * @brief Sets the default web page font size in pixels.
    *
-   * @param[in] defaultFontSize @UNIT_PHYSICAL The default font size
+   * @param[in] defaultFontSize @UNIT_PIXEL The default font size
    */
   void SetDefaultFontSize(uint32_t defaultFontSize);
 

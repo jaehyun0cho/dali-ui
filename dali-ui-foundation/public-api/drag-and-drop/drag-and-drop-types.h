@@ -372,7 +372,7 @@ public:
   DragActivationConfiguration();
 
   /**
-   * @brief @UNIT_PHYSICAL Creates a gesture activation configuration.
+   * @brief @UNIT_PIXEL Creates a gesture activation configuration.
    */
   DragActivationConfiguration(DragActivationMode mode, float movementThreshold = 0.0f);
 
@@ -407,7 +407,7 @@ public:
   DragActivationMode GetMode() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the additional screen-space movement threshold in pixels.
+   * @brief @UNIT_PIXEL Returns the additional screen-space movement threshold in pixels.
    */
   float GetMovementThreshold() const;
 
@@ -471,22 +471,22 @@ public:
   Device::Class::Type GetDeviceClass() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the activation origin in screen coordinates.
+   * @brief @UNIT_PIXEL Returns the activation origin in screen coordinates.
    */
   const Vector2& GetInitialScreenPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the current pointer position in screen coordinates.
+   * @brief @UNIT_PIXEL Returns the current pointer position in screen coordinates.
    */
   const Vector2& GetScreenPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the current pointer position in source coordinates.
+   * @brief @UNIT_PIXEL Returns the current pointer position in source coordinates.
    */
   const Vector2& GetSourceLocalPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the current position minus the activation origin.
+   * @brief @UNIT_PIXEL Returns the current position minus the activation origin.
    */
   const Vector2& GetScreenDisplacement() const;
 
@@ -580,27 +580,27 @@ public:
   DragSessionOrigin GetSessionOrigin() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the current pointer position in screen coordinates.
+   * @brief @UNIT_PIXEL Returns the current pointer position in screen coordinates.
    */
   const Vector2& GetScreenPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the drag-start pointer offset in source coordinates.
+   * @brief @UNIT_PIXEL Returns the drag-start pointer offset in source coordinates.
    */
   const Vector2& GetSourceGrabPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the pointer position in source-parent coordinates.
+   * @brief @UNIT_PIXEL Returns the pointer position in source-parent coordinates.
    */
   const Vector2& GetSourceParentPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the pointer position in target or candidate coordinates.
+   * @brief @UNIT_PIXEL Returns the pointer position in target or candidate coordinates.
    */
   const Vector2& GetTargetLocalPosition() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the pointer position in preview-parent coordinates.
+   * @brief @UNIT_PIXEL Returns the pointer position in preview-parent coordinates.
    *
    * The position is relative to the top-left corner of the configured drag preview
    * container, or of the source View's parent when no container is configured, in
@@ -773,7 +773,7 @@ public:
   DragAutoScrollConfiguration();
 
   /**
-   * @brief @UNIT_PHYSICAL Creates an auto-scroll configuration for a viewport.
+   * @brief @UNIT_PIXEL Creates an auto-scroll configuration for a viewport.
    */
   DragAutoScrollConfiguration(Dali::Ui::View viewport,
                               Vector2        edgeThreshold            = Vector2(48.0f, 48.0f),
@@ -811,12 +811,12 @@ public:
   Dali::Ui::View GetViewport() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the horizontal and vertical edge-zone widths.
+   * @brief @UNIT_PIXEL Returns the horizontal and vertical edge-zone widths.
    */
   const Vector2& GetEdgeThreshold() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the maximum horizontal and vertical scroll speed.
+   * @brief @UNIT_PIXEL Returns the maximum horizontal and vertical scroll speed.
    */
   const Vector2& GetMaxSpeed() const;
 
@@ -882,7 +882,7 @@ public:
   const Vector2& GetEdgeIntensity() const;
 
   /**
-   * @brief @UNIT_PHYSICAL Returns the suggested content delta for this tick.
+   * @brief @UNIT_PIXEL Returns the suggested content delta for this tick.
    */
   const Vector2& GetSuggestedDelta() const;
 

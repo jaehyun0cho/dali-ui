@@ -51,9 +51,9 @@ class DALI_UI_API EdgeEffectImpl : public Dali::BaseObject, public Dali::Connect
 public:
   using State = EdgeEffect::State;
 
-  using PullSignalType     = Dali::Signal<void(float, float)>; ///< @UNIT_PHYSICAL (deltaDistance, displacement)
+  using PullSignalType     = Dali::Signal<void(float, float)>; ///< @UNIT_PIXEL (deltaDistance, displacement)
   using ReleaseSignalType  = Dali::Signal<void()>;
-  using AbsorbSignalType   = Dali::Signal<void(float)>; ///< @UNIT_PHYSICAL (velocity)
+  using AbsorbSignalType   = Dali::Signal<void(float)>; ///< @UNIT_PIXEL (velocity)
   using FinishedSignalType = Dali::Signal<void()>;
 
 public:
@@ -66,9 +66,9 @@ public:
 
   State GetState() const;
 
-  void OnPull(float deltaDistance, float displacement); ///< @UNIT_PHYSICAL Called while the user drags past the edge.
+  void OnPull(float deltaDistance, float displacement); ///< @UNIT_PIXEL Called while the user drags past the edge.
   void OnRelease();
-  void OnAbsorb(float velocity); ///< @UNIT_PHYSICAL Called when a fling reaches the edge.
+  void OnAbsorb(float velocity); ///< @UNIT_PIXEL Called when a fling reaches the edge.
   void Finish();
 
   PullSignalType&     PullSignal();
@@ -80,9 +80,9 @@ protected:
   EdgeEffectImpl();
 
   // Virtual hooks for subclasses — never reorder, add, or remove
-  virtual void OnPullImpl(State prevState, float deltaDistance, float displacement); ///< @UNIT_PHYSICAL Hook that OnPull() calls.
+  virtual void OnPullImpl(State prevState, float deltaDistance, float displacement); ///< @UNIT_PIXEL Hook that OnPull() calls.
   virtual void OnReleaseImpl();
-  virtual void OnAbsorbImpl(float velocity); ///< @UNIT_PHYSICAL Hook that OnAbsorb() calls.
+  virtual void OnAbsorbImpl(float velocity); ///< @UNIT_PIXEL Hook that OnAbsorb() calls.
   virtual void OnFinishImpl();
 
   void TransitionState(State next);

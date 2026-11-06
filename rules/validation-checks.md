@@ -115,7 +115,7 @@ decision.
 ## Length Unit Tags
 
 Every documented pixel length in the five API directories, outside the generated `*.autogen.h` headers, must carry
-exactly one `@UNIT_LOGICAL` or `@UNIT_PHYSICAL` tag (see [Length Units](length-units.md)).
+exactly one `@UNIT_LOGICAL` or `@UNIT_PIXEL` tag (see [Length Units](length-units.md)).
 
 Check the whole API surface:
 

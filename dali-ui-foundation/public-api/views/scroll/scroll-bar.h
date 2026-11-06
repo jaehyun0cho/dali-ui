@@ -154,10 +154,10 @@ public: // Properties
 
   /**
    * @brief Gets or sets the current scroll position of the target view.
-   * @return @UNIT_PHYSICAL The current scroll position.
+   * @return @UNIT_PIXEL The current scroll position.
    */
   Vector2 GetScrollPosition() const;
-  void    SetScrollPosition(const Vector2& position); ///< @UNIT_PHYSICAL Sets the scroll position.
+  void    SetScrollPosition(const Vector2& position); ///< @UNIT_PIXEL Sets the scroll position.
 
   /**
    * @brief Gets or sets the offset of bars from the edges.

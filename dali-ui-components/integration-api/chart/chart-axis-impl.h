@@ -94,17 +94,17 @@ public:
     return mAxisLineColor;
   }
 
-  void SetAxisLineWidth(float width); ///< @UNIT_PHYSICAL Sets the axis line width.
+  void SetAxisLineWidth(float width); ///< @UNIT_PIXEL Sets the axis line width.
 
-  /// @UNIT_PHYSICAL Returns the axis line width.
+  /// @UNIT_PIXEL Returns the axis line width.
   float GetAxisLineWidth() const
   {
     return mAxisLineWidth;
   }
 
-  void SetGridDash(float dashLength, float gapLength); ///< @UNIT_PHYSICAL Sets the grid dash.
+  void SetGridDash(float dashLength, float gapLength); ///< @UNIT_PIXEL Sets the grid dash.
 
-  /// @UNIT_PHYSICAL Returns the grid dash.
+  /// @UNIT_PIXEL Returns the grid dash.
   void GetGridDash(float& dashLength, float& gapLength) const
   {
     dashLength = mGridDashLength;
