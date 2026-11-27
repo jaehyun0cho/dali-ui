@@ -239,9 +239,6 @@ UI scale is reflected in font size and text layout related values during the mea
 | Margin / Padding | Reflected in text layout area calculation |
 | Marquee | Reflected in MarqueeGap and other marquee layout values |
 
-> [!NOTE]
-> TBD: UI scale application for FontStyle-related values such as Underline, Shadow, and Outline.
-
 <br/>
 
 ## Font Size Scale

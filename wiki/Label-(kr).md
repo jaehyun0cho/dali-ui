@@ -239,9 +239,6 @@ UI scale은 Label, InputField, InputEditor의 measure/relayout 과정에서 font
 | Margin / Padding | text layout 영역 계산에 반영 |
 | Marquee | MarqueeGap 등 marquee 관련 layout 값에 반영 |
 
-> [!NOTE]
-> TBD: Underline, Shadow, Outline 등 FontStyle 관련 값의 UI scale 적용.
-
 <br/>
 
 ## Font Size Scale
